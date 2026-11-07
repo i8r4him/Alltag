@@ -56,6 +56,8 @@ struct RootView: View {
             GrammarView()
         case .debrief:
             DebriefView(services: services)
+        case .briefing:
+            BriefingView(services: services)
         case .rule(let id):
             if let rule = MockRules.rule(id: id) {
                 RuleView(rule: rule)
