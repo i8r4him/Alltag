@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// The sections in the iPad and foldable sidebar.
+/// The sections in the unfolded foldable's sidebar.
 ///
 /// In a split view the selected section is the root of the detail column.
 /// `AppState.path` stays the same in both layouts: its first route is the

@@ -32,7 +32,7 @@ struct SettingsView: View {
             moreSection
             replaySection
         }
-        // The system's inset-grouped margins already adapt to iPad widths.
+        // The system's inset-grouped margins already adapt to wide screens.
         .listStyle(.insetGrouped)
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)

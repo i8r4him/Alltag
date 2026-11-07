@@ -37,7 +37,7 @@ struct RootView: View {
     private var navigation: some View {
         @Bindable var appState = appState
         return Group {
-            // iPad and unfolded foldables get a sidebar; iPhone a single stack.
+            // The unfolded foldable gets a sidebar; iPhone a single stack.
             if horizontalSizeClass == .regular {
                 splitView
             } else {

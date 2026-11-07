@@ -7,10 +7,8 @@ Alltag ("everyday") is an ambient German-learning companion: *"Learn German thro
 | Platform | Minimum | Notes |
 |---|---|---|
 | iPhone | iOS 27 | Primary design target — every screen in this document is designed for iPhone. |
-| Foldable iPhone | iOS 27 | Same app; layouts must adapt to the unfolded width via size classes. |
-| iPad | iPadOS 27 | Same app; adaptive layouts (wider content, `NavigationSplitView` where it helps). |
-| Apple Watch | watchOS 27 | Separate watchOS target — companion only (1-minute challenge, word review). Not designed yet. |
-Apple Vision Pro is **not** supported. The design reference is a 393×852 iPhone frame; larger sizes are derived from it.
+| Foldable iPhone | iOS 27 | Same app; unfolded (regular width) it gets a `NavigationSplitView` sidebar and readable content widths. |
+iPad, Apple Watch and Apple Vision Pro are **not** supported. The design reference is a 393×852 iPhone frame; larger sizes are derived from it.
 
 ## About the Design Files
 `Alltag Prototype.dc.html` is a **design reference built in HTML** — it shows intended look, copy, and behaviour. It is **not** production code. Recreate it in a new Xcode project using SwiftUI, SF Symbols, native materials, and Apple's navigation/animation systems. No third-party UI libraries. Open the HTML in Safari/Chrome (keep `support.js` next to it) and click through the phone; the left panel jumps to any screen.
@@ -21,27 +19,27 @@ Apple Vision Pro is **not** supported. The design reference is a 393×852 iPhone
 ---
 
 ## Getting started in Xcode
-1. The Xcode project `Alltag` exists (iOS App · SwiftUI · Swift). Persistence uses **SwiftData** — add the `ModelContainer` in `AlltagApp` with the first `@Model` types (user profile, memory items, phrasebook, solved rules, saved translations). The Watch app is added later as a separate watchOS target.
+1. The Xcode project `Alltag` exists (iOS App · SwiftUI · Swift). Persistence uses **SwiftData** — add the `ModelContainer` in `AlltagApp` with the first `@Model` types (user profile, memory items, phrasebook, solved rules, saved translations).
 2. Create the folder structure in **Architecture** below.
 3. Build `DesignSystem/` first (tokens + reusable components), then `Home`, then each feature.
-4. Use `NavigationStack(path:)` with an `enum Route: Hashable` — **no TabView**. At regular width (iPad, unfolded foldable) the same path drives a `NavigationSplitView` with a sidebar.
+4. Use `NavigationStack(path:)` with an `enum Route: Hashable` — **no TabView**. At regular width (unfolded foldable) the same path drives a `NavigationSplitView` with a sidebar.
 5. Add SwiftUI `#Preview`s for each screen and key states (conversation idle/listening/thinking/speaking; activity answered right/wrong; onboarding steps).
 
 ## Architecture
 Plain SwiftUI with `@Observable` models and services injected through the SwiftUI environment. No third-party libraries in the app (SwiftLint is a development tool only).
 
-**One app target, organised in folders** (Xcode synchronized folders — the folders on disk are the groups in Xcode). Shared code can move into a local Swift package later, when the Watch app and extensions arrive.
+**One app target, organised in folders** (Xcode synchronized folders — the folders on disk are the groups in Xcode). Shared code can move into a local Swift package later, when widgets and extensions arrive.
 ```
 Alltag/                                   ← repo root
 ├─ Alltag.xcodeproj
-├─ Alltag/                                app target (iPhone, iPad, foldable)
+├─ Alltag/                                app target (iPhone, foldable iPhone)
 │  ├─ App/
 │  │  ├─ AlltagApp.swift                  @main, ModelContainer, environment setup
 │  │  ├─ AppState.swift                   @Observable: navigation, full-screen flows, settings
 │  │  ├─ AppSettings.swift                device settings in UserDefaults (motion, speech, Pro)
 │  │  ├─ AppServices.swift                all services; .live() for the app, .mock() for previews/tests
 │  │  ├─ Route.swift                      enum Route: Hashable
-│  │  ├─ SidebarItem.swift                iPad/foldable sidebar sections, path ⇄ split view
+│  │  ├─ SidebarItem.swift                foldable sidebar sections, path ⇄ split view
 │  │  └─ RootView.swift                   stack (compact) or NavigationSplitView (regular), covers, onboarding gate
 │  │
 │  ├─ DesignSystem/
@@ -211,8 +209,6 @@ Alltag/                                   ← repo root
 │  ├─ RuleModelTests.swift
 │  └─ OnboardingModelTests.swift
 │
-├─ AlltagWatch/                           watchOS target (M5)
-│
 ├─ .github/
 │  ├─ workflows/
 │  │  ├─ ci.yml                           build + test (self-hosted Mac)
@@ -284,7 +280,7 @@ Support Dynamic Type. Code: `DesignSystem/Tokens/Typography.swift`, applied with
 
 **Radii:** hero cards 28 · cards 24 · inner cards 20 · tiles 16–20 · option buttons 18 · chips/pills full · glass buttons circle (36–48). Use `.continuous` corner style.
 **Spacing:** screen padding 16 (onboarding 20) · card padding 16–22 · grid gap 12 · row height ≥ 50 · touch targets ≥ 44.
-**Phone frame reference:** 393×852 (iPhone 15/16 Pro). Foldable iPhone and iPad use the same tokens with adaptive layouts (wider max content width, more grid columns).
+**Phone frame reference:** 393×852 (iPhone 15/16 Pro). The unfolded foldable iPhone uses the same tokens with adaptive layouts (sidebar, readable max content width).
 
 ---
 
@@ -371,7 +367,7 @@ Avatar 88, name, "Learning German since…", goal card with progress to B2, This
 Grouped inset lists (native `Form`/`List` .insetGrouped): profile header · Learning (Language, Level, Why, Daily time) · Alltag Pro card (trial / active) · Privacy & AI (on-device status, cloud toggle) · Learn from my day (Calendar, Safari, Keyboard, Camera) · Reminders · Accessibility (Reduce motion, Slower speech) · More (Beyond the app, Export my data) · Replay onboarding. Use native `Toggle`s with coloured symbol squares.
 
 ### Beyond the app (concepts only — do not register extensions yet)
-Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for practice), Siri phrases (each launches the matching in-app flow), widgets (Word of the day, Review 6), Watch 1-minute challenge.
+Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for practice), Siri phrases (each launches the matching in-app flow), widgets (Word of the day, Review 6).
 
 ---
 
@@ -412,8 +408,7 @@ All Apple frameworks — nothing to install.
 | EventKit | "Coming up" from Calendar | No |
 | UserNotifications | Daily nudges (local) | No |
 | WidgetKit | Word of the day, Review widgets | Yes (App Groups for shared data) |
-| SwiftData + CloudKit | Sync between iPhone, iPad and Watch | Yes |
-| WatchConnectivity | Phone ⇄ Watch | No |
+| SwiftData + CloudKit | Sync and backup across the learner's iPhones | Yes |
 | TipKit | In-app hints | No |
 | StoreKit 2 | Alltag Pro subscription | Yes (to sell) |
 | Keyboard extension / Safari Web Extension | "Learn from my day" | Yes (App Groups) |

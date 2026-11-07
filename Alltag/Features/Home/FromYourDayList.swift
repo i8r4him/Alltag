@@ -114,7 +114,7 @@ struct BeyondRow: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: "ipad.and.iphone")
+                Image(systemName: "apps.iphone")
                     .font(.system(size: 19))
                     .foregroundStyle(.secondary)
                     .frame(width: 40, height: 40)
@@ -123,7 +123,7 @@ struct BeyondRow: View {
                     Text("Learning beyond the app")
                         .textRole(.bodySmall)
                         .fontWeight(.medium)
-                    Text("Keyboard, Siri, widgets & Watch · concepts")
+                    Text("Keyboard, Siri & widgets · concepts")
                         .textRole(.meta)
                         .foregroundStyle(.secondary)
                 }
