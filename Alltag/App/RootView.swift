@@ -47,6 +47,8 @@ struct RootView: View {
         switch route {
         case .translate(let text):
             TranslateView(initialText: text)
+        case .memory(let kind):
+            MemoryView(kind: kind)
         default:
             placeholder(for: route)
         }

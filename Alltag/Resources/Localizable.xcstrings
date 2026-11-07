@@ -38,6 +38,16 @@
       }
     },
     "%@ · steadily rising" : {},
+    "%@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@"
+          }
+        }
+      }
+    },
     "%@, %@" : {
       "localizations" : {
         "en" : {
@@ -71,9 +81,21 @@
     },
     "%lld of 3 allowed" : {},
     "%lld ready to review" : {},
+    "%lld words and phrases, gathered from your days." : {},
+    "1 word or phrase, gathered from your days." : {},
     "4 short moments" : {},
     "5 min" : {},
     "60-second briefing" : {},
+    "^[%lld item](inflect: true), about ^[%lld minute](inflect: true)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "^[%1$lld item](inflect: true), about ^[%2$lld minute](inflect: true)"
+          }
+        }
+      }
+    },
     "^[%lld new word](inflect: true)" : {},
     "^[%lld new word](inflect: true) from Safari" : {},
     "^[%lld phrase](inflect: true) saved this week" : {},
@@ -82,6 +104,7 @@
     "A rough guess is fine — we adjust as you go." : {},
     "A small daily habit" : {},
     "A1–C1 · ^[%lld rule](inflect: true) worth a look" : {},
+    "All" : {},
     "All caught up" : {},
     "Allow" : {},
     "Allow %@" : {},
@@ -100,6 +123,7 @@
     "Built from %lld words you are learning" : {},
     "Calendar" : {},
     "Calmer transitions" : {},
+    "Camera" : {},
     "Casual" : {},
     "Close" : {},
     "Close actions" : {},
@@ -115,9 +139,11 @@
     "Cooking" : {},
     "Corrections while you type in any app" : {},
     "Daily" : {},
+    "Debrief" : {},
     "Debrief: find what you couldn't say" : {},
     "Design tokens" : {},
     "Done" : {},
+    "Due" : {},
     "Each one is optional. You can change them any time in Settings." : {},
     "End conversation" : {},
     "English" : {},
@@ -154,6 +180,7 @@
     "Health" : {},
     "Hide actions" : {},
     "Hides the English" : {},
+    "Hides the example" : {},
     "Housing" : {},
     "How did the bakery go?" : {},
     "How is your German today?" : {},
@@ -179,11 +206,14 @@
     "Mastery" : {},
     "Meetings, emails, colleagues" : {},
     "Memory" : {},
+    "Messages" : {},
     "Messages · „seit“ or „für“?" : {},
     "Mistake" : {},
+    "Mistakes" : {},
     "Mode" : {},
     "Morning" : {},
     "Most of it happens in small moments anyway." : {},
+    "Mostly words from your reading, plus ^[%lld of your own mistakes](inflect: true)." : {},
     "Music" : {},
     "My Words" : {},
     "Near-native" : {},
@@ -200,10 +230,13 @@
     "Partner & family" : {},
     "Phrase" : {},
     "phrase saved" : {},
+    "Phrasebook" : {},
     "phrases saved" : {},
     "Picks up the word order you mixed up yesterday." : {},
     "Plays the sentence." : {},
+    "Podcast" : {},
     "Politics" : {},
+    "Practise" : {},
     "Practise speaking" : {},
     "Practise your fixes · 1 min" : {},
     "Precision and style" : {},
@@ -222,6 +255,7 @@
         }
       }
     },
+    "Ready to review" : {},
     "Real-life conversation · Moving an appointment" : {},
     "Reduce motion" : {},
     "Rehearse before appointments and trips" : {},
@@ -230,14 +264,19 @@
     "Remove from Memory" : {},
     "Review words" : {},
     "Right" : {},
+    "Safari" : {},
     "Save to Memory" : {},
+    "Saved" : {},
     "Saved to Memory" : {},
     "Saved to Memory: %@." : {},
+    "Search your memory" : {},
+    "Section" : {},
     "Send" : {},
     "Serious about it" : {},
     "Settings" : {},
     "Show a hint" : {},
     "Show actions" : {},
+    "Shows an example" : {},
     "Shows the English" : {},
     "Simple everyday conversations" : {},
     "Skip" : {},
@@ -266,6 +305,7 @@
     "This flow is built in #%lld." : {},
     "This screen is built in #%lld." : {},
     "This shapes the situations you rehearse and the words we notice." : {},
+    "This tab is built in #33." : {},
     "Today" : {},
     "Today's focus" : {},
     "Tomorrow" : {},
@@ -285,6 +325,8 @@
     "What do you care about?" : {},
     "Word" : {},
     "Word by word" : {},
+    "Words" : {},
+    "Words from your reading and conversations." : {},
     "Work" : {},
     "You" : {},
     "You're learning **German**. What do you speak already?" : {},
