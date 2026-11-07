@@ -39,6 +39,8 @@ struct ProgressReport: Sendable {
     let progressToNextLevel: Double
     /// What the learner can do now, and what's next.
     let summary: String
+    /// When the next level should be reached, e.g. "by summer 2027".
+    let nextLevelTarget: String
     let situations: [Situation]
     let skills: [Skill]
     /// Share of words still remembered 30 days later, 0…1.
@@ -51,6 +53,16 @@ struct ProgressReport: Sendable {
     let attention: [Attention]
     /// Insights, with **bold** parts in Markdown.
     let howYouLearn: [String]
+
+    /// "2 confident · 2 getting there · 2 shaky" as counts.
+    func count(_ confidence: Confidence) -> Int {
+        situations.filter { $0.confidence == confidence }.count
+    }
+
+    /// The first shaky situation, to work on next.
+    var nextToWorkOn: Situation? {
+        situations.first { $0.confidence == .shaky }
+    }
 
     /// How far along the A1–C2 track the learner is, 0…1.
     static func trackFraction(level: Level, progressToNext: Double) -> Double {

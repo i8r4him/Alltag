@@ -37,6 +37,17 @@ enum Goal: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    /// What the learner is working towards, for the Profile's goal card.
+    var statement: LocalizedStringResource {
+        switch self {
+        case .livingHere: "Feel at home here — appointments, neighbours, work."
+        case .work: "Hold my own at work — meetings, emails, small talk."
+        case .partnerAndFamily: "Really talk with the people who matter most."
+        case .studies: "Follow lectures and write with confidence."
+        case .travel: "Get around anywhere without switching to English."
+        }
+    }
+
     var systemImage: String {
         switch self {
         case .livingHere: "house"

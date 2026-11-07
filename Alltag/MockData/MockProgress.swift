@@ -16,6 +16,7 @@ enum MockProgress {
         progressToNextLevel: 0.62,
         summary: "You follow most everyday conversations and can handle appointments on the phone. "
             + "Next: speaking about opinions and plans.",
+        nextLevelTarget: "by summer 2027",
         situations: [
             Situation(name: "At the doctor", confidence: .confident),
             Situation(name: "Shops & cafés", confidence: .confident),
