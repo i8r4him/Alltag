@@ -24,33 +24,3 @@ struct PlaceholderScreen: View {
         .navigationBarTitleDisplayMode(.large)
     }
 }
-
-/// Stand-in for a full-screen flow, with a close button.
-struct FullScreenPlaceholder: View {
-    /// Content title (scenario or activity), shown as is.
-    let title: String
-    let issue: Int
-    @Environment(AppState.self) private var appState
-
-    var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                GlassButton(systemImage: "xmark", accessibilityLabel: "Close") {
-                    appState.dismissFullScreen()
-                }
-                Spacer()
-            }
-            .padding(.horizontal, Spacing.screen)
-            ContentUnavailableView {
-                Label {
-                    Text(verbatim: title)
-                } icon: {
-                    Image(systemName: "hammer")
-                }
-            } description: {
-                Text("This flow is built in #\(issue).")
-            }
-        }
-        .background(.screenBackground)
-    }
-}

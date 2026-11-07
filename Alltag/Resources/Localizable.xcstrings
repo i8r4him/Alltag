@@ -68,6 +68,16 @@
         }
       }
     },
+    "%lld of %lld. Nicely done." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld. Nicely done."
+          }
+        }
+      }
+    },
     "%lld of 3 allowed" : {},
     "%lld ready to review" : {},
     "%lld words and phrases, gathered from your days." : {},
@@ -110,6 +120,7 @@
     "Ask, translate or practise" : {},
     "Ask, translate or practise anything…" : {},
     "Back" : {},
+    "Back home" : {},
     "Best time for a nudge" : {},
     "Built from %lld words you are learning" : {},
     "Calendar" : {},
@@ -128,6 +139,7 @@
     "Conversation complete" : {},
     "Conversations that matter most" : {},
     "Cooking" : {},
+    "Correct" : {},
     "Corrections while you type in any app" : {},
     "Daily" : {},
     "Debrief" : {},
@@ -206,6 +218,7 @@
     "Mistake" : {},
     "Mistakes" : {},
     "Mode" : {},
+    "More to learn" : {},
     "Morning" : {},
     "Most of it happens in small moments anyway." : {},
     "Mostly words from your reading, plus ^[%lld of your own mistakes](inflect: true)." : {},
@@ -223,12 +236,14 @@
     "Opens your words and phrases in Alltag." : {},
     "Other" : {},
     "Partner & family" : {},
+    "Pause announcement" : {},
     "Phrase" : {},
     "phrase saved" : {},
     "Phrasebook" : {},
     "phrases saved" : {},
     "Phrases you needed, grouped by where you needed them." : {},
     "Picks up the word order you mixed up yesterday." : {},
+    "Play announcement" : {},
     "Plays the phrase." : {},
     "Plays the sentence." : {},
     "Podcast" : {},
@@ -303,7 +318,6 @@
     "things to fix" : {},
     "Thinking" : {},
     "Thinking…" : {},
-    "This flow is built in #%lld." : {},
     "This screen is built in #%lld." : {},
     "This shapes the situations you rehearse and the words we notice." : {},
     "Today" : {},
@@ -322,6 +336,7 @@
     "Ukrainian" : {},
     "Verb at the end" : {},
     "Voice" : {},
+    "We'll bring these back at the right moment — first tomorrow, then further apart as they stick." : {},
     "What brings you to German?" : {},
     "What do you care about?" : {},
     "Word" : {},
@@ -329,6 +344,7 @@
     "Words" : {},
     "Words from your reading and conversations." : {},
     "Work" : {},
+    "Wrong" : {},
     "You" : {},
     "You wrote this in Messages yesterday · plus one from a conversation" : {},
     "You're learning **German**. What do you speak already?" : {},

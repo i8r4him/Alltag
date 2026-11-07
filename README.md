@@ -151,12 +151,9 @@ Alltag/                                   ← repo root
 │  │  │  ├─ WordRow.swift
 │  │  │  └─ PhrasebookTab.swift           (#33)
 │  │  ├─ Learn/
-│  │  │  ├─ LearnView.swift
-│  │  │  ├─ ActivityView.swift
-│  │  │  ├─ ActivityModel.swift
-│  │  │  ├─ OptionButton.swift
-│  │  │  ├─ AudioPlayerCard.swift
-│  │  │  └─ ActivityResultView.swift
+│  │  │  ├─ LearnView.swift               Fix your mistakes card, practice moments
+│  │  │  ├─ ActivityView.swift            native toolbar (close, segments), options, audio, done
+│  │  │  └─ ActivityModel.swift           one pick per question, scoring, audio
 │  │  ├─ Grammar/
 │  │  │  ├─ GrammarView.swift
 │  │  │  ├─ TopicRow.swift
