@@ -68,6 +68,25 @@ struct SwiftDataTests {
         #expect(items.filter { $0.isDue(at: now) }.count == 6)
     }
 
+    @Test("Duplicate IDs from an upgraded store are repaired once")
+    func repairDuplicateIDs() throws {
+        let shared = UUID()
+        for word in ["eins", "zwei", "drei"] {
+            let item = MemoryItem(word: word, meaning: word, kind: .saved, source: .translate)
+            item.uuid = shared
+            context.insert(item)
+        }
+        let phrase = Phrase(german: "a", english: "a", place: "p", placeSymbol: "s")
+        phrase.uuid = shared
+        context.insert(phrase)
+
+        #expect(try AlltagStore.repairDuplicateIDs(context) == 2)
+        let ids = try context.fetch(FetchDescriptor<MemoryItem>()).map(\.uuid)
+        #expect(Set(ids).count == 3)
+        #expect(ids.contains(shared))
+        #expect(try AlltagStore.repairDuplicateIDs(context) == 0)
+    }
+
     @Test("Phrases are grouped into four places")
     func phrasebookGroups() throws {
         try AlltagStore.seedSampleDataIfEmpty(context)

@@ -17,6 +17,9 @@ final class MemoryItem {
     /// Strength runs from 0 (new) to `maxStrength` (well known).
     static let maxStrength = 4
 
+    /// Stable identifier for App Intents and Spotlight. (`id` is taken by
+    /// SwiftData's `PersistentIdentifier`.)
+    var uuid: UUID = UUID()
     /// Article including its trailing space ("die "), or empty.
     var article: String = ""
     var word: String = ""

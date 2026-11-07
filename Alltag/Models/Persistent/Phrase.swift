@@ -11,6 +11,8 @@ import SwiftData
 /// A phrase in the Phrasebook, grouped by the place it is useful in.
 @Model
 final class Phrase {
+    /// Stable identifier for App Intents and Spotlight.
+    var uuid: UUID = UUID()
     var german: String = ""
     var english: String = ""
     /// Group title, e.g. "At the doctor".

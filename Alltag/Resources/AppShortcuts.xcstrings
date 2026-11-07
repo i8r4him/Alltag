@@ -1,0 +1,39 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Open my words in ${applicationName}": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open my words in ${applicationName}"
+          }
+        }
+      }
+    },
+    "Show my ${applicationName} memory": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show my ${applicationName} memory"
+          }
+        }
+      }
+    },
+    "What am I learning in ${applicationName}": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What am I learning in ${applicationName}"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

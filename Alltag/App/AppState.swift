@@ -29,6 +29,13 @@ final class AppState {
         path.removeAll()
     }
 
+    /// Shows a screen from anywhere (Siri, Shortcuts, widgets): closes any
+    /// full-screen flow and opens `route` directly above Home.
+    func show(_ route: Route) {
+        fullScreen = nil
+        path = [route]
+    }
+
     /// Presents a full-screen flow such as a conversation.
     func present(_ route: FullScreenRoute) {
         fullScreen = route
