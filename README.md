@@ -251,29 +251,29 @@ Alltag/                                   ← repo root
 
 ## Design Tokens
 **Colours — light and dark**
-The app supports **both appearances** and follows the system setting. The prototype was designed in dark mode, so the values below are the **dark** values. For light mode:
-- Neutrals (background, surfaces, labels, separators) map to iOS semantic colours, which adapt automatically: `systemBackground`, `secondarySystemBackground`, `tertiarySystemBackground`, `systemFill`, `label`, `secondaryLabel`, `tertiaryLabel`, `separator`.
-- Accent, success and mistake are colour sets in the asset catalog with a dark and a light variant. The light variants need to be darker so they keep enough contrast on white (to be defined and checked against WCAG AA).
-- Glass surfaces use native materials / `.glassEffect()`, which adapt on their own.
+The app supports **both appearances** and follows the system setting. Code: `DesignSystem/Tokens/Colors.swift` and the colour sets in `Resources/Assets.xcassets`.
 
-Dark values:
-| Token | Value |
-|---|---|
-| background | `#000000` |
-| surface (cards) | `#1C1C1E` |
-| surface2 (inner tiles, rows pressed) | `#2C2C2E` |
-| surface3 (bars, keys, inactive) | `#3A3A3C` |
-| result card | `#232325` |
-| label | `#F5F5F7` |
-| secondaryLabel | `rgba(235,235,245,0.60)` (0.55 / 0.50 used for small meta) |
-| tertiaryLabel | `rgba(235,235,245,0.30–0.45)` |
-| separator | `rgba(255,255,255,0.08–0.10)`, 0.5pt, inset 16 or 68 |
-| accent (amber) | `oklch(0.81 0.13 75)` ≈ `#F2B24E` |
-| success (green) | `oklch(0.81 0.13 155)` ≈ `#7FD69A` |
-| mistake (coral) | `oklch(0.81 0.11 35)` ≈ `#F2A08A` |
-| on-accent text | `#1A1408` |
-| glass | `rgba(44,44,46,0.7)` + blur 24–28 + 0.5pt `rgba(255,255,255,0.12)` stroke → use native glass/material |
-Accent tints: accent @ 0.10–0.22 opacity for selected backgrounds and soft radial glows (top-right of focus/hero cards).
+Neutral surfaces map to iOS grouped-background colours, which adapt automatically and match the prototype exactly in dark mode:
+| Token | iOS colour | Dark | Light |
+|---|---|---|---|
+| `screenBackground` | `systemGroupedBackground` | `#000000` | `#F2F2F7` |
+| `surface` (cards) | `secondarySystemGroupedBackground` | `#1C1C1E` | `#FFFFFF` |
+| `surfaceSecondary` (inner tiles, pressed rows) | `tertiarySystemGroupedBackground` | `#2C2C2E` | `#F2F2F7` |
+| `surfaceTertiary` (bars, keys, inactive) | `systemGray4` | `#3A3A3C` | `#D1D1D6` |
+| labels, separators | `label`, `secondaryLabel`, `tertiaryLabel`, `separator` | | |
+
+Brand colours are asset-catalog colour sets. The light variants keep the same hue but are darker, so they pass WCAG AA (≥ 4.5 : 1) on white — checked by `ColorContrastTests`. The accent is split in two because one amber can't be both readable text and a bright fill on white:
+| Token (colour set) | Use | Dark | Light |
+|---|---|---|---|
+| `accent` (AccentColor) | Text, icons, tint | `#F2B24E` | `#9A6100` |
+| `accentFill` (AccentFill) | Filled buttons, glows | `#F2B24E` | `#EFA831` |
+| `onAccent` (OnAccent) | Text on `accentFill` | `#1A1408` | `#1A1408` |
+| `success` (Success) | Right, good, confident | `#7FD69A` | `#007E46` |
+| `mistake` (Mistake) | Wrong, fix, shaky | `#F2A08A` | `#B05139` |
+| `resultCard` (ResultCard) | Translation result card | `#232325` | `#FAFAFC` |
+
+Glass surfaces use native materials / `.glassEffect()`, which adapt on their own (prototype: `rgba(44,44,46,0.7)` + blur 24–28 + 0.5pt `rgba(255,255,255,0.12)` stroke).
+Accent tints (`AccentTint`): 0.10 selected backgrounds, 0.55 selected borders, 0.22 soft radial glows (top-right of focus/hero cards).
 
 **Typography (SF Pro)**
 | Role | Size / weight / tracking |
@@ -287,7 +287,7 @@ Accent tints: accent @ 0.10–0.22 opacity for selected backgrounds and soft rad
 | Conversation AI line | 23 / semibold / −0.4 |
 | Meta / caption | 12–13 |
 | Eyebrow | 13 / semibold / +0.07em uppercase (accent or coral) |
-Support Dynamic Type. The sizes above are the values at the default text size. In code, every role maps to the closest text style (`.largeTitle`, `.title`, `.title2`, `.title3`, `.headline`, `.body`, `.footnote`, `.caption`) plus weight/tracking — small differences from the exact sizes are accepted. Sizes with no matching style (Hero 44, AI line 23) use a custom size with `relativeTo:` so they still scale.
+Support Dynamic Type. Code: `DesignSystem/Tokens/Typography.swift`, applied with `.textRole(_:)`. Every role keeps the exact size above at the default text size and scales with `@ScaledMetric` relative to the closest system text style (hero and large title → `.largeTitle`, title 2 → `.title`, section header and AI line → `.title2`, card title → `.headline`, body → `.body`, meta and eyebrow → `.footnote`, caption → `.caption`). Tracking scales with the size.
 
 **Radii:** hero cards 28 · cards 24 · inner cards 20 · tiles 16–20 · option buttons 18 · chips/pills full · glass buttons circle (36–48). Use `.continuous` corner style.
 **Spacing:** screen padding 16 (onboarding 20) · card padding 16–22 · grid gap 12 · row height ≥ 50 · touch targets ≥ 44.
