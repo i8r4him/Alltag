@@ -20,7 +20,9 @@ private final class StubCompanion: CompanionService {
     func respond(to learnerText: String, in scenario: Scenario, turn: Int) async throws -> CompanionResponse {
         try await script.respond(to: learnerText, in: scenario, turn: turn)
     }
-    func feedback(on sentence: String, in scenario: Scenario, turn: Int) async throws -> SentenceFeedback { answer }
+    func feedback(on sentence: String, in scenario: Scenario, replyingTo previous: String?) async throws -> SentenceFeedback {
+        answer
+    }
     func debrief(_ input: String, about moment: Debrief) async throws -> Debrief { moment }
 }
 
@@ -51,7 +53,7 @@ struct CompanionTests {
         let companion = OnDeviceCompanionService(fallback: fallback, isModelAvailable: { false })
         #expect(!companion.usesOnDeviceModel)
 
-        let own = try await companion.feedback(on: "Ich komme morgen.", in: MockScenarios.dentist, turn: 0)
+        let own = try await companion.feedback(on: "Ich komme morgen.", in: MockScenarios.dentist, replyingTo: nil)
         #expect(own.feedback == MockCompanionService.ownSentenceNote)
         #expect(try await companion.debrief("nuts?", about: MockDebrief.bakery) == MockDebrief.bakery)
     }
@@ -64,7 +66,7 @@ struct CompanionTests {
 
         #expect(try await companion.debrief("nuts?", about: MockDebrief.bakery) == MockDebrief.bakery)
         #expect(!companion.usesOnDeviceModel)
-        _ = try await companion.feedback(on: "Hallo", in: MockScenarios.dentist, turn: 0)
+        _ = try await companion.feedback(on: "Hallo", in: MockScenarios.dentist, replyingTo: nil)
         #expect(model.requests == 1)
     }
 
@@ -78,7 +80,8 @@ struct CompanionTests {
     @Test("The feedback prompt gives the situation and what was just said")
     func feedbackPrompt() {
         let scenario = MockScenarios.dentist
-        let prompt = CompanionPrompt.feedback(on: "Geht 15 Uhr?", in: scenario, turn: 1)
+        let previous = "Natürlich. Morgen hätten wir um 10:30 Uhr oder um 15 Uhr etwas frei."
+        let prompt = CompanionPrompt.feedback(on: "Geht 15 Uhr?", in: scenario, replyingTo: previous)
         #expect(prompt.contains(scenario.title))
         #expect(prompt.contains("Natürlich. Morgen hätten wir um 10:30 Uhr oder um 15 Uhr etwas frei."))
         #expect(prompt.contains("„Geht 15 Uhr?“"))
@@ -87,8 +90,13 @@ struct CompanionTests {
     @Test("Generated answers map onto the app's feedback and debrief")
     func mapping() {
         let feedback = SentenceFeedback(GeneratedFeedback(kind: .fix, title: "Verb second",
-                                                          note: "Morgen komme ich.", english: "I'm coming tomorrow."))
+                                                          note: "Time first, then the verb.", english: "I'm coming tomorrow.",
+                                                          correction: " Morgen komme ich. "))
         #expect(feedback.feedback.kind == .fix)
+        #expect(feedback.feedback.correction == "Morgen komme ich.")
+        let good = SentenceFeedback(GeneratedFeedback(kind: .good, title: "Natural", note: "Well said.",
+                                                      english: "Hello", correction: "Hallo"))
+        #expect(good.feedback.correction == nil)
         #expect(feedback.english == "I'm coming tomorrow.")
 
         let moment = MockDebrief.bakery
@@ -131,7 +139,8 @@ struct CompanionTests {
           .timeLimit(.minutes(1)))
     func liveFeedback() async throws {
         let companion = OnDeviceCompanionService(fallback: fallback)
-        let own = try await companion.feedback(on: "Ich will kommen morgen um drei Uhr.", in: MockScenarios.dentist, turn: 1)
+        let own = try await companion.feedback(on: "Ich will kommen morgen um drei Uhr.", in: MockScenarios.dentist,
+                                               replyingTo: "Morgen hätten wir um 10:30 Uhr oder um 15 Uhr etwas frei.")
         #expect(own.feedback != MockCompanionService.ownSentenceNote, "Fell back to the sample")
         #expect(!own.feedback.title.isEmpty && !own.english.isEmpty)
     }

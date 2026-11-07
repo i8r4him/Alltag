@@ -13,6 +13,8 @@ struct SummarySheet: View {
     let turns: Int
     let fixes: Int
     var wasLive = false
+    /// Checking a live conversation for mistakes.
+    var review: ConversationModel.LiveReview = .none
     let onPractise: () -> Void
     let onDone: () -> Void
 
@@ -34,7 +36,7 @@ struct SummarySheet: View {
             HStack(spacing: 8) {
                 // The number is shown large, so the labels carry only the words.
                 StatTile(value: turns, label: turns == 1 ? Text("turn spoken") : Text("turns spoken"))
-                if !wasLive { StatTile(value: fixes, label: fixes == 1 ? Text("thing to fix") : Text("things to fix")) }
+                if showsFixes { StatTile(value: fixes, label: fixes == 1 ? Text("thing to fix") : Text("things to fix")) }
                 StatTile(value: scenario.savedPhrases.count,
                          label: scenario.savedPhrases.count == 1 ? Text("phrase saved") : Text("phrases saved"))
             }
@@ -43,8 +45,18 @@ struct SummarySheet: View {
                 .textRole(.bodySmall)
                 .foregroundStyle(.secondary)
 
+            if review == .reviewing {
+                Label {
+                    Text("Checking your German on your iPhone…")
+                } icon: {
+                    ProgressView().controlSize(.small)
+                }
+                .textRole(.bodySmall)
+                .foregroundStyle(.secondary)
+            }
+
             VStack(spacing: 8) {
-                if fixes > 0 {
+                if showsFixes, fixes > 0 {
                     Button(action: onPractise) {
                         Text("Practise your fixes · 1 min")
                     }
@@ -66,6 +78,9 @@ struct SummarySheet: View {
         .presentationDragIndicator(.visible)
         .presentationBackground(.surface)
     }
+
+    /// Scripted conversations always know the fixes; live ones once they've been checked.
+    private var showsFixes: Bool { !wasLive || review == .done }
 
     /// "Saved to Memory: **verschieben**, **wenn mir das passt**."
     private var savedLine: Text {

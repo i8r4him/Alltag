@@ -102,12 +102,45 @@ struct RealtimeConversationTests {
         #expect(model.finishedLiveConversation)
     }
 
-    private func makeModel(realtime: StubRealtimeService, allowed: Bool = true, limit: Duration = .seconds(600)) -> ConversationModel {
+    @Test("A finished live conversation is checked for mistakes on device")
+    func review() async {
+        let realtime = StubRealtimeService()
+        let companion = ReviewingCompanion()
+        let model = makeModel(realtime: realtime, companion: companion)
+        model.orbTapped()
+        await realtime.session.waitUntilRunning()
+        realtime.session.emit?(.transcript(id: "ask", speaker: .companion, text: "Wann möchten Sie kommen?", replacesPrevious: true))
+        realtime.session.emit?(.transcript(id: "say", speaker: .learner, text: "Ich komme morgen.", replacesPrevious: true))
+
+        model.orbTapped()
+        #expect(model.liveReview == .reviewing)
+        await model.waitForReview()
+
+        #expect(model.liveReview == .done)
+        #expect(model.fixCount == 1)
+        #expect(companion.heard == ["Ich komme morgen."])
+        #expect(companion.previous == ["Wann möchten Sie kommen?"])
+    }
+
+    @Test("Without Apple Intelligence a live conversation isn't checked")
+    func noReview() async {
+        let realtime = StubRealtimeService()
+        let model = makeModel(realtime: realtime)
+        model.orbTapped()
+        await realtime.session.waitUntilRunning()
+        realtime.session.emit?(.transcript(id: "say", speaker: .learner, text: "Ich komme morgen.", replacesPrevious: true))
+        model.orbTapped()
+        #expect(model.liveReview == .none)
+        #expect(model.fixCount == 0)
+    }
+
+    private func makeModel(realtime: StubRealtimeService, allowed: Bool = true, limit: Duration = .seconds(600),
+                           companion: (any CompanionService)? = nil) -> ConversationModel {
         let services = AppServices(
             speech: MockSpeechService(wordInterval: .zero),
             voice: MockVoiceService(),
             translation: MockTranslationService(delay: .zero),
-            companion: MockCompanionService(thinkingTime: .zero),
+            companion: companion ?? MockCompanionService(thinkingTime: .zero),
             calendar: MockCalendarService(),
             notifications: MockNotificationService(),
             realtime: realtime
@@ -115,6 +148,23 @@ struct RealtimeConversationTests {
         let timing = ConversationModel.Timing(afterListening: .zero, beforeFinish: .zero, realtimeLimit: limit)
         return ConversationModel(scenario: MockScenarios.dentist, services: services, timing: timing, usesCloudVoice: allowed)
     }
+}
+
+/// An on-device companion that finds one fix in every sentence and remembers what it was asked.
+private final class ReviewingCompanion: CompanionService {
+    private(set) var heard: [String] = []
+    private(set) var previous: [String?] = []
+    var usesOnDeviceModel: Bool { true }
+    func respond(to learnerText: String, in scenario: Scenario, turn: Int) async throws -> CompanionResponse {
+        CompanionResponse()
+    }
+    func feedback(on sentence: String, in scenario: Scenario, replyingTo previous: String?) async throws -> SentenceFeedback {
+        heard.append(sentence)
+        self.previous.append(previous)
+        return SentenceFeedback(feedback: Feedback(kind: .fix, title: "Time first", note: "Morgen komme ich.",
+                                                   correction: "Morgen komme ich."), english: "I'm coming tomorrow.")
+    }
+    func debrief(_ input: String, about moment: Debrief) async throws -> Debrief { moment }
 }
 
 @MainActor

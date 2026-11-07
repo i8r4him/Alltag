@@ -30,8 +30,8 @@ protocol CompanionService: AnyObject {
     /// Responds to the learner's line at `turn` (0-based index into the
     /// scenario's learner turns).
     func respond(to learnerText: String, in scenario: Scenario, turn: Int) async throws -> CompanionResponse
-    /// Judges a sentence the learner said instead of the scripted one at `turn`.
-    func feedback(on sentence: String, in scenario: Scenario, turn: Int) async throws -> SentenceFeedback
+    /// Judges a sentence the learner made up, said in answer to `previous`.
+    func feedback(on sentence: String, in scenario: Scenario, replyingTo previous: String?) async throws -> SentenceFeedback
     /// Suggests how to say what the learner wanted to say during `moment`.
     func debrief(_ input: String, about moment: Debrief) async throws -> Debrief
 }
@@ -59,7 +59,7 @@ final class MockCompanionService: CompanionService {
         return CompanionResponse(feedback: scenario.script[index].feedback, reply: reply)
     }
 
-    func feedback(on sentence: String, in scenario: Scenario, turn: Int) async throws -> SentenceFeedback {
+    func feedback(on sentence: String, in scenario: Scenario, replyingTo previous: String?) async throws -> SentenceFeedback {
         SentenceFeedback(feedback: Self.ownSentenceNote, english: "")
     }
 

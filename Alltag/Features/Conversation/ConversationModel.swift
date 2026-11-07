@@ -72,6 +72,15 @@ final class ConversationModel {
     private var hasFallenBack = false
     private var cloudSession: (any RealtimeConversationSession)?
     private(set) var finishedLiveConversation = false
+    /// Checking a finished live conversation for mistakes.
+    private(set) var liveReview: LiveReview = .none
+    @ObservationIgnored private var reviewTask: Task<Void, Never>?
+
+    enum LiveReview: Equatable {
+        case none
+        case reviewing
+        case done
+    }
     @ObservationIgnored private var listenTask: Task<Void, Never>?
     @ObservationIgnored private var cloudTask: Task<Void, Never>?
     @ObservationIgnored private var cloudDeadline: Task<Void, Never>?
@@ -165,6 +174,17 @@ final class ConversationModel {
         await finishTurn(saying: isCustom ? text : line.german, isCustom: isCustom)
     }
 
+    /// Saves each fix the learner got to Memory › Mistakes, skipping ones already there.
+    /// Returns how many were added.
+    @discardableResult
+    func saveMistakes(in context: ModelContext) -> Int {
+        let items = messages.compactMap { message -> MemoryItem? in
+            guard message.line.speaker == .learner, let feedback = message.line.feedback else { return nil }
+            return MistakePractice.item(said: message.line.german, feedback: feedback, scenario: scenario)
+        }
+        return MistakePractice.save(items, in: context)
+    }
+
     /// Saves the scenario's phrases to Memory, skipping ones already there.
     /// Returns how many were added.
     @discardableResult
@@ -183,6 +203,7 @@ final class ConversationModel {
 
     /// Stops listening and speaking, e.g. when the conversation is closed.
     func stop() {
+        reviewTask?.cancel()
         endCloudSession()
         listenTask?.cancel()
         speech.stopListening()
@@ -245,7 +266,8 @@ final class ConversationModel {
         let response = try? await companion.respond(to: text, in: scenario, turn: learnerTurn)
         var said = ConversationLine(speaker: .learner, german: text, english: line.english, feedback: response?.feedback)
         if isCustom {
-            let own = try? await companion.feedback(on: text, in: scenario, turn: learnerTurn)
+            let previous = messages.last { $0.line.speaker == .companion }?.line.german
+            let own = try? await companion.feedback(on: text, in: scenario, replyingTo: previous)
             said = ConversationLine(speaker: .learner, german: text, english: own?.english ?? "",
                                     feedback: own?.feedback ?? MockCompanionService.ownSentenceNote)
         }
@@ -305,6 +327,11 @@ extension ConversationModel {
 
     func waitForCloudConversation() async {
         await cloudTask?.value
+    }
+
+    /// Waits for the check of a finished live conversation (used by tests).
+    func waitForReview() async {
+        await reviewTask?.value
     }
 
     private func startCloudConversation() {
@@ -380,7 +407,27 @@ extension ConversationModel {
         endCloudSession()
         hasFallenBack = true
         finishedLiveConversation = true
+        if companion.usesOnDeviceModel, turnCount > 0 {
+            liveReview = .reviewing
+            reviewTask = Task { [weak self] in await self?.reviewLiveConversation() }
+        }
         isFinished = true
+    }
+
+    /// Asks the on-device companion about each of the learner's live lines, so
+    /// the transcript and summary show what to fix.
+    private func reviewLiveConversation() async {
+        for index in messages.indices where messages[index].line.speaker == .learner {
+            guard !Task.isCancelled else { return }
+            let line = messages[index].line
+            guard !line.german.isEmpty, line.feedback == nil else { continue }
+            let previous = messages[..<index].last { $0.line.speaker == .companion }?.line.german
+            guard let own = try? await companion.feedback(on: line.german, in: scenario, replyingTo: previous),
+                  own.feedback != MockCompanionService.ownSentenceNote else { continue }
+            messages[index].line = ConversationLine(speaker: .learner, german: line.german,
+                                                    english: own.english, feedback: own.feedback)
+        }
+        liveReview = .done
     }
 
     private func endCloudSession() {

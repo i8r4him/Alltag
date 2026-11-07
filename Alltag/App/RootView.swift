@@ -16,6 +16,7 @@ struct RootView: View {
     @Environment(\.services) private var services
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Query private var profiles: [UserProfile]
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         Group {
@@ -144,7 +145,9 @@ struct RootView: View {
         case .conversation(let id):
             ConversationView(scenario: MockScenarios.scenario(id), level: profiles.first?.level ?? .a1)
         case .activity(let id):
-            ActivityView(activity: MockActivities.activity(id))
+            ActivityView(activity: id == .mistakes
+                         ? MistakePractice.activity(in: modelContext) ?? MockActivities.mistakes
+                         : MockActivities.activity(id))
         case .onboarding:
             OnboardingFlow(model: profiles.first.map { OnboardingModel(profile: $0) } ?? OnboardingModel())
         }

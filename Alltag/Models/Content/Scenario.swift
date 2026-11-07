@@ -66,4 +66,6 @@ struct Feedback: Hashable, Sendable {
     let kind: Kind
     let title: String
     let note: String
+    /// For a fix: the learner's sentence, corrected.
+    var correction: String?
 }

@@ -93,11 +93,16 @@ private struct ConversationContent: View {
                 return
             }
             model.savePhrases(in: modelContext)
+            model.saveMistakes(in: modelContext)
             showsSummary = true
+        }
+        .onChange(of: model.liveReview) { _, review in
+            if review == .done { model.saveMistakes(in: modelContext) }
         }
         .sheet(isPresented: $showsSummary) {
             SummarySheet(scenario: model.scenario, turns: model.turnCount, fixes: model.fixCount,
                          wasLive: model.finishedLiveConversation,
+                         review: model.liveReview,
                          onPractise: {
                              showsSummary = false
                              appState.present(.activity(.mistakes))

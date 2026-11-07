@@ -31,6 +31,8 @@ final class MemoryItem {
     var contextNote: String = ""
     /// Human-readable source, e.g. "Spiegel, today".
     var sourceDetail: String = ""
+    /// For a mistake: what the learner actually said or wrote. `word` holds the correction.
+    var mistakeOriginal: String = ""
     var strength: Int = 0
     var nextReview: Date = Date.now
     var createdAt: Date = Date.now
@@ -48,6 +50,7 @@ final class MemoryItem {
         kind: MemoryKind,
         source: MemorySource,
         sourceDetail: String = "",
+        mistakeOriginal: String = "",
         strength: Int = 0,
         nextReview: Date = .now,
         createdAt: Date = .now
@@ -60,6 +63,7 @@ final class MemoryItem {
         self.kindRaw = kind.rawValue
         self.sourceRaw = source.rawValue
         self.sourceDetail = sourceDetail
+        self.mistakeOriginal = mistakeOriginal
         self.strength = min(max(strength, 0), Self.maxStrength)
         self.nextReview = nextReview
         self.createdAt = createdAt
