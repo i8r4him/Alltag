@@ -5,6 +5,7 @@
       "shouldTranslate" : false
     },
     "%@ allowed" : {},
+    "%@ Safari" : {},
     "%@ · %@" : {
       "localizations" : {
         "en" : {
@@ -29,6 +30,7 @@
     "%lld of 3 allowed" : {},
     "5 min" : {},
     "60-second briefing" : {},
+    "^[%lld new word](inflect: true)" : {},
     "A gentle nudge, never more than twice a day" : {},
     "A rough guess is fine — we adjust as you go." : {},
     "A small daily habit" : {},
@@ -86,12 +88,16 @@
     "Get started" : {},
     "Getting around with confidence" : {},
     "Getting by independently" : {},
+    "Good afternoon, %@." : {},
+    "Good afternoon." : {},
+    "Good evening, %@." : {},
+    "Good evening." : {},
+    "Good morning, %@." : {},
+    "Good morning." : {},
     "Grammar" : {},
     "Grammar rule" : {},
-    "Hallo, %@." : {},
     "Health" : {},
     "Hide actions" : {},
-    "Home is built in #23–#26. Every screen is reachable below." : {},
     "Housing" : {},
     "How is your German today?" : {},
     "How much time on a normal day?" : {},
@@ -129,6 +135,17 @@
     "Precision and style" : {},
     "Profile" : {},
     "Progress" : {},
+    "Ready for your next step?" : {},
+    "Ready for your next step? You picked up %@ while reading in %@ today." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Ready for your next step? You picked up %1$@ while reading in %2$@ today."
+          }
+        }
+      }
+    },
     "Reduce motion" : {},
     "Rehearse before appointments and trips" : {},
     "Rehearse from your Calendar" : {},
@@ -154,7 +171,7 @@
     "Steady progress" : {},
     "Strength" : {},
     "Studies" : {},
-    "there" : {},
+    "Temporary until the Home cards are built (#24–#26)." : {},
     "This flow is built in #%lld." : {},
     "This screen is built in #%lld." : {},
     "This shapes the situations you rehearse and the words we notice." : {},
