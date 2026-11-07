@@ -1,0 +1,89 @@
+# Maps changed paths to labels (actions/labeler v5).
+onboarding:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Onboarding/**'
+home:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Home/**'
+conversation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Conversation/**'
+translate:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Translate/**'
+memory:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Memory/**'
+learn:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Learn/**'
+grammar:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Grammar/**'
+debrief:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Debrief/**'
+briefing:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Briefing/**'
+progress:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Progress/**'
+profile:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Profile/**'
+settings:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Settings/**'
+beyond:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Features/Beyond/**'
+navigation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/App/**'
+design-system:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/DesignSystem/**'
+          - 'Alltag/Components/**'
+services:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Services/**'
+intents:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Intents/**'
+data:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Alltag/Models/**'
+          - 'Alltag/MockData/**'
+watch:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'AlltagWatch/**'
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
+          - '.swiftlint.yml'
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'README.md'
+          - 'screenshots/**'

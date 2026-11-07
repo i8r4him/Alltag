@@ -1,0 +1,39 @@
+name: Bug
+description: Something isn't working
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and OS
+      placeholder: iPhone 17 Pro, iOS 27.1 (Simulator)
+  - type: input
+    id: build
+    attributes:
+      label: Commit or build
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots or logs
