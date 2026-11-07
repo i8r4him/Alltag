@@ -136,13 +136,11 @@ Alltag/                                   ← repo root
 │  │  │  ├─ FromYourDayList.swift
 │  │  │  └─ BeyondRow.swift
 │  │  ├─ Conversation/
-│  │  │  ├─ ConversationView.swift
+│  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls
 │  │  │  ├─ ConversationModel.swift       state machine
-│  │  │  ├─ ConversationHeader.swift
-│  │  │  ├─ TranscriptView.swift
-│  │  │  ├─ MessageRow.swift
+│  │  │  ├─ TranscriptView.swift          companion and learner lines, heard text with caret
 │  │  │  ├─ FeedbackCard.swift
-│  │  │  └─ SummarySheet.swift
+│  │  │  └─ SummarySheet.swift            (#30)
 │  │  ├─ Translate/
 │  │  │  ├─ TranslateView.swift
 │  │  │  ├─ TranslateModel.swift

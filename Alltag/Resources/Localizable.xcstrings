@@ -1,6 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {},
     "%@" : {
       "shouldTranslate" : false
     },
@@ -37,6 +38,16 @@
       }
     },
     "%@ · steadily rising" : {},
+    "%@: %@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@. %3$@"
+          }
+        }
+      }
+    },
     "%lld min" : {},
     "%lld of %lld" : {
       "localizations" : {
@@ -67,6 +78,7 @@
     "Allowed" : {},
     "Alltag" : {},
     "Alltag Keyboard" : {},
+    "Antworte auf Deutsch…" : {},
     "Appointments, neighbours, everyday life" : {},
     "Arabic" : {},
     "Ask about your progress…" : {},
@@ -93,6 +105,7 @@
     "Debrief: find what you couldn't say" : {},
     "Design tokens" : {},
     "Each one is optional. You can change them any time in Settings." : {},
+    "End conversation" : {},
     "English" : {},
     "English ⇄ German" : {},
     "Evening" : {},
@@ -114,6 +127,7 @@
     "Get started" : {},
     "Getting around with confidence" : {},
     "Getting by independently" : {},
+    "Good" : {},
     "Good afternoon, %@." : {},
     "Good afternoon." : {},
     "Good evening, %@." : {},
@@ -124,6 +138,7 @@
     "Grammar rule" : {},
     "Health" : {},
     "Hide actions" : {},
+    "Hides the English" : {},
     "Housing" : {},
     "How did the bakery go?" : {},
     "How is your German today?" : {},
@@ -131,6 +146,7 @@
     "How was your weekend? Pick what you'd naturally say." : {},
     "I get by in most situations" : {},
     "Just starting out" : {},
+    "Keyboard" : {},
     "Keyboard, Siri, widgets & Watch · concepts" : {},
     "Language" : {},
     "Learn" : {},
@@ -147,6 +163,7 @@
     "Memory" : {},
     "Messages · „seit“ or „für“?" : {},
     "Mistake" : {},
+    "Mode" : {},
     "Morning" : {},
     "Most of it happens in small moments anyway." : {},
     "Music" : {},
@@ -155,6 +172,7 @@
     "New" : {},
     "No courses, no streaks. Alltag learns from your day — what you read, write, plan and say — and turns it into a few minutes of practice." : {},
     "Not sure? Find out in one question" : {},
+    "Note" : {},
     "Notifications" : {},
     "Nuance and opinion" : {},
     "Open My Words" : {},
@@ -192,7 +210,9 @@
     "Send" : {},
     "Serious about it" : {},
     "Settings" : {},
+    "Show a hint" : {},
     "Show actions" : {},
+    "Shows the English" : {},
     "Simple everyday conversations" : {},
     "Skip" : {},
     "Solved" : {},
@@ -209,6 +229,7 @@
     "Steady progress" : {},
     "Strength" : {},
     "Studies" : {},
+    "Tap to see English" : {},
     "Tap to speak" : {},
     "Thinking" : {},
     "Thinking…" : {},
@@ -220,7 +241,9 @@
     "Tomorrow" : {},
     "Translate" : {},
     "Travel" : {},
+    "Try saying" : {},
     "Turkish" : {},
+    "Type instead" : {},
     "Ukrainian" : {},
     "Verb at the end" : {},
     "Voice" : {},
@@ -228,6 +251,7 @@
     "What do you care about?" : {},
     "Word" : {},
     "Work" : {},
+    "You" : {},
     "You're learning **German**. What do you speak already?" : {},
     "You're set, %@." : {},
     "Your 60-second briefing" : {},
