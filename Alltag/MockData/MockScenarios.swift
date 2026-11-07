@@ -25,7 +25,8 @@ enum MockScenarios {
         meta: "German · B1 · phone call",
         goal: "Goal: move your appointment to tomorrow",
         completion: "You moved the appointment.",
-        savedPhrases: ["verschieben", "wenn mir das passt"],
+        savedPhrases: [SavedPhrase(german: "verschieben", english: "to postpone, move"),
+                       SavedPhrase(german: "wenn mir das passt", english: "if that suits me — verb last")],
         systemImage: "cross.case",
         script: [
             ConversationLine(speaker: .companion,
@@ -56,7 +57,8 @@ enum MockScenarios {
         meta: "German · B1 · at the counter",
         goal: "Goal: send a package back",
         completion: "You sent the package back.",
-        savedPhrases: ["zurückschicken", "auf meinem Handy"],
+        savedPhrases: [SavedPhrase(german: "zurückschicken", english: "to send back"),
+                       SavedPhrase(german: "auf meinem Handy", english: "on my phone — dative after auf")],
         systemImage: "shippingbox",
         script: [
             ConversationLine(speaker: .companion,
@@ -87,7 +89,8 @@ enum MockScenarios {
         meta: "German · B1 · ticket desk",
         goal: "Goal: buy a return ticket to Munich",
         completion: "Your Munich trip is booked.",
-        savedPhrases: ["hin und zurück", "abfahren"],
+        savedPhrases: [SavedPhrase(german: "hin und zurück", english: "return (there and back)"),
+                       SavedPhrase(german: "abfahren", english: "to depart — separable")],
         systemImage: "tram",
         script: [
             ConversationLine(speaker: .companion,

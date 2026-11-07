@@ -5,6 +5,7 @@
 //  Created by Ibrahim Abdullah on 07.11.26.
 //
 
+import SwiftData
 import SwiftUI
 
 /// A full-screen conversation for one scenario.
@@ -31,7 +32,9 @@ struct ConversationView: View {
 private struct ConversationContent: View {
     @Bindable var model: ConversationModel
     @Environment(AppState.self) private var appState
+    @Environment(\.modelContext) private var modelContext
     @FocusState private var isFieldFocused: Bool
+    @State private var showsSummary = false
 
     var body: some View {
         NavigationStack {
@@ -68,6 +71,22 @@ private struct ConversationContent: View {
             if let label { AccessibilityNotification.Announcement(String(localized: label)).post() }
         }
         .onChange(of: model.mode) { _, mode in isFieldFocused = mode == .text }
+        .onChange(of: model.isFinished) { _, finished in
+            guard finished else { return }
+            model.savePhrases(in: modelContext)
+            showsSummary = true
+        }
+        .sheet(isPresented: $showsSummary) {
+            SummarySheet(scenario: model.scenario, turns: model.turnCount, fixes: model.fixCount,
+                         onPractise: {
+                             showsSummary = false
+                             appState.present(.activity(.mistakes))
+                         },
+                         onDone: {
+                             showsSummary = false
+                             appState.dismissFullScreen()
+                         })
+        }
     }
 
     @ToolbarContentBuilder

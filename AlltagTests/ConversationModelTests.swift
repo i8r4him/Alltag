@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 import Testing
 @testable import Alltag
 
@@ -132,5 +133,33 @@ struct ConversationModelTests {
     @Test("Sentences are compared without case and punctuation")
     func normalized() {
         #expect(ConversationModel.normalized("Wann fährt der Zug ab?") == ConversationModel.normalized("wann FÄHRT der zug ab"))
+    }
+
+    @Test("Finishing saves new phrases to Memory once, with meaning and example")
+    func savePhrases() throws {
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let context = container.mainContext
+        try AlltagStore.seedSampleDataIfEmpty(context)
+
+        // The dentist's phrases are already in the sample Memory.
+        #expect(makeModel(MockScenarios.dentist).savePhrases(in: context) == 0)
+
+        let postOffice = makeModel(MockScenarios.postOffice)
+        #expect(postOffice.savePhrases(in: context) == 2)
+        #expect(postOffice.savePhrases(in: context) == 0)
+
+        let items = try context.fetch(FetchDescriptor<MemoryItem>())
+        let saved = try #require(items.first { $0.word == "zurückschicken" })
+        #expect(saved.meaning == "to send back")
+        #expect(saved.kind == .saved)
+        #expect(saved.source == .conversation)
+        #expect(saved.context == "Ich möchte dieses Paket zurückschicken.")
+        #expect(items.count == 12)
+    }
+
+    @Test("Every scenario saves two phrases, each with an English meaning", arguments: MockScenarios.all)
+    func savedPhrasesHaveMeanings(scenario: Scenario) {
+        #expect(scenario.savedPhrases.count == 2)
+        #expect(scenario.savedPhrases.allSatisfy { !$0.english.isEmpty })
     }
 }
