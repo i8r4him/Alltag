@@ -197,7 +197,7 @@ private final class StubRealtimeAudio: RealtimeAudio {
 
     func requestPermission() async -> Bool { true }
 
-    func start() throws -> AsyncThrowingStream<Data, any Error> {
+    func start() async throws -> AsyncThrowingStream<Data, any Error> {
         starts += 1
         samples.continuation.yield(Data([5, 6]))
         return samples.stream

@@ -10,7 +10,7 @@ import AVFoundation
 protocol RealtimeAudio: AnyObject {
     var hasPlayback: Bool { get }
     func requestPermission() async -> Bool
-    func start() throws -> AsyncThrowingStream<Data, any Error>
+    func start() async throws -> AsyncThrowingStream<Data, any Error>
     func play(_ data: Data, item: String, onPlayed: @escaping @MainActor @Sendable () -> Void) throws
     func interrupt() -> (item: String, milliseconds: Int)?
     func stop()
@@ -37,10 +37,11 @@ final class SystemRealtimeAudio: RealtimeAudio {
         await AVAudioApplication.requestRecordPermission()
     }
 
-    func start() throws -> AsyncThrowingStream<Data, any Error> {
+    func start() async throws -> AsyncThrowingStream<Data, any Error> {
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetoothHFP])
-        try session.setActive(true)
+        // Activating blocks while the hardware switches over; the async API keeps the UI responsive.
+        guard try await session.activate(options: []) else { throw RealtimeServiceError.unavailable }
         isActive = true
         try engine.inputNode.setVoiceProcessingEnabled(true)
 
@@ -111,8 +112,8 @@ final class SystemRealtimeAudio: RealtimeAudio {
         clearPlayback()
         removeTap()
         engine.stop()
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         isActive = false
+        Task { _ = try? await AVAudioSession.sharedInstance().deactivate(options: .notifyOthersOnDeactivation) }
     }
 
     private func clearPlayback() {
