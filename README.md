@@ -164,7 +164,8 @@ Alltag/                                   ← repo root
 │  │  │  ├─ DebriefView.swift             input, Find the words, Next time say, Save to phrasebook
 │  │  │  └─ DebriefModel.swift            phases, companion, saving to the Phrasebook
 │  │  ├─ Briefing/
-│  │  │  └─ BriefingView.swift
+│  │  │  ├─ BriefingView.swift            player with equalizer, highlighted transcript, word chips
+│  │  │  └─ BriefingModel.swift           playback, highlighting, Memory labels
 │  │  ├─ Progress/
 │  │  │  ├─ ProgressOverviewView.swift    not `ProgressView` — clashes with SwiftUI
 │  │  │  ├─ CEFRTrack.swift
