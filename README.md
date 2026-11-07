@@ -155,11 +155,10 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ActivityView.swift            native toolbar (close, segments), options, audio, done
 │  │  │  └─ ActivityModel.swift           one pick per question, scoring, audio
 │  │  ├─ Grammar/
-│  │  │  ├─ GrammarView.swift
-│  │  │  ├─ TopicRow.swift
-│  │  │  ├─ RuleView.swift
-│  │  │  ├─ RuleModel.swift
-│  │  │  └─ WordOrderTask.swift
+│  │  │  ├─ GrammarView.swift             mistakes focus, native level picker, topics with status dots
+│  │  │  ├─ GrammarProgress.swift         solved status and counts (tested)
+│  │  │  ├─ RuleView.swift                (#37)
+│  │  │  └─ RuleModel.swift               (#38)
 │  │  ├─ Debrief/
 │  │  │  ├─ DebriefView.swift
 │  │  │  └─ DebriefModel.swift
