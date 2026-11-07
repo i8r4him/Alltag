@@ -128,7 +128,7 @@ Alltag/                                   ← repo root
 │  │  │     └─ SummaryStep.swift
 │  │  ├─ Home/
 │  │  │  ├─ HomeView.swift
-│  │  │  ├─ HomeTopBar.swift
+│  │  │  ├─ HomeHeader.swift              Avatar, greeting (toolbar is native: .toolbar)
 │  │  │  ├─ FocusCard.swift
 │  │  │  ├─ ComingUpCard.swift
 │  │  │  ├─ EntryGrid.swift

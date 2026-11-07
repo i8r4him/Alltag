@@ -1,34 +1,11 @@
 //
-//  HomeTopBar.swift
+//  HomeHeader.swift
 //  Alltag
 //
 //  Created by Ibrahim Abdullah on 07.11.26.
 //
 
 import SwiftUI
-
-/// Avatar (→ Profile) and settings (→ Settings) above the greeting.
-struct HomeTopBar: View {
-    let name: String
-    let onProfile: () -> Void
-    let onSettings: () -> Void
-
-    var body: some View {
-        HStack {
-            Button(action: onProfile) {
-                Avatar(name: name, diameter: 36)
-                    .frame(width: Spacing.minTouchTarget, height: Spacing.minTouchTarget)
-                    .contentShape(.circle)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Profile")
-
-            Spacer()
-
-            GlassButton(systemImage: "gearshape", accessibilityLabel: "Settings", action: onSettings)
-        }
-    }
-}
 
 /// The learner's initial in a circle, or a person symbol without a name.
 struct Avatar: View {
@@ -82,7 +59,7 @@ struct HomeGreetingView: View {
 
 #Preview {
     VStack(alignment: .leading, spacing: 20) {
-        HomeTopBar(name: "Mara", onProfile: {}, onSettings: {})
+        Avatar(name: "Mara")
         HomeGreetingView(name: "Mara", newWords: 3)
         HomeGreetingView(name: "Mara", newWords: 1)
         HomeGreetingView(name: "", newWords: 0)

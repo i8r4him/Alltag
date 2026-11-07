@@ -22,12 +22,7 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
-                VStack(alignment: .leading, spacing: 20) {
-                    HomeTopBar(name: name,
-                               onProfile: { appState.open(.profile) },
-                               onSettings: { appState.open(.settings) })
-                    HomeGreetingView(name: name, newWords: HomeGreeting.newReadingWords(in: memoryItems))
-                }
+                HomeGreetingView(name: name, newWords: HomeGreeting.newReadingWords(in: memoryItems))
                 VStack(spacing: Spacing.grid) {
                     FocusCard { appState.present(.conversation(.dentist)) }
                     if !events.isEmpty {
@@ -49,7 +44,20 @@ struct HomeView: View {
             .padding(Spacing.screen)
         }
         .background(.screenBackground)
-        .toolbar(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button { appState.open(.profile) } label: {
+                    Avatar(name: name, diameter: 36)
+                }
+                .accessibilityLabel("Profile")
+            }
+            // A plain circle, as in the design, instead of a glass capsule.
+            .sharedBackgroundVisibility(.hidden)
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Settings", systemImage: "gearshape") { appState.open(.settings) }
+            }
+        }
         .smartBar(.home)
         .task { events = (try? await services.calendar.upcomingEvents()) ?? [] }
     }
