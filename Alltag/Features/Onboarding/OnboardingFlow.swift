@@ -27,46 +27,49 @@ struct OnboardingFlow: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            topBar
-                .opacity(model.showsTopBar ? 1 : 0)
-                .disabled(!model.showsTopBar)
-                .accessibilityHidden(!model.showsTopBar)
+        NavigationStack {
+            VStack(spacing: 0) {
+                ZStack {
+                    stepView
+                        .padding(.top, 12)
+                        .id(model.step)
+                        .transition(transition)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .clipped()
 
-            ZStack {
-                stepView
-                    .padding(.top, 28)
-                    .id(model.step)
-                    .transition(transition)
+                Button(action: continueTapped) {
+                    Text(model.continueTitle)
+                }
+                .buttonStyle(.primary)
+                .disabled(!model.canContinue)
+                .padding(.bottom, 8)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .clipped()
-
-            Button(action: continueTapped) {
-                Text(model.continueTitle)
-            }
-            .buttonStyle(.primary)
-            .disabled(!model.canContinue)
-            .padding(.bottom, 8)
+            .padding(.horizontal, Spacing.onboarding)
+            .background(.screenBackground)
+            .navigationBarTitleDisplayMode(.inline)
+            // The bar stays on every step so the layout doesn't jump;
+            // its items only show between Welcome and Summary.
+            .toolbar { toolbarContent }
         }
-        .padding(.horizontal, Spacing.onboarding)
-        .background(.screenBackground)
         .animation(Motion.push(reduceMotion: reducesMotion), value: model.step)
         .sensoryFeedback(.selection, trigger: model.step)
     }
 
-    private var topBar: some View {
-        HStack(spacing: 12) {
-            GlassButton(systemImage: "chevron.left", accessibilityLabel: "Back", diameter: 40) {
-                model.goBack()
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        if model.showsTopBar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Back", systemImage: "chevron.left") { model.goBack() }
             }
-            ProgressSegments(total: OnboardingModel.segmentCount, completed: model.completedSegments, height: 4)
-            Button("Skip", action: finish)
-                .textRole(.bodySmall)
-                .foregroundStyle(.secondary)
-                .frame(minHeight: Spacing.minTouchTarget)
+            ToolbarItem(placement: .principal) {
+                ProgressSegments(total: OnboardingModel.segmentCount, completed: model.completedSegments, height: 4)
+                    .frame(width: 180)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Skip", action: finish)
+            }
         }
-        .padding(.top, 4)
     }
 
     @ViewBuilder
