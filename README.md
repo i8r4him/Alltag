@@ -1,7 +1,16 @@
 # Handoff: Alltag — iOS Language-Learning Companion (Prototype v0.1)
 
 ## Overview
-Alltag ("everyday") is an ambient German-learning companion for iPhone: *"Learn German through the life you're already living."* The app turns everyday activity (reading, writing, Calendar events, conversations) into short practice. This bundle documents the first interactive design prototype so it can be rebuilt natively in **Swift + SwiftUI** (iOS 26 SDK, Liquid Glass where noted).
+Alltag ("everyday") is an ambient German-learning companion: *"Learn German through the life you're already living."* The app turns everyday activity (reading, writing, Calendar events, conversations) into short practice. This bundle documents the first interactive design prototype so it can be rebuilt natively in **Swift + SwiftUI** (iOS 27+ SDK, Liquid Glass where noted).
+
+### Platforms
+| Platform | Minimum | Notes |
+|---|---|---|
+| iPhone | iOS 27 | Primary design target — every screen in this document is designed for iPhone. |
+| Foldable iPhone | iOS 27 | Same app; layouts must adapt to the unfolded width via size classes. |
+| iPad | iPadOS 27 | Same app; adaptive layouts (wider content, `NavigationSplitView` where it helps). |
+| Apple Watch | watchOS 27 | Separate watchOS target — companion only (1-minute challenge, word review). Not designed yet. |
+Apple Vision Pro is **not** supported. The design reference is a 393×852 iPhone frame; larger sizes are derived from it.
 
 ## About the Design Files
 `Alltag Prototype.dc.html` is a **design reference built in HTML** — it shows intended look, copy, and behaviour. It is **not** production code. Recreate it in a new Xcode project using SwiftUI, SF Symbols, native materials, and Apple's navigation/animation systems. No third-party UI libraries. Open the HTML in Safari/Chrome (keep `support.js` next to it) and click through the phone; the left panel jumps to any screen.
@@ -12,7 +21,7 @@ Alltag ("everyday") is an ambient German-learning companion for iPhone: *"Learn 
 ---
 
 ## Getting started in Xcode
-1. Xcode → New Project → iOS App · Interface: SwiftUI · Language: Swift · Storage: SwiftData (for later). Name: `Alltag`.
+1. The Xcode project `Alltag` exists (iOS App · SwiftUI · Swift). Persistence uses **SwiftData** — add the `ModelContainer` in `AlltagApp` with the first `@Model` types (user profile, memory items, phrasebook, solved rules, saved translations). The Watch app is added later as a separate watchOS target.
 2. Create the folder structure below (groups in Xcode).
 3. Build `DesignSystem/` first (tokens + reusable components), then `Home`, then each feature.
 4. Use `NavigationStack(path:)` with an `enum Route: Hashable` — **no TabView**.
@@ -35,7 +44,7 @@ Alltag/
     Grammar/      GrammarView, RuleView (word-order task)
     Debrief/      DebriefView
     Briefing/     BriefingView
-    Progress/     ProgressView
+    Progress/     ProgressOverviewView (not `ProgressView` — that name clashes with SwiftUI's spinner)
     Profile/      ProfileView
     Settings/     SettingsView
     Beyond/       BeyondView (concept previews only)
@@ -45,7 +54,13 @@ Alltag/
 ---
 
 ## Design Tokens
-**Colours (dark only)**
+**Colours — light and dark**
+The app supports **both appearances** and follows the system setting. The prototype was designed in dark mode, so the values below are the **dark** values. For light mode:
+- Neutrals (background, surfaces, labels, separators) map to iOS semantic colours, which adapt automatically: `systemBackground`, `secondarySystemBackground`, `tertiarySystemBackground`, `systemFill`, `label`, `secondaryLabel`, `tertiaryLabel`, `separator`.
+- Accent, success and mistake are colour sets in the asset catalog with a dark and a light variant. The light variants need to be darker so they keep enough contrast on white (to be defined and checked against WCAG AA).
+- Glass surfaces use native materials / `.glassEffect()`, which adapt on their own.
+
+Dark values:
 | Token | Value |
 |---|---|
 | background | `#000000` |
@@ -76,11 +91,11 @@ Accent tints: accent @ 0.10–0.22 opacity for selected backgrounds and soft rad
 | Conversation AI line | 23 / semibold / −0.4 |
 | Meta / caption | 12–13 |
 | Eyebrow | 13 / semibold / +0.07em uppercase (accent or coral) |
-Support Dynamic Type — use text styles (`.largeTitle`, `.title2`, `.headline`, `.body`, `.footnote`) rather than fixed sizes.
+Support Dynamic Type. The sizes above are the values at the default text size. In code, every role maps to the closest text style (`.largeTitle`, `.title`, `.title2`, `.title3`, `.headline`, `.body`, `.footnote`, `.caption`) plus weight/tracking — small differences from the exact sizes are accepted. Sizes with no matching style (Hero 44, AI line 23) use a custom size with `relativeTo:` so they still scale.
 
 **Radii:** hero cards 28 · cards 24 · inner cards 20 · tiles 16–20 · option buttons 18 · chips/pills full · glass buttons circle (36–48). Use `.continuous` corner style.
 **Spacing:** screen padding 16 (onboarding 20) · card padding 16–22 · grid gap 12 · row height ≥ 50 · touch targets ≥ 44.
-**Phone frame reference:** 393×852 (iPhone 15/16 Pro).
+**Phone frame reference:** 393×852 (iPhone 15/16 Pro). Foldable iPhone and iPad use the same tokens with adaptive layouts (wider max content width, more grid columns).
 
 ---
 
@@ -103,7 +118,7 @@ Floating glass capsule, 12pt from sides, 28pt above home indicator, height 56, r
 ## Screens
 
 ### Onboarding (8 steps, full-screen)
-Top: back glass button · 6 progress segments (accent filled) · "Skip". Bottom: full-width 54pt accent capsule CTA.
+Top: back glass button · 6 progress segments (accent filled) · "Skip". The segments cover steps 1–6 only; Welcome (0) and Summary (7) have no progress bar. Bottom: full-width 54pt accent capsule CTA.
 0 Welcome — eyebrow "ALLTAG", hero "Learn German through the life you already live.", soft amber radial glow. CTA "Get started".
 1 Name (text field, required — CTA disabled when empty) + native language grid (English, Arabic, Turkish, Spanish, Ukrainian, Other).
 2 Why — option cards with icon + subtitle (Living here, Work, Partner & family, Studies, Travel).
@@ -116,7 +131,7 @@ Option card: min-height 60, radius 18, `#1C1C1E`; selected = accent 10% fill + a
 
 ### Home
 Top bar: avatar (36, → Profile) · gear glass button (→ Settings).
-Greeting "Good evening, {name}." + subtitle with inline bold "3 new words" and globe symbol "Safari".
+Greeting by time of day ("Good morning / afternoon / evening, {name}.") + subtitle with inline bold "3 new words" and globe symbol "Safari".
 1. **Today's Focus** card (radius 28, min-h 214, amber glow): eyebrow "TODAY'S FOCUS", "5 min" pill, "Speak German", "Real-life conversation · Moving an appointment", 56pt accent play circle (graphic_eq). → Conversation (dentist).
 2. **Coming up** card — "Rehearse from your Calendar"; horizontally scrolling tiles 132×96 (snap): Dentist (TOMORROW, 10:00), Train to Munich (Fri 9:12), Return package (Sat). Each → its Conversation scenario.
 3. **2×2 grid** (124pt tall cards): Translate · Learn · Memory · Progress (icon top, title + status bottom).
@@ -131,7 +146,7 @@ Bottom: keyboard button · **Voice Orb** (132pt) · hint (lightbulb) button; sta
 **State machine:** idle → (tap) listening (words appear one at a time, 230ms, amber caret) → thinking (orb scales 0.8, amber spinner ring) → AI reply appended → speaking (orb wobble 1.1s) → idle. After last line → summary sheet (2 turns · 1 fix · 2 phrases saved; CTA "Practise your fixes · 1 min", "Done").
 Orb: idle = grey-white radial sphere with mic, slow breathe 4s; active = warm amber radial + glow; listening = 2 expanding rings 1.6s.
 Text mode: field "Antworte auf Deutsch…" + accent send. Scenarios: dentist, post office, train (see MockData in HTML `SCEN`).
-Native: `Speech` (SFSpeechRecognizer de-DE), `AVSpeechSynthesizer`, haptics on state changes.
+Native: `Speech` (`SpeechAnalyzer` + `SpeechTranscriber`, de-DE — the newer API that replaces `SFSpeechRecognizer`), `AVSpeechSynthesizer`, haptics on state changes.
 
 ### Translate
 Language capsule (English ⇄ German, swap), source card (editable), result card `#232325` with Listen / Slowly / bookmark save (toast "Saved to Memory"). Sections: Word by word (word, grammar note, meaning), Tone (Formal / Neutral — accent / Casual), In context (tap to hear). Unknown input → honest note: live translation will use Apple's Translation framework.
