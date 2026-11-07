@@ -11,24 +11,25 @@ concurrency:
 
 jobs:
   build:
-    name: Build
+    name: Build & Test
     runs-on: [self-hosted, macOS]
     timeout-minutes: 30
+    env:
+      SIMULATOR: iPhone 18 Pro
     steps:
       - uses: actions/checkout@v7
 
       - name: Xcode version
         run: xcodebuild -version
 
-      # Switches to `xcodebuild test` with a shared scheme once AlltagTests exists (M0).
-      - name: Build for iOS Simulator
+      - name: Build and test on iOS Simulator
         run: |
           set -o pipefail
-          xcodebuild build \
+          xcodebuild test \
             -project Alltag.xcodeproj \
-            -target Alltag \
-            -sdk iphonesimulator \
-            -configuration Debug \
+            -scheme Alltag \
+            -destination "platform=iOS Simulator,name=${SIMULATOR}" \
+            -derivedDataPath DerivedData \
             CODE_SIGNING_ALLOWED=NO \
-            | tee build.log | grep -E "error:|warning:|BUILD (SUCCEEDED|FAILED)" || true
-          grep -q "BUILD SUCCEEDED" build.log
+            | tee test.log | grep -E "error:|warning:|Test case|TEST (SUCCEEDED|FAILED)" || true
+          grep -q "TEST SUCCEEDED" test.log
