@@ -161,8 +161,8 @@ Alltag/                                   ← repo root
 │  │  │  ├─ RuleModel.swift               word-order task, check, solved
 │  │  │  └─ WordOrderTask.swift           "Try it" with tiles, Check, Mark as solved
 │  │  ├─ Debrief/
-│  │  │  ├─ DebriefView.swift
-│  │  │  └─ DebriefModel.swift
+│  │  │  ├─ DebriefView.swift             input, Find the words, Next time say, Save to phrasebook
+│  │  │  └─ DebriefModel.swift            phases, companion, saving to the Phrasebook
 │  │  ├─ Briefing/
 │  │  │  └─ BriefingView.swift
 │  │  ├─ Progress/

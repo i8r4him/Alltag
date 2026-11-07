@@ -13,6 +13,7 @@ import SwiftUI
 struct RootView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.services) private var services
     @Query private var profiles: [UserProfile]
 
     var body: some View {
@@ -53,6 +54,8 @@ struct RootView: View {
             LearnView()
         case .grammar:
             GrammarView()
+        case .debrief:
+            DebriefView(services: services)
         case .rule(let id):
             if let rule = MockRules.rule(id: id) {
                 RuleView(rule: rule)
