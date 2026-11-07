@@ -25,23 +25,6 @@ enum Route: Hashable {
 }
 
 extension Route {
-    /// Title and building issue for the placeholder shown until the screen exists.
-    var placeholder: (title: LocalizedStringResource, issue: Int) {
-        switch self {
-        case .translate: ("Translate", 31)
-        case .memory: ("Memory", 32)
-        case .learn: ("Learn", 34)
-        case .grammar: ("Grammar", 36)
-        case .rule: ("Rule", 37)
-        case .progress: ("Progress", 41)
-        case .profile: ("Profile", 42)
-        case .settings: ("Settings", 43)
-        case .beyond: ("Beyond the app", 44)
-        case .debrief: ("Debrief", 39)
-        case .briefing: ("Briefing", 40)
-        }
-    }
-
     /// The Smart Bar shown on this screen, if any.
     var smartBarContext: SmartBarContext? {
         switch self {

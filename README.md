@@ -41,8 +41,7 @@ Alltag/                                   ← repo root
 │  │  ├─ AppSettings.swift                device settings in UserDefaults (motion, speech, Pro)
 │  │  ├─ AppServices.swift                all services; .live() for the app, .mock() for previews/tests
 │  │  ├─ Route.swift                      enum Route: Hashable
-│  │  ├─ RootView.swift                   NavigationStack(path:), covers, onboarding gate
-│  │  └─ PlaceholderScreens.swift         stand-ins until each screen is built
+│  │  └─ RootView.swift                   NavigationStack(path:), covers, onboarding gate
 │  │
 │  ├─ DesignSystem/
 │  │  ├─ Tokens/
