@@ -20,7 +20,7 @@ enum MockPlacement {
     )
 
     /// Confirmation shown after picking an answer.
-    static func confirmation(for level: Level) -> String {
+    static func confirmation(for level: Level) -> LocalizedStringResource {
         "Sounds like \(level.rawValue). We'll fine-tune it in your first conversations."
     }
 }

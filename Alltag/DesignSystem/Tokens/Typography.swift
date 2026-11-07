@@ -99,11 +99,18 @@ private struct TextRoleModifier: ViewModifier {
         _size = ScaledMetric(wrappedValue: role.size, relativeTo: role.textStyle)
     }
 
+    @ViewBuilder
     func body(content: Content) -> some View {
-        content
+        let styled = content
             .font(.system(size: size, weight: role.weight))
             .tracking(role.tracking * size / role.size)
-            .textCase(role.isUppercased ? .uppercase : nil)
+        // Only set the text case when the role needs it: `.textCase(nil)` would
+        // override an outer `.textCase(.uppercase)`.
+        if role.isUppercased {
+            styled.textCase(.uppercase)
+        } else {
+            styled
+        }
     }
 }
 

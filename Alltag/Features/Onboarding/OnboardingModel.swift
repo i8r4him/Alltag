@@ -44,6 +44,12 @@ final class OnboardingModel {
     var allowsNotifications = false
     var usesKeyboard = false
 
+    // Level step: the one-question placement test
+    /// Whether the placement question replaces the level list.
+    private(set) var isPlacing = false
+    /// The answer picked in the placement test, if any.
+    private(set) var placementAnswer: PlacementQuestion.Answer?
+
     init() {}
 
     /// Starts from an existing profile, e.g. when replaying onboarding from Settings.
@@ -86,6 +92,7 @@ final class OnboardingModel {
         guard let next = Step(rawValue: step.rawValue + 1) else { return true }
         isMovingForward = true
         step = next
+        resetPlacement()
         return false
     }
 
@@ -93,6 +100,24 @@ final class OnboardingModel {
         guard let previous = Step(rawValue: step.rawValue - 1) else { return }
         isMovingForward = false
         step = previous
+        resetPlacement()
+    }
+
+    /// Shows the placement question instead of the level list.
+    func startPlacement() {
+        placementAnswer = nil
+        isPlacing = true
+    }
+
+    /// Picks a placement answer, which sets the level.
+    func choosePlacement(_ answer: PlacementQuestion.Answer) {
+        placementAnswer = answer
+        level = answer.level
+    }
+
+    private func resetPlacement() {
+        isPlacing = false
+        placementAnswer = nil
     }
 
     /// Writes the answers to `existing`, or inserts a new profile, and marks
