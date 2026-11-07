@@ -18,13 +18,13 @@ struct AppServices {
     let calendar: any CalendarService
     let notifications: any NotificationService
 
-    /// Phase 1: real voice, everything else simulated.
+    /// Real voice and the on-device companion; everything else simulated.
     static func live() -> AppServices {
         AppServices(
             speech: MockSpeechService(),
             voice: SystemVoiceService(),
             translation: MockTranslationService(),
-            companion: MockCompanionService(),
+            companion: OnDeviceCompanionService(),
             calendar: MockCalendarService(),
             notifications: MockNotificationService()
         )

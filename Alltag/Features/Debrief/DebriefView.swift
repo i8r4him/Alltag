@@ -123,7 +123,9 @@ private struct DebriefContent: View {
             }
             .buttonStyle(.card)
 
-            Text("A sample answer for now. Live debriefs will use on-device language models.")
+            Text(model.usesOnDeviceModel
+                 ? "Suggested privately on device by Apple Intelligence. Check anything important."
+                 : "A sample answer. Turn on Apple Intelligence for debriefs of your own moments.")
                 .textRole(.caption)
                 .foregroundStyle(.tertiary)
                 .multilineTextAlignment(.center)

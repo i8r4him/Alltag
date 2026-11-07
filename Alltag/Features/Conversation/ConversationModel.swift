@@ -176,8 +176,12 @@ final class ConversationModel {
         heardText = ""
 
         let response = try? await companion.respond(to: text, in: scenario, turn: learnerTurn)
-        let feedback = isCustom ? Self.customFeedback : response?.feedback
-        let said = ConversationLine(speaker: .learner, german: text, english: isCustom ? "" : line.english, feedback: feedback)
+        var said = ConversationLine(speaker: .learner, german: text, english: line.english, feedback: response?.feedback)
+        if isCustom {
+            let own = try? await companion.feedback(on: text, in: scenario, turn: learnerTurn)
+            said = ConversationLine(speaker: .learner, german: text, english: own?.english ?? "",
+                                    feedback: own?.feedback ?? MockCompanionService.ownSentenceNote)
+        }
         messages.append(Message(line: said, isCustom: isCustom))
         learnerTurn += 1
 
@@ -196,12 +200,6 @@ final class ConversationModel {
             isFinished = true
         }
     }
-
-    private static let customFeedback = Feedback(
-        kind: .note,
-        title: String(localized: "Prototype"),
-        note: String(localized: "Feedback on your own sentences arrives with on-device language models.")
-    )
 
     /// Lowercased letters, digits and spaces only, for comparing sentences.
     static func normalized(_ text: String) -> String {
