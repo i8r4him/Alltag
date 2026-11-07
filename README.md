@@ -40,7 +40,8 @@ Alltag/                                   ← repo root
 │  │  ├─ AppState.swift                   @Observable: user, settings, permissions, isPro
 │  │  ├─ AppServices.swift                bundles all services; mock or live
 │  │  ├─ Route.swift                      enum Route: Hashable
-│  │  └─ RootView.swift                   NavigationStack(path:), covers, onboarding gate
+│  │  ├─ RootView.swift                   NavigationStack(path:), covers, onboarding gate
+│  │  └─ PlaceholderScreens.swift         stand-ins until each screen is built
 │  │
 │  ├─ DesignSystem/
 │  │  ├─ Tokens/
