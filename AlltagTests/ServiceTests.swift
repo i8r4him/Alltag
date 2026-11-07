@@ -14,10 +14,10 @@ import Testing
 @MainActor
 struct ServiceTests {
     @Test("Simulated speech reveals the expected line one word at a time")
-    func speechRevealsWords() async {
+    func speechRevealsWords() async throws {
         let speech = MockSpeechService(wordInterval: .zero)
         var transcripts: [String] = []
-        for await partial in speech.listen(expected: "Können wir den Termin verschieben?") {
+        for try await partial in speech.listen(expected: "Können wir den Termin verschieben?") {
             transcripts.append(partial)
         }
         #expect(transcripts == [

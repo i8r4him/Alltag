@@ -18,16 +18,25 @@ struct AppServices {
     let calendar: any CalendarService
     let notifications: any NotificationService
 
-    /// Real voice and the on-device companion; everything else simulated.
+    /// Real speech, voice and the on-device companion; everything else simulated.
     static func live() -> AppServices {
         AppServices(
-            speech: MockSpeechService(),
+            speech: liveSpeech(),
             voice: SystemVoiceService(),
             translation: MockTranslationService(),
             companion: OnDeviceCompanionService(),
             calendar: MockCalendarService(),
             notifications: MockNotificationService()
         )
+    }
+
+    /// The simulator can't recognise speech, so it keeps the simulated listening.
+    private static func liveSpeech() -> any SpeechService {
+        #if targetEnvironment(simulator)
+        MockSpeechService()
+        #else
+        SystemSpeechService()
+        #endif
     }
 
     /// Fully simulated and silent, for previews and tests.

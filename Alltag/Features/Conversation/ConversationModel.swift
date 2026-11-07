@@ -52,6 +52,8 @@ final class ConversationModel {
     var showsHint = false
     /// The text field in text mode.
     var draft = ""
+    /// Shown as a toast, e.g. when nothing was heard.
+    var notice: ToastMessage?
     /// Slower speech (Settings · Accessibility).
     var speechRate: SpeechRate = .normal
 
@@ -161,13 +163,41 @@ final class ConversationModel {
         guard let line = expectedLine else { return }
         phase = .listening
         heardText = ""
-        for await partial in speech.listen(expected: line.german) {
-            heardText = partial
+        do {
+            for try await partial in speech.listen(expected: line.german) {
+                heardText = partial
+            }
+        } catch {
+            stopListening(notice: notice(for: error))
+            return
         }
-        if heardText == line.german {
+        guard !Task.isCancelled else { return }
+
+        let heard = heardText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !heard.isEmpty else {
+            stopListening(notice: ToastMessage(text: "I didn't catch that. Tap and try again.", systemImage: "ear"))
+            return
+        }
+        let isScripted = Self.isScripted(heard, line.german)
+        if heard == line.german {
             try? await Task.sleep(for: timing.afterListening)
         }
-        await finishTurn(saying: line.german, isCustom: false)
+        await finishTurn(saying: isScripted ? line.german : heard, isCustom: !isScripted)
+    }
+
+    private func stopListening(notice: ToastMessage) {
+        phase = .idle
+        heardText = ""
+        self.notice = notice
+    }
+
+    /// When listening isn't possible, the keyboard takes over.
+    private func notice(for error: any Error) -> ToastMessage {
+        mode = .text
+        let text: LocalizedStringResource = (error as? SpeechError) == .notAuthorized
+            ? "Allow the microphone and speech recognition in the Settings app to speak. You can type for now."
+            : "Speech recognition isn't available right now. You can type instead."
+        return ToastMessage(text: text, systemImage: "mic.slash")
     }
 
     private func finishTurn(saying text: String, isCustom: Bool) async {
@@ -199,6 +229,23 @@ final class ConversationModel {
             try? await Task.sleep(for: timing.beforeFinish)
             isFinished = true
         }
+    }
+
+    /// Whether what was heard is close enough to the scripted line to count as
+    /// it: at least 80% of its words, in any order. Recognition can drop a short
+    /// word or write numbers as digits, so an exact match would be too strict.
+    static func isScripted(_ heard: String, _ line: String) -> Bool {
+        let expected = normalized(line).split(separator: " ")
+        guard !expected.isEmpty else { return false }
+        var heardWords = normalized(heard).split(separator: " ")
+        var found = 0
+        for word in expected {
+            if let index = heardWords.firstIndex(of: word) {
+                heardWords.remove(at: index)
+                found += 1
+            }
+        }
+        return Double(found) / Double(expected.count) >= 0.8 && heardWords.count <= 2
     }
 
     /// Lowercased letters, digits and spaces only, for comparing sentences.

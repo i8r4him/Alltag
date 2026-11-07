@@ -98,7 +98,9 @@ Alltag/                                   ← repo root
 │  │
 │  ├─ Services/                           protocol + mock in one file; live versions added later
 │  │  ├─ PermissionStatus.swift
-│  │  ├─ Speech/SpeechService.swift       SpeechService, MockSpeechService (words appear every 230ms)
+│  │  ├─ Speech/
+│  │  │  ├─ SpeechService.swift           SpeechService, SpeechError, MockSpeechService (words every 230ms)
+│  │  │  └─ SystemSpeechService.swift     SpeechAnalyzer + SpeechTranscriber, de-DE, on device
 │  │  ├─ Voice/
 │  │  │  ├─ VoiceService.swift            VoiceService, SpeechRate, MockVoiceService (silent)
 │  │  │  └─ SystemVoiceService.swift      AVSpeechSynthesizer, de-DE (real in phase 1)
@@ -378,8 +380,9 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 
 ## Simulated vs real
 - **Real in native build (phase 1):** navigation, all UI states, AVSpeechSynthesizer pronunciation, haptics, local mock data, SwiftData persistence.
+- **Real on iPhone:** German speech recognition with `SpeechAnalyzer` (on device; the simulator keeps the simulated listening). Saying roughly the scripted line continues the script; anything else is your own sentence and gets feedback.
 - **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. Conversations keep their scripted replies so each scenario reaches its goal.
-- **Simulated:** speech recognition, scripted companion replies & feedback, translations (3 samples), placement.
+- **Simulated:** scripted companion replies & feedback, translations (3 samples), placement.
 - **Later:** see the framework table below.
 
 ## Localization

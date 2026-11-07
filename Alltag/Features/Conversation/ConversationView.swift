@@ -72,6 +72,7 @@ private struct ConversationContent: View {
             if let label { AccessibilityNotification.Announcement(String(localized: label)).post() }
         }
         .onChange(of: model.mode) { _, mode in isFieldFocused = mode == .text }
+        .toast($model.notice)
         .onChange(of: model.isFinished) { _, finished in
             guard finished else { return }
             model.savePhrases(in: modelContext)
