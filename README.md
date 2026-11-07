@@ -38,7 +38,7 @@ Alltag/                                   ← repo root
 │  ├─ App/
 │  │  ├─ AlltagApp.swift                  @main, ModelContainer, environment setup
 │  │  ├─ AppState.swift                   @Observable: user, settings, permissions, isPro
-│  │  ├─ AppServices.swift                bundles all services; mock or live
+│  │  ├─ AppServices.swift                all services; .live() for the app, .mock() for previews/tests
 │  │  ├─ Route.swift                      enum Route: Hashable
 │  │  ├─ RootView.swift                   NavigationStack(path:), covers, onboarding gate
 │  │  └─ PlaceholderScreens.swift         stand-ins until each screen is built
@@ -92,25 +92,16 @@ Alltag/                                   ← repo root
 │  │     ├─ Interest.swift
 │  │     └─ DailyTime.swift               DailyTime, NudgeTime
 │  │
-│  ├─ Services/                           protocol + mock (+ live later) per service
-│  │  ├─ Speech/
-│  │  │  ├─ SpeechService.swift
-│  │  │  └─ MockSpeechService.swift
+│  ├─ Services/                           protocol + mock in one file; live versions added later
+│  │  ├─ PermissionStatus.swift
+│  │  ├─ Speech/SpeechService.swift       SpeechService, MockSpeechService (words appear every 230ms)
 │  │  ├─ Voice/
-│  │  │  ├─ VoiceService.swift
-│  │  │  └─ SystemVoiceService.swift      AVSpeechSynthesizer (real in phase 1)
-│  │  ├─ Translation/
-│  │  │  ├─ TranslationService.swift
-│  │  │  └─ MockTranslationService.swift
-│  │  ├─ Companion/
-│  │  │  ├─ CompanionService.swift
-│  │  │  └─ MockCompanionService.swift
-│  │  ├─ Calendar/
-│  │  │  ├─ CalendarService.swift
-│  │  │  └─ MockCalendarService.swift
-│  │  └─ Notifications/
-│  │     ├─ NotificationService.swift
-│  │     └─ MockNotificationService.swift
+│  │  │  ├─ VoiceService.swift            VoiceService, SpeechRate, MockVoiceService (silent)
+│  │  │  └─ SystemVoiceService.swift      AVSpeechSynthesizer, de-DE (real in phase 1)
+│  │  ├─ Translation/TranslationService.swift   TranslationService, MockTranslationService (3 samples)
+│  │  ├─ Companion/CompanionService.swift  CompanionService, MockCompanionService (follows the scripts)
+│  │  ├─ Calendar/CalendarService.swift    CalendarService, CalendarEvent, MockCalendarService
+│  │  └─ Notifications/NotificationService.swift   NotificationService, MockNotificationService
 │  │
 │  ├─ Intents/                            App Intents — Siri AI, Spotlight, Shortcuts
 │  │  ├─ Entities/
