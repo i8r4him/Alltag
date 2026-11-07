@@ -8,22 +8,27 @@
 import SwiftData
 import SwiftUI
 
-/// Home. Until the real Home is built (#23–#26), it lists every route so all
-/// screens and flows can be reached.
+/// Home: top bar, greeting and — until #24–#26 add the cards — a temporary
+/// list of every route so all screens and flows can be reached.
 struct HomeView: View {
     @Environment(AppState.self) private var appState
     @Query private var profiles: [UserProfile]
+    @Query private var memoryItems: [MemoryItem]
+
+    private var name: String { profiles.first?.name ?? "" }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Hallo, \(profiles.first?.name ?? String(localized: "there")).")
-                        .textRole(.largeTitle)
-                    Text("Home is built in #23–#26. Every screen is reachable below.")
-                        .textRole(.bodySmall)
-                        .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 20) {
+                    HomeTopBar(name: name,
+                               onProfile: { appState.open(.profile) },
+                               onSettings: { appState.open(.settings) })
+                    HomeGreetingView(name: name, newWords: HomeGreeting.newReadingWords(in: memoryItems))
                 }
+                Text("Temporary until the Home cards are built (#24–#26).")
+                    .textRole(.meta)
+                    .foregroundStyle(.tertiary)
                 group("Screens", entries: Self.screens.map { entry in
                     Entry(title: entry.title, symbol: entry.symbol) { appState.open(entry.route) }
                 })
