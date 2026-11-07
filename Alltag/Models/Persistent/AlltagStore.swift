@@ -51,7 +51,8 @@ enum AlltagStore {
         do {
             let container = try makeContainer(inMemory: true)
             try seedSampleDataIfEmpty(container.mainContext)
-            container.mainContext.insert(UserProfile(name: "Mara", level: "B1", hasCompletedOnboarding: true))
+            let mara = UserProfile(name: "Mara", level: .b1, interests: Interest.defaultSelection, hasCompletedOnboarding: true)
+            container.mainContext.insert(mara)
             return container
         } catch {
             fatalError("Could not create the preview container: \(error)")

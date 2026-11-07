@@ -40,7 +40,11 @@ function_body_length:
   error: 120
 
 identifier_name:
-  excluded: [id, x, y, i]
+  # a1…c2 are CEFR level names.
+  excluded: [id, x, y, i, a1, a2, b1, b2, c1, c2]
+
+type_name:
+  excluded: [ID]
 
 nesting:
   type_level: 2
