@@ -158,7 +158,8 @@ Alltag/                                   ← repo root
 │  │  │  ├─ GrammarView.swift             mistakes focus, native level picker, topics with status dots
 │  │  │  ├─ GrammarProgress.swift         solved status and counts (tested)
 │  │  │  ├─ RuleView.swift                numbered steps: heard, notice, rule, your own German
-│  │  │  └─ RuleModel.swift               (#38)
+│  │  │  ├─ RuleModel.swift               word-order task, check, solved
+│  │  │  └─ WordOrderTask.swift           "Try it" with tiles, Check, Mark as solved
 │  │  ├─ Debrief/
 │  │  │  ├─ DebriefView.swift
 │  │  │  └─ DebriefModel.swift

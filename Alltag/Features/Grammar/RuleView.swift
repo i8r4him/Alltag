@@ -13,6 +13,12 @@ struct RuleView: View {
     let rule: GrammarRule
     @Environment(\.services) private var services
     @Query private var solved: [SolvedRule]
+    @State private var task: RuleModel
+
+    init(rule: GrammarRule) {
+        self.rule = rule
+        _task = State(initialValue: RuleModel(rule: rule))
+    }
 
     private var isSolved: Bool { solved.contains { $0.ruleID == rule.id } }
 
@@ -30,6 +36,13 @@ struct RuleView: View {
                     RuleStepHeader(number: 4, title: "From your own German")
                     MistakeCard(mistake: mistake)
                 }
+                Text("Try it")
+                    .textRole(.cardTitle)
+                    .accessibilityAddTraits(.isHeader)
+                    .padding(.horizontal, 4)
+                    .padding(.top, 22)
+                    .padding(.bottom, 10)
+                WordOrderTask(model: task)
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 32)
