@@ -14,6 +14,12 @@ enum MockLevels {
         topicsByLevel[level] ?? []
     }
 
+    /// Rules worth a look because of the learner's mistakes, with why.
+    static let focus: [(ruleID: String, reason: String)] = [
+        ("weil", "Came up in 4 of your last 6 conversations"),
+        ("seit", "3 times in Messages this week")
+    ]
+
     static let topicsByLevel: [Level: [GrammarTopic]] = [
         .a1: [
             GrammarTopic(title: "The verb is always second", ruleID: "v2", status: .solved),

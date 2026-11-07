@@ -51,6 +51,8 @@ struct RootView: View {
             MemoryView(kind: kind)
         case .learn:
             LearnView()
+        case .grammar:
+            GrammarView()
         default:
             placeholder(for: route)
         }
