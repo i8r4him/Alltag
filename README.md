@@ -68,8 +68,8 @@ Alltag/                                   ← repo root
 │  │  │  ├─ SmartBarRouting.swift         context, actions → destinations (pure, tested)
 │  │  │  └─ SmartBarModifier.swift        .smartBar(_:) — dimming, safe-area inset, navigation
 │  │  ├─ VoiceOrb.swift
-│  │  ├─ WordTile.swift
-│  │  ├─ PatternBar.swift
+│  │  ├─ WordTile.swift                plain / key (outlined) / highlighted / placed
+│  │  ├─ PatternBar.swift              slots with amber emphasis
 │  │  └─ EqualizerBars.swift
 │  │
 │  ├─ Models/
@@ -157,7 +157,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Grammar/
 │  │  │  ├─ GrammarView.swift             mistakes focus, native level picker, topics with status dots
 │  │  │  ├─ GrammarProgress.swift         solved status and counts (tested)
-│  │  │  ├─ RuleView.swift                (#37)
+│  │  │  ├─ RuleView.swift                numbered steps: heard, notice, rule, your own German
 │  │  │  └─ RuleModel.swift               (#38)
 │  │  ├─ Debrief/
 │  │  │  ├─ DebriefView.swift
