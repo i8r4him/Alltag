@@ -26,7 +26,9 @@ extension Color {
     static let screenBackground = Color(uiColor: .systemGroupedBackground)
     /// Cards. Dark `#1C1C1E`.
     static let surface = Color(uiColor: .secondarySystemGroupedBackground)
-    /// Inner tiles and pressed rows. Dark `#2C2C2E`.
+    /// Inner tiles and pressed rows, **inside cards only**. Dark `#2C2C2E`.
+    /// In light mode it equals the screen background, so on the background
+    /// itself use `controlFill` instead.
     static let surfaceSecondary = Color(uiColor: .tertiarySystemGroupedBackground)
     /// Bars, keys and inactive elements. Dark `#3A3A3C`.
     static let surfaceTertiary = Color(uiColor: .systemGray4)

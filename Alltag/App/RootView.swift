@@ -53,6 +53,12 @@ struct RootView: View {
             LearnView()
         case .grammar:
             GrammarView()
+        case .rule(let id):
+            if let rule = MockRules.rule(id: id) {
+                RuleView(rule: rule)
+            } else {
+                placeholder(for: route)
+            }
         default:
             placeholder(for: route)
         }
