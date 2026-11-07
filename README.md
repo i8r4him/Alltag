@@ -59,12 +59,14 @@ Alltag/                                   ← repo root
 │  │     ├─ OptionCard.swift
 │  │     ├─ Indicators.swift              ProgressSegments, StrengthDots
 │  │     ├─ Toast.swift                   ToastView, .toast(_:)
+│  │     ├─ FlowLayout.swift              wrapping layout for chips
 │  │     └─ ComponentGallery.swift        previews of every component
 │  │
 │  ├─ Components/                         app-specific building blocks
 │  │  ├─ SmartBar/
-│  │  │  ├─ SmartBar.swift
-│  │  │  └─ SmartBarChips.swift
+│  │  │  ├─ SmartBar.swift                SmartBar, SmartBarChips
+│  │  │  ├─ SmartBarRouting.swift         context, actions → destinations (pure, tested)
+│  │  │  └─ SmartBarModifier.swift        .smartBar(_:) — dimming, safe-area inset, navigation
 │  │  ├─ VoiceOrb.swift
 │  │  ├─ WordTile.swift
 │  │  ├─ PatternBar.swift

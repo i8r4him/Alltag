@@ -9,7 +9,8 @@ import Foundation
 
 /// Screens pushed onto the navigation stack from Home.
 enum Route: Hashable {
-    case translate
+    /// Translate, optionally pre-filled (e.g. from the Smart Bar).
+    case translate(text: String? = nil)
     case memory
     case learn
     case grammar
@@ -37,6 +38,17 @@ extension Route {
         case .beyond: ("Beyond the app", 44)
         case .debrief: ("Debrief", 39)
         case .briefing: ("Briefing", 40)
+        }
+    }
+
+    /// The Smart Bar shown on this screen, if any.
+    var smartBarContext: SmartBarContext? {
+        switch self {
+        case .memory: .memory
+        case .learn: .learn
+        case .progress: .progress
+        case .grammar: .grammar
+        default: nil
         }
     }
 }
