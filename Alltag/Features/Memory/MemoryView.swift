@@ -40,7 +40,10 @@ struct MemoryView: View {
 
                 switch tab {
                 case .words: words
-                case .phrasebook: phrasebookPlaceholder
+                case .phrasebook:
+                    PhrasebookTab(phrases: shownPhrases) { german in
+                        Task { await services.voice.speak(german, rate: .normal) }
+                    }
                 }
             }
             .padding(.horizontal, Spacing.screen)
@@ -53,10 +56,19 @@ struct MemoryView: View {
         .navigationBarTitleDisplayMode(.large)
         .navigationSubtitle(subtitle)
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Search your memory"))
+        // NEW badges clear once the learner has seen them.
+        .onChange(of: tab) { old, _ in
+            if old == .phrasebook { markPhrasesSeen() }
+        }
+        .onDisappear { if tab == .phrasebook { markPhrasesSeen() } }
         .smartBar(.memory) { text in
             tab = .words
             query = text
         }
+    }
+
+    private func markPhrasesSeen() {
+        phrases.filter(\.isNew).forEach { $0.isNew = false }
     }
 
     /// "18 words and phrases, gathered from your days."
@@ -70,6 +82,13 @@ struct MemoryView: View {
     // MARK: Words
 
     private var shownItems: [MemoryItem] { filter.apply(to: items, query: query) }
+
+    /// Phrases matching the search, in German or English.
+    private var shownPhrases: [Phrase] {
+        let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return phrases }
+        return phrases.filter { $0.german.localizedStandardContains(query) || $0.english.localizedStandardContains(query) }
+    }
 
     @ViewBuilder
     private var words: some View {
@@ -108,14 +127,6 @@ struct MemoryView: View {
         }
         .scrollIndicators(.hidden)
         .scrollClipDisabled()
-    }
-
-    private var phrasebookPlaceholder: some View {
-        ContentUnavailableView {
-            Label("Phrasebook", systemImage: "hammer")
-        } description: {
-            Text("This tab is built in #33.")
-        }
     }
 }
 

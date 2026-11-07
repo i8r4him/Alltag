@@ -34,11 +34,12 @@ enum MockPhrasebook {
                 ("Ich mache jetzt Feierabend.", "I'm calling it a day.")
             ])
         ]
-        return groups.flatMap { group in
-            group.phrases.map { phrase in
-                Phrase(german: phrase.german, english: phrase.english,
-                       place: group.place, placeSymbol: group.symbol, createdAt: now)
-            }
+        // A second apart, so the Phrasebook keeps the prototype's order.
+        let phrases = groups.flatMap { group in group.phrases.map { (group, $0) } }
+        return phrases.enumerated().map { index, entry in
+            Phrase(german: entry.1.german, english: entry.1.english,
+                   place: entry.0.place, placeSymbol: entry.0.symbol,
+                   createdAt: now.addingTimeInterval(Double(index)))
         }
     }
 }
