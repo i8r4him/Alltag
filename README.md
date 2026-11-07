@@ -245,7 +245,7 @@ Alltag/                                   ← repo root
 ```
 **Services rule:** screens talk to service protocols, never to a framework directly. Phase 1 uses the mock implementations; later milestones swap in the real ones (Speech, Foundation Models, Translation, EventKit) without touching the screens.
 
-**Moving existing files:** `AlltagApp.swift` moves to `App/`, `Assets.xcassets` to `Resources/`, and `ContentView.swift` is replaced by `RootView.swift`.
+**Folders are created with their first file.** Git doesn't track empty folders, and placeholder files such as `.gitkeep` can't be used: Xcode's synchronized folders copy them into the app bundle, and several files with the same name break the build. Each folder above appears in the PR that adds its first file.
 
 ---
 
