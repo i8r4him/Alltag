@@ -142,13 +142,9 @@ Alltag/                                   ← repo root
 │  │  │  ├─ FeedbackCard.swift
 │  │  │  └─ SummarySheet.swift            (#30)
 │  │  ├─ Translate/
-│  │  │  ├─ TranslateView.swift
-│  │  │  ├─ TranslateModel.swift
-│  │  │  ├─ LanguageCapsule.swift
-│  │  │  ├─ ResultCard.swift
-│  │  │  ├─ WordByWordSection.swift
-│  │  │  ├─ ToneSection.swift
-│  │  │  └─ InContextSection.swift
+│  │  │  ├─ TranslateView.swift           language capsule in the toolbar, source and result cards
+│  │  │  ├─ TranslateModel.swift          direction, swap, translating, saving
+│  │  │  └─ TranslateSections.swift       Word by word, Tone, In context
 │  │  ├─ Memory/
 │  │  │  ├─ MemoryView.swift              Words | Phrasebook
 │  │  │  ├─ WordsTab.swift

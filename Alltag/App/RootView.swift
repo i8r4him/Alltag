@@ -44,6 +44,16 @@ struct RootView: View {
     /// Each feature issue replaces its placeholder here with the real screen.
     @ViewBuilder
     private func destination(_ route: Route) -> some View {
+        switch route {
+        case .translate(let text):
+            TranslateView(initialText: text)
+        default:
+            placeholder(for: route)
+        }
+    }
+
+    @ViewBuilder
+    private func placeholder(for route: Route) -> some View {
         let screen = PlaceholderScreen(title: route.placeholder.title, issue: route.placeholder.issue)
         if let context = route.smartBarContext {
             screen.smartBar(context)
