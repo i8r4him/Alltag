@@ -51,8 +51,8 @@ struct RootView: View {
         switch route {
         case .translate(let text):
             TranslateView(initialText: text)
-        case .memory(let kind):
-            MemoryView(kind: kind)
+        case let .memory(kind, search):
+            MemoryView(kind: kind, search: search)
         case .learn:
             LearnView()
         case .grammar:

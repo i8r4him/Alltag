@@ -1,39 +1,80 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "Open my words in ${applicationName}": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open my words in ${applicationName}"
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Explain ${target} in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Explain ${target} in ${applicationName}",
+              "Open the grammar rule ${target} in ${applicationName}"
+            ]
           }
         }
       }
     },
-    "Show my ${applicationName} memory": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show my ${applicationName} memory"
+    "Open my words in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Open my words in ${applicationName}",
+              "Show my ${applicationName} memory",
+              "What am I learning in ${applicationName}"
+            ]
           }
         }
       }
     },
-    "What am I learning in ${applicationName}": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "What am I learning in ${applicationName}"
+    "Review my saved words in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Review my saved words in ${applicationName}",
+              "Practise my words in ${applicationName}",
+              "Start a ${applicationName} review"
+            ]
+          }
+        }
+      }
+    },
+    "Start a German speaking session in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Start a German speaking session in ${applicationName}",
+              "Practise speaking in ${applicationName}",
+              "Practise ${scenario} in ${applicationName}",
+              "Rehearse ${scenario} with ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Translate with ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Translate with ${applicationName}",
+              "Translate into German with ${applicationName}"
+            ]
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }

@@ -11,8 +11,9 @@ import Foundation
 enum Route: Hashable {
     /// Translate, optionally pre-filled (e.g. from the Smart Bar).
     case translate(text: String? = nil)
-    /// Memory, optionally filtered to one kind (e.g. words from your day).
-    case memory(kind: MemoryKind? = nil)
+    /// Memory, optionally filtered to one kind (e.g. words from your day)
+    /// or searching for a word (e.g. from Siri).
+    case memory(kind: MemoryKind? = nil, search: String? = nil)
     case learn
     case grammar
     case rule(id: String)

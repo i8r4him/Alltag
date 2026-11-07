@@ -32,7 +32,7 @@ struct HomeView: View {
                 HomeGreetingView(name: name, newWords: newReadingWords)
 
                 VStack(spacing: Spacing.grid) {
-                    FocusCard { appState.present(.conversation(.dentist)) }
+                    FocusCard { appState.present(.conversation(MockScenarios.todaysFocus)) }
                     if !events.isEmpty {
                         ComingUpCard(events: events) { event in
                             if let scenario = event.scenario { appState.present(.conversation(scenario)) }

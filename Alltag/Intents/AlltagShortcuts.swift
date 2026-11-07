@@ -12,6 +12,45 @@ import AppIntents
 struct AlltagShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
+            intent: StartConversationIntent(),
+            phrases: [
+                "Start a German speaking session in \(.applicationName)",
+                "Practise speaking in \(.applicationName)",
+                "Practise \(\.$scenario) in \(.applicationName)",
+                "Rehearse \(\.$scenario) with \(.applicationName)"
+            ],
+            shortTitle: "Speak",
+            systemImageName: "mic"
+        )
+        AppShortcut(
+            intent: ReviewWordsIntent(),
+            phrases: [
+                "Review my saved words in \(.applicationName)",
+                "Practise my words in \(.applicationName)",
+                "Start a \(.applicationName) review"
+            ],
+            shortTitle: "Review Words",
+            systemImageName: "rectangle.stack"
+        )
+        AppShortcut(
+            intent: TranslateIntent(),
+            phrases: [
+                "Translate with \(.applicationName)",
+                "Translate into German with \(.applicationName)"
+            ],
+            shortTitle: "Translate",
+            systemImageName: "translate"
+        )
+        AppShortcut(
+            intent: OpenRuleIntent(),
+            phrases: [
+                "Explain \(\.$target) in \(.applicationName)",
+                "Open the grammar rule \(\.$target) in \(.applicationName)"
+            ],
+            shortTitle: "Grammar Rule",
+            systemImageName: "text.badge.checkmark"
+        )
+        AppShortcut(
             intent: OpenMemoryIntent(),
             phrases: [
                 "Open my words in \(.applicationName)",

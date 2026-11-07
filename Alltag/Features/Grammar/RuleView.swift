@@ -49,6 +49,7 @@ struct RuleView: View {
         }
         .background(.screenBackground)
         .navigationBarTitleDisplayMode(.inline)
+        .onscreenEntity(GrammarRuleEntity(rule), title: rule.title)
     }
 
     // MARK: Header
