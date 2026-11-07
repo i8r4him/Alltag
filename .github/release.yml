@@ -8,6 +8,8 @@ changelog:
       labels: [design]
     - title: 🐛 Fixes
       labels: [bug]
+    - title: 🧱 Architecture
+      labels: [data, services, intents, navigation, design-system]
     - title: ♿️ Accessibility
       labels: [accessibility]
     - title: 🧰 Chores & CI
