@@ -12,22 +12,29 @@ struct SummarySheet: View {
     let scenario: Scenario
     let turns: Int
     let fixes: Int
+    var wasLive = false
     let onPractise: () -> Void
     let onDone: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 6) {
-                Eyebrow(title: "Conversation complete")
-                Text(verbatim: scenario.completion)
-                    .textRole(.title2)
-                    .accessibilityAddTraits(.isHeader)
+                if wasLive {
+                    Text("Live practice ended")
+                        .textRole(.title2)
+                        .accessibilityAddTraits(.isHeader)
+                } else {
+                    Eyebrow(title: "Conversation complete")
+                    Text(verbatim: scenario.completion)
+                        .textRole(.title2)
+                        .accessibilityAddTraits(.isHeader)
+                }
             }
 
             HStack(spacing: 8) {
                 // The number is shown large, so the labels carry only the words.
                 StatTile(value: turns, label: turns == 1 ? Text("turn spoken") : Text("turns spoken"))
-                StatTile(value: fixes, label: fixes == 1 ? Text("thing to fix") : Text("things to fix"))
+                if !wasLive { StatTile(value: fixes, label: fixes == 1 ? Text("thing to fix") : Text("things to fix")) }
                 StatTile(value: scenario.savedPhrases.count,
                          label: scenario.savedPhrases.count == 1 ? Text("phrase saved") : Text("phrases saved"))
             }

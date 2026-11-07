@@ -96,7 +96,7 @@ Alltag/                                   ← repo root
 │  │     ├─ Interest.swift
 │  │     └─ DailyTime.swift               DailyTime, NudgeTime
 │  │
-│  ├─ Services/                           protocol + mock in one file; live versions added later
+│  ├─ Services/                           protocols, mocks and live implementations
 │  │  ├─ PermissionStatus.swift
 │  │  ├─ Speech/
 │  │  │  ├─ SpeechService.swift           SpeechService, SpeechError, MockSpeechService (words every 230ms)
@@ -104,6 +104,11 @@ Alltag/                                   ← repo root
 │  │  ├─ Voice/
 │  │  │  ├─ VoiceService.swift            VoiceService, SpeechRate, MockVoiceService (silent)
 │  │  │  └─ SystemVoiceService.swift      AVSpeechSynthesizer, de-DE (real in phase 1)
+│  │  ├─ Realtime/
+│  │  │  ├─ RealtimeConversationService.swift         session protocol, context and mock
+│  │  │  ├─ SupabaseRealtimeClient.swift             anonymous auth, Keychain and session credentials
+│  │  │  ├─ OpenAIRealtimeConversationService.swift  Realtime WebSocket, audio events and transcripts
+│  │  │  └─ RealtimeAudio.swift                      PCM capture, playback and interruption
 │  │  ├─ Translation/TranslationService.swift   TranslationService, MockTranslationService (3 samples)
 │  │  ├─ Companion/
 │  │  │  ├─ CompanionService.swift        CompanionService, MockCompanionService (scripts, samples, fallback)
@@ -209,6 +214,9 @@ Alltag/                                   ← repo root
 │
 ├─ AlltagTests/                           Swift Testing (added in M0)
 │  ├─ ConversationModelTests.swift
+│  ├─ RealtimeConversationTests.swift
+│  ├─ OpenAIRealtimeSessionTests.swift
+│  ├─ SupabaseRealtimeClientTests.swift
 │  ├─ ActivityModelTests.swift
 │  ├─ RuleModelTests.swift
 │  └─ OnboardingModelTests.swift
@@ -340,6 +348,8 @@ Orb: idle = grey-white radial sphere with mic, slow breathe 4s; active = warm am
 Text mode: field "Antworte auf Deutsch…" + accent send. Scenarios: dentist, post office, train (see MockData in HTML `SCEN`).
 Native: `Speech` (`SpeechAnalyzer` + `SpeechTranscriber`, de-DE — the newer API that replaces `SFSpeechRecognizer`), `AVSpeechSynthesizer`, haptics on state changes.
 
+When **Pro features may use the cloud** is enabled, tapping the orb on an iPhone starts a live voice session. The app sends the scenario title, goal and learner level to the Supabase Edge Function and streams audio directly to OpenAI with the short-lived credential. The transcript stays in memory in the app. Finishing the conversation, leaving voice mode or reaching ten minutes closes the connection. With cloud use off or unavailable, the scripted conversation uses on-device speech.
+
 ### Translate
 Language capsule (English ⇄ German, swap), source card (editable), result card `#232325` with Listen / Slowly / bookmark save (toast "Saved to Memory"). Sections: Word by word (word, grammar note, meaning), Tone (Formal / Neutral — accent / Casual), In context (tap to hear). Unknown input → honest note: live translation will use Apple's Translation framework.
 
@@ -384,7 +394,8 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 ## Simulated vs real
 - **Real in native build (phase 1):** navigation, all UI states, AVSpeechSynthesizer pronunciation, haptics, local mock data, SwiftData persistence.
 - **Real on iPhone:** German speech recognition with `SpeechAnalyzer` (on device; the simulator keeps the simulated listening). Saying roughly the scripted line continues the script; anything else is your own sentence and gets feedback.
-- **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. Conversations keep their scripted replies so each scenario reaches its goal.
+- **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. On-device conversations keep their scripted replies so each scenario reaches its goal.
+- **Live voice beta on iPhone:** OpenAI Realtime through the existing Supabase credential broker, with both speakers' captions. Cloud voice is opt-in. The simulator keeps the scripted path.
 - **Simulated:** scripted companion replies & feedback, translations (3 samples), placement.
 - **Later:** see the framework table below.
 
@@ -402,6 +413,9 @@ All Apple frameworks — nothing to install.
 | SwiftUI + Observation | All screens and app state |
 | SwiftData | Profile, words, phrasebook, progress, saved translations |
 | AVFoundation (`AVSpeechSynthesizer`) | Speaking German aloud |
+| AVFoundation (`AVAudioEngine`) | Live microphone capture and audio playback |
+| Foundation (`URLSession`, `URLSessionWebSocketTask`) | Supabase authentication and OpenAI Realtime voice |
+| Security (Keychain) | Supabase access and refresh tokens |
 | `sensoryFeedback` | Haptics for taps, answers, conversation states |
 | String Catalogs | All UI text, ready for localization |
 | Swift Testing | Unit tests for logic |
@@ -418,7 +432,6 @@ All Apple frameworks — nothing to install.
 | UserNotifications | Daily nudges (local) | No |
 | WidgetKit | Word of the day, Review widgets | Yes (App Groups for shared data) |
 | SwiftData + CloudKit | Sync and backup across the learner's iPhones | Yes |
-| OpenAI Realtime API (via Supabase Edge Function) | Live spoken conversations (Pro, cloud); the API key stays on the server | No |
 | TipKit | In-app hints | No |
 | StoreKit 2 | Alltag Pro subscription | Yes (to sell) |
 | Keyboard extension / Safari Web Extension | "Learn from my day" | Yes (App Groups) |

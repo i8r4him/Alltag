@@ -13,8 +13,7 @@ import SwiftData
 ///
 ///     idle ─tap→ listening ─(all words / tap)→ thinking → speaking → idle … → finished
 ///
-/// Speech, the companion's replies and the voice come from services, so the
-/// same model runs simulated today and live later.
+/// The scripted and live voice paths share the transcript and controls.
 @Observable
 final class ConversationModel {
     enum Mode: Equatable {
@@ -25,9 +24,10 @@ final class ConversationModel {
     /// A line in the transcript.
     struct Message: Identifiable, Equatable {
         let id = UUID()
-        let line: ConversationLine
+        var line: ConversationLine
         /// The learner typed their own sentence instead of the scripted one.
         var isCustom = false
+        var realtimeID: String?
     }
 
     /// Pauses between steps. Zero in tests.
@@ -36,6 +36,7 @@ final class ConversationModel {
         var afterListening: Duration = .milliseconds(450)
         /// After the companion's last line, before the summary.
         var beforeFinish: Duration = .milliseconds(900)
+        var realtimeLimit: Duration = .seconds(600)
 
         static let instant = Timing(afterListening: .zero, beforeFinish: .zero)
     }
@@ -48,7 +49,11 @@ final class ConversationModel {
     private(set) var isFinished = false
     /// Index of the next learner turn (0-based).
     private(set) var learnerTurn = 0
-    var mode: Mode = .voice
+    var mode: Mode = .voice {
+        didSet {
+            if mode == .text, isUsingCloudVoice { fallBackFromCloud() }
+        }
+    }
     var showsHint = false
     /// The text field in text mode.
     var draft = ""
@@ -61,14 +66,25 @@ final class ConversationModel {
     private let companion: any CompanionService
     private let voice: any VoiceService
     private let timing: Timing
+    private let realtime: any RealtimeConversationService
+    private let level: Level
+    private var usesCloudVoice: Bool
+    private var hasFallenBack = false
+    private var cloudSession: (any RealtimeConversationSession)?
+    private(set) var finishedLiveConversation = false
     @ObservationIgnored private var listenTask: Task<Void, Never>?
+    @ObservationIgnored private var cloudTask: Task<Void, Never>?
+    @ObservationIgnored private var cloudDeadline: Task<Void, Never>?
 
-    init(scenario: Scenario, services: AppServices, timing: Timing = Timing()) {
+    init(scenario: Scenario, services: AppServices, timing: Timing = Timing(), usesCloudVoice: Bool = false, level: Level = .a1) {
         self.scenario = scenario
         self.speech = services.speech
         self.companion = services.companion
         self.voice = services.voice
         self.timing = timing
+        self.realtime = services.realtime
+        self.usesCloudVoice = usesCloudVoice
+        self.level = level
         if let first = scenario.script.first, first.speaker == .companion {
             messages = [Message(line: first)]
         }
@@ -81,25 +97,37 @@ final class ConversationModel {
 
     /// The scripted line the learner is expected to say next, if any.
     var expectedLine: ConversationLine? {
-        learnerLines.indices.contains(learnerTurn) ? learnerLines[learnerTurn] : nil
+        !isUsingCloudVoice && learnerLines.indices.contains(learnerTurn) ? learnerLines[learnerTurn] : nil
     }
+
+    var isUsingCloudVoice: Bool { cloudSession != nil }
 
     /// Whether the learner can start speaking or send text now.
     var canRespond: Bool { phase == .idle && !isFinished && expectedLine != nil }
 
+    private var canStartCloudVoice: Bool { usesCloudVoice && !hasFallenBack && mode == .voice }
+
     /// Under the orb: "Tap to speak", "Listening… tap when done", …
     var stateLabel: LocalizedStringResource? {
+        if isUsingCloudVoice {
+            switch phase {
+            case .idle, .listening: return "Live voice · Tap to finish"
+            case .thinking: return "Thinking…"
+            case .speaking: return "Speaking…"
+            }
+        }
         switch phase {
-        case .idle: isFinished ? nil : "Tap to speak"
-        case .listening: "Listening… tap when done"
-        case .thinking: "Thinking…"
-        case .speaking: "Speaking…"
+        case .idle where isFinished: return nil
+        case .idle: return canStartCloudVoice ? "Tap for live voice" : "Tap to speak"
+        case .listening: return "Listening… tap when done"
+        case .thinking: return "Thinking…"
+        case .speaking: return "Speaking…"
         }
     }
 
     // MARK: Summary
 
-    var turnCount: Int { messages.filter { $0.line.speaker == .learner }.count }
+    var turnCount: Int { messages.filter { $0.line.speaker == .learner && !$0.line.german.isEmpty }.count }
     var fixCount: Int { messages.filter { $0.line.feedback?.kind == .fix }.count }
     var savedPhraseCount: Int { scenario.savedPhrases.count }
 
@@ -107,13 +135,21 @@ final class ConversationModel {
 
     /// The orb: starts listening, or stops listening early.
     func orbTapped() {
+        if isUsingCloudVoice {
+            finishCloudConversation()
+            return
+        }
         switch phase {
         case .listening:
             // The listening task notices the stream ending and finishes the turn.
             speech.stopListening()
         case .idle where canRespond:
             showsHint = false
-            listenTask = Task { await listen() }
+            if canStartCloudVoice {
+                startCloudConversation()
+            } else {
+                listenTask = Task { await listen() }
+            }
         default:
             break
         }
@@ -147,6 +183,7 @@ final class ConversationModel {
 
     /// Stops listening and speaking, e.g. when the conversation is closed.
     func stop() {
+        endCloudSession()
         listenTask?.cancel()
         speech.stopListening()
         voice.stop()
@@ -253,5 +290,108 @@ final class ConversationModel {
         text.lowercased()
             .filter { $0.isLetter || $0.isNumber || $0 == " " }
             .trimmingCharacters(in: .whitespaces)
+    }
+}
+
+extension ConversationModel {
+    func setCloudVoiceConsent(_ allowed: Bool) {
+        usesCloudVoice = allowed
+        if !allowed, isUsingCloudVoice { fallBackFromCloud() }
+    }
+
+    func suspendCloudVoice() {
+        if isUsingCloudVoice { fallBackFromCloud() }
+    }
+
+    func waitForCloudConversation() async {
+        await cloudTask?.value
+    }
+
+    private func startCloudConversation() {
+        let context = RealtimeConversationContext(scenario: scenario, level: level,
+                                                  slowerSpeech: speechRate == .slow || voice.prefersSlowerSpeech)
+        let session = realtime.makeSession(for: context)
+        cloudSession = session
+        if messages.count == 1, messages[0].realtimeID == nil { messages.removeAll() }
+        phase = .thinking
+        notice = nil
+        cloudTask = Task { [weak self, session] in
+            do {
+                try await session.run { [weak self, weak session = session] event in
+                    guard let self, let session, cloudSession === session else { return }
+                    applyCloudEvent(event)
+                }
+                self?.cloudFailed(RealtimeServiceError.unavailable, session: session)
+            } catch {
+                self?.cloudFailed(error, session: session)
+            }
+        }
+        let limit = timing.realtimeLimit
+        cloudDeadline = Task { [weak self] in
+            do {
+                try await Task.sleep(for: limit)
+                guard let self, cloudSession === session else { return }
+                finishCloudConversation()
+                notice = ToastMessage(text: "Live voice has reached its 10-minute limit.", systemImage: "timer")
+            } catch {
+                return
+            }
+        }
+    }
+
+    private func applyCloudEvent(_ event: RealtimeConversationEvent) {
+        switch event {
+        case .phase(let phase):
+            self.phase = phase
+        case let .transcript(id, speaker, text, replacesPrevious):
+            if let index = messages.firstIndex(where: { $0.realtimeID == id }) {
+                let german = replacesPrevious ? text : messages[index].line.german + text
+                messages[index].line = ConversationLine(speaker: speaker, german: german, english: "", feedback: nil)
+            } else {
+                let line = ConversationLine(speaker: speaker, german: text, english: "", feedback: nil)
+                messages.append(Message(line: line, realtimeID: id))
+            }
+        case .discardTranscript(let id):
+            messages.removeAll { $0.realtimeID == id }
+        }
+    }
+
+    private func cloudFailed(_ error: any Error, session: any RealtimeConversationSession) {
+        guard cloudSession === session else { return }
+        fallBackFromCloud()
+        let text: LocalizedStringResource
+        switch error as? RealtimeServiceError {
+        case .dailyLimit: text = "You've reached your live voice limit for today. Keep practising on your iPhone."
+        case .busy: text = "Live voice is busy right now. You can keep practising on your iPhone."
+        default: text = "Live voice is unavailable. You can keep practising on your iPhone."
+        }
+        notice = ToastMessage(text: text, systemImage: "waveform.slash")
+    }
+
+    private func fallBackFromCloud() {
+        hasFallenBack = true
+        endCloudSession()
+        if let first = scenario.script.first, first.speaker == .companion, messages.last?.line != first {
+            messages.append(Message(line: first))
+        }
+    }
+
+    private func finishCloudConversation() {
+        endCloudSession()
+        hasFallenBack = true
+        finishedLiveConversation = true
+        isFinished = true
+    }
+
+    private func endCloudSession() {
+        guard let session = cloudSession else { return }
+        cloudSession = nil
+        session.stop()
+        cloudTask?.cancel()
+        cloudTask = nil
+        cloudDeadline?.cancel()
+        cloudDeadline = nil
+        messages.removeAll { $0.line.german.isEmpty }
+        phase = .idle
     }
 }

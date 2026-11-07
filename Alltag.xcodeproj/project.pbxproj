@@ -312,7 +312,7 @@
 				DEVELOPMENT_TEAM = DMKPB2487F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Alltag listens when you tap the orb, so you can practise speaking German. Your voice stays on your iPhone.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Alltag uses the microphone when you practise speaking German. Live voice sends audio to OpenAI when you allow cloud use in Settings.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Alltag turns your spoken German into text on your iPhone to give you feedback.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -350,7 +350,7 @@
 				DEVELOPMENT_TEAM = DMKPB2487F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Alltag listens when you tap the orb, so you can practise speaking German. Your voice stays on your iPhone.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Alltag uses the microphone when you practise speaking German. Live voice sends audio to OpenAI when you allow cloud use in Settings.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Alltag turns your spoken German into text on your iPhone to give you feedback.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
