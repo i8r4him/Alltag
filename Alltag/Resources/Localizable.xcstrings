@@ -16,6 +16,26 @@
         }
       }
     },
+    "%@ · %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld min"
+          }
+        }
+      }
+    },
+    "%@ · rehearse %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · rehearse %2$lld min"
+          }
+        }
+      }
+    },
     "%lld min" : {},
     "%lld of %lld" : {
       "localizations" : {
@@ -130,6 +150,7 @@
     "Other" : {},
     "Partner & family" : {},
     "Phrase" : {},
+    "Picks up the word order you mixed up yesterday." : {},
     "Politics" : {},
     "Practise speaking" : {},
     "Precision and style" : {},
@@ -146,9 +167,11 @@
         }
       }
     },
+    "Real-life conversation · Moving an appointment" : {},
     "Reduce motion" : {},
     "Rehearse before appointments and trips" : {},
     "Rehearse from your Calendar" : {},
+    "Rehearse this conversation." : {},
     "Replay onboarding" : {},
     "Review words" : {},
     "Right" : {},
@@ -168,6 +191,7 @@
     "Speak German" : {},
     "Start learning" : {},
     "Start review" : {},
+    "Starts a conversation at the dentist." : {},
     "Steady progress" : {},
     "Strength" : {},
     "Studies" : {},
@@ -176,6 +200,7 @@
     "This screen is built in #%lld." : {},
     "This shapes the situations you rehearse and the words we notice." : {},
     "Today's focus" : {},
+    "Tomorrow" : {},
     "Translate" : {},
     "Travel" : {},
     "Turkish" : {},

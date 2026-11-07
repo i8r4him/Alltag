@@ -14,17 +14,22 @@ struct HomeView: View {
     @Environment(AppState.self) private var appState
     @Query private var profiles: [UserProfile]
     @Query private var memoryItems: [MemoryItem]
+    @Environment(\.services) private var services
+    @State private var events: [CalendarEvent] = []
 
     private var name: String { profiles.first?.name ?? "" }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
-                VStack(alignment: .leading, spacing: 20) {
-                    HomeTopBar(name: name,
-                               onProfile: { appState.open(.profile) },
-                               onSettings: { appState.open(.settings) })
-                    HomeGreetingView(name: name, newWords: HomeGreeting.newReadingWords(in: memoryItems))
+                HomeGreetingView(name: name, newWords: HomeGreeting.newReadingWords(in: memoryItems))
+                VStack(spacing: Spacing.grid) {
+                    FocusCard { appState.present(.conversation(.dentist)) }
+                    if !events.isEmpty {
+                        ComingUpCard(events: events) { event in
+                            if let scenario = event.scenario { appState.present(.conversation(scenario)) }
+                        }
+                    }
                 }
                 Text("Temporary until the Home cards are built (#24–#26).")
                     .textRole(.meta)
@@ -39,8 +44,22 @@ struct HomeView: View {
             .padding(Spacing.screen)
         }
         .background(.screenBackground)
-        .toolbar(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button { appState.open(.profile) } label: {
+                    Avatar(name: name, diameter: 36)
+                }
+                .accessibilityLabel("Profile")
+            }
+            // A plain circle, as in the design, instead of a glass capsule.
+            .sharedBackgroundVisibility(.hidden)
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Settings", systemImage: "gearshape") { appState.open(.settings) }
+            }
+        }
         .smartBar(.home)
+        .task { events = (try? await services.calendar.upcomingEvents()) ?? [] }
     }
 
     private struct Entry {

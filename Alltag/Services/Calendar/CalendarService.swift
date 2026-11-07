@@ -15,6 +15,8 @@ struct CalendarEvent: Identifiable, Hashable, Sendable {
     let systemImage: String
     /// The conversation to rehearse for this event, if there is one.
     var scenario: Scenario.ID?
+    /// How long rehearsing takes.
+    var rehearsalMinutes: Int = 4
 }
 
 /// Reads upcoming events from the learner's calendar.
@@ -57,7 +59,7 @@ final class MockCalendarService: CalendarService {
 
         return [
             CalendarEvent(id: "dentist", title: "Dentist", start: dentist,
-                          systemImage: "cross.case", scenario: .dentist),
+                          systemImage: "cross.case", scenario: .dentist, rehearsalMinutes: 5),
             CalendarEvent(id: "train", title: "Train to Munich", start: train,
                           systemImage: "tram", scenario: .station),
             CalendarEvent(id: "package", title: "Return package", start: package,
