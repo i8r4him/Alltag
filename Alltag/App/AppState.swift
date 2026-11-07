@@ -16,8 +16,12 @@ final class AppState {
     var path: [Route] = []
     /// The screen currently covering everything, if any.
     var fullScreen: FullScreenRoute?
-    /// In-app Reduce Motion toggle (Settings), on top of the system setting.
-    var reduceMotion = false
+    /// Device settings (Reduce motion, Slower speech, …), persisted.
+    let settings: AppSettings
+
+    init(settings: AppSettings = AppSettings()) {
+        self.settings = settings
+    }
 
     /// Pushes a screen.
     func open(_ route: Route) {
@@ -47,7 +51,7 @@ final class AppState {
 
     /// Whether motion should be reduced, combining the system setting with the in-app toggle.
     func reducesMotion(system: Bool) -> Bool {
-        system || reduceMotion
+        system || settings.reduceMotion
     }
 
     /// First-run onboarding is needed until a profile has completed it.

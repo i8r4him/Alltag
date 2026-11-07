@@ -18,7 +18,7 @@ struct OnboardingFlow: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.services) private var services
     @Environment(AppState.self) private var appState
-    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+    @Environment(\.reducesMotion) private var reducesMotion
     @Query private var profiles: [UserProfile]
 
     init(model: OnboardingModel = OnboardingModel(), onFinish: @escaping () -> Void = {}) {
@@ -84,10 +84,6 @@ struct OnboardingFlow: View {
         case .permissions: PermissionsStep(model: model)
         case .summary: SummaryStep(model: model)
         }
-    }
-
-    private var reducesMotion: Bool {
-        appState.reducesMotion(system: systemReduceMotion)
     }
 
     private var transition: AnyTransition {

@@ -35,8 +35,8 @@ struct AppStateTests {
     @Test("Motion is reduced when either the system or the in-app toggle asks for it",
           arguments: [(false, false, false), (true, false, true), (false, true, true), (true, true, true)])
     func reduceMotion(system: Bool, inApp: Bool, expected: Bool) {
-        let state = AppState()
-        state.reduceMotion = inApp
+        let state = AppState(settings: AppSettings(defaults: .ephemeral()))
+        state.settings.reduceMotion = inApp
         #expect(state.reducesMotion(system: system) == expected)
     }
 

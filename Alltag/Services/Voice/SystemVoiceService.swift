@@ -12,6 +12,7 @@ import AVFoundation
 @Observable
 final class SystemVoiceService: NSObject, VoiceService {
     private(set) var isSpeaking = false
+    var prefersSlowerSpeech = false
     @ObservationIgnored private let synthesizer = AVSpeechSynthesizer()
     @ObservationIgnored private var continuation: CheckedContinuation<Void, Never>?
 
@@ -25,7 +26,7 @@ final class SystemVoiceService: NSObject, VoiceService {
         isSpeaking = true
         await withCheckedContinuation { continuation in
             self.continuation = continuation
-            synthesizer.speak(Self.utterance(for: text, rate: rate))
+            synthesizer.speak(Self.utterance(for: text, rate: rate.adjusted(prefersSlower: prefersSlowerSpeech)))
         }
         isSpeaking = false
     }

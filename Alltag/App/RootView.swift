@@ -27,6 +27,10 @@ struct RootView: View {
             }
         }
         .animation(Motion.modal(reduceMotion: reducesMotion), value: AppState.needsOnboarding(profiles))
+        .environment(\.reducesMotion, reducesMotion)
+        .onChange(of: appState.settings.slowerSpeech, initial: true) { _, slower in
+            services.voice.prefersSlowerSpeech = slower
+        }
     }
 
     private var navigation: some View {
@@ -62,6 +66,8 @@ struct RootView: View {
             ProgressOverviewView()
         case .profile:
             ProfileView()
+        case .settings:
+            SettingsView(services: services)
         case .rule(let id):
             if let rule = MockRules.rule(id: id) {
                 RuleView(rule: rule)

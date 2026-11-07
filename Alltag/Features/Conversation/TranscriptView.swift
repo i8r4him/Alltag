@@ -115,7 +115,7 @@ private struct LearnerLine: View {
 /// The words heard so far, with a blinking amber caret.
 private struct HeardText: View {
     let text: String
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.reducesMotion) private var reduceMotion
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 0.5)) { context in

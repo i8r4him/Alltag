@@ -12,7 +12,7 @@ struct EqualizerBars: View {
     let isPlaying: Bool
     var height: CGFloat = 36
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.reducesMotion) private var reduceMotion
 
     /// Resting heights from the prototype, as fractions of the full height.
     private static let levels: [CGFloat] = [0.4, 0.7, 0.5, 0.9, 0.6, 1, 0.7, 0.45, 0.8, 0.55,
