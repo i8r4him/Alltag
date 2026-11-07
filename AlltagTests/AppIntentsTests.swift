@@ -80,4 +80,45 @@ struct AppIntentsTests {
         let items = try context.fetch(FetchDescriptor<MemoryItem>())
         #expect(Set(items.map(\.uuid)).count == items.count)
     }
+
+    @Test("Siri intents open the matching flow")
+    func intentsNavigate() throws {
+        let state = AppState(settings: AppSettings(defaults: .ephemeral()))
+
+        let station = try #require(MockScenarios.all.first { $0.id == .station })
+        StartConversationIntent.start(ScenarioEntity(station), in: state)
+        #expect(state.fullScreen == .conversation(.station))
+        StartConversationIntent.start(nil, in: state)
+        #expect(state.fullScreen == .conversation(MockScenarios.todaysFocus))
+
+        ReviewWordsIntent.start(in: state)
+        #expect(state.fullScreen == .activity(.recall))
+
+        TranslateIntent.open("  I'm running late  ", in: state)
+        #expect(state.fullScreen == nil)
+        #expect(state.path == [.translate(text: "I'm running late")])
+        TranslateIntent.open(" ", in: state)
+        #expect(state.path == [.translate(text: nil)])
+
+        let rule = try #require(MockRules.all.first)
+        OpenRuleIntent.open(GrammarRuleEntity(rule), in: state)
+        #expect(state.path == [.rule(id: rule.id)])
+    }
+
+    @Test("Searching from Siri opens Memory with the search filled in")
+    func searchRoute() {
+        let state = AppState(settings: AppSettings(defaults: .ephemeral()))
+        state.show(.memory(search: "Termin"))
+        #expect(state.path == [.memory(kind: nil, search: "Termin")])
+    }
+
+    @Test("Spotlight gets every word, phrase, conversation and rule")
+    func spotlightEntities() throws {
+        let entities = try SpotlightIndex.entities(in: context)
+        #expect(entities.words.count == (try context.fetchCount(FetchDescriptor<MemoryItem>())))
+        #expect(entities.phrases.count == (try context.fetchCount(FetchDescriptor<Phrase>())))
+        #expect(entities.scenarios.count == MockScenarios.all.count)
+        #expect(entities.rules.count == MockRules.all.count)
+        #expect(entities.count == entities.words.count + entities.phrases.count + entities.scenarios.count + entities.rules.count)
+    }
 }

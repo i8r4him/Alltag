@@ -10,6 +10,8 @@ import Foundation
 /// The prototype's conversation scenarios (`SCEN`).
 enum MockScenarios {
     static let all: [Scenario] = [dentist, postOffice, station]
+    /// The conversation on Home's focus card, and Siri's default.
+    static let todaysFocus: Scenario.ID = .dentist
 
     static func scenario(_ id: Scenario.ID) -> Scenario {
         switch id {

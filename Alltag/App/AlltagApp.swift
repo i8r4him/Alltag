@@ -14,6 +14,7 @@ struct AlltagApp: App {
     private let container: ModelContainer
     @State private var appState: AppState
     private let services = AppServices.live()
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         do {
@@ -33,6 +34,8 @@ struct AlltagApp: App {
         let container = container
         AppDependencyManager.shared.add(dependency: container)
         AppDependencyManager.shared.add(dependency: state)
+        // Lets Siri phrases name a conversation or rule ("Practise At the dentist").
+        AlltagShortcuts.updateAppShortcutParameters()
     }
 
     var body: some Scene {
@@ -40,6 +43,12 @@ struct AlltagApp: App {
             RootView()
                 .environment(appState)
                 .environment(\.services, services)
+                .task { await SpotlightIndex.reindex(container) }
+        }
+        // Words saved during a session reach Spotlight when the app is left.
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .background else { return }
+            Task { await SpotlightIndex.reindex(container) }
         }
         .modelContainer(container)
     }

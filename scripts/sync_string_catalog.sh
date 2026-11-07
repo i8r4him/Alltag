@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Builds the app and updates Localizable.xcstrings from the code, like Xcode
+# Builds the app and updates the String Catalogs (Localizable and
+# AppShortcuts) from the code, like Xcode
 # does when you build in the IDE: adds new strings, removes unused ones (only
 # those without translations) and sorts keys case-insensitively.
 #
@@ -8,7 +9,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 derived="DerivedData"
-catalog="Alltag/Resources/Localizable.xcstrings"
+catalogs=(Alltag/Resources/Localizable.xcstrings Alltag/Resources/AppShortcuts.xcstrings)
 
 xcodebuild build -project Alltag.xcodeproj -scheme Alltag \
   -destination "generic/platform=iOS Simulator" \
@@ -17,6 +18,7 @@ xcodebuild build -project Alltag.xcodeproj -scheme Alltag \
 stringsdata=()
 while IFS= read -r -d '' file; do stringsdata+=(--stringsdata "$file"); done \
   < <(find "$derived" -name "*.stringsdata" -path "*/Alltag.build/Objects-normal/*" -print0)
+for catalog in "${catalogs[@]}"; do
 xcrun xcstringstool sync "$catalog" "${stringsdata[@]}"
 
 python3 -I - "$catalog" <<'EOF'
@@ -37,3 +39,4 @@ with open(path, "w", encoding="utf-8") as file:
     file.write(json.dumps(data, indent=2, ensure_ascii=False).replace('": ', '" : ') + "\n")
 print(f"{path}: {len(data['strings'])} keys, removed {len(removed)} unused")
 EOF
+done

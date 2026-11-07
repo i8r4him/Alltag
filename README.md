@@ -111,8 +111,15 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ContentEntities.swift         ScenarioEntity, GrammarRuleEntity (+ queries)
 │  │  │  └─ MemoryEntities.swift          WordEntity, PhraseEntity (+ SwiftData queries, MemoryLookup)
 │  │  ├─ Actions/
-│  │  │  └─ OpenMemoryIntent.swift        more actions in #45 (conversation, translate, review, rule)
-│  │  └─ AlltagShortcuts.swift            AppShortcutsProvider
+│  │  │  ├─ StartConversationIntent.swift "Practise At the dentist"
+│  │  │  ├─ TranslateIntent.swift
+│  │  │  ├─ ReviewWordsIntent.swift
+│  │  │  ├─ OpenRuleIntent.swift          OpenIntent for a GrammarRuleEntity
+│  │  │  ├─ OpenMemoryIntent.swift
+│  │  │  └─ SearchMemoryIntent.swift      App Schema: .system.searchInApp
+│  │  ├─ AlltagShortcuts.swift            AppShortcutsProvider, phrases in AppShortcuts.xcstrings
+│  │  ├─ SpotlightIndex.swift             IndexedEntity, reindexed at launch and in background
+│  │  └─ OnscreenEntity.swift             .onscreenEntity(_:) for Rule and Memory
 │  │
 │  ├─ Features/
 │  │  ├─ Onboarding/
@@ -376,7 +383,7 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 ## Localization
 - All UI text is in `Resources/Localizable.xcstrings`, written in **British English** ("Practise", "neighbours").
 - UI text in models (onboarding options, level descriptions, Smart Bar placeholders) is `LocalizedStringResource`, so it is extracted too. Lesson content (scenarios, rules, translations) stays `String`: it is learning material, not interface text.
-- Xcode adds new strings to the catalog when you build; outside Xcode, run `scripts/sync_string_catalog.sh`. CI fails if the committed catalog is missing a string or still lists one the code no longer uses.
+- Xcode adds new strings to the catalogs (`Localizable` and `AppShortcuts`) when you build; outside Xcode, run `scripts/sync_string_catalog.sh`. CI fails if a committed catalog is missing a string or still lists one the code no longer uses.
 
 ## Frameworks
 All Apple frameworks — nothing to install.

@@ -25,8 +25,9 @@ struct MemoryView: View {
     @State private var query = ""
     @State private var expandedID: PersistentIdentifier?
 
-    init(kind: MemoryKind? = nil) {
+    init(kind: MemoryKind? = nil, search: String? = nil) {
         _filter = State(initialValue: MemoryFilter(kind: kind))
+        _query = State(initialValue: search ?? "")
     }
 
     var body: some View {
@@ -61,10 +62,16 @@ struct MemoryView: View {
             if old == .phrasebook { markPhrasesSeen() }
         }
         .onDisappear { if tab == .phrasebook { markPhrasesSeen() } }
+        .onscreenEntity(expandedWord.map { WordEntity($0) }, title: expandedWord?.displayWord ?? "")
         .smartBar(.memory) { text in
             tab = .words
             query = text
         }
+    }
+
+    /// The word opened in the list, linked for Siri and Apple Intelligence.
+    private var expandedWord: MemoryItem? {
+        items.first { $0.id == expandedID }
     }
 
     private func markPhrasesSeen() {
