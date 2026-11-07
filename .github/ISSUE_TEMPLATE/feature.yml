@@ -1,0 +1,38 @@
+name: Feature
+description: A screen, component or capability to build
+labels: [feature]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What should be built, and why?
+    validations:
+      required: true
+  - type: textarea
+    id: spec
+    attributes:
+      label: Spec
+      description: Relevant details from the README design spec.
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria
+      value: |
+        - [ ] 
+        - [ ] Light and dark mode
+        - [ ] Dynamic Type and VoiceOver
+        - [ ] `#Preview` for each key state
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Design reference
+      description: Screenshot file(s) from `screenshots/`, or a link.
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      multiple: true
+      options: [iPhone, iPad / foldable, Apple Watch]

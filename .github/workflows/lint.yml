@@ -1,0 +1,24 @@
+name: SwiftLint
+
+on:
+  pull_request:
+    paths:
+      - "**/*.swift"
+      - ".swiftlint.yml"
+      - ".github/workflows/lint.yml"
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  swiftlint:
+    name: SwiftLint
+    runs-on: [self-hosted, macOS]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint
+        run: |
+          export PATH="/opt/homebrew/bin:$PATH"
+          swiftlint lint --strict --reporter github-actions-logging
