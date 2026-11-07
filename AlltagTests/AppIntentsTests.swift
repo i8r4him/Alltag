@@ -70,9 +70,9 @@ struct AppIntentsTests {
         state.open(.grammar)
         state.present(.conversation(.dentist))
 
-        state.show(.memory)
+        state.show(.memory())
         #expect(state.fullScreen == nil)
-        #expect(state.path == [.memory])
+        #expect(state.path == [.memory()])
     }
 
     @Test("Each memory item gets its own stable ID")

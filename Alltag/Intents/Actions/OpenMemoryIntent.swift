@@ -17,7 +17,7 @@ struct OpenMemoryIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        appState.show(.memory)
+        appState.show(.memory())
         return .result()
     }
 }
