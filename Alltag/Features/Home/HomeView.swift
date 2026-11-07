@@ -35,6 +35,7 @@ struct HomeView: View {
         }
         .background(.screenBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .smartBar(.home)
     }
 
     private struct Entry {
@@ -70,7 +71,7 @@ struct HomeView: View {
     }
 
     private static let screens: [Destination<Route>] = [
-        Destination(title: "Translate", symbol: "translate", route: .translate),
+        Destination(title: "Translate", symbol: "translate", route: .translate()),
         Destination(title: "Memory", symbol: "book", route: .memory),
         Destination(title: "Learn", symbol: "bolt", route: .learn),
         Destination(title: "Grammar", symbol: "text.badge.checkmark", route: .grammar),

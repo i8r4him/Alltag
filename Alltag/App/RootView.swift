@@ -42,8 +42,14 @@ struct RootView: View {
     }
 
     /// Each feature issue replaces its placeholder here with the real screen.
+    @ViewBuilder
     private func destination(_ route: Route) -> some View {
-        PlaceholderScreen(title: route.placeholder.title, issue: route.placeholder.issue)
+        let screen = PlaceholderScreen(title: route.placeholder.title, issue: route.placeholder.issue)
+        if let context = route.smartBarContext {
+            screen.smartBar(context)
+        } else {
+            screen
+        }
     }
 
     @ViewBuilder
