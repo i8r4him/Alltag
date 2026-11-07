@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 struct OpenAIRealtimeConversationService: RealtimeConversationService {
     private let client = SupabaseRealtimeClient()
@@ -24,8 +25,8 @@ protocol RealtimeSocket: AnyObject {
 private final class URLSessionRealtimeSocket: RealtimeSocket {
     private let task: URLSessionWebSocketTask
 
-    init(url: URL, protocols: [String]) {
-        task = URLSession.shared.webSocketTask(with: url, protocols: protocols)
+    init(request: URLRequest) {
+        task = URLSession.shared.webSocketTask(with: request)
         task.resume()
     }
 
@@ -49,7 +50,7 @@ private final class URLSessionRealtimeSocket: RealtimeSocket {
 
 final class OpenAIRealtimeSession: RealtimeConversationSession {
     typealias Credentials = (RealtimeConversationContext) async throws -> RealtimeCredentials
-    typealias Connect = @MainActor (URL, [String]) -> any RealtimeSocket
+    typealias Connect = @MainActor (URLRequest) -> any RealtimeSocket
 
     private struct ServerEvent: Decodable {
         let type: String
@@ -57,13 +58,19 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
         let delta: String?
         let transcript: String?
         let response: Response?
+        let error: ServerError?
 
         struct Response: Decodable {
             let status: String
         }
 
+        struct ServerError: Decodable {
+            let code: String?
+            let message: String?
+        }
+
         enum CodingKeys: String, CodingKey {
-            case type, delta, transcript, response
+            case type, delta, transcript, response, error
             case itemID = "item_id"
         }
     }
@@ -72,6 +79,7 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
     private let credentials: Credentials
     private let audio: any RealtimeAudio
     private let connect: Connect
+    private let logger = Logger(subsystem: "Alltag", category: "Realtime")
     private var socket: (any RealtimeSocket)?
     private var upload: Task<Void, Never>?
     private var isStopped = false
@@ -84,7 +92,7 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
         self.context = context
         self.credentials = credentials
         self.audio = audio
-        self.connect = connect ?? { URLSessionRealtimeSocket(url: $0, protocols: $1) }
+        self.connect = connect ?? { URLSessionRealtimeSocket(request: $0) }
     }
 
     func run(emit: @escaping (RealtimeConversationEvent) -> Void) async throws {
@@ -93,8 +101,7 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
         try checkRunning()
         let ticket = try await credentials(context)
         try checkRunning()
-        let url = try Self.endpoint(for: ticket)
-        let socket = connect(url, ["realtime", "openai-insecure-api-key.\(ticket.clientSecret)"])
+        let socket = connect(try Self.request(for: ticket))
         self.socket = socket
 
         try await configure(socket, voice: ticket.voice)
@@ -140,7 +147,7 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
             }
         }
         defer { timeout.cancel() }
-        guard try await receive(from: socket).type == "session.created" else {
+        guard try await receive(from: socket, duringSetup: true).type == "session.created" else {
             throw RealtimeServiceError.unexpectedResponse
         }
         let format: [String: Any] = ["type": "audio/pcm", "rate": SystemRealtimeAudio.sampleRate]
@@ -154,7 +161,7 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
         let session: [String: Any] = ["type": "realtime", "output_modalities": ["audio"],
                                      "audio": ["input": input, "output": output]]
         try await send(["type": "session.update", "session": session], over: socket)
-        while try await receive(from: socket).type != "session.updated" {
+        while try await receive(from: socket, duringSetup: true).type != "session.updated" {
             try checkRunning()
         }
     }
@@ -191,9 +198,7 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
             emit(.phase(.speaking))
         case "response.done":
             isResponding = false
-            guard let status = event.response?.status, status == "completed" || status == "cancelled" else {
-                throw RealtimeServiceError.upstream
-            }
+            if event.response?.status == "failed" { throw RealtimeServiceError.upstream }
             finishPlayback(emit: emit)
         case "conversation.item.input_audio_transcription.failed":
             throw RealtimeServiceError.upstream
@@ -217,9 +222,14 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
         if isStopped { throw CancellationError() }
     }
 
-    private func receive(from socket: any RealtimeSocket) async throws -> ServerEvent {
+    private func receive(from socket: any RealtimeSocket, duringSetup: Bool = false) async throws -> ServerEvent {
         let event = try JSONDecoder().decode(ServerEvent.self, from: await socket.receive())
-        if event.type == "error" { throw RealtimeServiceError.upstream }
+        if event.type == "error" {
+            let code = event.error?.code ?? "unknown"
+            let message = event.error?.message ?? "No message"
+            logger.error("Realtime error (\(code, privacy: .public)): \(message, privacy: .private)")
+            if duringSetup { throw RealtimeServiceError.upstream }
+        }
         return event
     }
 
@@ -227,12 +237,14 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
         try await socket.send(JSONSerialization.data(withJSONObject: event))
     }
 
-    private static func endpoint(for ticket: RealtimeCredentials) throws -> URL {
+    private static func request(for ticket: RealtimeCredentials) throws -> URLRequest {
         guard ticket.expiresAt > Date.now.timeIntervalSince1970,
               let url = URL(string: "wss://api.openai.com/v1/realtime")?
                 .appending(queryItems: [URLQueryItem(name: "model", value: ticket.model)]) else {
             throw RealtimeServiceError.unexpectedResponse
         }
-        return url
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(ticket.clientSecret)", forHTTPHeaderField: "Authorization")
+        return request
     }
 }

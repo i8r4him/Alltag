@@ -30,6 +30,7 @@ final class SystemRealtimeAudio: RealtimeAudio {
     private var pendingBuffers = 0
     private var playbackGeneration = 0
     private var playbackFormat: AVAudioFormat?
+    private var onPlaybackDrained: (@MainActor @Sendable () -> Void)?
     var hasPlayback: Bool { pendingBuffers > 0 }
 
     func requestPermission() async -> Bool {
@@ -41,8 +42,7 @@ final class SystemRealtimeAudio: RealtimeAudio {
         try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetoothHFP])
         try session.setActive(true)
         isActive = true
-        let microphone = engine.inputNode
-        try microphone.setVoiceProcessingEnabled(true)
+        try engine.inputNode.setVoiceProcessingEnabled(true)
 
         let sampleRate = Double(Self.sampleRate)
         guard let pcm = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: sampleRate, channels: 1, interleaved: true),
@@ -52,13 +52,10 @@ final class SystemRealtimeAudio: RealtimeAudio {
         playbackFormat = playback
         engine.attach(player)
         try engine.connectNode(player, to: engine.mainMixerNode, format: playback)
-        let (stream, continuation) = AsyncThrowingStream.makeStream(of: Data.self, bufferingPolicy: .bufferingOldest(32))
+        let (stream, continuation) = AsyncThrowingStream.makeStream(of: Data.self, bufferingPolicy: .bufferingOldest(128))
         input = continuation
-        try Self.installTap(on: microphone, outputFormat: pcm, continuation: continuation)
-        hasTap = true
-        engine.prepare()
-        try engine.start()
-        watchAudioChanges(session: session, continuation: continuation)
+        try startEngine(recordingIn: pcm, continuation: continuation)
+        watchAudioChanges(session: session, recordingIn: pcm, continuation: continuation)
         return stream
     }
 
@@ -82,12 +79,16 @@ final class SystemRealtimeAudio: RealtimeAudio {
         }
         pendingBuffers += 1
         framesScheduled += AVAudioFramePosition(frames)
+        onPlaybackDrained = onPlayed
         let generation = playbackGeneration
         player.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { @Sendable [weak self] _ in
             Task { @MainActor [weak self] in
                 guard let self, self.playbackGeneration == generation else { return }
                 self.pendingBuffers -= 1
-                onPlayed()
+                if !self.hasPlayback {
+                    self.onPlaybackDrained = nil
+                    onPlayed()
+                }
             }
         }
         if !player.isPlaying { try player.playAudio() }
@@ -108,8 +109,7 @@ final class SystemRealtimeAudio: RealtimeAudio {
         observers.removeAll()
         guard isActive else { return }
         clearPlayback()
-        if hasTap { engine.inputNode.removeTap(onBus: 0) }
-        hasTap = false
+        removeTap()
         engine.stop()
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         isActive = false
@@ -120,14 +120,48 @@ final class SystemRealtimeAudio: RealtimeAudio {
         pendingBuffers = 0
         framesScheduled = 0
         item = nil
+        onPlaybackDrained = nil
         player.stop()
     }
 
-    private func watchAudioChanges(session: AVAudioSession, continuation: AsyncThrowingStream<Data, any Error>.Continuation) {
+    private func removeTap() {
+        guard hasTap else { return }
+        engine.inputNode.removeTap(onBus: 0)
+        hasTap = false
+    }
+
+    private func startEngine(recordingIn format: AVAudioFormat, continuation: AsyncThrowingStream<Data, any Error>.Continuation) throws {
+        let microphone = engine.inputNode
+        if !microphone.isVoiceProcessingEnabled { try microphone.setVoiceProcessingEnabled(true) }
+        try Self.installTap(on: microphone, outputFormat: format, continuation: continuation)
+        hasTap = true
+        engine.prepare()
+        try engine.start()
+    }
+
+    private func restartEngine(recordingIn format: AVAudioFormat) {
+        guard let input, !engine.isRunning else { return }
+        // A route change can invalidate queued playback and the tap's hardware format.
+        let onPlaybackDrained = self.onPlaybackDrained
+        clearPlayback()
+        removeTap()
+        do {
+            try startEngine(recordingIn: format, continuation: input)
+            onPlaybackDrained?()
+        } catch {
+            input.finish(throwing: error)
+        }
+    }
+
+    private func watchAudioChanges(
+        session: AVAudioSession,
+        recordingIn format: AVAudioFormat,
+        continuation: AsyncThrowingStream<Data, any Error>.Continuation
+    ) {
         let centre = NotificationCenter.default
         observers = [
-            centre.addObserver(forName: .AVAudioEngineConfigurationChange, object: engine, queue: nil) { @Sendable _ in
-                continuation.finish(throwing: RealtimeServiceError.unavailable)
+            centre.addObserver(forName: .AVAudioEngineConfigurationChange, object: engine, queue: nil) { @Sendable [weak self] _ in
+                Task { @MainActor [weak self] in self?.restartEngine(recordingIn: format) }
             },
             centre.addObserver(forName: AVAudioSession.interruptionNotification, object: session, queue: nil) { @Sendable _ in
                 continuation.finish(throwing: RealtimeServiceError.unavailable)
