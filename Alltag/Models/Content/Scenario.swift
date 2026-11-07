@@ -23,13 +23,19 @@ struct Scenario: Identifiable, Hashable, Sendable {
     /// Shown in the summary when the conversation is finished.
     let completion: String
     /// Phrases saved to Memory when the conversation ends.
-    let savedPhrases: [String]
+    let savedPhrases: [SavedPhrase]
     let systemImage: String
     /// The scripted conversation (simulated until the companion is live).
     let script: [ConversationLine]
 
     /// Number of learner turns in the script.
     var learnerTurns: Int { script.filter { $0.speaker == .learner }.count }
+}
+
+/// A phrase from a conversation that is saved to Memory.
+struct SavedPhrase: Hashable, Sendable {
+    let german: String
+    let english: String
 }
 
 /// One line of a conversation.

@@ -38,6 +38,16 @@
       }
     },
     "%@ · steadily rising" : {},
+    "%@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
     "%@: %@. %@" : {
       "localizations" : {
         "en" : {
@@ -98,12 +108,14 @@
     "Components" : {},
     "Continue" : {},
     "Conversation" : {},
+    "Conversation complete" : {},
     "Conversations that matter most" : {},
     "Cooking" : {},
     "Corrections while you type in any app" : {},
     "Daily" : {},
     "Debrief: find what you couldn't say" : {},
     "Design tokens" : {},
+    "Done" : {},
     "Each one is optional. You can change them any time in Settings." : {},
     "End conversation" : {},
     "English" : {},
@@ -180,9 +192,12 @@
     "Other" : {},
     "Partner & family" : {},
     "Phrase" : {},
+    "phrase saved" : {},
+    "phrases saved" : {},
     "Picks up the word order you mixed up yesterday." : {},
     "Politics" : {},
     "Practise speaking" : {},
+    "Practise your fixes · 1 min" : {},
     "Precision and style" : {},
     "Profile" : {},
     "Progress" : {},
@@ -207,6 +222,7 @@
     "Review words" : {},
     "Right" : {},
     "Saved to Memory" : {},
+    "Saved to Memory: %@." : {},
     "Send" : {},
     "Serious about it" : {},
     "Settings" : {},
@@ -231,6 +247,8 @@
     "Studies" : {},
     "Tap to see English" : {},
     "Tap to speak" : {},
+    "thing to fix" : {},
+    "things to fix" : {},
     "Thinking" : {},
     "Thinking…" : {},
     "This flow is built in #%lld." : {},
@@ -243,6 +261,8 @@
     "Travel" : {},
     "Try saying" : {},
     "Turkish" : {},
+    "turn spoken" : {},
+    "turns spoken" : {},
     "Type instead" : {},
     "Ukrainian" : {},
     "Verb at the end" : {},

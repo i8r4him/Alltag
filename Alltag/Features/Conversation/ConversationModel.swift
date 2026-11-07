@@ -7,6 +7,7 @@
 
 import Foundation
 import Observation
+import SwiftData
 
 /// The conversation state machine:
 ///
@@ -124,6 +125,22 @@ final class ConversationModel {
         draft = ""
         let isCustom = !text.isEmpty && Self.normalized(text) != Self.normalized(line.german)
         await finishTurn(saying: isCustom ? text : line.german, isCustom: isCustom)
+    }
+
+    /// Saves the scenario's phrases to Memory, skipping ones already there.
+    /// Returns how many were added.
+    @discardableResult
+    func savePhrases(in context: ModelContext) -> Int {
+        let existing = Set(((try? context.fetch(FetchDescriptor<MemoryItem>())) ?? []).map { $0.word.lowercased() })
+        let new = scenario.savedPhrases.filter { !existing.contains($0.german.lowercased()) }
+        for phrase in new {
+            let example = scenario.script.first { $0.speaker == .learner && $0.german.localizedCaseInsensitiveContains(phrase.german) }
+            context.insert(MemoryItem(word: phrase.german, meaning: phrase.english,
+                                      context: example?.german ?? "", contextNote: example?.english ?? "",
+                                      kind: .saved, source: .conversation, sourceDetail: scenario.title))
+        }
+        try? context.save()
+        return new.count
     }
 
     /// Stops listening and speaking, e.g. when the conversation is closed.
