@@ -51,7 +51,7 @@ struct ServiceTests {
 
     @Test("Debrief returns the bakery phrases")
     func companionDebrief() async throws {
-        let debrief = try await MockCompanionService(thinkingTime: .zero).debrief("nuts?")
+        let debrief = try await MockCompanionService(thinkingTime: .zero).debrief("nuts?", about: MockDebrief.bakery)
         #expect(debrief.phrases.count == 2)
     }
 

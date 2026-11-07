@@ -61,7 +61,7 @@ struct FeedbackCard: View {
 #Preview {
     VStack(alignment: .trailing, spacing: 12) {
         ForEach(MockScenarios.dentist.script.compactMap(\.feedback), id: \.title) { FeedbackCard(feedback: $0) }
-        FeedbackCard(feedback: Feedback(kind: .note, title: "Prototype", note: "Feedback on your own sentences arrives later."))
+        FeedbackCard(feedback: MockCompanionService.ownSentenceNote)
     }
     .padding()
     .background(.screenBackground)

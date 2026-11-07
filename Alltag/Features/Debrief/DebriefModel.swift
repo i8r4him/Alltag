@@ -36,13 +36,16 @@ final class DebriefModel {
         companion = services.companion
     }
 
+    /// Whether results come from Apple Intelligence rather than the samples.
+    var usesOnDeviceModel: Bool { companion.usesOnDeviceModel }
+
     var canFind: Bool { phase == .input && !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
     /// Asks the companion how to say it.
     func findWords() async {
         guard canFind else { return }
         phase = .thinking
-        result = try? await companion.debrief(input)
+        result = try? await companion.debrief(input, about: moment)
         phase = result == nil ? .input : .result
     }
 
