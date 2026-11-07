@@ -109,7 +109,9 @@ Alltag/                                   ← repo root
 │  │  │  ├─ SupabaseRealtimeClient.swift             anonymous auth, Keychain and session credentials
 │  │  │  ├─ OpenAIRealtimeConversationService.swift  Realtime WebSocket, audio events and transcripts
 │  │  │  └─ RealtimeAudio.swift                      PCM capture, playback and interruption
-│  │  ├─ Translation/TranslationService.swift   TranslationService, MockTranslationService (3 samples)
+│  │  ├─ Translation/
+│  │  │  ├─ TranslationService.swift      TranslationService, TranslationServiceError, MockTranslationService (3 samples)
+│  │  │  └─ SystemTranslationService.swift   Translation framework (on device) + Apple Intelligence explanations
 │  │  ├─ Companion/
 │  │  │  ├─ CompanionService.swift        CompanionService, MockCompanionService (scripts, samples, fallback)
 │  │  │  └─ OnDeviceCompanionService.swift   Foundation Models: feedback on own sentences, debriefs
@@ -396,7 +398,8 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 - **Real on iPhone:** German speech recognition with `SpeechAnalyzer` (on device; the simulator keeps the simulated listening). Saying roughly the scripted line continues the script; anything else is your own sentence and gets feedback.
 - **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. On-device conversations keep their scripted replies so each scenario reaches its goal.
 - **Live voice beta on iPhone:** OpenAI Realtime through the existing Supabase credential broker, with both speakers' captions. Cloud voice is opt-in. The simulator keeps the scripted path.
-- **Simulated:** scripted companion replies & feedback, translations (3 samples), placement.
+- **Real on iPhone:** translation with Apple's Translation framework (on device; English and German are downloaded once). Apple Intelligence adds word by word, tone and examples; without it the plain translation is shown. The three samples keep their hand-written explanations, and the simulator only knows those.
+- **Simulated:** scripted companion replies & feedback, placement.
 - **Later:** see the framework table below.
 
 ## Localization

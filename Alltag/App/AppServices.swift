@@ -24,7 +24,7 @@ struct AppServices {
         AppServices(
             speech: liveSpeech(),
             voice: SystemVoiceService(),
-            translation: MockTranslationService(),
+            translation: SystemTranslationService(),
             companion: OnDeviceCompanionService(),
             calendar: MockCalendarService(),
             notifications: MockNotificationService(),
