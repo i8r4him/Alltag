@@ -83,7 +83,6 @@
     "New" : {},
     "Not sure? Find out in one question" : {},
     "Nuance and opinion" : {},
-    "Onboarding is built in #20–#22." : {},
     "Open My Words" : {},
     "Opens your words and phrases in Alltag." : {},
     "Other" : {},
@@ -107,17 +106,30 @@
     "Settings" : {},
     "Show actions" : {},
     "Simple everyday conversations" : {},
+    "Skip" : {},
     "Solved" : {},
     "Spanish" : {},
     "Speak" : {},
     "Speak German" : {},
+    "Start learning" : {},
     "Start review" : {},
     "Steady progress" : {},
+    "Step %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Step %1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "Strength" : {},
     "Studies" : {},
     "there" : {},
     "This flow is built in #%lld." : {},
     "This screen is built in #%lld." : {},
+    "This step is built in #%lld." : {},
     "Today's focus" : {},
     "Translate" : {},
     "Travel" : {},
@@ -125,6 +137,7 @@
     "Ukrainian" : {},
     "Word" : {},
     "Work" : {},
+    "Your name" : {},
     "Your words in today's news" : {}
   },
   "version" : "1.0"
