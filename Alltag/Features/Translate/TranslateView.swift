@@ -22,6 +22,7 @@ struct TranslateView: View {
                 Color.clear
             }
         }
+        .readableContentMargins()
         .background(.screenBackground)
         .onAppear {
             if model == nil { model = TranslateModel(text: initialText, services: services) }

@@ -53,6 +53,7 @@ struct HomeView: View {
             }
             .padding(Spacing.screen)
         }
+        .readableContentMargins()
         .background(.screenBackground)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {

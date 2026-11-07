@@ -52,7 +52,8 @@ private struct ActivityContent: View {
                 }
             }
             .padding(.horizontal, Spacing.onboarding)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .readableWidth(Spacing.focusedWidth)
+            .frame(maxHeight: .infinity, alignment: .top)
             .background(.screenBackground)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

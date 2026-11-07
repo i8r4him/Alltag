@@ -41,6 +41,8 @@ struct ComingUpCard: View {
             }
             .scrollTargetBehavior(.viewAligned)
             .scrollIndicators(.hidden)
+            // Not the screen's readable-width margins (they are inherited).
+            .contentMargins(.horizontal, 0, for: .scrollContent)
         }
         .padding(.vertical, 14)
         .padding(.leading, 14)

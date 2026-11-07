@@ -25,4 +25,8 @@ enum Spacing {
     static let rowMinHeight: CGFloat = 50
     /// Minimum size of anything tappable.
     static let minTouchTarget: CGFloat = 44
+    /// Widest a screen's content gets on iPad and unfolded foldables.
+    static let readableWidth: CGFloat = 720
+    /// Widest focused flows get (onboarding, conversation, activities).
+    static let focusedWidth: CGFloat = 600
 }

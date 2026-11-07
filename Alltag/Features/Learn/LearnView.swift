@@ -36,6 +36,7 @@ struct LearnView: View {
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
+        .readableContentMargins()
         .background(.screenBackground)
         .navigationTitle("Learn")
         .navigationBarTitleDisplayMode(.large)

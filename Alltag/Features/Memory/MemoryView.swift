@@ -52,6 +52,7 @@ struct MemoryView: View {
             .animation(.easeOut(duration: 0.25), value: filter)
             .animation(.easeOut(duration: 0.25), value: expandedID)
         }
+        .readableContentMargins()
         .background(.screenBackground)
         .navigationTitle("Memory")
         .navigationBarTitleDisplayMode(.large)
@@ -134,6 +135,8 @@ struct MemoryView: View {
         }
         .scrollIndicators(.hidden)
         .scrollClipDisabled()
+        // Not the screen's readable-width margins (they are inherited).
+        .contentMargins(.horizontal, 0, for: .scrollContent)
     }
 }
 

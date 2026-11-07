@@ -24,6 +24,7 @@ struct ProfileView: View {
                     .padding(.bottom, 32)
             }
         }
+        .readableContentMargins()
         .background(.screenBackground)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
