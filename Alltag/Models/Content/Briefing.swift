@@ -36,13 +36,15 @@ struct Debrief: Hashable, Sendable {
 }
 
 /// The one-question placement test in onboarding.
-struct PlacementQuestion: Hashable, Sendable {
+struct PlacementQuestion: Sendable {
     struct Answer: Hashable, Sendable {
         let german: String
         let level: Level
     }
 
+    /// German, shown as is.
     let question: String
-    let instruction: String
+    /// Interface text, localized.
+    let instruction: LocalizedStringResource
     let answers: [Answer]
 }

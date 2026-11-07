@@ -65,7 +65,7 @@ struct ComponentGallery: View {
     private var options: some View {
         VStack(spacing: 10) {
             ForEach([("A2", "Simple everyday conversations"), ("B1", "I get by in most situations")], id: \.0) { item in
-                OptionCard(title: LocalizedStringKey(item.0), subtitle: LocalizedStringKey(item.1), isSelected: level == item.0) {
+                OptionCard(title: Text(verbatim: item.0), subtitle: Text(verbatim: item.1), isSelected: level == item.0) {
                     level = item.0
                 }
             }

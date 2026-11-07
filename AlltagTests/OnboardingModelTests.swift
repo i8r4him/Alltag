@@ -82,6 +82,36 @@ struct OnboardingModelTests {
         #expect(model.step == .welcome)
     }
 
+    @Test("The placement question replaces the level list and picking an answer sets the level")
+    func placement() throws {
+        let model = OnboardingModel()
+        model.level = .c1
+        model.startPlacement()
+        #expect(model.isPlacing)
+        #expect(model.placementAnswer == nil)
+
+        let b2 = try #require(MockPlacement.question.answers.first { $0.level == .b2 })
+        model.choosePlacement(b2)
+        #expect(model.level == .b2)
+        #expect(model.placementAnswer == b2)
+        #expect(String(localized: MockPlacement.confirmation(for: .b2)).hasPrefix("Sounds like B2."))
+    }
+
+    @Test("Leaving the level step resets the placement question but keeps the level", arguments: [true, false])
+    func placementResets(forward: Bool) throws {
+        let model = OnboardingModel()
+        model.name = "Mara"
+        for _ in 0..<3 { model.advance() }
+        #expect(model.step == .level)
+        model.startPlacement()
+        model.choosePlacement(try #require(MockPlacement.question.answers.first))
+
+        if forward { model.advance() } else { model.goBack() }
+        #expect(!model.isPlacing)
+        #expect(model.placementAnswer == nil)
+        #expect(model.level == .a2)
+    }
+
     @Test("Saving creates a completed profile with every answer")
     func savesNewProfile() throws {
         let container = try AlltagStore.makeContainer(inMemory: true)

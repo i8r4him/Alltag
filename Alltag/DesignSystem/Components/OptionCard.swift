@@ -12,11 +12,28 @@ import SwiftUI
 ///
 /// Selected: accent tint background, accent border and a filled check.
 struct OptionCard: View {
-    let title: LocalizedStringKey
-    var subtitle: LocalizedStringKey?
-    var systemImage: String?
-    let isSelected: Bool
-    let action: () -> Void
+    private let title: Text
+    private let subtitle: Text?
+    private let systemImage: String?
+    private let isSelected: Bool
+    private let action: () -> Void
+
+    /// For any text: localized resources, or content shown as is (`Text(verbatim:)`).
+    init(title: Text, subtitle: Text? = nil, systemImage: String? = nil,
+         isSelected: Bool, action: @escaping () -> Void) {
+        self.title = title
+        self.subtitle = subtitle
+        self.systemImage = systemImage
+        self.isSelected = isSelected
+        self.action = action
+    }
+
+    /// For UI text from the String Catalog.
+    init(title: LocalizedStringResource, subtitle: LocalizedStringResource? = nil, systemImage: String? = nil,
+         isSelected: Bool, action: @escaping () -> Void) {
+        self.init(title: Text(title), subtitle: subtitle.map { Text($0) }, systemImage: systemImage,
+                  isSelected: isSelected, action: action)
+    }
 
     var body: some View {
         Button(action: action) {
@@ -29,9 +46,9 @@ struct OptionCard: View {
                         .accessibilityHidden(true)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).textRole(.cardTitle).foregroundStyle(.primary)
+                    title.textRole(.cardTitle).foregroundStyle(.primary)
                     if let subtitle {
-                        Text(subtitle).textRole(.meta).foregroundStyle(.secondary)
+                        subtitle.textRole(.meta).foregroundStyle(.secondary)
                     }
                 }
                 .multilineTextAlignment(.leading)

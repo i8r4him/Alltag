@@ -34,15 +34,14 @@ struct OnboardingFlow: View {
 
             ZStack {
                 stepView
+                    .padding(.top, 28)
                     .id(model.step)
                     .transition(transition)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .clipped()
 
-            Button {
-                if model.advance() { finish() }
-            } label: {
+            Button(action: continueTapped) {
                 Text(model.continueTitle)
             }
             .buttonStyle(.primary)
@@ -72,8 +71,12 @@ struct OnboardingFlow: View {
     @ViewBuilder
     private var stepView: some View {
         switch model.step {
-        case .welcome, .name, .why, .level, .dailyTime, .interests, .permissions, .summary:
-            OnboardingStepPlaceholder(step: model.step, model: model)
+        case .welcome: WelcomeStep()
+        case .name: NameStep(model: model, onSubmit: continueTapped)
+        case .why: WhyStep(model: model)
+        case .level: LevelStep(model: model)
+        case .dailyTime, .interests, .permissions, .summary:
+            OnboardingStepPlaceholder(step: model.step)
         }
     }
 
@@ -90,6 +93,10 @@ struct OnboardingFlow: View {
         )
     }
 
+    private func continueTapped() {
+        if model.advance() { finish() }
+    }
+
     private func finish() {
         model.save(in: modelContext, existing: profiles.first)
         appState.dismissFullScreen()
@@ -97,32 +104,17 @@ struct OnboardingFlow: View {
     }
 }
 
-/// Stand-in for the step screens built in #21 (steps 0–3) and #22 (steps 4–7).
+/// Stand-in for steps 4–7, built in #22.
 private struct OnboardingStepPlaceholder: View {
     let step: OnboardingModel.Step
-    @Bindable var model: OnboardingModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if step == .welcome {
-                Spacer()
-                Eyebrow(title: "Alltag")
-                Text("Learn German through the life you already live.")
-                    .textRole(.hero)
-            } else {
-                Text("Step \(step.rawValue) of \(OnboardingModel.Step.allCases.count - 1)")
-                    .textRole(.title2)
-                    .padding(.top, 24)
-                if step == .name {
-                    TextField("Your name", text: $model.name)
-                        .textRole(.body)
-                        .padding(Spacing.card)
-                        .background(.surface, in: .rect(cornerRadius: Radius.option, style: .continuous))
-                }
-                Text("This step is built in #\(step < .dailyTime ? 21 : 22).")
-                    .textRole(.body)
-                    .foregroundStyle(.secondary)
-            }
+            Text("Step \(step.rawValue) of \(OnboardingModel.Step.allCases.count - 1)")
+                .textRole(.title2)
+            Text("This step is built in #22.")
+                .textRole(.body)
+                .foregroundStyle(.secondary)
             Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
