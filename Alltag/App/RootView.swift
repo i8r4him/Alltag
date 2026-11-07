@@ -58,6 +58,8 @@ struct RootView: View {
             DebriefView(services: services)
         case .briefing:
             BriefingView(services: services)
+        case .progress:
+            ProgressOverviewView()
         case .rule(let id):
             if let rule = MockRules.rule(id: id) {
                 RuleView(rule: rule)

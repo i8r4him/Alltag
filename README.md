@@ -85,6 +85,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ Activity.swift
 │  │  │  ├─ GrammarRule.swift            GrammarRule, GrammarTopic
 │  │  │  ├─ TranslationResult.swift
+│  │  │  ├─ ProgressReport.swift          Progress data (sample until history exists)
 │  │  │  └─ Briefing.swift               Briefing, Debrief, PlacementQuestion
 │  │  └─ Enums/
 │  │     ├─ MemoryKind.swift              MemoryKind, MemorySource
@@ -167,10 +168,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ BriefingView.swift            player with equalizer, highlighted transcript, word chips
 │  │  │  └─ BriefingModel.swift           playback, highlighting, Memory labels
 │  │  ├─ Progress/
-│  │  │  ├─ ProgressOverviewView.swift    not `ProgressView` — clashes with SwiftUI
-│  │  │  ├─ CEFRTrack.swift
-│  │  │  ├─ SituationRow.swift
-│  │  │  └─ SkillBars.swift
+│  │  │  └─ ProgressOverviewView.swift    level track, situations, skills, retention, insights
 │  │  ├─ Profile/
 │  │  │  └─ ProfileView.swift
 │  │  ├─ Settings/
