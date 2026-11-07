@@ -56,7 +56,7 @@ struct RootView: View {
     private func fullScreen(_ route: FullScreenRoute) -> some View {
         switch route {
         case .conversation(let id):
-            FullScreenPlaceholder(title: MockScenarios.scenario(id).title, issue: 29)
+            ConversationView(scenario: MockScenarios.scenario(id))
         case .activity(let id):
             FullScreenPlaceholder(title: MockActivities.activity(id).title, issue: 35)
         case .onboarding:

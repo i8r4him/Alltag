@@ -126,6 +126,13 @@ final class ConversationModel {
         await finishTurn(saying: isCustom ? text : line.german, isCustom: isCustom)
     }
 
+    /// Stops listening and speaking, e.g. when the conversation is closed.
+    func stop() {
+        listenTask?.cancel()
+        speech.stopListening()
+        voice.stop()
+    }
+
     /// Waits for a running listen–reply cycle to complete (used by tests).
     func waitForTurn() async {
         await listenTask?.value
