@@ -16,6 +16,10 @@ final class TranslateModel {
     var input: String
     private(set) var result: TranslationResult?
     private(set) var isTranslating = false
+    /// Word-by-word, tones and examples are being added.
+    private(set) var isExplaining = false
+    /// Languages to download before this text can be translated on device.
+    private(set) var missingLanguages: (source: Locale.Language, target: Locale.Language)?
     /// Direction chosen with the swap button when the text isn't recognised.
     private var prefersGermanSource = false
 
@@ -65,8 +69,29 @@ final class TranslateModel {
             return
         }
         isTranslating = true
-        result = try? await translation.translate(text)
+        missingLanguages = nil
+        do {
+            result = try await translation.translate(text)
+        } catch TranslationServiceError.needsDownload(let source, let target) {
+            result = nil
+            missingLanguages = (source, target)
+        } catch {
+            result = nil
+        }
         isTranslating = false
+
+        guard let plain = result, !plain.isExplained else { return }
+        isExplaining = true
+        let explained = await translation.explain(plain)
+        // Only if the learner hasn't typed something else meanwhile.
+        if result == plain { result = explained }
+        isExplaining = false
+    }
+
+    /// The languages finished downloading: try again.
+    func languagesDownloaded() async {
+        missingLanguages = nil
+        await translate()
     }
 
     /// Shows a sample translation.

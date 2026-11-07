@@ -7,6 +7,7 @@
 
 import SwiftData
 import SwiftUI
+import Translation
 
 /// Translate: English ⇄ German with word-by-word, tone and examples.
 struct TranslateView: View {
@@ -35,6 +36,8 @@ private struct TranslateContent: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var savedTranslations: [SavedTranslation]
     @State private var toast: ToastMessage?
+    /// Set to ask the system to download the translation languages.
+    @State private var download: TranslationSession.Configuration?
 
     var body: some View {
         ScrollView {
@@ -43,10 +46,18 @@ private struct TranslateContent: View {
                 resultCard
                 if let result = model.result {
                     VStack(alignment: .leading, spacing: 24) {
-                        WordByWordSection(words: result.words)
-                        ToneSection(note: result.note, tones: result.tones)
-                        InContextSection(examples: result.examples) { german in
-                            Task { await model.listen(to: german) }
+                        if !result.words.isEmpty { WordByWordSection(words: result.words) }
+                        if !result.tones.isEmpty { ToneSection(note: result.note, tones: result.tones) }
+                        if !result.examples.isEmpty {
+                            InContextSection(examples: result.examples) { german in
+                                Task { await model.listen(to: german) }
+                            }
+                        }
+                        if model.isExplaining {
+                            Label("Adding word by word, tone and examples…", systemImage: "sparkles")
+                                .textRole(.meta)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 4)
                         }
                     }
                     .padding(.top, 14)
@@ -68,6 +79,16 @@ private struct TranslateContent: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) { languageCapsule }
+        }
+        .translationTask(download) { session in
+            do {
+                try await session.prepareTranslation()
+                await model.languagesDownloaded()
+            } catch {
+                toast = ToastMessage(text: "The languages couldn't be downloaded. Try again later.",
+                                     systemImage: "exclamationmark.triangle")
+            }
+            download = nil
         }
         .task(id: model.input) {
             // Wait until typing pauses before translating.
@@ -161,10 +182,27 @@ private struct TranslateContent: View {
         }
     }
 
-    /// Shown when the text isn't one of the samples.
+    /// Shown when there's no translation: download the languages, or try a sample.
+    @ViewBuilder
     private var unknownNote: some View {
+        if let languages = model.missingLanguages {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Download English and German once to translate privately on your iPhone.")
+                    .textRole(.bodySmall)
+                    .foregroundStyle(.secondary)
+                Button("Download languages", systemImage: "arrow.down.circle") {
+                    download = TranslationSession.Configuration(source: languages.source, target: languages.target)
+                }
+                .buttonStyle(.primaryCompact)
+            }
+        } else {
+            samples
+        }
+    }
+
+    private var samples: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Live translation connects to Apple's Translation framework in a later version. For now, try one of these:")
+            Text("Alltag can't translate this right now. Try one of these:")
                 .textRole(.bodySmall)
                 .foregroundStyle(.secondary)
             ForEach(MockTranslations.all, id: \.english) { sample in

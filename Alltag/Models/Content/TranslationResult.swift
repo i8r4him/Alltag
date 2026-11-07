@@ -42,4 +42,7 @@ struct TranslationResult: Hashable, Sendable {
     /// Note on register and usage.
     let note: String
     let examples: [Example]
+
+    /// Whether word-by-word, tones or examples are present.
+    var isExplained: Bool { !words.isEmpty || !tones.isEmpty || !examples.isEmpty }
 }
