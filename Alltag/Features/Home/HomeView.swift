@@ -18,7 +18,7 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Hallo, \(profiles.first?.name ?? "there").")
+                    Text("Hallo, \(profiles.first?.name ?? String(localized: "there")).")
                         .textRole(.largeTitle)
                     Text("Home is built in #23–#26. Every screen is reachable below.")
                         .textRole(.bodySmall)
@@ -39,13 +39,13 @@ struct HomeView: View {
     }
 
     private struct Entry {
-        let title: String
+        let title: LocalizedStringKey
         let symbol: String
         let action: () -> Void
     }
 
     private struct Destination<Target> {
-        let title: String
+        let title: LocalizedStringKey
         let symbol: String
         let route: Target
     }
@@ -57,7 +57,7 @@ struct HomeView: View {
                 ForEach(entries.indices, id: \.self) { index in
                     let entry = entries[index]
                     Button(action: entry.action) {
-                        CardRow(title: LocalizedStringKey(entry.title), systemImage: entry.symbol)
+                        CardRow(title: entry.title, systemImage: entry.symbol)
                     }
                     .buttonStyle(.plain)
                     if index < entries.count - 1 {

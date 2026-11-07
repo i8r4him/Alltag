@@ -201,7 +201,7 @@ Alltag/                                   ← repo root
 │  │
 │  └─ Resources/
 │     ├─ Assets.xcassets                  AppIcon, AccentColor, Success, Mistake (light + dark)
-│     ├─ Localizable.xcstrings
+│     ├─ Localizable.xcstrings            all UI text (British English); kept in sync by CI
 │     └─ AppShortcuts.xcstrings           Siri phrases
 │
 ├─ AlltagTests/                           Swift Testing (added in M0)
@@ -227,6 +227,8 @@ Alltag/                                   ← repo root
 │  └─ dependabot.yml
 │
 ├─ screenshots/                           design reference (01–30)
+├─ scripts/
+│  └─ check_string_catalog.py           CI: fails if the String Catalog is out of date
 ├─ .swiftlint.yml
 ├─ .gitignore
 └─ README.md
@@ -378,6 +380,11 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 - **Real in native build (phase 1):** navigation, all UI states, AVSpeechSynthesizer pronunciation, haptics, local mock data, SwiftData persistence.
 - **Simulated:** speech recognition, companion replies & feedback, translations (3 samples), debrief answer, placement.
 - **Later:** see the framework table below.
+
+## Localization
+- All UI text is in `Resources/Localizable.xcstrings`, written in **British English** ("Practise", "neighbours").
+- UI text in models (onboarding options, level descriptions, Smart Bar placeholders) is `LocalizedStringResource`, so it is extracted too. Lesson content (scenarios, rules, translations) stays `String`: it is learning material, not interface text.
+- Xcode adds new strings to the catalog when you build. CI fails if the committed catalog is missing a string or still lists one the code no longer uses.
 
 ## Frameworks
 All Apple frameworks — nothing to install.
