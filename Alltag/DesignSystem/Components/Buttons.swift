@@ -94,3 +94,23 @@ struct GlassButton: View {
         .accessibilityLabel(accessibilityLabel)
     }
 }
+
+// MARK: - Card
+
+/// For whole cards and tiles that are tappable: shrinks slightly while pressed.
+struct PressableCardStyle: ButtonStyle {
+    var pressedScale: CGFloat = 0.98
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? pressedScale : 1)
+            .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
+    }
+}
+
+extension ButtonStyle where Self == PressableCardStyle {
+    /// Cards: shrink to 98% while pressed.
+    static var card: PressableCardStyle { PressableCardStyle() }
+    /// Small tiles: shrink to 96% while pressed.
+    static var tile: PressableCardStyle { PressableCardStyle(pressedScale: 0.96) }
+}

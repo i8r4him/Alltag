@@ -14,6 +14,8 @@ struct HomeView: View {
     @Environment(AppState.self) private var appState
     @Query private var profiles: [UserProfile]
     @Query private var memoryItems: [MemoryItem]
+    @Environment(\.services) private var services
+    @State private var events: [CalendarEvent] = []
 
     private var name: String { profiles.first?.name ?? "" }
 
@@ -25,6 +27,14 @@ struct HomeView: View {
                                onProfile: { appState.open(.profile) },
                                onSettings: { appState.open(.settings) })
                     HomeGreetingView(name: name, newWords: HomeGreeting.newReadingWords(in: memoryItems))
+                }
+                VStack(spacing: Spacing.grid) {
+                    FocusCard { appState.present(.conversation(.dentist)) }
+                    if !events.isEmpty {
+                        ComingUpCard(events: events) { event in
+                            if let scenario = event.scenario { appState.present(.conversation(scenario)) }
+                        }
+                    }
                 }
                 Text("Temporary until the Home cards are built (#24–#26).")
                     .textRole(.meta)
@@ -41,6 +51,7 @@ struct HomeView: View {
         .background(.screenBackground)
         .toolbar(.hidden, for: .navigationBar)
         .smartBar(.home)
+        .task { events = (try? await services.calendar.upcomingEvents()) ?? [] }
     }
 
     private struct Entry {
