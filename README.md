@@ -228,7 +228,8 @@ Alltag/                                   ← repo root
 │
 ├─ screenshots/                           design reference (01–30)
 ├─ scripts/
-│  └─ check_string_catalog.py           CI: fails if the String Catalog is out of date
+│  ├─ check_string_catalog.py           CI: fails if the String Catalog is out of date
+│  └─ sync_string_catalog.sh            updates the catalog from the code (same as building in Xcode)
 ├─ .swiftlint.yml
 ├─ .gitignore
 └─ README.md
@@ -384,7 +385,7 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 ## Localization
 - All UI text is in `Resources/Localizable.xcstrings`, written in **British English** ("Practise", "neighbours").
 - UI text in models (onboarding options, level descriptions, Smart Bar placeholders) is `LocalizedStringResource`, so it is extracted too. Lesson content (scenarios, rules, translations) stays `String`: it is learning material, not interface text.
-- Xcode adds new strings to the catalog when you build. CI fails if the committed catalog is missing a string or still lists one the code no longer uses.
+- Xcode adds new strings to the catalog when you build; outside Xcode, run `scripts/sync_string_catalog.sh`. CI fails if the committed catalog is missing a string or still lists one the code no longer uses.
 
 ## Frameworks
 All Apple frameworks — nothing to install.

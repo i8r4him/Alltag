@@ -5,7 +5,6 @@
 //  Created by Ibrahim Abdullah on 07.11.26.
 //
 
-import SwiftData
 import SwiftUI
 
 /// Stand-in for a pushed screen that hasn't been built yet.
@@ -53,39 +52,5 @@ struct FullScreenPlaceholder: View {
             }
         }
         .background(.screenBackground)
-    }
-}
-
-/// Stand-in for onboarding (#20–#22): finishing creates a sample profile.
-struct OnboardingPlaceholder: View {
-    @Environment(\.modelContext) private var modelContext
-    @Environment(AppState.self) private var appState
-    @Query private var profiles: [UserProfile]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Spacer()
-            Eyebrow(title: "Alltag")
-            Text("Learn German through the life you already live.")
-                .textRole(.hero)
-            Text("Onboarding is built in #20–#22.")
-                .textRole(.body)
-                .foregroundStyle(.secondary)
-            Spacer()
-            Button("Get started", action: finish)
-                .buttonStyle(.primary)
-        }
-        .padding(Spacing.onboarding)
-        .background(.screenBackground)
-    }
-
-    private func finish() {
-        if let profile = profiles.first {
-            profile.hasCompletedOnboarding = true
-        } else {
-            modelContext.insert(UserProfile(name: "Mara", level: .b1, interests: Interest.defaultSelection,
-                                            hasCompletedOnboarding: true))
-        }
-        appState.dismissFullScreen()
     }
 }

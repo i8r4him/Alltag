@@ -18,7 +18,7 @@ struct RootView: View {
     var body: some View {
         Group {
             if AppState.needsOnboarding(profiles) {
-                OnboardingPlaceholder()
+                OnboardingFlow()
                     .transition(.opacity)
             } else {
                 navigation
@@ -60,7 +60,7 @@ struct RootView: View {
         case .activity(let id):
             FullScreenPlaceholder(title: MockActivities.activity(id).title, issue: 35)
         case .onboarding:
-            OnboardingPlaceholder()
+            OnboardingFlow(model: profiles.first.map { OnboardingModel(profile: $0) } ?? OnboardingModel())
         }
     }
 }
