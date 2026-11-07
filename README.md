@@ -71,6 +71,7 @@ Alltag/                                   ← repo root
 │  │
 │  ├─ Models/
 │  │  ├─ Persistent/                      SwiftData @Model
+│  │  │  ├─ AlltagStore.swift            schema V1, migration plan, container, sample-data seeding
 │  │  │  ├─ UserProfile.swift
 │  │  │  ├─ MemoryItem.swift
 │  │  │  ├─ Phrase.swift
@@ -84,6 +85,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ TranslationResult.swift
 │  │  │  └─ Briefing.swift
 │  │  └─ Enums/
+│  │     ├─ MemoryKind.swift              MemoryKind, MemorySource
 │  │     ├─ Level.swift                   A1–C2
 │  │     ├─ Goal.swift
 │  │     ├─ NativeLanguage.swift
