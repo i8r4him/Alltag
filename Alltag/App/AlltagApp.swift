@@ -11,6 +11,7 @@ import SwiftUI
 @main
 struct AlltagApp: App {
     private let container: ModelContainer
+    @State private var appState = AppState()
 
     init() {
         do {
@@ -26,6 +27,7 @@ struct AlltagApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environment(appState)
         }
         .modelContainer(container)
     }
