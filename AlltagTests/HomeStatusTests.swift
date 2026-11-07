@@ -32,4 +32,10 @@ struct HomeStatusTests {
         #expect(status.mistakeRules == 2)
         #expect(status.level == .b1)
     }
+
+    @Test("Only mistakes made while writing count as writing mistakes")
+    func writingMistakes() {
+        // The sample data has two mistakes: one from Messages, one from a conversation.
+        #expect(FromYourDay.writingMistakes(in: MockMemoryItems.make(now: now)) == 1)
+    }
 }

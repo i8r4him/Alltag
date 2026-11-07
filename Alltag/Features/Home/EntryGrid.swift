@@ -24,7 +24,7 @@ struct EntryGrid: View {
             }
             GridRow {
                 EntryCard(title: "Memory", status: status.memory, systemImage: "book") {
-                    onOpen(.memory)
+                    onOpen(.memory())
                 }
                 EntryCard(title: "Progress", status: status.progress, systemImage: "chart.line.uptrend.xyaxis") {
                     onOpen(.progress)

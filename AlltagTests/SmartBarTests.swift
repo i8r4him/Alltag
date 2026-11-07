@@ -54,7 +54,7 @@ struct SmartBarTests {
 
     @Test("The bar appears on Memory, Learn, Progress and Grammar only")
     func routesWithBar() {
-        let withBar: [Route] = [.memory, .learn, .progress, .grammar]
+        let withBar: [Route] = [.memory(), .memory(kind: .fromYourDay), .learn, .progress, .grammar]
         let without: [Route] = [.translate(), .rule(id: "weil"), .profile, .settings, .beyond, .debrief, .briefing]
         #expect(withBar.allSatisfy { $0.smartBarContext != nil })
         #expect(without.allSatisfy { $0.smartBarContext == nil })

@@ -8,17 +8,19 @@
 import SwiftData
 import SwiftUI
 
-/// Home: top bar, greeting and — until #24–#26 add the cards — a temporary
-/// list of every route so all screens and flows can be reached.
+/// Home: greeting, Today's Focus, Coming up, the entry grid, Grammar,
+/// From your day and Learning beyond the app. The toolbar holds the avatar
+/// (→ Profile) and settings.
 struct HomeView: View {
     @Environment(AppState.self) private var appState
+    @Environment(\.services) private var services
     @Query private var profiles: [UserProfile]
     @Query private var memoryItems: [MemoryItem]
     @Query private var translations: [SavedTranslation]
-    @Environment(\.services) private var services
     @State private var events: [CalendarEvent] = []
 
     private var name: String { profiles.first?.name ?? "" }
+    private var newReadingWords: Int { HomeGreeting.newReadingWords(in: memoryItems) }
 
     private var status: HomeStatus {
         HomeStatus(translations: translations, memoryItems: memoryItems, level: profiles.first?.level ?? .a1)
@@ -27,7 +29,8 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
-                HomeGreetingView(name: name, newWords: HomeGreeting.newReadingWords(in: memoryItems))
+                HomeGreetingView(name: name, newWords: newReadingWords)
+
                 VStack(spacing: Spacing.grid) {
                     FocusCard { appState.present(.conversation(.dentist)) }
                     if !events.isEmpty {
@@ -38,15 +41,15 @@ struct HomeView: View {
                     EntryGrid(status: status) { appState.open($0) }
                     GrammarCard(rulesWorthALook: status.mistakeRules) { appState.open(.grammar) }
                 }
-                Text("Temporary until #26 adds From your day and Beyond the app.")
-                    .textRole(.meta)
-                    .foregroundStyle(.tertiary)
-                group("Screens", entries: Self.screens.map { entry in
-                    Entry(title: entry.title, symbol: entry.symbol) { appState.open(entry.route) }
-                })
-                group("Full-screen flows", entries: Self.flows.map { entry in
-                    Entry(title: entry.title, symbol: entry.symbol) { appState.present(entry.route) }
-                })
+
+                VStack(spacing: Spacing.grid) {
+                    FromYourDayList(briefingWords: MockBriefing.briefing.words.count,
+                                    newReadingWords: newReadingWords,
+                                    writingMistakes: FromYourDay.writingMistakes(in: memoryItems),
+                                    onOpen: { appState.open($0) },
+                                    onPresent: { appState.present($0) })
+                    BeyondRow { appState.open(.beyond) }
+                }
             }
             .padding(Spacing.screen)
         }
@@ -68,51 +71,6 @@ struct HomeView: View {
         .smartBar(.home)
         .task { events = (try? await services.calendar.upcomingEvents()) ?? [] }
     }
-
-    private struct Entry {
-        let title: LocalizedStringKey
-        let symbol: String
-        let action: () -> Void
-    }
-
-    private struct Destination<Target> {
-        let title: LocalizedStringKey
-        let symbol: String
-        let route: Target
-    }
-
-    private func group(_ title: LocalizedStringKey, entries: [Entry]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            SectionHeader(title, style: .grouped)
-            VStack(spacing: 0) {
-                ForEach(entries.indices, id: \.self) { index in
-                    let entry = entries[index]
-                    Button(action: entry.action) {
-                        CardRow(title: entry.title, systemImage: entry.symbol)
-                    }
-                    .buttonStyle(.plain)
-                    if index < entries.count - 1 {
-                        Divider().padding(.leading, 42)
-                    }
-                }
-            }
-            .padding(.horizontal, Spacing.card)
-            .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
-        }
-    }
-
-    private static let screens: [Destination<Route>] = [
-        Destination(title: "Rule · weil", symbol: "text.alignleft", route: .rule(id: "weil")),
-        Destination(title: "Beyond the app", symbol: "sparkles", route: .beyond),
-        Destination(title: "Debrief", symbol: "text.bubble", route: .debrief),
-        Destination(title: "Briefing", symbol: "headphones", route: .briefing)
-    ]
-
-    private static let flows: [Destination<FullScreenRoute>] = [
-        Destination(title: "Conversation · dentist", symbol: "waveform", route: .conversation(.dentist)),
-        Destination(title: "Activity · fix your mistakes", symbol: "checkmark.circle", route: .activity(.mistakes)),
-        Destination(title: "Replay onboarding", symbol: "arrow.counterclockwise", route: .onboarding)
-    ]
 }
 
 #Preview {
