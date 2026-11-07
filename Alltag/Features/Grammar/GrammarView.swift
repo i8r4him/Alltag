@@ -56,6 +56,7 @@ struct GrammarView: View {
             .padding(.bottom, 24)
             .animation(.easeOut(duration: 0.2), value: shownLevel)
         }
+        .readableContentMargins()
         .background(.screenBackground)
         .navigationTitle("Grammar")
         .navigationBarTitleDisplayMode(.large)

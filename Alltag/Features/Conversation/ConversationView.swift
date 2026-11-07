@@ -61,6 +61,7 @@ private struct ConversationContent: View {
                 case .text: textControls
                 }
             }
+            .readableWidth(Spacing.focusedWidth)
             .background(.screenBackground)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbar }

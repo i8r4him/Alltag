@@ -44,6 +44,7 @@ struct ProgressOverviewView: View {
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 24)
         }
+        .readableContentMargins()
         .background(.screenBackground)
         .navigationTitle("Progress")
         .navigationBarTitleDisplayMode(.large)

@@ -24,7 +24,7 @@ Apple Vision Pro is **not** supported. The design reference is a 393×852 iPhone
 1. The Xcode project `Alltag` exists (iOS App · SwiftUI · Swift). Persistence uses **SwiftData** — add the `ModelContainer` in `AlltagApp` with the first `@Model` types (user profile, memory items, phrasebook, solved rules, saved translations). The Watch app is added later as a separate watchOS target.
 2. Create the folder structure in **Architecture** below.
 3. Build `DesignSystem/` first (tokens + reusable components), then `Home`, then each feature.
-4. Use `NavigationStack(path:)` with an `enum Route: Hashable` — **no TabView**.
+4. Use `NavigationStack(path:)` with an `enum Route: Hashable` — **no TabView**. At regular width (iPad, unfolded foldable) the same path drives a `NavigationSplitView` with a sidebar.
 5. Add SwiftUI `#Preview`s for each screen and key states (conversation idle/listening/thinking/speaking; activity answered right/wrong; onboarding steps).
 
 ## Architecture
@@ -41,7 +41,8 @@ Alltag/                                   ← repo root
 │  │  ├─ AppSettings.swift                device settings in UserDefaults (motion, speech, Pro)
 │  │  ├─ AppServices.swift                all services; .live() for the app, .mock() for previews/tests
 │  │  ├─ Route.swift                      enum Route: Hashable
-│  │  └─ RootView.swift                   NavigationStack(path:), covers, onboarding gate
+│  │  ├─ SidebarItem.swift                iPad/foldable sidebar sections, path ⇄ split view
+│  │  └─ RootView.swift                   stack (compact) or NavigationSplitView (regular), covers, onboarding gate
 │  │
 │  ├─ DesignSystem/
 │  │  ├─ Tokens/
@@ -50,6 +51,8 @@ Alltag/                                   ← repo root
 │  │  │  ├─ Radius.swift
 │  │  │  ├─ Spacing.swift
 │  │  │  └─ Motion.swift                  push/modal animations, Reduce Motion
+│  │  ├─ Layout/
+│  │  │  └─ ReadableWidth.swift           .readableContentMargins() / .readableWidth() for wide screens
 │  │  └─ Components/
 │  │     ├─ Buttons.swift                 PrimaryButtonStyle (.primary/.primaryCompact),
 │  │     │                                OutlineButtonStyle (.outline), GlassButton

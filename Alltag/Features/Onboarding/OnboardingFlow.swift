@@ -32,6 +32,7 @@ struct OnboardingFlow: View {
                 ZStack {
                     stepView
                         .padding(.top, 12)
+                        .readableWidth(Spacing.focusedWidth)
                         .id(model.step)
                         .transition(transition)
                 }
@@ -44,6 +45,7 @@ struct OnboardingFlow: View {
                 .buttonStyle(.primary)
                 .disabled(!model.canContinue)
                 .padding(.bottom, 8)
+                .readableWidth(Spacing.focusedWidth)
             }
             .padding(.horizontal, Spacing.onboarding)
             .background(.screenBackground)

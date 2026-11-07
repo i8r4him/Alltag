@@ -14,6 +14,7 @@ struct RootView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @Environment(\.services) private var services
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Query private var profiles: [UserProfile]
 
     var body: some View {
@@ -35,11 +36,69 @@ struct RootView: View {
 
     private var navigation: some View {
         @Bindable var appState = appState
-        return NavigationStack(path: $appState.path) {
-            HomeView()
-                .navigationDestination(for: Route.self, destination: destination)
+        return Group {
+            // iPad and unfolded foldables get a sidebar; iPhone a single stack.
+            if horizontalSizeClass == .regular {
+                splitView
+            } else {
+                NavigationStack(path: $appState.path) {
+                    HomeView()
+                        .navigationDestination(for: Route.self, destination: destination)
+                }
+            }
         }
         .fullScreenCover(item: $appState.fullScreen, content: fullScreen)
+    }
+
+    private var splitView: some View {
+        let root = SidebarItem.root(of: appState.path)
+        return NavigationSplitView {
+            List(selection: sidebarSelection) {
+                Section {
+                    ForEach(SidebarItem.main, content: sidebarRow)
+                }
+                Section("You") {
+                    ForEach(SidebarItem.personal, content: sidebarRow)
+                }
+            }
+            .navigationTitle("Alltag")
+        } detail: {
+            NavigationStack(path: detailPath) {
+                Group {
+                    if let root {
+                        destination(root)
+                    } else {
+                        HomeView()
+                    }
+                }
+                .navigationDestination(for: Route.self, destination: destination)
+            }
+            // A new section starts a new stack.
+            .id(root)
+        }
+        // The sidebar sits beside the content, never over it.
+        .navigationSplitViewStyle(.balanced)
+    }
+
+    private func sidebarRow(_ item: SidebarItem) -> some View {
+        Label { Text(item.title) } icon: { Image(systemName: item.systemImage) }
+            .tag(item)
+    }
+
+    private var sidebarSelection: Binding<SidebarItem?> {
+        Binding {
+            SidebarItem.selection(for: appState.path)
+        } set: { item in
+            appState.path = (item?.route).map { [$0] } ?? []
+        }
+    }
+
+    private var detailPath: Binding<[Route]> {
+        Binding {
+            SidebarItem.detailPath(of: appState.path)
+        } set: { detail in
+            appState.path = SidebarItem.path(root: SidebarItem.root(of: appState.path), detail: detail)
+        }
     }
 
     private var reducesMotion: Bool {

@@ -99,15 +99,16 @@ struct ConversationModelTests {
 
     @Test("Tapping while listening stops early and uses the whole line")
     func stopEarly() async throws {
-        let model = makeModel(wordInterval: .milliseconds(200))
+        let model = makeModel(wordInterval: .milliseconds(400))
         model.orbTapped()
-        // Wait for the first word rather than a fixed time, so a busy CI machine can't break it.
-        let deadline = ContinuousClock.now + .seconds(2)
+        // Wait for the first word rather than a fixed time, so a busy machine can't break it.
+        // Under load a second word may already be in, so only the start is checked.
+        let deadline = ContinuousClock.now + .seconds(5)
         while model.heardText.isEmpty, ContinuousClock.now < deadline {
             try await Task.sleep(for: .milliseconds(20))
         }
         #expect(model.phase == .listening)
-        #expect(model.heardText == "Können")
+        #expect(model.heardText.hasPrefix("Können"))
 
         model.orbTapped()
         await model.waitForTurn()

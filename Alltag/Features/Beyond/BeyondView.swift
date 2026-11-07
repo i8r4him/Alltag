@@ -29,6 +29,7 @@ struct BeyondView: View {
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 32)
         }
+        .readableContentMargins()
         .background(.screenBackground)
         .navigationTitle("Beyond the app")
         .navigationBarTitleDisplayMode(.large)

@@ -30,6 +30,7 @@ private struct SmartBarModifier: ViewModifier {
             // Sits above the home indicator, and above the keyboard while typing.
             .safeAreaInset(edge: .bottom) {
                 SmartBar(context: context, isOpen: $isOpen, onAction: handle)
+                    .readableWidth()
             }
     }
 

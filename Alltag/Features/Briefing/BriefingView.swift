@@ -48,6 +48,7 @@ struct BriefingView: View {
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 32)
         }
+        .readableContentMargins()
         .background(.screenBackground)
         .navigationBarTitleDisplayMode(.inline)
         .onDisappear { model.stop() }

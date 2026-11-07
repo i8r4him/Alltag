@@ -61,6 +61,7 @@ private struct DebriefContent: View {
             .animation(.easeOut(duration: 0.3), value: model.phase)
         }
         .scrollDismissesKeyboard(.interactively)
+        .readableContentMargins()
         .background(.screenBackground)
         .navigationTitle("Debrief")
         .navigationBarTitleDisplayMode(.large)

@@ -24,13 +24,16 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        Form {
+        // A List rather than a Form: Form drops the inset groups at regular width.
+        List {
             if let profile = profiles.first {
                 SettingsSections(profile: profile, model: model, aiStatus: aiStatus, toast: $toast)
             }
             moreSection
             replaySection
         }
+        // The system's inset-grouped margins already adapt to iPad widths.
+        .listStyle(.insetGrouped)
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)
         .toast($toast)
