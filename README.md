@@ -107,15 +107,10 @@ Alltag/                                   ← repo root
 │  │
 │  ├─ Intents/                            App Intents — Siri AI, Spotlight, Shortcuts
 │  │  ├─ Entities/
-│  │  │  ├─ WordEntity.swift
-│  │  │  ├─ PhraseEntity.swift
-│  │  │  ├─ ScenarioEntity.swift
-│  │  │  └─ GrammarRuleEntity.swift
+│  │  │  ├─ ContentEntities.swift         ScenarioEntity, GrammarRuleEntity (+ queries)
+│  │  │  └─ MemoryEntities.swift          WordEntity, PhraseEntity (+ SwiftData queries, MemoryLookup)
 │  │  ├─ Actions/
-│  │  │  ├─ StartConversationIntent.swift
-│  │  │  ├─ TranslateIntent.swift
-│  │  │  ├─ ReviewWordsIntent.swift
-│  │  │  └─ OpenRuleIntent.swift
+│  │  │  └─ OpenMemoryIntent.swift        more actions in #45 (conversation, translate, review, rule)
 │  │  └─ AlltagShortcuts.swift            AppShortcutsProvider
 │  │
 │  ├─ Features/
