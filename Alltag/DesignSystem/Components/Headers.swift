@@ -11,11 +11,23 @@ import SwiftUI
 struct Eyebrow: View {
     enum Tone { case accent, mistake, secondary }
 
-    let title: LocalizedStringKey
-    var tone: Tone = .accent
+    private let text: Text
+    private let tone: Tone
+
+    /// UI text from the String Catalog.
+    init(title: LocalizedStringKey, tone: Tone = .accent) {
+        text = Text(title)
+        self.tone = tone
+    }
+
+    /// Content shown as is, e.g. an activity's label.
+    init(verbatim title: String, tone: Tone = .accent) {
+        text = Text(verbatim: title)
+        self.tone = tone
+    }
 
     var body: some View {
-        Text(title)
+        text
             .textRole(.eyebrow)
             .foregroundStyle(color)
             .accessibilityAddTraits(.isHeader)

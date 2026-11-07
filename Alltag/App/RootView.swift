@@ -72,7 +72,7 @@ struct RootView: View {
         case .conversation(let id):
             ConversationView(scenario: MockScenarios.scenario(id))
         case .activity(let id):
-            FullScreenPlaceholder(title: MockActivities.activity(id).title, issue: 35)
+            ActivityView(activity: MockActivities.activity(id))
         case .onboarding:
             OnboardingFlow(model: profiles.first.map { OnboardingModel(profile: $0) } ?? OnboardingModel())
         }
