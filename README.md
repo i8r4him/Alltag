@@ -78,20 +78,18 @@ Alltag/                                   ← repo root
 │  │  │  ├─ SolvedRule.swift
 │  │  │  └─ SavedTranslation.swift
 │  │  ├─ Content/                         plain structs for lesson content
-│  │  │  ├─ Scenario.swift
-│  │  │  ├─ ConversationLine.swift
+│  │  │  ├─ Scenario.swift               Scenario, ConversationLine, Feedback
 │  │  │  ├─ Activity.swift
-│  │  │  ├─ GrammarRule.swift
+│  │  │  ├─ GrammarRule.swift            GrammarRule, GrammarTopic
 │  │  │  ├─ TranslationResult.swift
-│  │  │  └─ Briefing.swift
+│  │  │  └─ Briefing.swift               Briefing, Debrief, PlacementQuestion
 │  │  └─ Enums/
 │  │     ├─ MemoryKind.swift              MemoryKind, MemorySource
 │  │     ├─ Level.swift                   A1–C2
 │  │     ├─ Goal.swift
 │  │     ├─ NativeLanguage.swift
 │  │     ├─ Interest.swift
-│  │     ├─ DailyTime.swift
-│  │     └─ NudgeTime.swift
+│  │     └─ DailyTime.swift               DailyTime, NudgeTime
 │  │
 │  ├─ Services/                           protocol + mock (+ live later) per service
 │  │  ├─ Speech/
@@ -200,16 +198,17 @@ Alltag/                                   ← repo root
 │  │  └─ Beyond/
 │  │     └─ BeyondView.swift              concept previews only
 │  │
-│  ├─ MockData/
-│  │  ├─ MockScenarios.swift
-│  │  ├─ MockTranslations.swift
-│  │  ├─ MockMemoryItems.swift
-│  │  ├─ MockActivities.swift
-│  │  ├─ MockRules.swift
-│  │  ├─ MockLevels.swift
-│  │  ├─ MockPhrasebook.swift
-│  │  ├─ MockDebrief.swift
-│  │  └─ MockBriefing.swift
+│  ├─ MockData/                           prototype data, copied exactly
+│  │  ├─ MockScenarios.swift              SCEN
+│  │  ├─ MockTranslations.swift           TR
+│  │  ├─ MockMemoryItems.swift            MEM
+│  │  ├─ MockActivities.swift             ACTS
+│  │  ├─ MockRules.swift                  RULES
+│  │  ├─ MockLevels.swift                 LEVELS
+│  │  ├─ MockPhrasebook.swift             PB
+│  │  ├─ MockDebrief.swift                DB
+│  │  ├─ MockBriefing.swift               BRIEF
+│  │  └─ MockPlacement.swift              placement question
 │  │
 │  └─ Resources/
 │     ├─ Assets.xcassets                  AppIcon, AccentColor, Success, Mistake (light + dark)
