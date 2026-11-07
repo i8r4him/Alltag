@@ -27,6 +27,19 @@ enum MemorySource: String, Codable, CaseIterable, Sendable {
     case camera
     case debrief
 
+    /// Name shown with the source, e.g. "Safari · Spiegel, today".
+    var title: LocalizedStringResource {
+        switch self {
+        case .safari: "Safari"
+        case .messages: "Messages"
+        case .conversation: "Conversation"
+        case .translate: "Translate"
+        case .podcast: "Podcast"
+        case .camera: "Camera"
+        case .debrief: "Debrief"
+        }
+    }
+
     /// SF Symbol shown next to the source.
     var systemImage: String {
         switch self {

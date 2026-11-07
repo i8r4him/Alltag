@@ -146,11 +146,10 @@ Alltag/                                   ← repo root
 │  │  │  ├─ TranslateModel.swift          direction, swap, translating, saving
 │  │  │  └─ TranslateSections.swift       Word by word, Tone, In context
 │  │  ├─ Memory/
-│  │  │  ├─ MemoryView.swift              Words | Phrasebook
-│  │  │  ├─ WordsTab.swift
+│  │  │  ├─ MemoryView.swift              large title, segmented Words | Phrasebook, .searchable, review card
+│  │  │  ├─ MemoryFilter.swift            filters, search, ReviewSummary (pure, tested)
 │  │  │  ├─ WordRow.swift
-│  │  │  ├─ ReviewCard.swift
-│  │  │  └─ PhrasebookTab.swift
+│  │  │  └─ PhrasebookTab.swift           (#33)
 │  │  ├─ Learn/
 │  │  │  ├─ LearnView.swift
 │  │  │  ├─ ActivityView.swift
