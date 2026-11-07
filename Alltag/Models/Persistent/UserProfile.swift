@@ -24,6 +24,13 @@ final class UserProfile {
     var learningSince: Date = Date.now
     var hasCompletedOnboarding: Bool = false
 
+    // Settings · Learn from my day and Reminders. Set from the onboarding
+    // permissions step and changed in Settings.
+    var learnsFromCalendar: Bool = false
+    var learnsFromKeyboard: Bool = false
+    var remindersEnabled: Bool = false
+    var morningBriefingEnabled: Bool = false
+
     init(
         name: String,
         nativeLanguage: NativeLanguage = .english,

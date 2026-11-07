@@ -16,6 +16,7 @@ struct OnboardingFlow: View {
 
     @State private var model: OnboardingModel
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.services) private var services
     @Environment(AppState.self) private var appState
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @Query private var profiles: [UserProfile]
@@ -75,8 +76,10 @@ struct OnboardingFlow: View {
         case .name: NameStep(model: model, onSubmit: continueTapped)
         case .why: WhyStep(model: model)
         case .level: LevelStep(model: model)
-        case .dailyTime, .interests, .permissions, .summary:
-            OnboardingStepPlaceholder(step: model.step)
+        case .dailyTime: DailyTimeStep(model: model)
+        case .interests: InterestsStep(model: model)
+        case .permissions: PermissionsStep(model: model)
+        case .summary: SummaryStep(model: model)
         }
     }
 
@@ -99,25 +102,11 @@ struct OnboardingFlow: View {
 
     private func finish() {
         model.save(in: modelContext, existing: profiles.first)
+        let model = model
+        let notifications = services.notifications
+        Task { try? await model.scheduleReminder(with: notifications) }
         appState.dismissFullScreen()
         onFinish()
-    }
-}
-
-/// Stand-in for steps 4–7, built in #22.
-private struct OnboardingStepPlaceholder: View {
-    let step: OnboardingModel.Step
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Step \(step.rawValue) of \(OnboardingModel.Step.allCases.count - 1)")
-                .textRole(.title2)
-            Text("This step is built in #22.")
-                .textRole(.body)
-                .foregroundStyle(.secondary)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

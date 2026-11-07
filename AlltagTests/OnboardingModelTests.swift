@@ -112,6 +112,55 @@ struct OnboardingModelTests {
         #expect(model.level == .a2)
     }
 
+    @Test("Interests toggle on and off")
+    func interests() {
+        let model = OnboardingModel()
+        #expect(model.interests == Interest.defaultSelection)
+        model.toggle(.music)
+        #expect(model.interests.contains(.music))
+        model.toggle(.housing)
+        #expect(!model.interests.contains(.housing))
+    }
+
+    @Test("Allowed permissions are counted for the summary")
+    func allowedCount() {
+        let model = OnboardingModel()
+        #expect(model.allowedCount == 0)
+        model.allowsCalendar = true
+        model.usesKeyboard = true
+        #expect(model.allowedCount == 2)
+    }
+
+    @Test("Permissions become settings: notifications turn on reminders and the briefing")
+    func permissionsBecomeSettings() throws {
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let model = OnboardingModel()
+        model.name = "Mara"
+        model.allowsCalendar = true
+        model.allowsNotifications = true
+
+        let profile = model.save(in: container.mainContext, existing: nil)
+        #expect(profile.learnsFromCalendar)
+        #expect(!profile.learnsFromKeyboard)
+        #expect(profile.remindersEnabled)
+        #expect(profile.morningBriefingEnabled)
+
+        let replay = OnboardingModel(profile: profile)
+        #expect(replay.allowsCalendar && replay.allowsNotifications && !replay.usesKeyboard)
+    }
+
+    @Test("The daily reminder is scheduled at the nudge time only if notifications were allowed",
+          arguments: [true, false])
+    func reminder(allowed: Bool) async throws {
+        let notifications = MockNotificationService()
+        let model = OnboardingModel()
+        model.nudgeTime = .morning
+        model.allowsNotifications = allowed
+
+        try await model.scheduleReminder(with: notifications)
+        #expect(notifications.scheduledNudge == (allowed ? .morning : nil))
+    }
+
     @Test("Saving creates a completed profile with every answer")
     func savesNewProfile() throws {
         let container = try AlltagStore.makeContainer(inMemory: true)

@@ -61,9 +61,26 @@ final class OnboardingModel {
         dailyTime = profile.dailyTime
         nudgeTime = profile.nudgeTime
         interests = profile.interests
+        allowsCalendar = profile.learnsFromCalendar
+        allowsNotifications = profile.remindersEnabled
+        usesKeyboard = profile.learnsFromKeyboard
     }
 
     var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    /// How many of the three "Learn from your day" permissions are allowed.
+    var allowedCount: Int {
+        [allowsCalendar, allowsNotifications, usesKeyboard].filter { $0 }.count
+    }
+
+    /// Toggles an interest on or off.
+    func toggle(_ interest: Interest) {
+        if interests.contains(interest) {
+            interests.remove(interest)
+        } else {
+            interests.insert(interest)
+        }
+    }
 
     /// The back button, progress segments and Skip show between Welcome and Summary.
     var showsTopBar: Bool { step != .welcome && step != .summary }
@@ -103,6 +120,12 @@ final class OnboardingModel {
         resetPlacement()
     }
 
+    /// Schedules the daily reminder at the chosen time if notifications were allowed.
+    func scheduleReminder(with notifications: any NotificationService) async throws {
+        guard allowsNotifications else { return }
+        try await notifications.scheduleDailyNudge(at: nudgeTime)
+    }
+
     /// Shows the placement question instead of the level list.
     func startPlacement() {
         placementAnswer = nil
@@ -133,6 +156,11 @@ final class OnboardingModel {
         profile.dailyTime = dailyTime
         profile.nudgeTime = nudgeTime
         profile.interests = interests
+        // As in the prototype: notifications switch on reminders and the morning briefing.
+        profile.learnsFromCalendar = allowsCalendar
+        profile.learnsFromKeyboard = usesKeyboard
+        profile.remindersEnabled = allowsNotifications
+        profile.morningBriefingEnabled = allowsNotifications
         profile.hasCompletedOnboarding = true
         try? context.save()
         return profile
