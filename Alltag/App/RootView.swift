@@ -46,7 +46,6 @@ struct RootView: View {
         appState.reducesMotion(system: systemReduceMotion)
     }
 
-    /// Each feature issue replaces its placeholder here with the real screen.
     @ViewBuilder
     private func destination(_ route: Route) -> some View {
         switch route {
@@ -68,24 +67,15 @@ struct RootView: View {
             ProfileView()
         case .settings:
             SettingsView(services: services)
+        case .beyond:
+            BeyondView()
         case .rule(let id):
             if let rule = MockRules.rule(id: id) {
                 RuleView(rule: rule)
             } else {
-                placeholder(for: route)
+                ContentUnavailableView("Rule not found", systemImage: "book.closed",
+                                       description: Text("This rule isn't available any more."))
             }
-        default:
-            placeholder(for: route)
-        }
-    }
-
-    @ViewBuilder
-    private func placeholder(for route: Route) -> some View {
-        let screen = PlaceholderScreen(title: route.placeholder.title, issue: route.placeholder.issue)
-        if let context = route.smartBarContext {
-            screen.smartBar(context)
-        } else {
-            screen
         }
     }
 
