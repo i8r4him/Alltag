@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// Keeps content at a comfortable width on iPad and unfolded foldables.
+/// Keeps content at a comfortable width on an unfolded foldable iPhone.
 /// On iPhone (narrower than the limit) nothing changes.
 enum ReadableWidth {
     /// The extra side margin that centres content of at most `limit` in `width`.
@@ -32,7 +32,7 @@ extension View {
     /// while the scroll indicator stays at the screen edge.
     ///
     /// Not for inset-grouped lists: content margins replace their own inset,
-    /// and the system already keeps them readable on iPad.
+    /// and the system already keeps them readable at regular width.
     /// Nested scroll views inherit the margins; reset them with
     /// `.contentMargins(.horizontal, 0, for: .scrollContent)`.
     func readableContentMargins(_ limit: CGFloat = Spacing.readableWidth) -> some View {

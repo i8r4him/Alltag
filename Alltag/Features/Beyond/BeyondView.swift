@@ -9,7 +9,7 @@ import SwiftData
 import SwiftUI
 
 /// Concept previews of Alltag outside the app: keyboard, select & translate,
-/// Siri, widgets and Watch. Nothing here registers an extension.
+/// Siri and widgets. Nothing here registers an extension.
 struct BeyondView: View {
     @State private var toast: ToastMessage?
 
@@ -24,7 +24,7 @@ struct BeyondView: View {
 
                 concept("Select & translate") { SelectTranslateConcept(toast: $toast) }
                 concept("Siri") { SiriConcept() }
-                concept("Widgets & Watch") { WidgetsConcept() }
+                concept("Widgets") { WidgetsConcept() }
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 32)
@@ -230,22 +230,19 @@ private struct SiriConcept: View {
     }
 }
 
-/// Word of the day and Review widgets, and the Watch 1-minute challenge.
+/// Word of the day and Review widgets.
 private struct WidgetsConcept: View {
     var body: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 10) {
-                widget("Word of the day") {
-                    Text(verbatim: "der").textRole(.meta).foregroundStyle(.secondary)
-                    Text(verbatim: "Feierabend").textRole(.cardTitle)
-                    Text("end of the workday").textRole(.caption).foregroundStyle(.secondary)
-                }
-                widget("Review") {
-                    Text(6, format: .number).textRole(.largeTitle)
-                    Text("ready · 3 min").textRole(.caption).foregroundStyle(.secondary)
-                }
+        HStack(spacing: 10) {
+            widget("Word of the day") {
+                Text(verbatim: "der").textRole(.meta).foregroundStyle(.secondary)
+                Text(verbatim: "Feierabend").textRole(.cardTitle)
+                Text("end of the workday").textRole(.caption).foregroundStyle(.secondary)
             }
-            watch
+            widget("Review") {
+                Text(6, format: .number).textRole(.largeTitle)
+                Text("ready · 3 min").textRole(.caption).foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -259,35 +256,6 @@ private struct WidgetsConcept: View {
         .frame(maxWidth: .infinity, minHeight: 150, alignment: .leading)
         .background(.surface, in: .rect(cornerRadius: 22, style: .continuous))
         .accessibilityElement(children: .combine)
-    }
-
-    private var watch: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Eyebrow(title: "1-min challenge")
-            Text("“notice period”?").textRole(.body).fontWeight(.semibold)
-            HStack(spacing: 6) {
-                option("Kündigungsfrist")
-                option("Feierabend")
-            }
-        }
-        .padding(14)
-        .frame(width: 200, alignment: .leading)
-        .background(.black, in: .rect(cornerRadius: 40, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 40, style: .continuous).strokeBorder(.gray.opacity(0.4), lineWidth: 4))
-        .environment(\.colorScheme, .dark)
-        .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text("Apple Watch: 1-minute challenge"))
-    }
-
-    private func option(_ word: String) -> some View {
-        Text(verbatim: word)
-            .font(.caption2.weight(.semibold))
-            .lineLimit(1)
-            .minimumScaleFactor(0.7)
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity)
-            .background(.white.opacity(0.14), in: .capsule)
     }
 }
 
