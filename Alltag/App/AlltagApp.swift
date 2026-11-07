@@ -21,7 +21,7 @@ struct AlltagApp: App {
         } catch {
             fatalError("Could not open the Alltag store: \(error)")
         }
-        try? AlltagStore.repairDuplicateIDs(container.mainContext)
+        _ = try? AlltagStore.repairDuplicateIDs(container.mainContext)
         #if DEBUG
         try? AlltagStore.seedSampleDataIfEmpty(container.mainContext)
         #endif

@@ -5,6 +5,7 @@
 //  Created by Ibrahim Abdullah on 07.11.26.
 //
 
+import Foundation
 import Testing
 @testable import Alltag
 
@@ -45,10 +46,10 @@ struct SmartBarTests {
 
     @Test("Each screen has its own placeholder")
     func placeholders() {
-        #expect(SmartBarContext.home.placeholder == "Ask, translate or practise anything…")
-        #expect(SmartBarContext.memory.placeholder == "Find or add a word…")
-        #expect(SmartBarContext.learn.placeholder == "Ask for a 2-minute challenge…")
-        #expect(SmartBarContext.progress.placeholder == "Ask about your progress…")
+        #expect(String(localized: SmartBarContext.home.placeholder) == "Ask, translate or practise anything…")
+        #expect(String(localized: SmartBarContext.memory.placeholder) == "Find or add a word…")
+        #expect(String(localized: SmartBarContext.learn.placeholder) == "Ask for a 2-minute challenge…")
+        #expect(String(localized: SmartBarContext.progress.placeholder) == "Ask about your progress…")
     }
 
     @Test("The bar appears on Memory, Learn, Progress and Grammar only")

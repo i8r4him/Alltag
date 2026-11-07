@@ -10,7 +10,7 @@ import SwiftUI
 
 /// Stand-in for a pushed screen that hasn't been built yet.
 struct PlaceholderScreen: View {
-    let title: String
+    let title: LocalizedStringResource
     /// GitHub issue that builds the real screen.
     let issue: Int
 
@@ -28,6 +28,7 @@ struct PlaceholderScreen: View {
 
 /// Stand-in for a full-screen flow, with a close button.
 struct FullScreenPlaceholder: View {
+    /// Content title (scenario or activity), shown as is.
     let title: String
     let issue: Int
     @Environment(AppState.self) private var appState
@@ -42,7 +43,11 @@ struct FullScreenPlaceholder: View {
             }
             .padding(.horizontal, Spacing.screen)
             ContentUnavailableView {
-                Label(title, systemImage: "hammer")
+                Label {
+                    Text(verbatim: title)
+                } icon: {
+                    Image(systemName: "hammer")
+                }
             } description: {
                 Text("This flow is built in #\(issue).")
             }

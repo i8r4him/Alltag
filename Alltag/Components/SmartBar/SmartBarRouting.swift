@@ -16,7 +16,7 @@ enum SmartBarContext: Hashable, Sendable {
     case progress
     case grammar
 
-    var placeholder: String {
+    var placeholder: LocalizedStringResource {
         switch self {
         case .home, .grammar: "Ask, translate or practise anything…"
         case .memory: "Find or add a word…"

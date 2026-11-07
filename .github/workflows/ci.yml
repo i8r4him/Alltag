@@ -33,3 +33,15 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | tee test.log | grep -E "error:|warning:|Test case|TEST (SUCCEEDED|FAILED)" || true
           grep -q "TEST SUCCEEDED" test.log
+
+      - name: String Catalog is up to date
+        run: |
+          # Keep the file name: xcstringstool takes the table name from it.
+          mkdir -p "$RUNNER_TEMP/catalog"
+          cp Alltag/Resources/Localizable.xcstrings "$RUNNER_TEMP/catalog/Localizable.xcstrings"
+          stringsdata=()
+          while IFS= read -r -d '' file; do stringsdata+=(--stringsdata "$file"); done \
+            < <(find DerivedData -name "*.stringsdata" -path "*/Alltag.build/Objects-normal/*" -print0)
+          xcrun xcstringstool sync "$RUNNER_TEMP/catalog/Localizable.xcstrings" "${stringsdata[@]}"
+          python3 -I scripts/check_string_catalog.py \
+            Alltag/Resources/Localizable.xcstrings "$RUNNER_TEMP/catalog/Localizable.xcstrings"

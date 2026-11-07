@@ -17,7 +17,7 @@ enum Goal: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var id: String { rawValue }
 
-    var title: String {
+    var title: LocalizedStringResource {
         switch self {
         case .livingHere: "Living here"
         case .work: "Work"
@@ -27,7 +27,7 @@ enum Goal: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    var subtitle: String {
+    var subtitle: LocalizedStringResource {
         switch self {
         case .livingHere: "Appointments, neighbours, everyday life"
         case .work: "Meetings, emails, colleagues"

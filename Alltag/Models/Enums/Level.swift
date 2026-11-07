@@ -17,13 +17,14 @@ enum Level: String, Codable, CaseIterable, Comparable, Identifiable, Sendable {
     case c2 = "C2"
 
     var id: String { rawValue }
+    /// "A1" … "C2"; the same in every language.
     var title: String { rawValue }
 
     /// Levels offered in onboarding and Grammar (C2 is only on the progress track).
     static let selectable: [Level] = [.a1, .a2, .b1, .b2, .c1]
 
     /// How the learner describes themselves at this level (onboarding).
-    var selfDescription: String {
+    var selfDescription: LocalizedStringResource {
         switch self {
         case .a1: "Just starting out"
         case .a2: "Simple everyday conversations"
@@ -35,7 +36,7 @@ enum Level: String, Codable, CaseIterable, Comparable, Identifiable, Sendable {
     }
 
     /// What the level is about (Grammar).
-    var summary: String {
+    var summary: LocalizedStringResource {
         switch self {
         case .a1: "First steps"
         case .a2: "Everyday situations"

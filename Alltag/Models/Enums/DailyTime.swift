@@ -15,9 +15,9 @@ enum DailyTime: Int, Codable, CaseIterable, Identifiable, Sendable {
 
     var id: Int { rawValue }
     var minutes: Int { rawValue }
-    var title: String { "\(rawValue) min" }
+    var title: LocalizedStringResource { "\(rawValue) min" }
 
-    var subtitle: String {
+    var subtitle: LocalizedStringResource {
         switch self {
         case .five: "A small daily habit"
         case .ten: "Steady progress"
@@ -41,7 +41,7 @@ enum NudgeTime: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var id: String { rawValue }
 
-    var title: String {
+    var title: LocalizedStringResource {
         switch self {
         case .morning: "Morning"
         case .evening: "Evening"

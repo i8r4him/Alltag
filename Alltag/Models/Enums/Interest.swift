@@ -20,7 +20,7 @@ enum Interest: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var id: String { rawValue }
 
-    var title: String {
+    var title: LocalizedStringResource {
         switch self {
         case .housing: "Housing"
         case .work: "Work"
