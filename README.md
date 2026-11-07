@@ -50,17 +50,15 @@ Alltag/                                   ← repo root
 │  │  │  ├─ Spacing.swift
 │  │  │  └─ Motion.swift                  push/modal animations, Reduce Motion
 │  │  └─ Components/
-│  │     ├─ GlassButton.swift
-│  │     ├─ PrimaryButton.swift           54pt accent capsule CTA
-│  │     ├─ CardRow.swift
-│  │     ├─ SectionHeader.swift
-│  │     ├─ Eyebrow.swift
-│  │     ├─ Pill.swift
-│  │     ├─ ToggleRow.swift
+│  │     ├─ Buttons.swift                 PrimaryButtonStyle (.primary/.primaryCompact),
+│  │     │                                OutlineButtonStyle (.outline), GlassButton
+│  │     ├─ Pill.swift                    Pill, ChipButtonStyle (.chip(isSelected:))
+│  │     ├─ Headers.swift                 Eyebrow, SectionHeader (.large/.grouped)
+│  │     ├─ Rows.swift                    SymbolSquare, CardRow, ToggleRow
 │  │     ├─ OptionCard.swift
-│  │     ├─ ProgressSegments.swift
-│  │     ├─ StrengthDots.swift
-│  │     └─ Toast.swift
+│  │     ├─ Indicators.swift              ProgressSegments, StrengthDots
+│  │     ├─ Toast.swift                   ToastView, .toast(_:)
+│  │     └─ ComponentGallery.swift        previews of every component
 │  │
 │  ├─ Components/                         app-specific building blocks
 │  │  ├─ SmartBar/
@@ -260,6 +258,7 @@ Neutral surfaces map to iOS grouped-background colours, which adapt automaticall
 | `surface` (cards) | `secondarySystemGroupedBackground` | `#1C1C1E` | `#FFFFFF` |
 | `surfaceSecondary` (inner tiles, pressed rows) | `tertiarySystemGroupedBackground` | `#2C2C2E` | `#F2F2F7` |
 | `surfaceTertiary` (bars, keys, inactive) | `systemGray4` | `#3A3A3C` | `#D1D1D6` |
+| `controlFill` (chips, pills, symbol squares) | `secondarySystemFill` | ≈ `#2C2C2E` on black | translucent grey |
 | labels, separators | `label`, `secondaryLabel`, `tertiaryLabel`, `separator` | | |
 
 Brand colours are asset-catalog colour sets. The light variants keep the same hue but are darker, so they pass WCAG AA (≥ 4.5 : 1) on white — checked by `ColorContrastTests`. The accent is split in two because one amber can't be both readable text and a bright fill on white:

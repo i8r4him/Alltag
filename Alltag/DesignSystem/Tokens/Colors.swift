@@ -30,6 +30,9 @@ extension Color {
     static let surfaceSecondary = Color(uiColor: .tertiarySystemGroupedBackground)
     /// Bars, keys and inactive elements. Dark `#3A3A3C`.
     static let surfaceTertiary = Color(uiColor: .systemGray4)
+    /// Translucent fill for chips, pills and symbol squares; visible on both
+    /// the screen background and cards. Dark ≈ `#2C2C2E` on black.
+    static let controlFill = Color(uiColor: .secondarySystemFill)
 }
 
 extension ShapeStyle where Self == Color {
@@ -37,6 +40,7 @@ extension ShapeStyle where Self == Color {
     static var surface: Color { Color.surface }
     static var surfaceSecondary: Color { Color.surfaceSecondary }
     static var surfaceTertiary: Color { Color.surfaceTertiary }
+    static var controlFill: Color { Color.controlFill }
 }
 
 /// Opacities used with the accent colour for tints and glows.
