@@ -48,3 +48,7 @@ type_name:
 
 nesting:
   type_level: 2
+
+cyclomatic_complexity:
+  # A switch with one case per route or state is the clearest form; count it once.
+  ignores_case_statements: true

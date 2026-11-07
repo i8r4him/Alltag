@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    " · %lld getting there · %lld shaky" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : " · %1$lld getting there · %2$lld shaky"
+          }
+        }
+      }
+    },
     "%@" : {
       "shouldTranslate" : false
     },
@@ -58,6 +68,7 @@
         }
       }
     },
+    "%lld confident" : {},
     "%lld min" : {},
     "%lld of %lld" : {
       "localizations" : {
@@ -189,6 +200,7 @@
     "Everything you allow is processed on your iPhone. Nothing from your Calendar or keyboard is sent to the cloud." : {},
     "Exactly right." : {},
     "Feedback on your own sentences arrives with on-device language models." : {},
+    "Feel at home here — appointments, neighbours, work." : {},
     "Find or add a word…" : {},
     "Find the words" : {},
     "Finding the words…" : {},
@@ -199,6 +211,7 @@
     "Fix your mistakes" : {},
     "Fluent — I want polish" : {},
     "Focus" : {},
+    "Follow lectures and write with confidence." : {},
     "Football" : {},
     "For your trip to Munich on Friday" : {},
     "Formal" : {},
@@ -207,6 +220,7 @@
     "From your own German" : {},
     "German" : {},
     "German · %@" : {},
+    "Get around anywhere without switching to English." : {},
     "Get started" : {},
     "Getting around with confidence" : {},
     "Getting by independently" : {},
@@ -225,6 +239,7 @@
     "Hide actions" : {},
     "Hides the English" : {},
     "Hides the example" : {},
+    "Hold my own at work — meetings, emails, small talk." : {},
     "Housing" : {},
     "How did the bakery go?" : {},
     "How is your German today?" : {},
@@ -239,11 +254,14 @@
     "Keyboard" : {},
     "Keyboard, Siri, widgets & Watch · concepts" : {},
     "Language" : {},
+    "Languages" : {},
     "Learn" : {},
     "Learn from your day" : {},
     "Learn German through the life you already live." : {},
     "Learning" : {},
     "Learning beyond the app" : {},
+    "Learning German since %@" : {},
+    "Learning · %@" : {},
     "Lectures, reading, exams" : {},
     "Level" : {},
     "Level track" : {},
@@ -270,11 +288,14 @@
     "Most of it happens in small moments anyway." : {},
     "Mostly words from your reading, plus ^[%lld of your own mistakes](inflect: true)." : {},
     "Music" : {},
+    "My goal" : {},
     "My Words" : {},
+    "Native" : {},
     "Near-native" : {},
     "Neutral" : {},
     "New" : {},
     "Next time, say" : {},
+    "Next to work on: %@" : {},
     "No courses, no streaks. Alltag learns from your day — what you read, write, plan and say — and turns it into a few minutes of practice." : {},
     "Not quite. Look where the highlighted word sits in step 2." : {},
     "Not started" : {},
@@ -323,6 +344,7 @@
     },
     "Ready to review" : {},
     "Real-life conversation · Moving an appointment" : {},
+    "Really talk with the people who matter most." : {},
     "Recall %lld words from Safari" : {},
     "Reduce motion" : {},
     "Rehearse before appointments and trips" : {},
@@ -333,6 +355,7 @@
     "Reset" : {},
     "Review words" : {},
     "Right" : {},
+    "rules solved" : {},
     "Safari" : {},
     "Save to Memory" : {},
     "Save to phrasebook" : {},
@@ -346,6 +369,7 @@
     "Serious about it" : {},
     "Settings" : {},
     "Shaky" : {},
+    "Shapes your briefings, situations and examples." : {},
     "Short moments, picked from your week." : {},
     "Show a hint" : {},
     "Show actions" : {},
@@ -365,6 +389,7 @@
     "Speaking" : {},
     "Speaking…" : {},
     "Spiegel · Mietpreise in Berlin" : {},
+    "spoken" : {},
     "Spoken this month" : {},
     "Start learning" : {},
     "Start review" : {},
@@ -385,6 +410,7 @@
     "Thinking…" : {},
     "This screen is built in #%lld." : {},
     "This shapes the situations you rehearse and the words we notice." : {},
+    "This week" : {},
     "Today" : {},
     "Today's focus" : {},
     "Today's focus · a phone call scenario" : {},
@@ -408,12 +434,15 @@
     "What brings you to German?" : {},
     "What did you want to say? Any language is fine." : {},
     "What do you care about?" : {},
+    "What I care about" : {},
+    "Where I can manage" : {},
     "Where you can manage" : {},
     "Word" : {},
     "Word by word" : {},
     "Words" : {},
     "Words from your Memory in this briefing" : {},
     "Words from your reading and conversations." : {},
+    "words met" : {},
     "Words that stuck" : {},
     "Work" : {},
     "Worth your attention" : {},
