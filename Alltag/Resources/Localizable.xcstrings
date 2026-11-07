@@ -36,6 +36,7 @@
         }
       }
     },
+    "%@ · steadily rising" : {},
     "%lld min" : {},
     "%lld of %lld" : {
       "localizations" : {
@@ -48,13 +49,18 @@
       }
     },
     "%lld of 3 allowed" : {},
+    "%lld ready to review" : {},
+    "4 short moments" : {},
     "5 min" : {},
     "60-second briefing" : {},
     "^[%lld new word](inflect: true)" : {},
+    "^[%lld phrase](inflect: true) saved this week" : {},
     "A gentle nudge, never more than twice a day" : {},
     "A rough guess is fine — we adjust as you go." : {},
     "A small daily habit" : {},
+    "A1–C1 · ^[%lld rule](inflect: true) worth a look" : {},
     "Activity · fix your mistakes" : {},
+    "All caught up" : {},
     "Allow" : {},
     "Allow %@" : {},
     "Allowed" : {},
@@ -89,6 +95,7 @@
     "Design tokens" : {},
     "Each one is optional. You can change them any time in Settings." : {},
     "English" : {},
+    "English ⇄ German" : {},
     "Evening" : {},
     "Everyday life in Germany" : {},
     "Everyday situations" : {},
@@ -195,7 +202,7 @@
     "Steady progress" : {},
     "Strength" : {},
     "Studies" : {},
-    "Temporary until the Home cards are built (#24–#26)." : {},
+    "Temporary until #26 adds From your day and Beyond the app." : {},
     "This flow is built in #%lld." : {},
     "This screen is built in #%lld." : {},
     "This shapes the situations you rehearse and the words we notice." : {},
@@ -205,6 +212,7 @@
     "Travel" : {},
     "Turkish" : {},
     "Ukrainian" : {},
+    "Verb at the end" : {},
     "What brings you to German?" : {},
     "What do you care about?" : {},
     "Word" : {},

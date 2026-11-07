@@ -14,10 +14,15 @@ struct HomeView: View {
     @Environment(AppState.self) private var appState
     @Query private var profiles: [UserProfile]
     @Query private var memoryItems: [MemoryItem]
+    @Query private var translations: [SavedTranslation]
     @Environment(\.services) private var services
     @State private var events: [CalendarEvent] = []
 
     private var name: String { profiles.first?.name ?? "" }
+
+    private var status: HomeStatus {
+        HomeStatus(translations: translations, memoryItems: memoryItems, level: profiles.first?.level ?? .a1)
+    }
 
     var body: some View {
         ScrollView {
@@ -30,8 +35,10 @@ struct HomeView: View {
                             if let scenario = event.scenario { appState.present(.conversation(scenario)) }
                         }
                     }
+                    EntryGrid(status: status) { appState.open($0) }
+                    GrammarCard(rulesWorthALook: status.mistakeRules) { appState.open(.grammar) }
                 }
-                Text("Temporary until the Home cards are built (#24–#26).")
+                Text("Temporary until #26 adds From your day and Beyond the app.")
                     .textRole(.meta)
                     .foregroundStyle(.tertiary)
                 group("Screens", entries: Self.screens.map { entry in
@@ -95,14 +102,7 @@ struct HomeView: View {
     }
 
     private static let screens: [Destination<Route>] = [
-        Destination(title: "Translate", symbol: "translate", route: .translate()),
-        Destination(title: "Memory", symbol: "book", route: .memory),
-        Destination(title: "Learn", symbol: "bolt", route: .learn),
-        Destination(title: "Grammar", symbol: "text.badge.checkmark", route: .grammar),
         Destination(title: "Rule · weil", symbol: "text.alignleft", route: .rule(id: "weil")),
-        Destination(title: "Progress", symbol: "chart.line.uptrend.xyaxis", route: .progress),
-        Destination(title: "Profile", symbol: "person.crop.circle", route: .profile),
-        Destination(title: "Settings", symbol: "gearshape", route: .settings),
         Destination(title: "Beyond the app", symbol: "sparkles", route: .beyond),
         Destination(title: "Debrief", symbol: "text.bubble", route: .debrief),
         Destination(title: "Briefing", symbol: "headphones", route: .briefing)
