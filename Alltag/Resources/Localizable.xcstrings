@@ -1,7 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "" : {},
     "%@" : {
       "shouldTranslate" : false
     },
@@ -38,16 +37,6 @@
       }
     },
     "%@ · steadily rising" : {},
-    "%@%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@%2$@"
-          }
-        }
-      }
-    },
     "%@, %@" : {
       "localizations" : {
         "en" : {
@@ -82,6 +71,7 @@
     "%lld of 3 allowed" : {},
     "%lld ready to review" : {},
     "%lld words and phrases, gathered from your days." : {},
+    "1 min" : {},
     "1 word or phrase, gathered from your days." : {},
     "4 short moments" : {},
     "5 min" : {},
@@ -159,9 +149,11 @@
     "First, what should we call you?" : {},
     "Fix" : {},
     "Fix a mistake" : {},
+    "Fix your mistakes" : {},
     "Fluent — I want polish" : {},
     "Focus" : {},
     "Football" : {},
+    "For your trip to Munich on Friday" : {},
     "Formal" : {},
     "From your day" : {},
     "German" : {},
@@ -189,6 +181,7 @@
     "How was your weekend? Pick what you'd naturally say." : {},
     "I get by in most situations" : {},
     "In context" : {},
+    "In the sentences where you found them" : {},
     "Just starting out" : {},
     "Keyboard" : {},
     "Keyboard, Siri, widgets & Watch · concepts" : {},
@@ -200,6 +193,7 @@
     "Learning beyond the app" : {},
     "Lectures, reading, exams" : {},
     "Listen" : {},
+    "Listen: platform change" : {},
     "Listening" : {},
     "Listening… tap when done" : {},
     "Live translation connects to Apple's Translation framework in a later version. For now, try one of these:" : {},
@@ -260,6 +254,7 @@
     },
     "Ready to review" : {},
     "Real-life conversation · Moving an appointment" : {},
+    "Recall %lld words from Safari" : {},
     "Reduce motion" : {},
     "Rehearse before appointments and trips" : {},
     "Rehearse from your Calendar" : {},
@@ -277,6 +272,7 @@
     "Send" : {},
     "Serious about it" : {},
     "Settings" : {},
+    "Short moments, picked from your week." : {},
     "Show a hint" : {},
     "Show actions" : {},
     "Shows an example" : {},
@@ -289,12 +285,14 @@
     "Spanish" : {},
     "Speak" : {},
     "Speak German" : {},
+    "Speak: moving an appointment" : {},
     "Speaking" : {},
     "Speaking…" : {},
     "Spiegel · Mietpreise in Berlin" : {},
     "Start learning" : {},
     "Start review" : {},
     "Starts a conversation at the dentist." : {},
+    "Starts a one-minute exercise on your mistakes." : {},
     "Steady progress" : {},
     "Strength" : {},
     "Studies" : {},
@@ -310,6 +308,7 @@
     "This shapes the situations you rehearse and the words we notice." : {},
     "Today" : {},
     "Today's focus" : {},
+    "Today's focus · a phone call scenario" : {},
     "Tomorrow" : {},
     "Tone" : {},
     "Translate" : {},
@@ -331,6 +330,7 @@
     "Words from your reading and conversations." : {},
     "Work" : {},
     "You" : {},
+    "You wrote this in Messages yesterday · plus one from a conversation" : {},
     "You're learning **German**. What do you speak already?" : {},
     "You're set, %@." : {},
     "Your 60-second briefing" : {},
