@@ -37,7 +37,7 @@ struct PermissionsStep: View {
                     }
                 }
                 Label {
-                    Text("Everything you allow is processed on your iPhone. Nothing from your Calendar or keyboard is sent to the cloud.")
+                    Text("Calendar and keyboard text stay on your iPhone. Allow live voice to send audio to OpenAI in Settings.")
                         .textRole(.meta)
                         .foregroundStyle(.secondary)
                 } icon: {

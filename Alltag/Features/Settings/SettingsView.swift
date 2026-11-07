@@ -134,8 +134,8 @@ private struct SettingsSections: View {
                 Image(systemName: "cpu")
                     .foregroundStyle(aiStatus.isAvailable ? Color.success : .secondary)
             }
-            ToggleRow(title: "Use cloud for Pro features",
-                      subtitle: "Only conversations you start. Never Calendar or keyboard text.",
+            ToggleRow(title: "Pro features may use the cloud",
+                      subtitle: "Live voice sends audio to OpenAI. Calendar and keyboard text stay on your iPhone.",
                       systemImage: "cloud.fill", symbolTint: .blue, symbolForeground: .white,
                       isOn: $settings.usesCloudForPro)
         } header: {

@@ -20,7 +20,7 @@ struct TranscriptView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 26) {
-                    ForEach(messages) { message in
+                    ForEach(messages.filter { !$0.line.german.isEmpty }) { message in
                         switch message.line.speaker {
                         case .companion:
                             CompanionLine(line: message.line, showsEnglish: englishShown.contains(message.id)) {
@@ -37,9 +37,9 @@ struct TranscriptView: View {
                 }
                 .padding(.horizontal, 22)
                 .padding(.vertical, 24)
-                .animation(.easeOut(duration: 0.4), value: messages)
+                .animation(.easeOut(duration: 0.4), value: messages.map(\.id))
             }
-            .onChange(of: messages.count) { scrollToBottom(proxy) }
+            .onChange(of: messages.last) { scrollToBottom(proxy) }
             .onChange(of: heardText) { scrollToBottom(proxy) }
         }
     }
@@ -56,16 +56,29 @@ private struct CompanionLine: View {
     let toggle: () -> Void
 
     var body: some View {
-        Button(action: toggle) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Companion")
-                    .textRole(.caption)
-                    .textCase(.uppercase)
-                    .tracking(0.8)
-                    .foregroundStyle(.tertiary)
-                Text(verbatim: line.german)
-                    .textRole(.aiLine)
-                    .foregroundStyle(.primary)
+        Group {
+            if line.english.isEmpty {
+                content
+            } else {
+                Button(action: toggle) { content.contentShape(.rect) }
+                    .buttonStyle(.plain)
+                    .accessibilityHint(showsEnglish ? Text("Hides the English") : Text("Shows the English"))
+            }
+        }
+        .transition(.opacity.combined(with: .offset(y: 8)))
+    }
+
+    private var content: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Companion")
+                .textRole(.caption)
+                .textCase(.uppercase)
+                .tracking(0.8)
+                .foregroundStyle(.tertiary)
+            Text(verbatim: line.german)
+                .textRole(.aiLine)
+                .foregroundStyle(.primary)
+            if !line.english.isEmpty {
                 if showsEnglish {
                     Text(verbatim: line.english)
                         .textRole(.bodySmall)
@@ -77,13 +90,9 @@ private struct CompanionLine: View {
                         .foregroundStyle(.tertiary)
                 }
             }
-            .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(.rect)
         }
-        .buttonStyle(.plain)
-        .accessibilityHint(showsEnglish ? Text("Hides the English") : Text("Shows the English"))
-        .transition(.opacity.combined(with: .offset(y: 8)))
+        .multilineTextAlignment(.leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

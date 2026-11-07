@@ -11,7 +11,10 @@ import SwiftUI
 /// A full-screen conversation for one scenario.
 struct ConversationView: View {
     let scenario: Scenario
+    var level: Level = .a1
     @Environment(\.services) private var services
+    @Environment(AppState.self) private var appState
+    @Environment(\.scenePhase) private var scenePhase
     @State private var model: ConversationModel?
 
     var body: some View {
@@ -24,8 +27,18 @@ struct ConversationView: View {
         }
         .background(.screenBackground)
         .onAppear {
-            if model == nil { model = ConversationModel(scenario: scenario, services: services) }
+            if model == nil {
+                model = ConversationModel(scenario: scenario, services: services,
+                                          usesCloudVoice: appState.settings.usesCloudForPro, level: level)
+            }
         }
+        .onChange(of: appState.settings.usesCloudForPro) { _, allowed in
+            model?.setCloudVoiceConsent(allowed)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background { model?.suspendCloudVoice() }
+        }
+        .onDisappear { model?.stop() }
     }
 }
 
@@ -75,11 +88,16 @@ private struct ConversationContent: View {
         .toast($model.notice)
         .onChange(of: model.isFinished) { _, finished in
             guard finished else { return }
+            if model.finishedLiveConversation, model.turnCount == 0 {
+                appState.dismissFullScreen()
+                return
+            }
             model.savePhrases(in: modelContext)
             showsSummary = true
         }
         .sheet(isPresented: $showsSummary) {
             SummarySheet(scenario: model.scenario, turns: model.turnCount, fixes: model.fixCount,
+                         wasLive: model.finishedLiveConversation,
                          onPractise: {
                              showsSummary = false
                              appState.present(.activity(.mistakes))
@@ -134,8 +152,8 @@ private struct ConversationContent: View {
                 }
                 .buttonStyle(.plain)
                 // Not `.disabled`: that would dim the orb while thinking and speaking.
-                .allowsHitTesting(model.canRespond || model.phase == .listening)
-                .accessibilityLabel(Text(model.stateLabel ?? "Voice"))
+                .allowsHitTesting(model.isUsingCloudVoice || model.canRespond || model.phase == .listening)
+                .accessibilityLabel(Text(model.isUsingCloudVoice ? "End conversation" : model.stateLabel ?? "Voice"))
                 Spacer()
                 hintButton(size: 48)
             }
