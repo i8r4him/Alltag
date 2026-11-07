@@ -49,12 +49,12 @@ final class OnDeviceCompanionService: CompanionService {
         try await fallback.respond(to: learnerText, in: scenario, turn: turn)
     }
 
-    func feedback(on sentence: String, in scenario: Scenario, turn: Int) async throws -> SentenceFeedback {
-        let prompt = CompanionPrompt.feedback(on: sentence, in: scenario, turn: turn)
+    func feedback(on sentence: String, in scenario: Scenario, replyingTo previous: String?) async throws -> SentenceFeedback {
+        let prompt = CompanionPrompt.feedback(on: sentence, in: scenario, replyingTo: previous)
         if usesOnDeviceModel, let generated = await generate(GeneratedFeedback.self, Self.feedbackInstructions, prompt) {
             return SentenceFeedback(generated)
         }
-        return try await fallback.feedback(on: sentence, in: scenario, turn: turn)
+        return try await fallback.feedback(on: sentence, in: scenario, replyingTo: previous)
     }
 
     func debrief(_ input: String, about moment: Debrief) async throws -> Debrief {
@@ -110,14 +110,11 @@ final class OnDeviceCompanionService: CompanionService {
 
 /// The prompts sent to the model, kept apart so tests can check them.
 enum CompanionPrompt {
-    static func feedback(on sentence: String, in scenario: Scenario, turn: Int) -> String {
-        let learnerIndices = scenario.script.indices.filter { scenario.script[$0].speaker == .learner }
-        let index = learnerIndices.indices.contains(turn) ? learnerIndices[turn] : scenario.script.endIndex
-        let previous = scenario.script[..<index].last { $0.speaker == .companion }
+    static func feedback(on sentence: String, in scenario: Scenario, replyingTo previous: String?) -> String {
         var lines = [
             "Situation: \(scenario.title). The learner's goal: \(scenario.goal)."
         ]
-        if let previous { lines.append("The other person just said: „\(previous.german)“") }
+        if let previous { lines.append("The other person just said: „\(previous)“") }
         lines.append("The learner said: „\(sentence)“")
         return lines.joined(separator: "\n")
     }
@@ -147,6 +144,8 @@ struct GeneratedFeedback {
     var note: String
     @Guide(description: "What the learner's sentence means, in British English")
     var english: String
+    @Guide(description: "For fix: the learner's whole sentence, corrected. Otherwise empty.")
+    var correction: String
 }
 
 @Generable
@@ -174,7 +173,9 @@ extension SentenceFeedback {
         case .fix: .fix
         case .note: .note
         }
-        self.init(feedback: Feedback(kind: kind, title: generated.title, note: generated.note),
+        let correction = generated.correction.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.init(feedback: Feedback(kind: kind, title: generated.title, note: generated.note,
+                                     correction: kind == .fix && !correction.isEmpty ? correction : nil),
                   english: generated.english)
     }
 }

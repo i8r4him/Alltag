@@ -46,7 +46,8 @@ enum MockScenarios {
                              german: "Ich komme um 15 Uhr, wenn das passt mir.",
                              english: "I'll come at 3 pm, if that suits me.",
                              feedback: Feedback(kind: .fix, title: "Verb goes last after „wenn“",
-                                                note: "… wenn mir das passt. Also: „wenn es Ihnen passt“ is what you meant.")),
+                                                note: "… wenn mir das passt. Also: „wenn es Ihnen passt“ is what you meant.",
+                                                correction: "Ich komme um 15 Uhr, wenn es Ihnen passt.")),
             ConversationLine(speaker: .companion,
                              german: "Prima, dann trage ich Sie für morgen um 15 Uhr ein. Bis morgen!",
                              english: "Great, I'll put you down for 3 pm tomorrow. See you then!")
@@ -78,7 +79,8 @@ enum MockScenarios {
                              german: "Ja, ich habe es auf mein Handy.",
                              english: "Yes, I have it on my phone.",
                              feedback: Feedback(kind: .fix, title: "Location takes the dative",
-                                                note: "… auf meinem Handy. „Where?“ → dative.")),
+                                                note: "… auf meinem Handy. „Where?“ → dative.",
+                                                correction: "Ja, ich habe es auf meinem Handy.")),
             ConversationLine(speaker: .companion,
                              german: "Perfekt, dann scanne ich den Code. Hier ist Ihre Quittung.",
                              english: "Perfect, I'll scan the code. Here's your receipt.")
@@ -110,7 +112,8 @@ enum MockScenarios {
                              german: "Hin und zurück. Wann der Zug fährt ab?",
                              english: "Return. When does the train leave?",
                              feedback: Feedback(kind: .fix, title: "Questions: verb comes second",
-                                                note: "Wann fährt der Zug ab?")),
+                                                note: "Wann fährt der Zug ab?",
+                                                correction: "Hin und zurück. Wann fährt der Zug ab?")),
             ConversationLine(speaker: .companion,
                              german: "Der ICE fährt um 9:12 Uhr von Gleis 7 ab. Das macht 89 Euro.",
                              english: "The ICE leaves at 9:12 from platform 7. That will be 89 euros.")
