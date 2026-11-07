@@ -22,34 +22,230 @@ Apple Vision Pro is **not** supported. The design reference is a 393×852 iPhone
 
 ## Getting started in Xcode
 1. The Xcode project `Alltag` exists (iOS App · SwiftUI · Swift). Persistence uses **SwiftData** — add the `ModelContainer` in `AlltagApp` with the first `@Model` types (user profile, memory items, phrasebook, solved rules, saved translations). The Watch app is added later as a separate watchOS target.
-2. Create the folder structure below (groups in Xcode).
+2. Create the folder structure in **Architecture** below.
 3. Build `DesignSystem/` first (tokens + reusable components), then `Home`, then each feature.
 4. Use `NavigationStack(path:)` with an `enum Route: Hashable` — **no TabView**.
 5. Add SwiftUI `#Preview`s for each screen and key states (conversation idle/listening/thinking/speaking; activity answered right/wrong; onboarding steps).
 
-Suggested structure:
+## Architecture
+Plain SwiftUI with `@Observable` models and services injected through the SwiftUI environment. No third-party libraries in the app (SwiftLint is a development tool only).
+
+**One app target, organised in folders** (Xcode synchronized folders — the folders on disk are the groups in Xcode). Shared code can move into a local Swift package later, when the Watch app and extensions arrive.
 ```
-Alltag/
-  App/            AlltagApp.swift, AppState.swift (@Observable), Route.swift
-  DesignSystem/   Tokens.swift (Color/Font/Radius/Spacing), GlassButton, CardRow, SectionHeader,
-                  Pill, Toggle row, OptionCard, ProgressSegments, StrengthDots, Toast
-  Components/     SmartBar, VoiceOrb, WordTile, PatternBar, EqualizerBars
-  Features/
-    Onboarding/   OnboardingFlow + 8 step views
-    Home/         HomeView, FocusCard, ComingUpCard, EntryGrid, GrammarCard, FromYourDayList
-    Conversation/ ConversationView, ConversationModel (state machine), SummarySheet
-    Translate/    TranslateView
-    Memory/       MemoryView (Words | Phrasebook)
-    Learn/        LearnView, ActivityView (multiple-choice runner)
-    Grammar/      GrammarView, RuleView (word-order task)
-    Debrief/      DebriefView
-    Briefing/     BriefingView
-    Progress/     ProgressOverviewView (not `ProgressView` — that name clashes with SwiftUI's spinner)
-    Profile/      ProfileView
-    Settings/     SettingsView
-    Beyond/       BeyondView (concept previews only)
-  MockData/       Scenarios, Translations, MemoryItems, Activities, Rules, Levels, Phrasebook, Briefing
+Alltag/                                   ← repo root
+├─ Alltag.xcodeproj
+├─ Alltag/                                app target (iPhone, iPad, foldable)
+│  ├─ App/
+│  │  ├─ AlltagApp.swift                  @main, ModelContainer, environment setup
+│  │  ├─ AppState.swift                   @Observable: user, settings, permissions, isPro
+│  │  ├─ AppServices.swift                bundles all services; mock or live
+│  │  ├─ Route.swift                      enum Route: Hashable
+│  │  └─ RootView.swift                   NavigationStack(path:), covers, onboarding gate
+│  │
+│  ├─ DesignSystem/
+│  │  ├─ Tokens/
+│  │  │  ├─ Colors.swift                  semantic + asset colours (light/dark)
+│  │  │  ├─ Typography.swift              text roles mapped to Dynamic Type styles
+│  │  │  ├─ Radius.swift
+│  │  │  ├─ Spacing.swift
+│  │  │  └─ Motion.swift                  push/modal animations, Reduce Motion
+│  │  └─ Components/
+│  │     ├─ GlassButton.swift
+│  │     ├─ PrimaryButton.swift           54pt accent capsule CTA
+│  │     ├─ CardRow.swift
+│  │     ├─ SectionHeader.swift
+│  │     ├─ Eyebrow.swift
+│  │     ├─ Pill.swift
+│  │     ├─ ToggleRow.swift
+│  │     ├─ OptionCard.swift
+│  │     ├─ ProgressSegments.swift
+│  │     ├─ StrengthDots.swift
+│  │     └─ Toast.swift
+│  │
+│  ├─ Components/                         app-specific building blocks
+│  │  ├─ SmartBar/
+│  │  │  ├─ SmartBar.swift
+│  │  │  └─ SmartBarChips.swift
+│  │  ├─ VoiceOrb.swift
+│  │  ├─ WordTile.swift
+│  │  ├─ PatternBar.swift
+│  │  └─ EqualizerBars.swift
+│  │
+│  ├─ Models/
+│  │  ├─ Persistent/                      SwiftData @Model
+│  │  │  ├─ UserProfile.swift
+│  │  │  ├─ MemoryItem.swift
+│  │  │  ├─ Phrase.swift
+│  │  │  ├─ SolvedRule.swift
+│  │  │  └─ SavedTranslation.swift
+│  │  ├─ Content/                         plain structs for lesson content
+│  │  │  ├─ Scenario.swift
+│  │  │  ├─ ConversationLine.swift
+│  │  │  ├─ Activity.swift
+│  │  │  ├─ GrammarRule.swift
+│  │  │  ├─ TranslationResult.swift
+│  │  │  └─ Briefing.swift
+│  │  └─ Enums/
+│  │     ├─ Level.swift                   A1–C2
+│  │     ├─ Goal.swift
+│  │     ├─ NativeLanguage.swift
+│  │     ├─ Interest.swift
+│  │     ├─ DailyTime.swift
+│  │     └─ NudgeTime.swift
+│  │
+│  ├─ Services/                           protocol + mock (+ live later) per service
+│  │  ├─ Speech/
+│  │  │  ├─ SpeechService.swift
+│  │  │  └─ MockSpeechService.swift
+│  │  ├─ Voice/
+│  │  │  ├─ VoiceService.swift
+│  │  │  └─ SystemVoiceService.swift      AVSpeechSynthesizer (real in phase 1)
+│  │  ├─ Translation/
+│  │  │  ├─ TranslationService.swift
+│  │  │  └─ MockTranslationService.swift
+│  │  ├─ Companion/
+│  │  │  ├─ CompanionService.swift
+│  │  │  └─ MockCompanionService.swift
+│  │  ├─ Calendar/
+│  │  │  ├─ CalendarService.swift
+│  │  │  └─ MockCalendarService.swift
+│  │  └─ Notifications/
+│  │     ├─ NotificationService.swift
+│  │     └─ MockNotificationService.swift
+│  │
+│  ├─ Intents/                            App Intents — Siri AI, Spotlight, Shortcuts
+│  │  ├─ Entities/
+│  │  │  ├─ WordEntity.swift
+│  │  │  ├─ PhraseEntity.swift
+│  │  │  ├─ ScenarioEntity.swift
+│  │  │  └─ GrammarRuleEntity.swift
+│  │  ├─ Actions/
+│  │  │  ├─ StartConversationIntent.swift
+│  │  │  ├─ TranslateIntent.swift
+│  │  │  ├─ ReviewWordsIntent.swift
+│  │  │  └─ OpenRuleIntent.swift
+│  │  └─ AlltagShortcuts.swift            AppShortcutsProvider
+│  │
+│  ├─ Features/
+│  │  ├─ Onboarding/
+│  │  │  ├─ OnboardingFlow.swift
+│  │  │  ├─ OnboardingModel.swift
+│  │  │  └─ Steps/
+│  │  │     ├─ WelcomeStep.swift
+│  │  │     ├─ NameStep.swift
+│  │  │     ├─ WhyStep.swift
+│  │  │     ├─ LevelStep.swift
+│  │  │     ├─ DailyTimeStep.swift
+│  │  │     ├─ InterestsStep.swift
+│  │  │     ├─ PermissionsStep.swift
+│  │  │     └─ SummaryStep.swift
+│  │  ├─ Home/
+│  │  │  ├─ HomeView.swift
+│  │  │  ├─ HomeTopBar.swift
+│  │  │  ├─ FocusCard.swift
+│  │  │  ├─ ComingUpCard.swift
+│  │  │  ├─ EntryGrid.swift
+│  │  │  ├─ GrammarCard.swift
+│  │  │  ├─ FromYourDayList.swift
+│  │  │  └─ BeyondRow.swift
+│  │  ├─ Conversation/
+│  │  │  ├─ ConversationView.swift
+│  │  │  ├─ ConversationModel.swift       state machine
+│  │  │  ├─ ConversationHeader.swift
+│  │  │  ├─ TranscriptView.swift
+│  │  │  ├─ MessageRow.swift
+│  │  │  ├─ FeedbackCard.swift
+│  │  │  └─ SummarySheet.swift
+│  │  ├─ Translate/
+│  │  │  ├─ TranslateView.swift
+│  │  │  ├─ TranslateModel.swift
+│  │  │  ├─ LanguageCapsule.swift
+│  │  │  ├─ ResultCard.swift
+│  │  │  ├─ WordByWordSection.swift
+│  │  │  ├─ ToneSection.swift
+│  │  │  └─ InContextSection.swift
+│  │  ├─ Memory/
+│  │  │  ├─ MemoryView.swift              Words | Phrasebook
+│  │  │  ├─ WordsTab.swift
+│  │  │  ├─ WordRow.swift
+│  │  │  ├─ ReviewCard.swift
+│  │  │  └─ PhrasebookTab.swift
+│  │  ├─ Learn/
+│  │  │  ├─ LearnView.swift
+│  │  │  ├─ ActivityView.swift
+│  │  │  ├─ ActivityModel.swift
+│  │  │  ├─ OptionButton.swift
+│  │  │  ├─ AudioPlayerCard.swift
+│  │  │  └─ ActivityResultView.swift
+│  │  ├─ Grammar/
+│  │  │  ├─ GrammarView.swift
+│  │  │  ├─ TopicRow.swift
+│  │  │  ├─ RuleView.swift
+│  │  │  ├─ RuleModel.swift
+│  │  │  └─ WordOrderTask.swift
+│  │  ├─ Debrief/
+│  │  │  ├─ DebriefView.swift
+│  │  │  └─ DebriefModel.swift
+│  │  ├─ Briefing/
+│  │  │  └─ BriefingView.swift
+│  │  ├─ Progress/
+│  │  │  ├─ ProgressOverviewView.swift    not `ProgressView` — clashes with SwiftUI
+│  │  │  ├─ CEFRTrack.swift
+│  │  │  ├─ SituationRow.swift
+│  │  │  └─ SkillBars.swift
+│  │  ├─ Profile/
+│  │  │  └─ ProfileView.swift
+│  │  ├─ Settings/
+│  │  │  └─ SettingsView.swift
+│  │  └─ Beyond/
+│  │     └─ BeyondView.swift              concept previews only
+│  │
+│  ├─ MockData/
+│  │  ├─ MockScenarios.swift
+│  │  ├─ MockTranslations.swift
+│  │  ├─ MockMemoryItems.swift
+│  │  ├─ MockActivities.swift
+│  │  ├─ MockRules.swift
+│  │  ├─ MockLevels.swift
+│  │  ├─ MockPhrasebook.swift
+│  │  ├─ MockDebrief.swift
+│  │  └─ MockBriefing.swift
+│  │
+│  └─ Resources/
+│     ├─ Assets.xcassets                  AppIcon, AccentColor, Success, Mistake (light + dark)
+│     ├─ Localizable.xcstrings
+│     └─ AppShortcuts.xcstrings           Siri phrases
+│
+├─ AlltagTests/                           Swift Testing (added in M0)
+│  ├─ ConversationModelTests.swift
+│  ├─ ActivityModelTests.swift
+│  ├─ RuleModelTests.swift
+│  └─ OnboardingModelTests.swift
+│
+├─ AlltagWatch/                           watchOS target (M5)
+│
+├─ .github/
+│  ├─ workflows/
+│  │  ├─ ci.yml                           build + test (self-hosted Mac)
+│  │  ├─ lint.yml                         SwiftLint (self-hosted Mac)
+│  │  └─ labeler.yml                      auto-label PRs (GitHub Linux)
+│  ├─ ISSUE_TEMPLATE/
+│  │  ├─ feature.yml
+│  │  ├─ bug.yml
+│  │  └─ config.yml
+│  ├─ pull_request_template.md
+│  ├─ labeler.yml                         folder → label rules
+│  ├─ release.yml                         release-notes categories
+│  └─ dependabot.yml
+│
+├─ screenshots/                           design reference (01–30)
+├─ .swiftlint.yml
+├─ .gitignore
+└─ README.md
 ```
+**Services rule:** screens talk to service protocols, never to a framework directly. Phase 1 uses the mock implementations; later milestones swap in the real ones (Speech, Foundation Models, Translation, EventKit) without touching the screens.
+
+**Moving existing files:** `AlltagApp.swift` moves to `App/`, `Assets.xcassets` to `Resources/`, and `ContentView.swift` is replaced by `RootView.swift`.
 
 ---
 
@@ -192,7 +388,41 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 ## Simulated vs real
 - **Real in native build (phase 1):** navigation, all UI states, AVSpeechSynthesizer pronunciation, haptics, local mock data, SwiftData persistence.
 - **Simulated:** speech recognition, companion replies & feedback, translations (3 samples), debrief answer, placement.
-- **Later:** Foundation Models (on-device) + cloud for Pro, Translation framework, App Intents/Siri, WidgetKit, keyboard extension, EventKit, Watch.
+- **Later:** see the framework table below.
+
+## Frameworks
+All Apple frameworks — nothing to install.
+
+**Phase 1**
+| Framework | Used for |
+|---|---|
+| SwiftUI + Observation | All screens and app state |
+| SwiftData | Profile, words, phrasebook, progress, saved translations |
+| AVFoundation (`AVSpeechSynthesizer`) | Speaking German aloud |
+| `sensoryFeedback` | Haptics for taps, answers, conversation states |
+| String Catalogs | All UI text, ready for localization |
+| Swift Testing | Unit tests for logic |
+| OSLog | Logging |
+
+**Later**
+| Framework | Used for | Needs paid Developer Program |
+|---|---|---|
+| **App Intents** | Siri AI and Apple Intelligence: App Entities (words, phrases, scenarios, rules) indexed for personal context, intents conforming to App Schemas so Siri can act through natural language, onscreen awareness via entity-linked views, App Shortcuts, Spotlight, Action Button | No for development; Siri AI is a Developer Preview from iOS 27.3 beta |
+| Speech (`SpeechAnalyzer`) | Hearing the learner's German | No |
+| Foundation Models | On-device companion replies, corrections, debrief | No |
+| Translation | Real translation | No |
+| EventKit | "Coming up" from Calendar | No |
+| UserNotifications | Daily nudges (local) | No |
+| WidgetKit | Word of the day, Review widgets | Yes (App Groups for shared data) |
+| SwiftData + CloudKit | Sync between iPhone, iPad and Watch | Yes |
+| WatchConnectivity | Phone ⇄ Watch | No |
+| TipKit | In-app hints | No |
+| StoreKit 2 | Alltag Pro subscription | Yes (to sell) |
+| Keyboard extension / Safari Web Extension | "Learn from my day" | Yes (App Groups) |
+
+**Developer account:** development starts on a free account. Everything marked "Yes" is built behind the service protocols and switched on once the paid Developer Program is active (before release). TestFlight also needs the paid program.
+
+**App Intents first-class:** every core noun (word, phrase, scenario, grammar rule) is modelled as an `AppEntity` from the start, and every core action (start a conversation, translate, review words, open a rule) as an `AppIntent`, so the app is ready for Siri AI without later refactoring. Siri AI integrations can be tested in Xcode now but can't ship to the App Store until Apple opens submissions.
 
 ## Assets
 No images. Icons are Material Symbols Rounded in the HTML → replace with SF Symbols, e.g. `mic`, `waveform`, `translate`, `book`, `bolt`, `chart.line.uptrend.xyaxis`, `gearshape`, `calendar`, `headphones`, `person.wave.2`, `text.badge.checkmark`, `cross.case`, `tram`, `shippingbox`, `lightbulb`, `keyboard`, `speaker.wave.2`, `bookmark`, `checkmark.circle.fill`, `xmark.circle.fill`.
