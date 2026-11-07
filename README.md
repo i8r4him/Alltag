@@ -213,6 +213,9 @@ Alltag/                                   ← repo root
 │  ├─ RuleModelTests.swift
 │  └─ OnboardingModelTests.swift
 │
+├─ supabase/                             backend: realtime-session Edge Function, migrations (see supabase/README.md)
+├─ AGENTS.md                              rules for coding agents (Codex)
+│
 ├─ .github/
 │  ├─ workflows/
 │  │  ├─ ci.yml                           build + test (self-hosted Mac)
@@ -415,6 +418,7 @@ All Apple frameworks — nothing to install.
 | UserNotifications | Daily nudges (local) | No |
 | WidgetKit | Word of the day, Review widgets | Yes (App Groups for shared data) |
 | SwiftData + CloudKit | Sync and backup across the learner's iPhones | Yes |
+| OpenAI Realtime API (via Supabase Edge Function) | Live spoken conversations (Pro, cloud); the API key stays on the server | No |
 | TipKit | In-app hints | No |
 | StoreKit 2 | Alltag Pro subscription | Yes (to sell) |
 | Keyboard extension / Safari Web Extension | "Learn from my day" | Yes (App Groups) |

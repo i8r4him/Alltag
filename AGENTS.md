@@ -1,0 +1,66 @@
+# AGENTS.md — working on Alltag
+
+Alltag is an iOS German-learning companion (SwiftUI, SwiftData, iOS 27+, iPhone and foldable iPhone only).
+`README.md` is the design spec and architecture guide; read the parts that touch your task before you start.
+
+## Build, lint, test
+
+```sh
+swiftlint lint --strict --quiet            # must be clean
+scripts/sync_string_catalog.sh             # after any change to user-facing text
+xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
+  -destination "platform=iOS Simulator,name=iPhone 18 Pro"
+```
+
+- CI (`.github/workflows/ci.yml`, self-hosted Mac) runs the same tests and checks that the String Catalogs are in sync. SwiftLint runs in `lint.yml`.
+- The build must have **no new warnings**.
+- If the test run fails with "Failed to create a bundle instance", the simulator hiccuped (it happens after adding a test file). Run it again.
+
+## Code rules
+
+- **Every new Swift file** starts with this header, with the file and target names filled in:
+  ```swift
+  //
+  //  FileName.swift
+  //  Alltag            (or AlltagTests)
+  //
+  //  Created by Ibrahim Abdullah on 07.11.26.
+  //
+  ```
+- **Native SwiftUI and Apple frameworks only.** Use `.toolbar`/`ToolbarItem`, `Form`/`List`, system pickers and sheets, not hand-made look-alikes.
+- **No third-party libraries in the app.** Talk to web services with `URLSession` and `URLSessionWebSocketTask`.
+- **Style:** `@Observable` models, services injected through `AppServices` in the environment. Screens only talk to service **protocols** (`SpeechService`, `VoiceService`, `CompanionService`, …). A new live implementation goes behind the existing protocol, and the mock stays for previews and tests.
+- The default actor isolation is `MainActor`. Audio callbacks and other off-main work need explicitly `nonisolated` / `@Sendable` code.
+- **British English** in all UI text and comments ("practise", "colour").
+- **Text:** all UI text goes in `Alltag/Resources/Localizable.xcstrings`. German content and other non-localised strings use `Text(verbatim:)`, so they don't create catalog keys. Don't build `Text` with `+`; it's deprecated.
+- **Tests:** Swift Testing (`import Testing`, `@Test`, `#expect`).
+  - Tests never touch the network, microphone or speaker; inject stubs.
+  - Tests that need real hardware or services are opt-in through an environment variable, like `ALLTAG_LIVE_MODEL` in `AlltagTests/CompanionTests.swift`.
+- **Secrets never go in the repo or the app bundle.** The OpenAI API key lives only in Supabase secrets (see `supabase/README.md`). The Supabase URL and publishable key are public and may be in the app.
+
+## Workflow
+
+1. Work from a GitHub issue in `i8r4him/Alltag`. Use the branch name `feature/<issue#>-short-name`, branched from an up-to-date `main`.
+2. Before committing:
+   - SwiftLint is clean.
+   - The String Catalogs are synced.
+   - All tests pass.
+   - `README.md` is updated where the architecture tree, the "Simulated vs real" list or the frameworks table changed.
+3. **Commit messages:**
+   - A plain subject plus a short body ending with `Closes #<issue>`.
+   - **No `Co-Authored-By`, no tool or agent attribution, no "Generated with …" lines** in commits or PRs.
+4. **Open a PR** with `gh pr create`:
+   - Use the issue's labels and milestone.
+   - Include a short "what and why" body.
+   - Note anything you couldn't verify, for example "needs a real device".
+5. **Don't merge.** Leave the PR for review; the maintainer squash-merges it.
+6. **Ask before** changing the project's targets, adding capabilities or entitlements, or changing anything under `supabase/`.
+
+## Project map (short)
+
+- `Alltag/App/`: entry point, `AppState`, `AppServices`, routing.
+- `Alltag/Features/<Screen>/`: views and their `@Observable` models.
+- `Alltag/Services/<Area>/`: service protocols, mocks and live implementations.
+- `Alltag/DesignSystem/`: tokens and shared components. Use them rather than raw values.
+- `Alltag/Intents/`: App Intents (Siri, Shortcuts, Spotlight).
+- `supabase/`: the Edge Function and migrations, owned by the maintainer.
