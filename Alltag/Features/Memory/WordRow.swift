@@ -21,7 +21,7 @@ struct WordRow: View {
             Button(action: onToggle) {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("\(Text(verbatim: item.article).fontWeight(.regular).foregroundStyle(.tertiary))\(Text(verbatim: item.word))")
+                        Text(wordTitle)
                             .textRole(.cardTitle)
                         Text(verbatim: item.meaning)
                             .textRole(.bodySmall)
@@ -50,6 +50,15 @@ struct WordRow: View {
                     .transition(.opacity)
             }
         }
+    }
+
+    /// Grey article, then the word. Built as an attributed string: it's
+    /// German content, not catalog text.
+    private var wordTitle: AttributedString {
+        var article = AttributedString(item.article)
+        article.foregroundColor = .secondary
+        article.font = .body
+        return article + AttributedString(item.word)
     }
 
     private var details: some View {

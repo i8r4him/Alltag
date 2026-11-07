@@ -137,11 +137,13 @@ private struct ConversationContent: View {
                 Spacer()
                 hintButton(size: 48)
             }
-            Text(model.stateLabel ?? "")
-                .textRole(.bodySmall)
-                .foregroundStyle(.secondary)
-                .frame(height: 20)
-                .accessibilityHidden(true)
+            Group {
+                if let label = model.stateLabel { Text(label) }
+            }
+            .textRole(.bodySmall)
+            .foregroundStyle(.secondary)
+            .frame(height: 20)
+            .accessibilityHidden(true)
         }
         .padding(.horizontal, 28)
         .padding(.top, 4)

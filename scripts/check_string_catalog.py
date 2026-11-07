@@ -9,6 +9,7 @@ table name comes from it. The check compares contents, not key order, so
 Xcode and xcstringstool can each sort keys their own way.
 """
 import json
+import re
 import sys
 
 
@@ -26,6 +27,18 @@ def main():
                if committed[key].get("extractionState") != "manual")
     marked = (key for key, value in synced.items() if value.get("extractionState") == "stale")
     stale = sorted(set(dropped) | set(marked), key=str.lower)
+    # Keys with nothing to translate ("", "%@%@") come from interpolating
+    # content into Text; use Text(verbatim:) or an AttributedString instead.
+    # Keys explicitly marked shouldTranslate: false are allowed.
+    empty = sorted(
+        key for key, value in synced.items()
+        if not re.sub(r"%(\d+\$)?(@|lld|d|f)", "", key).strip() and value.get("shouldTranslate") is not False
+    )
+    if empty:
+        print("String Catalog has keys with nothing to translate:")
+        for key in empty:
+            print(f"  {key!r}")
+        return 1
     if not missing and not stale:
         print(f"String Catalog is up to date ({len(committed)} keys).")
         return 0
