@@ -19,7 +19,7 @@ struct SmartBar: View {
 
     @State private var text = ""
     @FocusState private var isFocused: Bool
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.reducesMotion) private var reduceMotion
 
     private var hasText: Bool { !text.trimmingCharacters(in: .whitespaces).isEmpty }
 

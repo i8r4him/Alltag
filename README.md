@@ -37,7 +37,8 @@ Alltag/                                   ← repo root
 ├─ Alltag/                                app target (iPhone, iPad, foldable)
 │  ├─ App/
 │  │  ├─ AlltagApp.swift                  @main, ModelContainer, environment setup
-│  │  ├─ AppState.swift                   @Observable: user, settings, permissions, isPro
+│  │  ├─ AppState.swift                   @Observable: navigation, full-screen flows, settings
+│  │  ├─ AppSettings.swift                device settings in UserDefaults (motion, speech, Pro)
 │  │  ├─ AppServices.swift                all services; .live() for the app, .mock() for previews/tests
 │  │  ├─ Route.swift                      enum Route: Hashable
 │  │  ├─ RootView.swift                   NavigationStack(path:), covers, onboarding gate
@@ -172,7 +173,9 @@ Alltag/                                   ← repo root
 │  │  ├─ Profile/
 │  │  │  └─ ProfileView.swift
 │  │  ├─ Settings/
-│  │  │  └─ SettingsView.swift
+│  │  │  ├─ SettingsView.swift
+│  │  │  ├─ SettingsModel.swift           permission toggles, on-device AI status
+│  │  │  └─ DataExport.swift              Export my data (JSON)
 │  │  └─ Beyond/
 │  │     └─ BeyondView.swift              concept previews only
 │  │

@@ -35,7 +35,7 @@ struct ToastView: View {
 private struct ToastModifier: ViewModifier {
     @Binding var message: ToastMessage?
     var duration: Duration = .seconds(2)
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.reducesMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
         content

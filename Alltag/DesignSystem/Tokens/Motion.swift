@@ -9,9 +9,9 @@ import SwiftUI
 
 /// Animations and transitions from the design spec.
 ///
-/// Every function takes `reduceMotion`: pass the system setting
-/// (`@Environment(\.accessibilityReduceMotion)`) combined with the in-app
-/// Reduce Motion toggle. With it on, movement is replaced by a short fade.
+/// Every function takes `reduceMotion`: pass `@Environment(\.reducesMotion)`,
+/// which combines the system setting with the in-app Reduce Motion toggle.
+/// With it on, movement is replaced by a short fade.
 enum Motion {
     /// Ease-out curve used across the app: `cubic-bezier(.2, .8, .2, 1)`.
     static func easeOut(duration: TimeInterval) -> Animation {
@@ -39,4 +39,10 @@ enum Motion {
     static let pushOffset: CGFloat = 28
     static let modalOffset: CGFloat = 48
     private static let reducedAnimation: Animation = .easeInOut(duration: 0.2)
+}
+
+extension EnvironmentValues {
+    /// Whether motion should be reduced: the system setting or the in-app
+    /// toggle in Settings. Set once by `RootView` for the whole app.
+    @Entry var reducesMotion = false
 }

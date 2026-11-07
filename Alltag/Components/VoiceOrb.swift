@@ -29,7 +29,7 @@ struct VoiceOrb: View {
     var isFinished = false
     var size: CGFloat = 132
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.reducesMotion) private var reduceMotion
 
     private var isLive: Bool { state != .idle }
 
