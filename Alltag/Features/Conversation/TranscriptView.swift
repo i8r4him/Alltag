@@ -7,45 +7,38 @@
 
 import SwiftUI
 
-/// The conversation so far, scrolled to the newest line, plus the words being heard.
+/// The conversation so far, kept at the newest line, plus the words being heard.
 struct TranscriptView: View {
     let messages: [ConversationModel.Message]
     /// Words heard so far while listening; empty otherwise.
     let heardText: String
 
     @State private var englishShown: Set<UUID> = []
-    private static let bottomID = "bottom"
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 26) {
-                    ForEach(messages.filter { !$0.line.german.isEmpty }) { message in
-                        switch message.line.speaker {
-                        case .companion:
-                            CompanionLine(line: message.line, showsEnglish: englishShown.contains(message.id)) {
-                                englishShown.formSymmetricDifference([message.id])
-                            }
-                        case .learner:
-                            LearnerLine(line: message.line)
+        // Anchored to the bottom, so streamed lines stay in view without scrolling on every change.
+        ScrollView {
+            VStack(alignment: .leading, spacing: 26) {
+                ForEach(messages.filter { !$0.line.german.isEmpty }) { message in
+                    switch message.line.speaker {
+                    case .companion:
+                        CompanionLine(line: message.line, showsEnglish: englishShown.contains(message.id)) {
+                            englishShown.formSymmetricDifference([message.id])
                         }
+                    case .learner:
+                        LearnerLine(line: message.line)
                     }
-                    if !heardText.isEmpty {
-                        HeardText(text: heardText)
-                    }
-                    Color.clear.frame(height: 1).id(Self.bottomID)
                 }
-                .padding(.horizontal, 22)
-                .padding(.vertical, 24)
-                .animation(.easeOut(duration: 0.4), value: messages.map(\.id))
+                if !heardText.isEmpty {
+                    HeardText(text: heardText)
+                }
             }
-            .onChange(of: messages.last) { scrollToBottom(proxy) }
-            .onChange(of: heardText) { scrollToBottom(proxy) }
+            .padding(.horizontal, 22)
+            .padding(.vertical, 24)
+            .animation(.easeOut(duration: 0.4), value: messages.map(\.id))
         }
-    }
-
-    private func scrollToBottom(_ proxy: ScrollViewProxy) {
-        withAnimation(.easeOut(duration: 0.3)) { proxy.scrollTo(Self.bottomID, anchor: .bottom) }
+        .defaultScrollAnchor(.bottom, for: .initialOffset)
+        .defaultScrollAnchor(.bottom, for: .sizeChanges)
     }
 }
 

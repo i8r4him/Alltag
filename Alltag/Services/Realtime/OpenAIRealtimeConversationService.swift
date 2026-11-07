@@ -106,7 +106,7 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
 
         try await configure(socket, voice: ticket.voice)
         try checkRunning()
-        let samples = try audio.start()
+        let samples = try await audio.start()
         try await send(["type": "response.create"], over: socket)
         try checkRunning()
 
