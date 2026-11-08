@@ -8,9 +8,8 @@
 import SwiftData
 import SwiftUI
 
-/// The app's root: first-run onboarding, then the tabs (Today, Learn, Memory
-/// and Translate as the search tab), each with its own `NavigationStack`, and
-/// full-screen flows above them.
+/// The app's root: first-run onboarding, then three tabs (Today, Learn,
+/// Memory), each with its own `NavigationStack`, and full-screen flows above them.
 struct RootView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
@@ -41,7 +40,6 @@ struct RootView: View {
             Tab("Today", systemImage: "sun.horizon", value: AppTab.today) { stack(.today) }
             Tab("Learn", systemImage: "bolt", value: AppTab.learn) { stack(.learn) }
             Tab("Memory", systemImage: "book", value: AppTab.memory) { stack(.memory) }
-            Tab("Translate", systemImage: "translate", value: AppTab.translate, role: .search) { stack(.translate) }
         }
         .tabBarMinimizeBehavior(.onScrollDown)
         .fullScreenCover(item: $appState.fullScreen, content: fullScreen)

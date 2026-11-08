@@ -22,7 +22,7 @@ iPad, Apple Watch and Apple Vision Pro are **not** supported. The design referen
 1. The Xcode project `Alltag` exists (iOS App · SwiftUI · Swift). Persistence uses **SwiftData** — add the `ModelContainer` in `AlltagApp` with the first `@Model` types (user profile, memory items, phrasebook, solved rules, saved translations).
 2. Create the folder structure in **Architecture** below.
 3. Build `DesignSystem/` first (tokens + reusable components), then `Home`, then each feature.
-4. A native `TabView` (Today · Learn · Memory · Translate as the search tab), each tab with its own `NavigationStack(path:)` and an `enum Route: Hashable`.
+4. A native `TabView` with three tabs (Today · Learn · Memory), each tab with its own `NavigationStack(path:)` and an `enum Route: Hashable`.
 5. Add SwiftUI `#Preview`s for each screen and key states (conversation idle/listening/thinking/speaking; activity answered right/wrong; onboarding steps).
 
 ## Architecture
@@ -302,10 +302,9 @@ Support Dynamic Type. Code: `DesignSystem/Tokens/Typography.swift`, applied with
 
 ## Navigation model
 - Root: a native `TabView` with the Liquid Glass tab bar (minimises on scroll):
-  - **Today** — Home. Pushes Profile, Settings, Progress, Beyond, Debrief, Briefing, Memory (filtered).
+  - **Today** — Home. Pushes Translate (toolbar button), Profile, Settings, Progress, Beyond, Debrief, Briefing, Memory (filtered).
   - **Learn** — Learn. Pushes Grammar → Rule, Progress.
   - **Memory** — Memory.
-  - **Translate** — the search tab (`Tab(role: .search)`).
 - Each tab has its own `NavigationStack`. Siri and Shortcuts (`AppState.show`) select the screen's tab and open it there.
 - **Full-screen covers** (`.fullScreenCover`): Conversation, Activity, Onboarding.
 - **Sheet**: Conversation summary (`.presentationDetents([.medium])`).
@@ -329,7 +328,7 @@ Top: back glass button · 6 progress segments (accent filled) · "Skip". The seg
 Option card: min-height 60, radius 18, `#1C1C1E`; selected = accent 10% fill + accent 55% 1pt border + filled check.
 
 ### Today (Home)
-Large navigation title: greeting by time of day ("Good morning / afternoon / evening, {name}") with the subtitle "You picked up 3 new words in Safari today". Toolbar: the learner's initial → a native `Menu` (Profile, Progress, Settings). A warm amber glow sits behind the top of the screen.
+Large navigation title: greeting by time of day ("Good morning / afternoon / evening, {name}") with the subtitle "You picked up 3 new words in Safari today". Toolbar: Translate button · the learner's initial → a native `Menu` (Profile, Progress, Settings). A warm amber glow sits behind the top of the screen.
 1. **Orb** — a static amber sphere (drawn once, never animated) → today's Conversation.
 2. **Words · Spoken · Level** — three numbers → Progress.
 3. **Today's Focus** — glass card: eyebrow, "Moving an appointment", "5 min" pill, full-width **Start talking** (`.glassProminent`).

@@ -10,7 +10,7 @@ import SwiftUI
 
 /// Today: the orb and three numbers, Today's Focus, Coming up, From your day
 /// and Learning beyond the app. The greeting is the large navigation title;
-/// the toolbar's profile menu holds Profile, Progress and Settings.
+/// the toolbar holds Translate and a profile menu (Profile, Progress, Settings).
 struct HomeView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.services) private var services
@@ -61,6 +61,10 @@ struct HomeView: View {
         .navigationBarTitleDisplayMode(.large)
         .navigationSubtitle(Text(HomeGreeting.subtitle(newWords: newReadingWords)))
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Translate", systemImage: "translate") { appState.open(.translate()) }
+            }
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button { appState.open(.profile) } label: {

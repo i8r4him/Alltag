@@ -7,12 +7,11 @@
 
 import Foundation
 
-/// The app's tabs. Translate is the system search tab.
+/// The app's three tabs.
 enum AppTab: Hashable, CaseIterable {
     case today
     case learn
     case memory
-    case translate
 
     /// The screen at the bottom of the tab's stack. Today shows Home.
     var root: Route? {
@@ -20,7 +19,6 @@ enum AppTab: Hashable, CaseIterable {
         case .today: nil
         case .learn: .learn
         case .memory: .memory()
-        case .translate: .translate()
         }
     }
 }
@@ -31,7 +29,6 @@ extension Route {
         switch self {
         case .learn: .learn
         case .memory: .memory
-        case .translate: .translate
         default: nil
         }
     }
@@ -41,7 +38,6 @@ extension Route {
         switch self {
         case .grammar, .rule, .progress: .learn
         case .memory: .memory
-        case .translate: .translate
         default: .today
         }
     }

@@ -101,10 +101,10 @@ struct AppIntentsTests {
 
         TranslateIntent.open("  I'm running late  ", in: state)
         #expect(state.fullScreen == nil)
-        #expect(state.tab == .translate)
-        #expect(state.root(of: .translate) == .translate(text: "I'm running late"))
+        #expect(state.tab == .today)
+        #expect(state.path == [.translate(text: "I'm running late")])
         TranslateIntent.open(" ", in: state)
-        #expect(state.root(of: .translate) == .translate(text: nil))
+        #expect(state.path == [.translate(text: nil)])
 
         let rule = try #require(MockRules.all.first)
         OpenRuleIntent.open(GrammarRuleEntity(rule), in: state)

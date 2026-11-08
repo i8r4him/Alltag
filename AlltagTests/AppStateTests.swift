@@ -41,7 +41,6 @@ struct AppStateTests {
         #expect(state.root(of: .today) == nil)
         #expect(state.root(of: .learn) == .learn)
         #expect(state.root(of: .memory) == .memory())
-        #expect(state.root(of: .translate) == .translate())
     }
 
     @Test("Presenting a flow covers the screen; dismissing removes it")
