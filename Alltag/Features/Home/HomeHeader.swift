@@ -29,40 +29,10 @@ struct Avatar: View {
     }
 }
 
-/// "Good evening, Mara." and what happened today.
-struct HomeGreetingView: View {
-    let name: String
-    let newWords: Int
-    var date: Date = .now
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(HomeGreeting.title(for: HomeGreeting.PartOfDay(date: date), name: name))
-                .textRole(.largeTitle)
-                .accessibilityAddTraits(.isHeader)
-            subtitle
-                .textRole(.body)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var subtitle: Text {
-        if newWords > 0 {
-            let words = Text("^[\(newWords) new word](inflect: true)").bold().foregroundStyle(.primary)
-            let safari = Text("\(Image(systemName: "safari")) Safari").bold().foregroundStyle(.primary)
-            return Text("Ready for your next step? You picked up \(words) while reading in \(safari) today.")
-        }
-        return Text("Ready for your next step?")
-    }
-}
-
 #Preview {
-    VStack(alignment: .leading, spacing: 20) {
+    HStack(spacing: 20) {
         Avatar(name: "Mara")
-        HomeGreetingView(name: "Mara", newWords: 3)
-        HomeGreetingView(name: "Mara", newWords: 1)
-        HomeGreetingView(name: "", newWords: 0)
+        Avatar(name: "")
     }
     .padding(Spacing.screen)
     .background(.screenBackground)

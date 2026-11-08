@@ -32,13 +32,20 @@ enum HomeGreeting {
     static func title(for part: PartOfDay, name: String) -> LocalizedStringResource {
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         switch (part, name.isEmpty) {
-        case (.morning, false): return "Good morning, \(name)."
-        case (.afternoon, false): return "Good afternoon, \(name)."
-        case (.evening, false): return "Good evening, \(name)."
-        case (.morning, true): return "Good morning."
-        case (.afternoon, true): return "Good afternoon."
-        case (.evening, true): return "Good evening."
+        case (.morning, false): return "Good morning, \(name)"
+        case (.afternoon, false): return "Good afternoon, \(name)"
+        case (.evening, false): return "Good evening, \(name)"
+        case (.morning, true): return "Good morning"
+        case (.afternoon, true): return "Good afternoon"
+        case (.evening, true): return "Good evening"
         }
+    }
+
+    /// The line under the greeting: today's new words, or an invitation.
+    static func subtitle(newWords: Int) -> LocalizedStringResource {
+        newWords > 0
+            ? "You picked up ^[\(newWords) new word](inflect: true) in Safari today"
+            : "Ready for your next step?"
     }
 
     /// Words picked up from reading today, for "You picked up 3 new words while

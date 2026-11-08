@@ -21,9 +21,9 @@ struct HomeGreetingTests {
 
     @Test("The greeting includes the name, or leaves it out when there is none")
     func title() {
-        #expect(String(localized: HomeGreeting.title(for: .evening, name: " Mara ")) == "Good evening, Mara.")
-        #expect(String(localized: HomeGreeting.title(for: .morning, name: "Mara")) == "Good morning, Mara.")
-        #expect(String(localized: HomeGreeting.title(for: .afternoon, name: "")) == "Good afternoon.")
+        #expect(String(localized: HomeGreeting.title(for: .evening, name: " Mara ")) == "Good evening, Mara")
+        #expect(String(localized: HomeGreeting.title(for: .morning, name: "Mara")) == "Good morning, Mara")
+        #expect(String(localized: HomeGreeting.title(for: .afternoon, name: "")) == "Good afternoon")
     }
 
     @Test("New words count only today's words from reading")
