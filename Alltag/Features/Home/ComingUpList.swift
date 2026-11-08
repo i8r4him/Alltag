@@ -72,7 +72,7 @@ private struct EventRow: View {
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityHint(event.scenario == nil ? Text("") : Text("Rehearse this conversation."))
+        .accessibilityHint(event.scenario == nil ? Text(verbatim: "") : Text("Rehearse this conversation."))
     }
 }
 
