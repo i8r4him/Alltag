@@ -11,7 +11,7 @@ import Testing
 @Suite("App state and navigation")
 @MainActor
 struct AppStateTests {
-    @Test("Opening screens pushes them in order; popping to root returns Home")
+    @Test("Opening screens pushes them in order; popping to root returns to the tab's root")
     func pushAndPop() {
         let state = AppState()
         state.open(.grammar)
@@ -20,6 +20,27 @@ struct AppStateTests {
 
         state.popToRoot()
         #expect(state.path.isEmpty)
+    }
+
+    @Test("Each tab keeps its own stack")
+    func stackPerTab() {
+        let state = AppState()
+        state.open(.profile)
+        state.tab = .learn
+        #expect(state.path.isEmpty)
+        state.open(.grammar)
+
+        state.tab = .today
+        #expect(state.path == [.profile])
+        #expect(state.paths[.learn] == [.grammar])
+    }
+
+    @Test("Tabs start at their own screens; Today shows Home")
+    func roots() {
+        let state = AppState()
+        #expect(state.root(of: .today) == nil)
+        #expect(state.root(of: .learn) == .learn)
+        #expect(state.root(of: .memory) == .memory())
     }
 
     @Test("Presenting a flow covers the screen; dismissing removes it")

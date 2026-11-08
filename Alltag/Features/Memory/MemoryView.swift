@@ -64,10 +64,6 @@ struct MemoryView: View {
         }
         .onDisappear { if tab == .phrasebook { markPhrasesSeen() } }
         .onscreenEntity(expandedWord.map { WordEntity($0) }, title: expandedWord?.displayWord ?? "")
-        .smartBar(.memory) { text in
-            tab = .words
-            query = text
-        }
     }
 
     /// The word opened in the list, linked for Siri and Apple Intelligence.
@@ -100,7 +96,7 @@ struct MemoryView: View {
 
     @ViewBuilder
     private var words: some View {
-        filterChips
+        MemoryFolders(items: items, filter: $filter)
 
         let review = ReviewSummary(items: items)
         if filter == .all, query.isEmpty, !review.isEmpty {
@@ -122,21 +118,6 @@ struct MemoryView: View {
             .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
             .clipShape(.rect(cornerRadius: Radius.card, style: .continuous))
         }
-    }
-
-    private var filterChips: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 8) {
-                ForEach(MemoryFilter.allCases) { option in
-                    Button { filter = option } label: { Text(option.title) }
-                        .buttonStyle(.chip(isSelected: filter == option))
-                }
-            }
-        }
-        .scrollIndicators(.hidden)
-        .scrollClipDisabled()
-        // Not the screen's readable-width margins (they are inherited).
-        .contentMargins(.horizontal, 0, for: .scrollContent)
     }
 }
 

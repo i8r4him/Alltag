@@ -61,7 +61,6 @@ struct GrammarView: View {
         .navigationTitle("Grammar")
         .navigationBarTitleDisplayMode(.large)
         .navigationSubtitle(Text("A1 to C1. Every rule starts with a real moment."))
-        .smartBar(.grammar)
     }
 
     // MARK: Cards

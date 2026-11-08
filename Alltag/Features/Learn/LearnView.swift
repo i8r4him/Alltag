@@ -5,15 +5,22 @@
 //  Created by Ibrahim Abdullah on 07.11.26.
 //
 
+import SwiftData
 import SwiftUI
 
-/// Learn: short practice moments picked from the learner's week.
+/// Learn: conversations for you, short practice moments from the learner's week,
+/// Grammar and Progress.
 struct LearnView: View {
     @Environment(AppState.self) private var appState
+    @Query private var profiles: [UserProfile]
+
+    private var level: Level { profiles.first?.level ?? .a1 }
 
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.grid) {
+                ForYouCarousel(scenarios: MockScenarios.all) { appState.present(.conversation($0)) }
+                    .padding(.bottom, Spacing.grid)
                 MistakesCard { appState.present(.activity(.mistakes)) }
                     .padding(.bottom, 8)
                 LearnRow(title: "Recall \(MockActivities.recall.questions.count) words from Safari",
@@ -31,6 +38,13 @@ struct LearnView: View {
                          systemImage: "waveform", minutes: 5) {
                     appState.present(.conversation(.dentist))
                 }
+                GrammarCard(rulesWorthALook: GrammarCard.rulesWithMistakes()) { appState.open(.grammar) }
+                    .padding(.top, 8)
+                LearnRow(title: "Your progress",
+                         subtitle: "\(level.title) · what you can handle now",
+                         systemImage: "chart.line.uptrend.xyaxis", minutes: nil) {
+                    appState.open(.progress)
+                }
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.top, 8)
@@ -39,9 +53,8 @@ struct LearnView: View {
         .readableContentMargins()
         .background(.screenBackground)
         .navigationTitle("Learn")
-        .navigationBarTitleDisplayMode(.large)
-        .navigationSubtitle(Text("Short moments, picked from your week."))
-        .smartBar(.learn)
+        .toolbarTitleDisplayMode(.inlineLarge)
+        .scrollEdgeEffectStyle(.soft, for: .all)
     }
 }
 
@@ -93,7 +106,8 @@ private struct LearnRow: View {
     let title: LocalizedStringResource
     let subtitle: LocalizedStringResource
     let systemImage: String
-    let minutes: Int
+    /// The length, or `nil` for a screen rather than an exercise (shows a chevron).
+    let minutes: Int?
     let action: () -> Void
 
     var body: some View {
@@ -114,9 +128,16 @@ private struct LearnRow: View {
                 }
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                Text("\(minutes) min")
-                    .textRole(.meta)
-                    .foregroundStyle(.tertiary)
+                if let minutes {
+                    Text("\(minutes) min")
+                        .textRole(.meta)
+                        .foregroundStyle(.tertiary)
+                } else {
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .accessibilityHidden(true)
+                }
             }
             .padding(Spacing.card)
             .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
@@ -130,4 +151,5 @@ private struct LearnRow: View {
 #Preview {
     NavigationStack { LearnView() }
         .environment(AppState())
+        .modelContainer(AlltagStore.preview)
 }

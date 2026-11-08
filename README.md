@@ -22,7 +22,7 @@ iPad, Apple Watch and Apple Vision Pro are **not** supported. The design referen
 1. The Xcode project `Alltag` exists (iOS App · SwiftUI · Swift). Persistence uses **SwiftData** — add the `ModelContainer` in `AlltagApp` with the first `@Model` types (user profile, memory items, phrasebook, solved rules, saved translations).
 2. Create the folder structure in **Architecture** below.
 3. Build `DesignSystem/` first (tokens + reusable components), then `Home`, then each feature.
-4. Use `NavigationStack(path:)` with an `enum Route: Hashable` — **no TabView**.
+4. A native `TabView` with three tabs (Today · Learn · Memory), each tab with its own `NavigationStack(path:)` and an `enum Route: Hashable`.
 5. Add SwiftUI `#Preview`s for each screen and key states (conversation idle/listening/thinking/speaking; activity answered right/wrong; onboarding steps).
 
 ## Architecture
@@ -39,7 +39,8 @@ Alltag/                                   ← repo root
 │  │  ├─ AppSettings.swift                device settings in UserDefaults (motion, speech, Pro)
 │  │  ├─ AppServices.swift                all services; .live() for the app, .mock() for previews/tests
 │  │  ├─ Route.swift                      enum Route: Hashable
-│  │  └─ RootView.swift                   NavigationStack, covers, onboarding gate
+│  │  ├─ AppTab.swift                     the tabs, their roots, which tab a route belongs to
+│  │  └─ RootView.swift                   TabView, a NavigationStack per tab, covers, onboarding gate
 │  │
 │  ├─ DesignSystem/
 │  │  ├─ Tokens/
@@ -63,10 +64,6 @@ Alltag/                                   ← repo root
 │  │     └─ ComponentGallery.swift        previews of every component
 │  │
 │  ├─ Components/                         app-specific building blocks
-│  │  ├─ SmartBar/
-│  │  │  ├─ SmartBar.swift                SmartBar, SmartBarChips
-│  │  │  ├─ SmartBarRouting.swift         context, actions → destinations (pure, tested)
-│  │  │  └─ SmartBarModifier.swift        .smartBar(_:) — dimming, safe-area inset, navigation
 │  │  ├─ VoiceOrb.swift
 │  │  ├─ WordTile.swift                plain / key (outlined) / highlighted / placed
 │  │  ├─ PatternBar.swift              slots with amber emphasis
@@ -146,12 +143,11 @@ Alltag/                                   ← repo root
 │  │  │     ├─ PermissionsStep.swift
 │  │  │     └─ SummaryStep.swift
 │  │  ├─ Home/
-│  │  │  ├─ HomeView.swift
-│  │  │  ├─ HomeHeader.swift              Avatar, greeting (toolbar is native: .toolbar)
-│  │  │  ├─ FocusCard.swift
+│  │  │  ├─ HomeView.swift                the Today tab; profile Menu in the toolbar
+│  │  │  ├─ HomeHeader.swift              Avatar
+│  │  │  ├─ TodayHero.swift               static amber orb, Words · Spoken · Level (→ Progress)
+│  │  │  ├─ FocusCard.swift               glass card, Start talking (.glassProminent)
 │  │  │  ├─ ComingUpCard.swift
-│  │  │  ├─ EntryGrid.swift
-│  │  │  ├─ GrammarCard.swift
 │  │  │  ├─ FromYourDayList.swift
 │  │  │  └─ BeyondRow.swift
 │  │  ├─ Conversation/
@@ -166,11 +162,14 @@ Alltag/                                   ← repo root
 │  │  │  └─ TranslateSections.swift       Word by word, Tone, In context
 │  │  ├─ Memory/
 │  │  │  ├─ MemoryView.swift              large title, segmented Words | Phrasebook, .searchable, review card
+│  │  │  ├─ MemoryFolders.swift           From your day · Saved · Mistakes folders (filter the list)
 │  │  │  ├─ MemoryFilter.swift            filters, search, ReviewSummary (pure, tested)
 │  │  │  ├─ WordRow.swift
 │  │  │  └─ PhrasebookTab.swift           (#33)
 │  │  ├─ Learn/
-│  │  │  ├─ LearnView.swift               Fix your mistakes card, practice moments
+│  │  │  ├─ LearnView.swift               For you, Fix your mistakes card, practice moments, Grammar, Progress
+│  │  │  ├─ ForYouCarousel.swift          tall scenario cards, scrolled sideways
+│  │  │  ├─ GrammarCard.swift
 │  │  │  ├─ ActivityView.swift            native toolbar (close, segments), options, audio, done
 │  │  │  ├─ ActivityModel.swift           one pick per question, scoring, audio
 │  │  │  └─ MistakePractice.swift         conversation fixes → Memory › Mistakes → practice questions
@@ -302,18 +301,15 @@ Support Dynamic Type. Code: `DesignSystem/Tokens/Typography.swift`, applied with
 ---
 
 ## Navigation model
-- Root: `NavigationStack` with Home. Push: Translate, Memory, Learn, Grammar → Rule, Progress, Profile, Settings, Beyond, Debrief, Briefing.
+- Root: a native `TabView` with the Liquid Glass tab bar (minimises on scroll):
+  - **Today** — Home. Pushes Translate (toolbar button), Profile, Settings, Progress, Beyond, Debrief, Briefing, Memory (filtered).
+  - **Learn** — Learn. Pushes Grammar → Rule, Progress.
+  - **Memory** — Memory.
+- Each tab has its own `NavigationStack`. Siri and Shortcuts (`AppState.show`) select the screen's tab and open it there.
 - **Full-screen covers** (`.fullScreenCover`): Conversation, Activity, Onboarding.
 - **Sheet**: Conversation summary (`.presentationDetents([.medium])`).
 - Back = glass circle chevron (top-left) — use the native back button with toolbar glass styling.
 - Transitions: push = slide 28pt + fade (0.4s, ease-out `(.2,.8,.2,1)`); modal = rise 48pt + fade (0.45s). Use `.navigationTransition(.zoom)` from cards where it fits. Respect **Reduce Motion** (system + in-app toggle).
-
-## Smart Bar (persistent, Home / Memory / Learn / Progress / Grammar)
-Floating glass capsule, 12pt from sides, 28pt above home indicator, height 56, radius 28.
-- Left `+` (rotates 45° when open) → reveals chips: Translate · Practise speaking · Fix a mistake · Review words.
-- Text field, contextual placeholder: Home "Ask, translate or practise anything…", Memory "Find or add a word…", Learn "Ask for a 2-minute challenge…", Progress "Ask about your progress…".
-- Right: mic (white circle) when empty → starts Conversation; accent ↑ send when text present → Translate (Memory: filters the list).
-- Open state dims content (black 50%). Must move above keyboard (`.safeAreaInset(edge: .bottom)`).
 
 ---
 
@@ -331,13 +327,12 @@ Top: back glass button · 6 progress segments (accent filled) · "Skip". The seg
 7 Summary — "You're set, {name}." table + CTA "Start learning" → Home. Answers populate Settings.
 Option card: min-height 60, radius 18, `#1C1C1E`; selected = accent 10% fill + accent 55% 1pt border + filled check.
 
-### Home
-Top bar: avatar (36, → Profile) · gear glass button (→ Settings).
-Greeting by time of day ("Good morning / afternoon / evening, {name}.") + subtitle with inline bold "3 new words" and globe symbol "Safari".
-1. **Today's Focus** card (radius 28, min-h 214, amber glow): eyebrow "TODAY'S FOCUS", "5 min" pill, "Speak German", "Real-life conversation · Moving an appointment", 56pt accent play circle (graphic_eq). → Conversation (dentist).
-2. **Coming up** card — "Rehearse from your Calendar"; horizontally scrolling tiles 132×96 (snap): Dentist (TOMORROW, 10:00), Train to Munich (Fri 9:12), Return package (Sat). Each → its Conversation scenario.
-3. **2×2 grid** (124pt tall cards): Translate · Learn · Memory · Progress (icon top, title + status bottom).
-4. **Grammar** full-width card with mini sentence preview "… weil ich krank **bin**" → Grammar.
+### Today (Home)
+Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's initial → a native `Menu` (Profile, Progress, Settings). A warm amber glow sits behind the top of the screen.
+1. **Orb** — a static amber sphere (drawn once, never animated) → today's Conversation.
+2. **Words · Spoken · Level** — three numbers → Progress.
+3. **Today's Focus** — glass card: eyebrow, "Moving an appointment", "5 min" pill, full-width **Start talking** (`.glassProminent`).
+4. **Coming up** — "Rehearse from your Calendar"; tiles → their Conversation scenarios.
 5. **From your day** list: 60-second briefing · Debrief bakery · 3 new words from Safari (→ Memory filtered) · 1 writing mistake (→ Activity).
 6. "Learning beyond the app" outline row → Beyond.
 
@@ -357,11 +352,11 @@ Language capsule (English ⇄ German, swap), source card (editable), result card
 
 ### Memory
 Segmented Words | Phrasebook.
-Words: search, filter chips (All, From your day, Saved, Mistakes, Due — selected = white fill/black text), "Ready to review" card, list rows (article in secondary + word, meaning, MISTAKE badge, 4 strength dots) expanding to context sentence, source, Listen, Practise.
+Words: search, three folders (From your day · Saved · Mistakes — first words, item count; tap filters, tap again shows all), "Ready to review" card, list rows (article in secondary + word, meaning, MISTAKE badge, 4 strength dots) expanding to context sentence, source, Listen, Practise.
 Phrasebook: groups by place (At the doctor, Trains & travel, With my landlord, At work; "At the bakery" NEW after Debrief save).
 
 ### Learn & Activity
-Learn: featured coral "FIX YOUR MISTAKES" card + rows (Recall from Safari, Listen: platform change, Speak scenario).
+Learn: **For you** carousel (tall scenario cards with a glass Start, snap scrolling) · featured coral "FIX YOUR MISTAKES" card + rows (Recall from Safari, Listen: platform change, Speak scenario) · Grammar card · Your progress.
 Activity (full-screen): close + progress segments, eyebrow/title, optional audio player with equalizer, quote card, question, option buttons (56pt, radius 18). After pick: right = green tint/border + check, wrong = coral + cancel, others 45% opacity; explanation card; "Continue". End: green check, "{n} of {total}. Nicely done.", "More to learn" / "Back home".
 
 ### Grammar & Rule
@@ -404,7 +399,7 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 
 ## Localization
 - All UI text is in `Resources/Localizable.xcstrings`, written in **British English** ("Practise", "neighbours").
-- UI text in models (onboarding options, level descriptions, Smart Bar placeholders) is `LocalizedStringResource`, so it is extracted too. Lesson content (scenarios, rules, translations) stays `String`: it is learning material, not interface text.
+- UI text in models (onboarding options, level descriptions) is `LocalizedStringResource`, so it is extracted too. Lesson content (scenarios, rules, translations) stays `String`: it is learning material, not interface text.
 - Xcode adds new strings to the catalogs (`Localizable` and `AppShortcuts`) when you build; outside Xcode, run `scripts/sync_string_catalog.sh`. CI fails if a committed catalog is missing a string or still lists one the code no longer uses.
 
 ## Frameworks

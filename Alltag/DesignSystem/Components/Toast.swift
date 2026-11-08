@@ -42,7 +42,7 @@ private struct ToastModifier: ViewModifier {
             .overlay(alignment: .bottom) {
                 if let message {
                     ToastView(message: message)
-                        .padding(.bottom, 96) // clears the Smart Bar
+                        .padding(.bottom, 96) // clears the tab bar
                         .transition(Motion.modalTransition(reduceMotion: reduceMotion))
                         .task(id: message.id) {
                             AccessibilityNotification.Announcement(String(localized: message.text)).post()

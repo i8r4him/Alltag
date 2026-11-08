@@ -149,6 +149,13 @@ struct BeyondRow: View {
 
 /// Counts behind "From your day", kept out of the views so they can be tested.
 enum FromYourDay {
+    /// Words picked up from reading in Safari today, for "3 new words from Safari".
+    static func newReadingWords(in items: [MemoryItem], on date: Date = .now, calendar: Calendar = .current) -> Int {
+        items.filter {
+            $0.kind == .fromYourDay && $0.source == .safari && calendar.isDate($0.createdAt, inSameDayAs: date)
+        }.count
+    }
+
     /// Mistakes the learner made while writing (in Messages).
     static func writingMistakes(in items: [MemoryItem]) -> Int {
         items.filter { $0.kind == .mistake && $0.source == .messages }.count
