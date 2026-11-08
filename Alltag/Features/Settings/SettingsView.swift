@@ -31,6 +31,11 @@ struct SettingsView: View {
             }
             moreSection
             replaySection
+            #if DEBUG
+            Section(header: Text(verbatim: "Developer")) {
+                NavigationLink { CompanionEditor() } label: { Text(verbatim: "Companion") }
+            }
+            #endif
         }
         // The system's inset-grouped margins already adapt to wide screens.
         .listStyle(.insetGrouped)

@@ -57,10 +57,6 @@ struct HomeView: View {
         .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Translate", systemImage: "translate") { appState.open(.translate()) }
-            }
-            ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button { appState.open(.profile) } label: {
                         Label {

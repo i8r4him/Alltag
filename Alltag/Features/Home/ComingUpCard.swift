@@ -82,16 +82,16 @@ private struct ComingUpTile: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             Text(ComingUp.detail(for: event, now: now))
-                .textRole(.bodySmall)
-                .foregroundStyle(.secondary)
+                .font(.body.weight(.medium))
+                .foregroundStyle(.primary.opacity(0.75))
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .padding(.top, 2)
+                .padding(.top, 4)
         }
         .multilineTextAlignment(.leading)
         .padding(20)
         .frame(width: side, height: side, alignment: .topLeading)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+        // .litCard(cornerRadius: Radius.card)
         .accessibilityElement(children: .combine)
         .accessibilityHint("Rehearse this conversation.")
     }
@@ -119,14 +119,12 @@ enum ComingUp {
         return "Starts in \(hours / 24)d"
     }
 
-    /// Tomorrow: "10:00 · rehearse 5 min". Later: "Fri 9:12 · 4 min".
+    /// Tomorrow: "10:00 · 5 min". Later: "Fri 09:12 · 4 min".
     static func detail(for event: CalendarEvent, now: Date, calendar: Calendar = .current) -> LocalizedStringResource {
-        if isTomorrow(event, now: now, calendar: calendar) {
-            let time = event.start.formatted(.dateTime.hour().minute())
-            return "\(time) · rehearse \(event.rehearsalMinutes) min"
-        }
-        let day = event.start.formatted(.dateTime.weekday(.abbreviated).hour().minute())
-        return "\(day) · \(event.rehearsalMinutes) min"
+        let time = isTomorrow(event, now: now, calendar: calendar)
+            ? event.start.formatted(.dateTime.hour().minute())
+            : event.start.formatted(.dateTime.weekday(.abbreviated).hour().minute())
+        return "\(time) · \(event.rehearsalMinutes) min"
     }
 }
 

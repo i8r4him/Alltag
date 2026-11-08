@@ -36,16 +36,6 @@
       }
     },
     "%@ · lesson in a later version" : {},
-    "%@ · rehearse %lld min" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · rehearse %2$lld min"
-          }
-        }
-      }
-    },
     "%@ · what you can handle now" : {},
     "%@, %@" : {
       "localizations" : {
@@ -134,7 +124,6 @@
     "^[%lld phrase](inflect: true)" : {},
     "^[%lld writing mistake](inflect: true) to review" : {},
     "A gentle nudge, never more than twice a day" : {},
-    "A phone call at the dentist. Picks up the word order you mixed up yesterday." : {},
     "A rough guess is fine — we adjust as you go." : {},
     "A sample answer. Turn on Apple Intelligence for debriefs of your own moments." : {},
     "A small daily habit" : {},
@@ -359,6 +348,7 @@
     "Practise" : {},
     "Practise ${scenario}" : {},
     "Practise your fixes · 1 min" : {},
+    "Practises the word order you mixed up yesterday" : {},
     "Precision and style" : {},
     "Privacy & AI" : {},
     "Pro features may use the cloud" : {},

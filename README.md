@@ -64,6 +64,9 @@ Alltag/                                   ← repo root
 │  │     └─ ComponentGallery.swift        previews of every component
 │  │
 │  ├─ Components/                         app-specific building blocks
+│  │  ├─ Orb/
+│  │  │  ├─ Orb.metal                    bubbleOrb shader: dark glass, golden rim, smoky silk
+│  │  │  └─ CompanionOrb.swift           CompanionOrb (eyes blink and glance), CompanionLook (saved look), OrbDynamics, CompanionEditor (DEBUG, Settings › Developer)
 │  │  ├─ VoiceOrb.swift
 │  │  ├─ WordTile.swift                plain / key (outlined) / highlighted / placed
 │  │  ├─ PatternBar.swift              slots with amber emphasis
@@ -145,7 +148,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Home/
 │  │  │  ├─ HomeView.swift                the Today tab; profile Menu in the toolbar
 │  │  │  ├─ HomeHeader.swift              Avatar
-│  │  │  ├─ TodayHero.swift               static amber orb, Words · Spoken · Level (→ Progress)
+│  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Spoken · Level (→ Progress)
 │  │  │  ├─ FocusCard.swift               glass card, Start talking (.glassProminent)
 │  │  │  ├─ ComingUpCard.swift
 │  │  │  ├─ FromYourDayList.swift
