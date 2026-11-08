@@ -45,6 +45,7 @@ Alltag/                                   ← repo root
 │  ├─ DesignSystem/
 │  │  ├─ Tokens/
 │  │  │  ├─ Colors.swift                  semantic + asset colours (light/dark)
+│  │  │  ├─ Theme.swift                 AppTheme: the companion palette sets .accent / .accentFill / .onAccent app-wide
 │  │  │  ├─ Typography.swift              text roles mapped to Dynamic Type styles
 │  │  │  ├─ Radius.swift
 │  │  │  ├─ Spacing.swift

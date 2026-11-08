@@ -88,8 +88,13 @@ private struct AmberButtonStyle: ButtonStyle {
             .sensoryFeedback(.impact(weight: .medium), trigger: configuration.isPressed) { _, pressed in pressed }
     }
 
-    static let honey = Color(red: 1.00, green: 0.80, blue: 0.48)   // #FFCC7A
-    static let orange = Color(red: 0.95, green: 0.55, blue: 0.22)  // #F28C38
+    /// The two lights, from the theme. Gold keeps its original honey and orange.
+    static var honey: Color {
+        AppTheme.shared.palette == .gold ? Color(hex: 0xFFCC7A) : AppTheme.shared.palette.mid
+    }
+    static var orange: Color {
+        AppTheme.shared.palette == .gold ? Color(hex: 0xF28C38) : AppTheme.shared.palette.rim
+    }
 }
 
 /// A soft light centred just below the bottom edge, fading upwards.

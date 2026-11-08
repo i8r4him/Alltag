@@ -26,7 +26,8 @@ enum CompanionLook {
     static let eyeRange: ClosedRange<Double> = 0.6...1.6
 }
 
-/// The companion's colours: glass, silk, highlights, rim and eyes.
+/// The companion's colours (glass, silk, highlights, rim and eyes), which
+/// also set the app's theme: see `AppTheme`.
 enum CompanionPalette: String, CaseIterable, Identifiable {
     case gold
     case copper
@@ -144,10 +145,12 @@ struct CompanionOrb: View {
     @AppStorage(CompanionLook.Key.lively) private var lively = true
     /// Whether the silk drifts. Off: one still frame, never redrawn.
     @AppStorage(CompanionLook.Key.drifts) private var drifts = false
-    @AppStorage(CompanionLook.Key.palette) private var palette = CompanionPalette.gold
 
     @Environment(\.reducesMotion) private var reduceMotion
     @State private var isVisible = true
+
+    /// The colours follow the app's theme.
+    private var palette: CompanionPalette { AppTheme.shared.palette }
     @State private var clock = OrbClock()
 
     var body: some View {
@@ -296,7 +299,9 @@ struct CompanionEditor: View {
     @AppStorage(CompanionLook.Key.eyeSpacing) private var eyeSpacing = 1.0
     @AppStorage(CompanionLook.Key.lively) private var lively = true
     @AppStorage(CompanionLook.Key.drifts) private var drifts = false
-    @AppStorage(CompanionLook.Key.palette) private var palette = CompanionPalette.gold
+    @Bindable private var theme = AppTheme.shared
+
+    private var palette: CompanionPalette { theme.palette }
 
     // Developer-only screen: the labels are not localised.
     var body: some View {
@@ -308,11 +313,11 @@ struct CompanionEditor: View {
                     .padding(.vertical, 12)
                     .listRowBackground(Color.black)
             }
-            Section(header: Text(verbatim: "Colour")) {
+            Section {
                 ScrollView(.horizontal) {
                     HStack(spacing: 14) {
                         ForEach(CompanionPalette.allCases) { option in
-                            Button { palette = option } label: { swatch(option) }
+                            Button { theme.palette = option } label: { swatch(option) }
                                 .buttonStyle(.plain)
                                 .accessibilityLabel(Text(verbatim: option.title))
                                 .accessibilityAddTraits(palette == option ? .isSelected : [])
@@ -322,6 +327,10 @@ struct CompanionEditor: View {
                 }
                 .scrollIndicators(.hidden)
                 .sensoryFeedback(.selection, trigger: palette)
+            } header: {
+                Text(verbatim: "Theme")
+            } footer: {
+                Text(verbatim: "The companion and the app's accent colour.")
             }
             Section(header: Text(verbatim: "Glass")) {
                 slider("Rim", value: $rim, in: CompanionLook.range)
@@ -383,7 +392,7 @@ struct CompanionEditor: View {
         (rim, silk, halo, eyeSize, eyeSpacing) = (1, 1, 1, 1, 1)
         lively = true
         drifts = false
-        palette = .gold
+        theme.palette = .gold
     }
 }
 
