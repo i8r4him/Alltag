@@ -7,63 +7,73 @@
 
 import SwiftUI
 
-/// "Today's Focus": the one thing to do today, with a big Start talking button.
+/// "Today's Focus": the one thing to do today. The title and a short line on
+/// the left, the scenario's artwork on the right, and the Start talking button.
 struct FocusCard: View {
     let action: () -> Void
 
+    @ScaledMetric(relativeTo: .title3) private var artworkSize: CGFloat = 96
+
     var body: some View {
-        // One container for the card, the pill and the button: their glass is
-        // rendered together instead of each sampling the screen on its own.
-        GlassEffectContainer(spacing: 0) {
-            content
-                .padding(Spacing.cardLarge)
+        VStack(spacing: 18) {
+            HStack(alignment: .top, spacing: 16) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Moving an appointment")
+                        .font(.title3.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text("A short phone call at the dentist.")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+                .accessibilityElement(children: .combine)
+                ScenarioArtwork(systemImage: "cross.case.fill")
+                    .frame(width: artworkSize, height: artworkSize)
+            }
+            StartTalkingButton(action: action)
+        }
+        .padding(Spacing.cardLarge)
+        .background {
+            RoundedRectangle(cornerRadius: Radius.hero, style: .continuous)
+                .fill(.surface)
+                .overlay {
+                    RoundedRectangle(cornerRadius: Radius.hero, style: .continuous)
+                        .strokeBorder(.white.opacity(0.06), lineWidth: 1)
+                }
         }
         .fontDesign(.rounded)
     }
+}
 
-    private var content: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack {
-                Text("Today's focus")
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(.accent)
-                Spacer(minLength: 8)
-                Label("5 min", systemImage: "clock")
-                    .labelStyle(.titleAndIcon)
-                    .font(.footnote.weight(.semibold))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .glassEffect(.regular, in: .capsule)
-            }
+/// A small square illustration of a scenario: a soft wash in the theme colour
+/// with a large symbol, fading out at the bottom like a photo.
+private struct ScenarioArtwork: View {
+    let systemImage: String
 
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Moving an appointment")
-                    .textRole(.title2)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Label("Practises the word order you mixed up yesterday", systemImage: "calendar")
-                }
-                .textRole(.body)
-                .foregroundStyle(.secondary)
-                .labelStyle(FocusDetailLabelStyle())
-            }
-
-            Button(action: action) {
-                Label("Start talking", systemImage: "waveform")
-                    .font(.title3.weight(.bold))
-                    .fontDesign(.rounded)
-                    .frame(maxWidth: .infinity, minHeight: 34)
-            }
-            .buttonStyle(AmberButtonStyle())
-            .accessibilityHint("Starts a conversation at the dentist.")
+    var body: some View {
+        ZStack {
+            LinearGradient(colors: [Color.accentFill.opacity(0.85), Color.accentFill.opacity(0.25)],
+                           startPoint: .topTrailing, endPoint: .bottomLeading)
+            RadialGradient(colors: [.white.opacity(0.35), .clear],
+                           center: UnitPoint(x: 0.25, y: 0.2), startRadius: 0, endRadius: 60)
+            Image(systemName: systemImage)
+                .font(.system(size: 52, weight: .light))
+                .foregroundStyle(.white.opacity(0.85))
+                .rotationEffect(.degrees(-12))
+                .offset(x: 8, y: 6)
         }
+        .clipShape(.rect(cornerRadius: 18, style: .continuous))
+        // Fades out at the bottom, into the card.
+        .mask {
+            LinearGradient(stops: [.init(color: .black, location: 0.55), .init(color: .clear, location: 1)],
+                           startPoint: .top, endPoint: .bottom)
+        }
+        .accessibilityHidden(true)
     }
 }
 
-/// The Start talking button, shared by every Focus card design.
+/// The Start talking button: glass with two soft lights rising from its bottom edge.
 struct StartTalkingButton: View {
     let action: () -> Void
 
@@ -132,23 +142,6 @@ private struct BottomLight: View {
         RadialGradient(colors: [color.opacity(0.55), color.opacity(0.18), .clear],
                        center: UnitPoint(x: x, y: 1.1),
                        startRadius: 0, endRadius: 140)
-    }
-}
-
-/// An icon in a fixed-width column, so both detail lines start at the same edge.
-private struct FocusDetailLabelStyle: LabelStyle {
-    @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = 22
-
-    func makeBody(configuration: Configuration) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            configuration.icon
-                .font(.subheadline)
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(.accent)
-                .frame(width: iconWidth)
-            configuration.title
-                .fixedSize(horizontal: false, vertical: true)
-        }
     }
 }
 

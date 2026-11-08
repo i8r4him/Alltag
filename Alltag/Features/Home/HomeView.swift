@@ -27,7 +27,7 @@ struct HomeView: View {
                 TodayHero(words: memoryItems.count, minutesSpoken: MockProgress.report.minutesSpoken, level: level,
                           onStart: startFocus, onProgress: { appState.open(.progress) })
 
-                    FocusCardChooser(action: startFocus)  // temporary: swipe to compare designs
+                    FocusCard(action: startFocus)
                     if !events.isEmpty {
                         ComingUpCard(events: events, onShowAll: { appState.open(.comingUp) }, onSelect: { event in
                             if let scenario = event.scenario { appState.present(.conversation(scenario)) }

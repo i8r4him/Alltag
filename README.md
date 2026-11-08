@@ -150,7 +150,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ HomeView.swift                the Today tab; profile Menu in the toolbar
 │  │  │  ├─ HomeHeader.swift              Avatar
 │  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Spoken · Level (→ Progress)
-│  │  │  ├─ FocusCard.swift               glass card, Start talking (.glassProminent)
+│  │  │  ├─ FocusCard.swift               title, line and scenario artwork; Start talking (glass, lights from below)
 │  │  │  ├─ ComingUpCard.swift
 │  │  │  ├─ FromYourDayList.swift
 │  │  │  └─ BeyondRow.swift
