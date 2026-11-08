@@ -12,6 +12,18 @@ struct FocusCard: View {
     let action: () -> Void
 
     var body: some View {
+        // One container for the card, the pill and the button: their glass is
+        // rendered together instead of each sampling the screen on its own.
+        GlassEffectContainer(spacing: 0) {
+            content
+                .padding(Spacing.cardLarge)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+        }
+        .fontDesign(.rounded)
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 20) {
             HStack {
                 Text("Today's focus")
@@ -48,10 +60,6 @@ struct FocusCard: View {
             .buttonStyle(AmberButtonStyle())
             .accessibilityHint("Starts a conversation at the dentist.")
         }
-        .padding(Spacing.cardLarge)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-        .fontDesign(.rounded)
     }
 }
 
@@ -82,9 +90,9 @@ private struct AmberButtonStyle: ButtonStyle {
                         }
                 }
             }
+            // Interactive glass animates the press itself (scale and glow); a second
+            // scale animation on the same layer fights it and drops frames.
             .glassEffect(.regular.interactive(), in: .capsule)
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
             .sensoryFeedback(.impact(weight: .medium), trigger: configuration.isPressed) { _, pressed in pressed }
     }
 
