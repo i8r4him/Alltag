@@ -33,15 +33,19 @@ struct ComingUpCard: View {
             .accessibilityHint("Shows everything coming up.")
 
             ScrollView(.horizontal) {
-                LazyHStack(spacing: Spacing.grid) {
-                    ForEach(events) { event in
-                        Button { onSelect(event) } label: {
-                            ComingUpTile(event: event, now: now)
+                // One container: the tiles' glass is rendered together.
+                // Spacing 0, so neighbouring tiles never melt into each other.
+                GlassEffectContainer(spacing: 0) {
+                    LazyHStack(spacing: Spacing.grid) {
+                        ForEach(events) { event in
+                            Button { onSelect(event) } label: {
+                                ComingUpTile(event: event, now: now)
+                            }
+                            .buttonStyle(.card)
                         }
-                        .buttonStyle(.card)
                     }
+                    .scrollTargetLayout()
                 }
-                .scrollTargetLayout()
             }
             .scrollTargetBehavior(.viewAligned)
             .scrollIndicators(.hidden)
