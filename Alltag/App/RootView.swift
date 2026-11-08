@@ -8,8 +8,9 @@
 import SwiftData
 import SwiftUI
 
-/// The app's root: first-run onboarding, then Home in a `NavigationStack`
-/// with pushed screens and full-screen flows.
+/// The app's root: first-run onboarding, then the tabs (Today, Learn, Memory
+/// and Translate as the search tab), each with its own `NavigationStack`, and
+/// full-screen flows above them.
 struct RootView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
@@ -36,11 +37,29 @@ struct RootView: View {
 
     private var navigation: some View {
         @Bindable var appState = appState
-        return NavigationStack(path: $appState.path) {
-            HomeView()
-                .navigationDestination(for: Route.self, destination: destination)
+        return TabView(selection: $appState.tab) {
+            Tab("Today", systemImage: "sun.horizon", value: AppTab.today) { stack(.today) }
+            Tab("Learn", systemImage: "bolt", value: AppTab.learn) { stack(.learn) }
+            Tab("Memory", systemImage: "book", value: AppTab.memory) { stack(.memory) }
+            Tab("Translate", systemImage: "translate", value: AppTab.translate, role: .search) { stack(.translate) }
         }
+        .tabBarMinimizeBehavior(.onScrollDown)
         .fullScreenCover(item: $appState.fullScreen, content: fullScreen)
+    }
+
+    /// A tab's own navigation stack, starting at its root.
+    private func stack(_ tab: AppTab) -> some View {
+        let path = Binding { appState.paths[tab] ?? [] } set: { appState.paths[tab] = $0 }
+        return NavigationStack(path: path) {
+            Group {
+                if let root = appState.root(of: tab) {
+                    destination(root).id(root)
+                } else {
+                    HomeView()
+                }
+            }
+            .navigationDestination(for: Route.self, destination: destination)
+        }
     }
 
     private var reducesMotion: Bool {

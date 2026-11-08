@@ -1,5 +1,5 @@
 //
-//  EntryGrid.swift
+//  GrammarCard.swift
 //  Alltag
 //
 //  Created by Ibrahim Abdullah on 07.11.26.
@@ -7,71 +7,14 @@
 
 import SwiftUI
 
-/// The 2×2 grid of entry points: Translate, Learn, Memory, Progress.
-struct EntryGrid: View {
-    let status: HomeStatus
-    let onOpen: (Route) -> Void
-
-    var body: some View {
-        Grid(horizontalSpacing: Spacing.grid, verticalSpacing: Spacing.grid) {
-            GridRow {
-                EntryCard(title: "Translate", status: status.translate, systemImage: "translate") {
-                    onOpen(.translate())
-                }
-                EntryCard(title: "Learn", status: status.learn, systemImage: "bolt") {
-                    onOpen(.learn)
-                }
-            }
-            GridRow {
-                EntryCard(title: "Memory", status: status.memory, systemImage: "book") {
-                    onOpen(.memory())
-                }
-                EntryCard(title: "Progress", status: status.progress, systemImage: "chart.line.uptrend.xyaxis") {
-                    onOpen(.progress)
-                }
-            }
-        }
-    }
-}
-
-/// A tappable card with an icon at the top and a title and status at the bottom.
-private struct EntryCard: View {
-    let title: LocalizedStringResource
-    let status: Text
-    let systemImage: String
-    let action: () -> Void
-
-    @ScaledMetric(relativeTo: .headline) private var height: CGFloat = 124
-
-    var body: some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 0) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 22))
-                    .foregroundStyle(.primary)
-                    .accessibilityHidden(true)
-                Spacer(minLength: 12)
-                Text(title)
-                    .textRole(.cardTitle)
-                status
-                    .textRole(.meta)
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 2)
-            }
-            .multilineTextAlignment(.leading)
-            .padding(Spacing.card)
-            .frame(maxWidth: .infinity, minHeight: height, alignment: .leading)
-            .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
-            .contentShape(.rect(cornerRadius: Radius.card, style: .continuous))
-        }
-        .buttonStyle(.tile)
-        .accessibilityElement(children: .combine)
-    }
-}
-
 /// The Grammar entry: summary and a tiny sentence showing a rule.
 struct GrammarCard: View {
     let rulesWorthALook: Int
+
+    /// Grammar topics where the learner made a mistake, across all levels.
+    static func rulesWithMistakes() -> Int {
+        Level.selectable.flatMap { MockLevels.topics(for: $0) }.filter { $0.status == .mistake }.count
+    }
     let action: () -> Void
 
     var body: some View {
@@ -125,10 +68,7 @@ struct GrammarCard: View {
 }
 
 #Preview {
-    VStack(spacing: Spacing.grid) {
-        EntryGrid(status: HomeStatus(savedThisWeek: 3, dueForReview: 6, level: .b1, mistakeRules: 2)) { _ in }
-        GrammarCard(rulesWorthALook: 2) {}
-    }
-    .padding(Spacing.screen)
-    .background(.screenBackground)
+    GrammarCard(rulesWorthALook: 2) {}
+        .padding(Spacing.screen)
+        .background(.screenBackground)
 }

@@ -64,15 +64,20 @@ struct AppIntentsTests {
         #expect(rules.map(\.title) == ["Verb at the end after weil, wenn, dass"])
     }
 
-    @Test("Showing a screen from Siri closes flows and opens it above Home")
+    @Test("Showing a screen from Siri closes flows and selects its tab")
     func showFromOutside() {
         let state = AppState()
-        state.open(.grammar)
+        state.open(.profile)
         state.present(.conversation(.dentist))
 
         state.show(.memory())
         #expect(state.fullScreen == nil)
-        #expect(state.path == [.memory()])
+        #expect(state.tab == .memory)
+        #expect(state.path.isEmpty)
+
+        state.show(.settings)
+        #expect(state.tab == .today)
+        #expect(state.path == [.settings])
     }
 
     @Test("Each memory item gets its own stable ID")
@@ -96,12 +101,14 @@ struct AppIntentsTests {
 
         TranslateIntent.open("  I'm running late  ", in: state)
         #expect(state.fullScreen == nil)
-        #expect(state.path == [.translate(text: "I'm running late")])
+        #expect(state.tab == .translate)
+        #expect(state.root(of: .translate) == .translate(text: "I'm running late"))
         TranslateIntent.open(" ", in: state)
-        #expect(state.path == [.translate(text: nil)])
+        #expect(state.root(of: .translate) == .translate(text: nil))
 
         let rule = try #require(MockRules.all.first)
         OpenRuleIntent.open(GrammarRuleEntity(rule), in: state)
+        #expect(state.tab == .learn)
         #expect(state.path == [.rule(id: rule.id)])
     }
 
@@ -109,7 +116,8 @@ struct AppIntentsTests {
     func searchRoute() {
         let state = AppState(settings: AppSettings(defaults: .ephemeral()))
         state.show(.memory(search: "Termin"))
-        #expect(state.path == [.memory(kind: nil, search: "Termin")])
+        #expect(state.tab == .memory)
+        #expect(state.root(of: .memory) == .memory(kind: nil, search: "Termin"))
     }
 
     @Test("Spotlight gets every word, phrase, conversation and rule")

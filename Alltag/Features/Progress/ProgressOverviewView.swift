@@ -48,7 +48,6 @@ struct ProgressOverviewView: View {
         .background(.screenBackground)
         .navigationTitle("Progress")
         .navigationBarTitleDisplayMode(.large)
-        .smartBar(.progress)
     }
 
     private func section(_ title: LocalizedStringKey, subtitle: LocalizedStringKey? = nil) -> some View {

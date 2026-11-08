@@ -12,8 +12,13 @@ import SwiftUI
 /// Persistent data (profile, memory, …) lives in SwiftData, not here.
 @Observable
 final class AppState {
-    /// The navigation stack below Home.
-    var path: [Route] = []
+    /// The selected tab.
+    var tab: AppTab = .today
+    /// Each tab's navigation stack, above its root.
+    var paths: [AppTab: [Route]] = [:]
+    /// Each tab's root screen when it differs from `AppTab.root`,
+    /// e.g. Memory opened with a search from Siri.
+    private(set) var roots: [AppTab: Route] = [:]
     /// The screen currently covering everything, if any.
     var fullScreen: FullScreenRoute?
     /// Device settings (Reduce motion, Slower speech, …), persisted.
@@ -23,21 +28,39 @@ final class AppState {
         self.settings = settings
     }
 
-    /// Pushes a screen.
+    /// The selected tab's navigation stack.
+    var path: [Route] {
+        get { paths[tab] ?? [] }
+        set { paths[tab] = newValue }
+    }
+
+    /// The root screen of `tab`, or `nil` for Home.
+    func root(of tab: AppTab) -> Route? {
+        roots[tab] ?? tab.root
+    }
+
+    /// Pushes a screen onto the selected tab.
     func open(_ route: Route) {
         path.append(route)
     }
 
-    /// Returns to Home.
+    /// Returns to the selected tab's root.
     func popToRoot() {
         path.removeAll()
     }
 
     /// Shows a screen from anywhere (Siri, Shortcuts, widgets): closes any
-    /// full-screen flow and opens `route` directly above Home.
+    /// full-screen flow, selects the screen's tab and opens it there.
     func show(_ route: Route) {
         fullScreen = nil
-        path = [route]
+        if let rootTab = route.rootTab {
+            roots[rootTab] = route
+            paths[rootTab] = []
+            tab = rootTab
+        } else {
+            tab = route.homeTab
+            paths[tab] = [route]
+        }
     }
 
     /// Presents a full-screen flow such as a conversation.
