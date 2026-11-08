@@ -24,7 +24,7 @@ struct TodayHero: View {
 
             Button(action: onProgress) {
                 HStack(alignment: .top) {
-                    stat("Words", value: Text("\(words)"), tint: .accent)
+                    stat("Words", value: Text(words, format: .number), tint: .accent)
                     stat("Spoken", value: Text("\(minutesSpoken) min"), tint: .success)
                     stat("Level", value: Text(verbatim: level.title), tint: .secondary)
                 }

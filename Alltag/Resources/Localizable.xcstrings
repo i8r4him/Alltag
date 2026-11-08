@@ -67,7 +67,6 @@
         }
       }
     },
-    "%lld" : {},
     "%lld confident" : {},
     "%lld min" : {},
     "%lld of %lld" : {
