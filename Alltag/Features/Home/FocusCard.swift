@@ -41,7 +41,8 @@ struct FocusCard: View {
 
             Button(action: action) {
                 Label("Start talking", systemImage: "waveform")
-                    .font(.body.weight(.semibold))
+                    .font(.title3.weight(.bold))
+                    .fontDesign(.rounded)
                     .frame(maxWidth: .infinity, minHeight: 34)
             }
             .buttonStyle(AmberButtonStyle())

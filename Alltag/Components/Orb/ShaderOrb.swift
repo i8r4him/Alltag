@@ -41,6 +41,8 @@ enum OrbStyle {
     case ribbon
     /// Clouds of warm light inside a dark glass sphere, Siri-like.
     case glow
+    /// A dark glass bubble with a golden rim and wisps of silk inside.
+    case bubble
 }
 
 /// How the orb moves in each conversation state. Pure, so it can be tested.
@@ -122,6 +124,7 @@ struct ShaderOrb: View {
         case .sphere: ShaderLibrary.orb
         case .ribbon: ShaderLibrary.ribbonOrb
         case .glow: ShaderLibrary.glowOrb
+        case .bubble: ShaderLibrary.bubbleOrb
         }
     }
 
@@ -131,6 +134,41 @@ struct ShaderOrb: View {
             .scaleEffect(1.15)
             .blur(radius: 40)
             .opacity(glow * (0.5 + dynamics.energy * 0.5))
+    }
+}
+
+/// The companion: a glass bubble with golden silk inside and two glowing eyes.
+/// One line to drop in, e.g. `CompanionOrb().frame(width: 220)`.
+/// Still by default; `animates: true` lets the silk drift.
+struct CompanionOrb: View {
+    var dynamics = OrbDynamics(state: .idle)
+    var animates = false
+
+    var body: some View {
+        ShaderOrb(style: .bubble, dynamics: dynamics, palette: .gold, animates: animates)
+            .overlay { CompanionEyes() }
+    }
+}
+
+/// Two soft, glowing capsules, sized to the orb.
+private struct CompanionEyes: View {
+    private let eye = Color(red: 1.0, green: 0.96, blue: 0.86)  // warm cream
+
+    var body: some View {
+        GeometryReader { proxy in
+            let side = min(proxy.size.width, proxy.size.height)
+            HStack(spacing: side * 0.12) {
+                ForEach(0..<2, id: \.self) { _ in
+                    Capsule()
+                        .fill(eye)
+                        .frame(width: side * 0.07, height: side * 0.15)
+                        .shadow(color: OrbPalette.gold.rim.opacity(0.9), radius: side * 0.04)
+                        .shadow(color: eye.opacity(0.6), radius: side * 0.015)
+                }
+            }
+            .frame(width: proxy.size.width, height: proxy.size.height)
+        }
+        .accessibilityHidden(true)
     }
 }
 
@@ -174,7 +212,7 @@ final class OrbClock {
 #if DEBUG
 /// Tune the orb on a device: state, voice level, glow and size.
 struct OrbPlayground: View {
-    @State private var style = OrbStyle.glow
+    @State private var style = OrbStyle.bubble
     @State private var animates = true
     @State private var state = VoiceOrbState.idle
     @State private var level = 0.5
@@ -186,12 +224,14 @@ struct OrbPlayground: View {
             Spacer(minLength: 0)
             ShaderOrb(style: style, dynamics: OrbDynamics(state: state, level: level),
                       palette: style == .sphere ? .amber : .gold, glow: glow, animates: animates)
+                .overlay { if style == .bubble { CompanionEyes() } }
                 .frame(width: size, height: size)
                 .animation(.easeInOut(duration: 0.4), value: state)
             Spacer(minLength: 0)
 
             VStack(alignment: .leading, spacing: 12) {
                 Picker(selection: $style) {
+                    Text(verbatim: "Companion").tag(OrbStyle.bubble)
                     Text(verbatim: "Glow").tag(OrbStyle.glow)
                     Text(verbatim: "Ribbon").tag(OrbStyle.ribbon)
                     Text(verbatim: "Sphere").tag(OrbStyle.sphere)

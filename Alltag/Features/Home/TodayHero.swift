@@ -28,8 +28,8 @@ struct TodayHero: View {
                 starts += 1
                 onStart()
             } label: {
-                // Warm light in dark glass. Also: `RibbonOrb()` (ring), `ShaderOrb()` (sphere).
-                GlowOrb()
+                // The companion. Also: `GlowOrb()`, `RibbonOrb()`, `ShaderOrb()`.
+                CompanionOrb()
                     .frame(width: orbSize, height: orbSize)
             }
                 .buttonStyle(.card)
