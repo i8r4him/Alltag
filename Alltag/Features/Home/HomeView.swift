@@ -8,9 +8,9 @@
 import SwiftData
 import SwiftUI
 
-/// Home: greeting, Today's Focus, Coming up, the entry grid, Grammar,
-/// From your day and Learning beyond the app. The toolbar holds the avatar
-/// (→ Profile) and settings.
+/// Home: Today's Focus, Coming up, the entry grid, Grammar, From your day and
+/// Learning beyond the app. The greeting is the large navigation title; the
+/// toolbar holds Profile and Settings.
 struct HomeView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.services) private var services
@@ -29,8 +29,6 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
-                HomeGreetingView(name: name, newWords: newReadingWords)
-
                 VStack(spacing: Spacing.grid) {
                     FocusCard { appState.present(.conversation(MockScenarios.todaysFocus)) }
                     if !events.isEmpty {
@@ -53,17 +51,18 @@ struct HomeView: View {
             }
             .padding(Spacing.screen)
         }
+        .scrollIndicators(.hidden)
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .readableContentMargins()
         .background(.screenBackground)
+        .navigationTitle(Text(HomeGreeting.title(for: HomeGreeting.PartOfDay(date: .now), name: name)))
+        .navigationBarTitleDisplayMode(.large)
+        .navigationSubtitle(Text(HomeGreeting.subtitle(newWords: newReadingWords)))
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button { appState.open(.profile) } label: {
-                    Avatar(name: name, diameter: 36)
-                }
-                .accessibilityLabel("Profile")
+                Button { appState.open(.profile) } label: { profileLabel }
+                    .accessibilityLabel("Profile")
             }
-            // A plain circle, as in the design, instead of a glass capsule.
-            .sharedBackgroundVisibility(.hidden)
 
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Settings", systemImage: "gearshape") { appState.open(.settings) }
@@ -71,6 +70,17 @@ struct HomeView: View {
         }
         .smartBar(.home)
         .task { events = (try? await services.calendar.upcomingEvents()) ?? [] }
+    }
+
+    /// The learner's initial, or the person symbol before a name is set.
+    @ViewBuilder
+    private var profileLabel: some View {
+        if let initial = name.trimmingCharacters(in: .whitespaces).first {
+            Text(verbatim: String(initial).uppercased())
+                .fontWeight(.semibold)
+        } else {
+            Image(systemName: "person.crop.circle")
+        }
     }
 }
 
