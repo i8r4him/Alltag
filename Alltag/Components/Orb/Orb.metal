@@ -105,3 +105,62 @@ static float3 rotateY(float3 p, float angle) {
     float edge = 1.0 - smoothstep(1.0 - 1.5 / radius, 1.0, r);
     return half4(half3(col) * edge, edge);
 }
+
+// MARK: Ribbon ring
+
+/// One translucent ribbon around the ring: its outer edge hugs the circle, its
+/// inner edge swings in and out three times, like a band twisting in light.
+/// Returns its brightness at radius `r` and angle `a`.
+static float ribbon(float r, float a, float outer, float phase, float energy, float pixel) {
+    float swing = 0.5 + 0.5 * sin(3.0 * a + phase);
+    float width = mix(0.04, 0.27 + energy * 0.05, swing);
+    float inner = outer - width;
+    if (r < inner - 0.08 || r > outer + 0.08) { return 0.0; }
+
+    float soft = pixel * 1.5;
+    float inside = smoothstep(inner - soft, inner + soft, r) * (1.0 - smoothstep(outer - soft, outer + soft, r));
+    // Brighter towards the outer edge, like light through a curved band.
+    float t = saturate((r - inner) / max(width, 0.001));
+    float fill = inside * (0.3 + 0.45 * t);
+    // Thin bright lines along both edges: the folds.
+    float innerLine = exp(-pow((r - inner) / (pixel * 2.5 + 0.006), 2.0)) * (0.25 + 0.35 * (1.0 - swing));
+    float outerLine = exp(-pow((r - outer) / (pixel * 2.5 + 0.01), 2.0)) * 0.45;
+    return fill + innerLine + outerLine;
+}
+
+/// A glowing golden ring of twisting ribbons.
+///
+/// - size: the view's size in points.
+/// - time: seconds, already multiplied by the speed.
+/// - energy: 0 calm … 1 excited (wider ribbons, brighter).
+/// - deep, mid, light, rim: the palette (rim colours the glow).
+[[ stitchable ]] half4 ribbonOrb(float2 position, half4 color, float2 size, float time, float energy,
+                                half4 deep, half4 mid, half4 light, half4 rim) {
+    float radius = min(size.x, size.y) * 0.5;
+    float2 uv = (position - size * 0.5) / radius;   // -1…1
+    float r = length(uv);
+    float a = atan2(uv.y, uv.x) + time * 0.25;
+    float pixel = 1.0 / radius;
+    float outer = 0.74;
+
+    // Two ribbons, out of step, drifting against each other.
+    float bright = 0.0;
+    bright += ribbon(r, a, outer, time * 0.5, energy, pixel);
+    bright += ribbon(r, a, outer - 0.01, 2.4 - time * 0.35, energy, pixel) * 0.8;
+    bright *= 1.0 + energy * 0.4;
+
+    // Glow: around the outside of the ring, and faintly inside it.
+    float glowOut = exp(-max(r - outer, 0.0) * 13.0) * step(outer, r) * smoothstep(1.0, 0.85, r);
+    float glowIn = exp(-max(outer - r, 0.0) * 7.0) * (1.0 - step(outer, r)) * 0.35;
+    float glow = (glowOut + glowIn) * (0.45 + energy * 0.35);
+
+    // Colour by brightness: deep amber where faint, honey to near-white where bright.
+    float3 col = mix(float3(deep.rgb), float3(mid.rgb), saturate(bright * 1.4));
+    col = mix(col, float3(light.rgb), saturate((bright - 0.9) * 1.5));
+    col *= bright;
+    col += float3(rim.rgb) * glow;
+
+    float alpha = saturate(max(col.r, max(col.g, col.b)));
+    col /= max(1.0, max(col.r, max(col.g, col.b)));
+    return half4(half3(col), half(alpha));
+}
