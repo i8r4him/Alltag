@@ -7,7 +7,7 @@ Alltag ("everyday") is an ambient German-learning companion: *"Learn German thro
 | Platform | Minimum | Notes |
 |---|---|---|
 | iPhone | iOS 27 | Primary design target — every screen in this document is designed for iPhone. |
-| Foldable iPhone | iOS 27 | Same app; unfolded (regular width) it gets a `NavigationSplitView` sidebar and readable content widths. |
+| Foldable iPhone | iOS 27 | Same app and navigation; unfolded, content stays at a readable width. |
 iPad, Apple Watch and Apple Vision Pro are **not** supported. The design reference is a 393×852 iPhone frame; larger sizes are derived from it.
 
 ## About the Design Files
@@ -22,7 +22,7 @@ iPad, Apple Watch and Apple Vision Pro are **not** supported. The design referen
 1. The Xcode project `Alltag` exists (iOS App · SwiftUI · Swift). Persistence uses **SwiftData** — add the `ModelContainer` in `AlltagApp` with the first `@Model` types (user profile, memory items, phrasebook, solved rules, saved translations).
 2. Create the folder structure in **Architecture** below.
 3. Build `DesignSystem/` first (tokens + reusable components), then `Home`, then each feature.
-4. Use `NavigationStack(path:)` with an `enum Route: Hashable` — **no TabView**. At regular width (unfolded foldable) the same path drives a `NavigationSplitView` with a sidebar.
+4. Use `NavigationStack(path:)` with an `enum Route: Hashable` — **no TabView**.
 5. Add SwiftUI `#Preview`s for each screen and key states (conversation idle/listening/thinking/speaking; activity answered right/wrong; onboarding steps).
 
 ## Architecture
@@ -39,8 +39,7 @@ Alltag/                                   ← repo root
 │  │  ├─ AppSettings.swift                device settings in UserDefaults (motion, speech, Pro)
 │  │  ├─ AppServices.swift                all services; .live() for the app, .mock() for previews/tests
 │  │  ├─ Route.swift                      enum Route: Hashable
-│  │  ├─ SidebarItem.swift                foldable sidebar sections, path ⇄ split view
-│  │  └─ RootView.swift                   stack (compact) or NavigationSplitView (regular), covers, onboarding gate
+│  │  └─ RootView.swift                   NavigationStack, covers, onboarding gate
 │  │
 │  ├─ DesignSystem/
 │  │  ├─ Tokens/
@@ -298,7 +297,7 @@ Support Dynamic Type. Code: `DesignSystem/Tokens/Typography.swift`, applied with
 
 **Radii:** hero cards 28 · cards 24 · inner cards 20 · tiles 16–20 · option buttons 18 · chips/pills full · glass buttons circle (36–48). Use `.continuous` corner style.
 **Spacing:** screen padding 16 (onboarding 20) · card padding 16–22 · grid gap 12 · row height ≥ 50 · touch targets ≥ 44.
-**Phone frame reference:** 393×852 (iPhone 15/16 Pro). The unfolded foldable iPhone uses the same tokens with adaptive layouts (sidebar, readable max content width).
+**Phone frame reference:** 393×852 (iPhone 15/16 Pro). The unfolded foldable iPhone uses the same tokens with adaptive layouts (readable max content width).
 
 ---
 
