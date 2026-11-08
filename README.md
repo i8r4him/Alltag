@@ -66,7 +66,7 @@ Alltag/                                   ← repo root
 │  ├─ Components/                         app-specific building blocks
 │  │  ├─ Orb/
 │  │  │  ├─ Orb.metal                    bubbleOrb shader: dark glass, golden rim, smoky silk
-│  │  │  └─ CompanionOrb.swift           CompanionOrb (eyes blink and glance), CompanionLook (saved look), OrbDynamics, CompanionEditor (DEBUG, Settings › Developer)
+│  │  │  └─ CompanionOrb.swift           CompanionOrb (eyes blink and glance), CompanionPalette (7 colours), CompanionLook (saved look), OrbDynamics, CompanionEditor (DEBUG, Settings › Developer)
 │  │  ├─ VoiceOrb.swift
 │  │  ├─ WordTile.swift                plain / key (outlined) / highlighted / placed
 │  │  ├─ PatternBar.swift              slots with amber emphasis

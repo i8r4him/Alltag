@@ -63,3 +63,14 @@ struct CompanionEyesTests {
         }
     }
 }
+
+@Suite("Companion palettes")
+struct CompanionPaletteTests {
+    @Test("Every palette has its own name and a saved value that round-trips")
+    func palettes() {
+        let all = CompanionPalette.allCases
+        #expect(Set(all.map(\.title)).count == all.count)
+        #expect(all.allSatisfy { CompanionPalette(rawValue: $0.rawValue) == $0 })
+        #expect(all.first == .gold)
+    }
+}

@@ -18,11 +18,90 @@ enum CompanionLook {
         static let eyeSpacing = "companion.eyeSpacing"
         static let lively = "companion.lively"
         static let drifts = "companion.drifts"
+        static let palette = "companion.palette"
     }
 
     /// The range of every amount and size: 1 is the designed look.
     static let range: ClosedRange<Double> = 0...2
     static let eyeRange: ClosedRange<Double> = 0.6...1.6
+}
+
+/// The companion's colours: glass, silk, highlights, rim and eyes.
+enum CompanionPalette: String, CaseIterable, Identifiable {
+    case gold
+    case copper
+    case roseGold
+    case champagne
+    case pearl
+    case coral
+    case lavender
+
+    var id: Self { self }
+
+    /// Shown in Settings › Developer only, so not localised.
+    var title: String {
+        switch self {
+        case .gold: "Gold"
+        case .copper: "Copper amber"
+        case .roseGold: "Rose gold"
+        case .champagne: "Champagne"
+        case .pearl: "Pearl"
+        case .coral: "Coral"
+        case .lavender: "Lavender"
+        }
+    }
+
+    /// Darkest: tints the glass.
+    var deep: Color {
+        switch self {
+        case .gold: Color(red: 0.80, green: 0.42, blue: 0.04)       // #CC6B0A
+        case .copper: Color(red: 0.54, green: 0.23, blue: 0.07)     // #8A3A12
+        case .roseGold: Color(red: 0.48, green: 0.23, blue: 0.20)   // #7A3A34
+        case .champagne: Color(red: 0.43, green: 0.34, blue: 0.20)  // #6E5634
+        case .pearl: Color(red: 0.22, green: 0.27, blue: 0.37)      // #39445E
+        case .coral: Color(red: 0.54, green: 0.18, blue: 0.12)      // #8A2E1E
+        case .lavender: Color(red: 0.24, green: 0.18, blue: 0.48)   // #3E2E7A
+        }
+    }
+
+    /// The silk.
+    var mid: Color {
+        switch self {
+        case .gold: Color(red: 1.00, green: 0.72, blue: 0.16)       // #FFB829
+        case .copper: Color(red: 0.78, green: 0.39, blue: 0.18)     // #C8642E
+        case .roseGold: Color(red: 0.85, green: 0.51, blue: 0.43)   // #D9826E
+        case .champagne: Color(red: 0.85, green: 0.73, blue: 0.54)  // #D8B98A
+        case .pearl: Color(red: 0.72, green: 0.77, blue: 0.88)      // #B8C4E0
+        case .coral: Color(red: 0.91, green: 0.42, blue: 0.31)      // #E86A4E
+        case .lavender: Color(red: 0.56, green: 0.45, blue: 0.91)   // #8E72E8
+        }
+    }
+
+    /// Highlights and the reflection.
+    var light: Color {
+        switch self {
+        case .gold: Color(red: 1.00, green: 0.95, blue: 0.72)       // #FFF2B8
+        case .copper: Color(red: 0.96, green: 0.82, blue: 0.69)     // #F6D2B0
+        case .roseGold: Color(red: 0.98, green: 0.88, blue: 0.84)   // #FBE0D6
+        case .champagne: Color(red: 1.00, green: 0.96, blue: 0.88)  // #FFF4E0
+        case .pearl: Color(red: 1.00, green: 1.00, blue: 1.00)      // #FFFFFF
+        case .coral: Color(red: 1.00, green: 0.88, blue: 0.82)      // #FFE0D2
+        case .lavender: Color(red: 0.93, green: 0.91, blue: 1.00)   // #EEE8FF
+        }
+    }
+
+    /// The rim, the halo and the eyes' glow.
+    var rim: Color {
+        switch self {
+        case .gold: Color(red: 1.00, green: 0.62, blue: 0.10)       // #FF9E1A
+        case .copper: Color(red: 0.91, green: 0.54, blue: 0.29)     // #E8894A
+        case .roseGold: Color(red: 0.95, green: 0.65, blue: 0.56)   // #F2A58E
+        case .champagne: Color(red: 0.95, green: 0.87, blue: 0.72)  // #F3DDB8
+        case .pearl: Color(red: 0.92, green: 0.94, blue: 1.00)      // #EAF0FF
+        case .coral: Color(red: 1.00, green: 0.54, blue: 0.42)      // #FF8A6B
+        case .lavender: Color(red: 0.73, green: 0.64, blue: 1.00)   // #B9A3FF
+        }
+    }
 }
 
 /// How the companion moves in each conversation state. Pure, so it can be tested.
@@ -65,6 +144,7 @@ struct CompanionOrb: View {
     @AppStorage(CompanionLook.Key.lively) private var lively = true
     /// Whether the silk drifts. Off: one still frame, never redrawn.
     @AppStorage(CompanionLook.Key.drifts) private var drifts = false
+    @AppStorage(CompanionLook.Key.palette) private var palette = CompanionPalette.gold
 
     @Environment(\.reducesMotion) private var reduceMotion
     @State private var isVisible = true
@@ -83,16 +163,16 @@ struct CompanionOrb: View {
                         .float(rim),
                         .float(silk),
                         .float(halo),
-                        .color(Self.deep),
-                        .color(Self.mid),
-                        .color(Self.light),
-                        .color(Self.rimColor)
+                        .color(palette.deep),
+                        .color(palette.mid),
+                        .color(palette.light),
+                        .color(palette.rim)
                     ))
             }
         }
         .aspectRatio(1, contentMode: .fit)
         .overlay {
-            CompanionEyes(lively: lively, size: eyeSize, spacing: eyeSpacing)
+            CompanionEyes(lively: lively, size: eyeSize, spacing: eyeSpacing, glow: palette.rim)
         }
         .onScrollVisibilityChange(threshold: 0.01) { isVisible = $0 }
         .onDisappear { isVisible = false }
@@ -102,12 +182,6 @@ struct CompanionOrb: View {
 
     /// The moment shown when the silk doesn't drift: a balanced pose.
     private static let stillTime: Float = 2.2
-
-    // Gold, from the shadows to the highlights.
-    private static let deep = Color(red: 0.80, green: 0.42, blue: 0.04)      // #CC6B0A
-    private static let mid = Color(red: 1.00, green: 0.72, blue: 0.16)       // #FFB829
-    private static let light = Color(red: 1.00, green: 0.95, blue: 0.72)     // #FFF2B8
-    static let rimColor = Color(red: 1.00, green: 0.62, blue: 0.10)          // #FF9E1A
 }
 
 /// Accumulates time at a changing speed. A class, so advancing it while
@@ -144,6 +218,8 @@ private struct CompanionEyes: View {
     /// 1 is the designed size and gap.
     var size = 1.0
     var spacing = 1.0
+    /// The light around the eyes, from the palette's rim.
+    var glow = CompanionPalette.gold.rim
 
     @Environment(\.reducesMotion) private var reduceMotion
     @State private var isBlinking = false
@@ -159,7 +235,7 @@ private struct CompanionEyes: View {
                         .fill(eye)
                         .frame(width: side * 0.07 * size, height: side * 0.15 * size)
                         .scaleEffect(x: 1, y: isBlinking ? 0.1 : 1)
-                        .shadow(color: CompanionOrb.rimColor.opacity(0.9), radius: side * 0.04)
+                        .shadow(color: glow.opacity(0.9), radius: side * 0.04)
                         .shadow(color: eye.opacity(0.6), radius: side * 0.015)
                 }
             }
@@ -220,6 +296,7 @@ struct CompanionEditor: View {
     @AppStorage(CompanionLook.Key.eyeSpacing) private var eyeSpacing = 1.0
     @AppStorage(CompanionLook.Key.lively) private var lively = true
     @AppStorage(CompanionLook.Key.drifts) private var drifts = false
+    @AppStorage(CompanionLook.Key.palette) private var palette = CompanionPalette.gold
 
     // Developer-only screen: the labels are not localised.
     var body: some View {
@@ -230,6 +307,21 @@ struct CompanionEditor: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .listRowBackground(Color.black)
+            }
+            Section(header: Text(verbatim: "Colour")) {
+                ScrollView(.horizontal) {
+                    HStack(spacing: 14) {
+                        ForEach(CompanionPalette.allCases) { option in
+                            Button { palette = option } label: { swatch(option) }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel(Text(verbatim: option.title))
+                                .accessibilityAddTraits(palette == option ? .isSelected : [])
+                        }
+                    }
+                    .padding(.vertical, 6)
+                }
+                .scrollIndicators(.hidden)
+                .sensoryFeedback(.selection, trigger: palette)
             }
             Section(header: Text(verbatim: "Glass")) {
                 slider("Rim", value: $rim, in: CompanionLook.range)
@@ -253,6 +345,23 @@ struct CompanionEditor: View {
         .navigationTitle(Text(verbatim: "Companion"))
     }
 
+    private func swatch(_ option: CompanionPalette) -> some View {
+        VStack(spacing: 6) {
+            Circle()
+                .fill(RadialGradient(colors: [option.light, option.mid, option.deep],
+                                     center: UnitPoint(x: 0.35, y: 0.3), startRadius: 0, endRadius: 26))
+                .overlay(Circle().strokeBorder(option.rim, lineWidth: 1.5))
+                .frame(width: 44, height: 44)
+                .padding(3)
+                .overlay(Circle().strokeBorder(.white, lineWidth: palette == option ? 2 : 0))
+            Text(verbatim: option.title)
+                .font(.caption2)
+                .foregroundStyle(palette == option ? .primary : .secondary)
+                .lineLimit(1)
+                .fixedSize()
+        }
+    }
+
     private func slider(_ title: String, value: Binding<Double>, in range: ClosedRange<Double>) -> some View {
         LabeledContent {
             Slider(value: value, in: range)
@@ -266,13 +375,15 @@ struct CompanionEditor: View {
     private var values: String {
         let numbers = [("rim", rim), ("silk", silk), ("halo", halo), ("eyeSize", eyeSize), ("eyeSpacing", eyeSpacing)]
             .map { "\($0.0) \($0.1.formatted(.number.precision(.fractionLength(2))))" }
-        return (numbers + ["lively \(lively)", "drifts \(drifts)"]).joined(separator: " · ")
+        return (["palette \(palette.rawValue)"] + numbers + ["lively \(lively)", "drifts \(drifts)"])
+            .joined(separator: " · ")
     }
 
     private func reset() {
         (rim, silk, halo, eyeSize, eyeSpacing) = (1, 1, 1, 1, 1)
         lively = true
         drifts = false
+        palette = .gold
     }
 }
 
