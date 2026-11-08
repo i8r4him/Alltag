@@ -52,9 +52,6 @@ struct ScenarioArtwork: View {
     let systemImage: String
     var symbolSize: CGFloat = 52
     var cornerRadius: CGFloat = 18
-    /// The top-right corner, when it sits in a container's corner and should
-    /// run parallel to it (container radius minus the gap).
-    var topTrailingRadius: CGFloat?
 
     var body: some View {
         ZStack {
@@ -69,10 +66,7 @@ struct ScenarioArtwork: View {
                 .rotationEffect(.degrees(-12))
                 .offset(x: 8, y: 6)
         }
-        .clipShape(UnevenRoundedRectangle(
-            topLeadingRadius: cornerRadius, bottomLeadingRadius: cornerRadius,
-            bottomTrailingRadius: cornerRadius, topTrailingRadius: topTrailingRadius ?? cornerRadius,
-            style: .continuous))
+        .clipShape(.rect(cornerRadius: cornerRadius, style: .continuous))
         // Fades out at the bottom, into the card.
         .mask {
             LinearGradient(stops: [.init(color: .black, location: 0.55), .init(color: .clear, location: 1)],
