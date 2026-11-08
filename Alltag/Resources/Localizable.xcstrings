@@ -99,6 +99,7 @@
     "5 min" : {},
     "60-second briefing" : {},
     "7 days free" : {},
+    "^[%lld day](inflect: true) in a row" : {},
     "^[%lld item](inflect: true)" : {},
     "^[%lld item](inflect: true), about ^[%lld minute](inflect: true)" : {
       "localizations" : {
