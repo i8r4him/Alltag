@@ -14,9 +14,6 @@ struct ComingUpCard: View {
     let onShowAll: () -> Void
     let onSelect: (CalendarEvent) -> Void
 
-    /// Temporary: the tile design being compared.
-    @State var design = ComingUpDesign.original
-
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Button(action: onShowAll) {
@@ -42,7 +39,7 @@ struct ComingUpCard: View {
                     LazyHStack(spacing: Spacing.grid) {
                         ForEach(events) { event in
                             Button { onSelect(event) } label: {
-                                ComingUpTile(event: event, now: now, design: design)
+                                ComingUpTile(event: event, now: now)
                             }
                             .buttonStyle(.card)
                         }
@@ -55,175 +52,25 @@ struct ComingUpCard: View {
             .scrollClipDisabled()
             // Not the screen's readable-width margins (they are inherited).
             .contentMargins(.horizontal, 0, for: .scrollContent)
-
-            designSwitcher
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
-extension ComingUpCard {
-    /// Temporary: ‹ 2 / 6 · Artwork › to step through the tile designs.
-    var designSwitcher: some View {
-        let all = ComingUpDesign.allCases
-        return HStack(spacing: 14) {
-            Button { step(-1) } label: { Image(systemName: "chevron.left") }
-            Text(verbatim: "\(design.rawValue + 1) / \(all.count) · \(design.name)")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .frame(minWidth: 150)
-            Button { step(1) } label: { Image(systemName: "chevron.right") }
-        }
-        .font(.footnote.weight(.semibold))
-        .buttonStyle(.glass)
-        .frame(maxWidth: .infinity)
-        .sensoryFeedback(.selection, trigger: design)
-    }
-
-    private func step(_ offset: Int) {
-        let all = ComingUpDesign.allCases
-        withAnimation(.snappy) { design = all[(design.rawValue + offset + all.count) % all.count] }
-    }
-}
-
-/// Temporary: designs for the tiles' content, to compare on Today.
-enum ComingUpDesign: Int, CaseIterable {
-    case original, artwork, artworkBand, timeFirst, quiet, cornerArt
-
-    var name: String {
-        switch self {
-        case .original: "Original"
-        case .artwork: "Artwork"
-        case .artworkBand: "Artwork band"
-        case .timeFirst: "Time first"
-        case .quiet: "Quiet"
-        case .cornerArt: "Corner art"
-        }
-    }
-}
-
-/// One upcoming event: same size and shape in every design.
+/// One upcoming event: the day and a big time, the scenario's artwork in the
+/// corner, then the event and how long rehearsing takes.
 private struct ComingUpTile: View {
     let event: CalendarEvent
     let now: Date
-    var design = ComingUpDesign.original
 
     @ScaledMetric(relativeTo: .title3) private var side: CGFloat = 196
 
     var body: some View {
-        Group {
-            switch design {
-            case .original: original
-            case .artwork: artwork
-            case .artworkBand: artworkBand
-            case .timeFirst: timeFirst
-            case .quiet: quiet
-            case .cornerArt: cornerArt
-            }
-        }
-        .multilineTextAlignment(.leading)
-        .frame(width: side, height: side, alignment: .topLeading)
-        .fontDesign(.rounded)
-        .accessibilityElement(children: .combine)
-        .accessibilityHint("Rehearse this conversation.")
-    }
-
-    private var time: String { event.start.formatted(.dateTime.hour().minute()) }
-    private var day: String {
-        ComingUp.isTomorrow(event, now: now) ? String(localized: "Tomorrow")
-            : event.start.formatted(.dateTime.weekday(.wide))
-    }
-
-    // MARK: 1 Original
-
-    private var original: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Image(systemName: event.systemImage)
-                .font(.system(size: 30))
-                .foregroundStyle(.primary)
-                .accessibilityHidden(true)
-            Spacer(minLength: 16)
-            Text(ComingUp.startsIn(event, now: now))
-                .textRole(.meta)
-                .fontWeight(.semibold)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .overlay(Capsule().strokeBorder(.white.opacity(0.18), lineWidth: 1))
-                .padding(.bottom, 10)
-            Text(verbatim: event.title)
-                .textRole(.sectionHeader)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-            Text(ComingUp.detail(for: event, now: now))
-                .font(.body.weight(.medium))
-                .foregroundStyle(.primary.opacity(0.75))
-                .lineLimit(1)
-                .padding(.top, 4)
-        }
-        .padding(20)
-        .frame(width: side, height: side, alignment: .topLeading)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-    }
-
-    // MARK: 2 Artwork (the Focus card's language)
-
-    private var artwork: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ScenarioArtwork(systemImage: event.systemImage, symbolSize: 34, cornerRadius: 14)
-                .frame(width: 64, height: 64)
-            Spacer(minLength: 10)
-            Text(verbatim: event.title)
-                .font(.title3.weight(.semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-            Text("\(day), \(time)")
-                .font(.title3)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-            Text(ComingUp.startsIn(event, now: now))
+            Text(verbatim: ComingUp.day(of: event, now: now))
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.accent)
-                .padding(.top, 6)
-        }
-        .padding(18)
-        .focusSurface(side: side)
-    }
-
-    // MARK: 3 Artwork band
-
-    private var artworkBand: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ScenarioArtwork(systemImage: event.systemImage, symbolSize: 64, cornerRadius: 0)
-                .frame(height: side * 0.48)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: event.title)
-                    .font(.title3.weight(.semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                Text("\(day), \(time)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                Text(ComingUp.startsIn(event, now: now))
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.accent)
-                    .padding(.top, 4)
-            }
-            .padding(.horizontal, 18)
-            .padding(.top, 2)
-        }
-        .focusSurface(side: side)
-    }
-
-    // MARK: 4 Time first
-
-    private var timeFirst: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(verbatim: day)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.accent)
-            Text(verbatim: time)
+            Text(event.start, format: .dateTime.hour().minute())
                 .font(.system(size: 34, weight: .bold, design: .rounded))
                 .monospacedDigit()
             Spacer(minLength: 8)
@@ -247,61 +94,10 @@ private struct ComingUpTile: View {
                 .padding(16)
         }
         .focusSurface(side: side)
-    }
-
-    // MARK: 5 Quiet
-
-    private var quiet: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Image(systemName: event.systemImage)
-                .font(.title2)
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(.accent)
-                .frame(width: 48, height: 48)
-                .background(.accentFill.opacity(0.18), in: .rect(cornerRadius: 14, style: .continuous))
-                .accessibilityHidden(true)
-            Spacer(minLength: 10)
-            Text(ComingUp.startsIn(event, now: now))
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.accent)
-            Text(verbatim: event.title)
-                .font(.title3.weight(.semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-            Text(ComingUp.detail(for: event, now: now))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-        }
-        .padding(18)
-        .focusSurface(side: side)
-    }
-
-    // MARK: 6 Corner art
-
-    private var cornerArt: some View {
-        ZStack(alignment: .bottomLeading) {
-            ScenarioArtwork(systemImage: event.systemImage, symbolSize: 70, cornerRadius: 0)
-                .frame(width: side * 0.7, height: side * 0.62)
-                .mask {
-                    RadialGradient(colors: [.black, .clear], center: .topTrailing,
-                                   startRadius: side * 0.15, endRadius: side * 0.7)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: event.title)
-                    .font(.title3.weight(.semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                Text("\(day), \(time)")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
-            .padding(18)
-        }
-        .focusSurface(side: side)
+        .multilineTextAlignment(.leading)
+        .fontDesign(.rounded)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Rehearse this conversation.")
     }
 }
 
@@ -335,20 +131,11 @@ enum ComingUp {
             .sorted { $0.day < $1.day }
     }
 
-    /// "Starts in 14h", "Starts in 3d", or "Starts soon" within the hour.
-    static func startsIn(_ event: CalendarEvent, now: Date) -> LocalizedStringResource {
-        let hours = Int(event.start.timeIntervalSince(now) / 3_600)
-        if hours < 1 { return "Starts soon" }
-        if hours < 24 { return "Starts in \(hours)h" }
-        return "Starts in \(hours / 24)d"
-    }
-
-    /// Tomorrow: "10:00 · 5 min". Later: "Fri 09:12 · 4 min".
-    static func detail(for event: CalendarEvent, now: Date, calendar: Calendar = .current) -> LocalizedStringResource {
-        let time = isTomorrow(event, now: now, calendar: calendar)
-            ? event.start.formatted(.dateTime.hour().minute())
-            : event.start.formatted(.dateTime.weekday(.abbreviated).hour().minute())
-        return "\(time) · \(event.rehearsalMinutes) min"
+    /// "Tomorrow", or the weekday: "Friday".
+    static func day(of event: CalendarEvent, now: Date, calendar: Calendar = .current) -> String {
+        isTomorrow(event, now: now, calendar: calendar)
+            ? String(localized: "Tomorrow")
+            : event.start.formatted(.dateTime.weekday(.wide))
     }
 }
 

@@ -25,16 +25,6 @@
         }
       }
     },
-    "%@ · %lld min" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · %2$lld min"
-          }
-        }
-      }
-    },
     "%@ · lesson in a later version" : {},
     "%@ · what you can handle now" : {},
     "%@, %@" : {
@@ -218,8 +208,8 @@
     "First steps" : {},
     "First, what should we call you?" : {},
     "Fix" : {},
-    "Fix your mistakes" : {},
     "FIX YOUR MISTAKES" : {},
+    "Fix your mistakes" : {},
     "Fluent — I want polish" : {},
     "Focus" : {},
     "Follow lectures and write with confidence." : {},
@@ -240,8 +230,8 @@
     "Gold" : {},
     "Good" : {},
     "Grammar" : {},
-    "Grammar rule" : {},
     "Grammar Rule" : {},
+    "Grammar rule" : {},
     "Health" : {},
     "Heard in real life" : {},
     "Hides the English" : {},
@@ -274,8 +264,8 @@
     "Learning German · %@" : {},
     "Learning · %@" : {},
     "Lectures, reading, exams" : {},
-    "Level" : {},
     "LEVEL" : {},
+    "Level" : {},
     "Level track" : {},
     "Listen" : {},
     "Listen: platform change" : {},
@@ -449,10 +439,7 @@
     "Starts a German speaking session in Alltag." : {},
     "Starts a one-minute exercise on your mistakes." : {},
     "Starts a short review of the words you saved in Alltag." : {},
-    "Starts in %lldd" : {},
-    "Starts in %lldh" : {},
     "Starts it in Alltag" : {},
-    "Starts soon" : {},
     "Starts this conversation." : {},
     "Steady progress" : {},
     "Still remembered 30 days after you met them" : {},
@@ -520,8 +507,8 @@
     "Word" : {},
     "Word by word" : {},
     "Word of the day" : {},
-    "Words" : {},
     "WORDS" : {},
+    "Words" : {},
     "Words from pages you share or translate" : {},
     "Words from your Memory in this briefing" : {},
     "Words from your reading and conversations." : {},
