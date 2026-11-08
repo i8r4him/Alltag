@@ -63,3 +63,33 @@ struct CompanionEyesTests {
         }
     }
 }
+
+@Suite("Companion palettes")
+struct CompanionPaletteTests {
+    @Test("Every palette has its own name and a saved value that round-trips")
+    func palettes() {
+        let all = CompanionPalette.allCases
+        #expect(Set(all.map { String(localized: $0.title) }).count == all.count)
+        #expect(all.allSatisfy { CompanionPalette(rawValue: $0.rawValue) == $0 })
+        #expect(all.first == .gold)
+    }
+}
+
+@Suite("App theme")
+@MainActor
+struct AppThemeTests {
+    @Test("The theme starts as gold, and a chosen palette is saved and restored")
+    func persistence() {
+        let defaults = UserDefaults.ephemeral()
+        #expect(AppTheme(defaults: defaults).palette == .gold)
+
+        AppTheme(defaults: defaults).palette = .roseGold
+        #expect(AppTheme(defaults: defaults).palette == .roseGold)
+    }
+
+    @Test("Every palette has its own accent and button colours")
+    func colours() {
+        let palettes = CompanionPalette.allCases
+        #expect(Set(palettes.map { "\($0.accentFill)" }).count == palettes.count)
+    }
+}

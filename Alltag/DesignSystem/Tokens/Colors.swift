@@ -9,7 +9,8 @@ import SwiftUI
 import UIKit
 
 // Brand colours live in the asset catalog with a light and a dark variant.
-// Xcode generates their symbols from the colour-set names:
+// Their `Color` names are declared here and in Theme.swift (the accents follow
+// the theme; gold uses these assets):
 //
 //   .accent      AccentColor  accent for text, icons and tint (readable on any surface)
 //   .accentFill  AccentFill   bright amber for filled buttons and glows
@@ -35,6 +36,12 @@ extension Color {
     /// Translucent fill for chips, pills and symbol squares; visible on both
     /// the screen background and cards. Dark ≈ `#2C2C2E` on black.
     static let controlFill = Color(uiColor: .secondarySystemFill)
+
+    // Fixed brand colours from the asset catalog. The accent colours follow
+    // the theme: see Theme.swift.
+    static let success = Color(.success)
+    static let mistake = Color(.mistake)
+    static let resultCard = Color(.resultCard)
 }
 
 extension ShapeStyle where Self == Color {
@@ -43,6 +50,9 @@ extension ShapeStyle where Self == Color {
     static var surfaceSecondary: Color { Color.surfaceSecondary }
     static var surfaceTertiary: Color { Color.surfaceTertiary }
     static var controlFill: Color { Color.controlFill }
+    static var success: Color { Color.success }
+    static var mistake: Color { Color.mistake }
+    static var resultCard: Color { Color.resultCard }
 }
 
 /// Opacities used with the accent colour for tints and glows.

@@ -45,6 +45,7 @@ Alltag/                                   ← repo root
 │  ├─ DesignSystem/
 │  │  ├─ Tokens/
 │  │  │  ├─ Colors.swift                  semantic + asset colours (light/dark)
+│  │  │  ├─ Theme.swift                 AppTheme: the companion palette sets .accent / .accentFill / .onAccent app-wide
 │  │  │  ├─ Typography.swift              text roles mapped to Dynamic Type styles
 │  │  │  ├─ Radius.swift
 │  │  │  ├─ Spacing.swift
@@ -66,7 +67,7 @@ Alltag/                                   ← repo root
 │  ├─ Components/                         app-specific building blocks
 │  │  ├─ Orb/
 │  │  │  ├─ Orb.metal                    bubbleOrb shader: dark glass, golden rim, smoky silk
-│  │  │  └─ CompanionOrb.swift           CompanionOrb (eyes blink and glance), CompanionLook (saved look), OrbDynamics, CompanionEditor (DEBUG, Settings › Developer)
+│  │  │  └─ CompanionOrb.swift           CompanionOrb (eyes blink and glance), CompanionPalette (7 colours), CompanionLook (saved look), OrbDynamics, CompanionEditor (DEBUG, Settings › Developer)
 │  │  ├─ VoiceOrb.swift
 │  │  ├─ WordTile.swift                plain / key (outlined) / highlighted / placed
 │  │  ├─ PatternBar.swift              slots with amber emphasis
@@ -194,6 +195,7 @@ Alltag/                                   ← repo root
 │  │  │  └─ ProfileView.swift
 │  │  ├─ Settings/
 │  │  │  ├─ SettingsView.swift
+│  │  │  ├─ ThemePicker.swift           Appearance: colour swatches that set the theme and the companion
 │  │  │  ├─ SettingsModel.swift           permission toggles, on-device AI status
 │  │  │  └─ DataExport.swift              Export my data (JSON)
 │  │  └─ Beyond/

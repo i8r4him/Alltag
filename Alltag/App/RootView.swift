@@ -29,6 +29,8 @@ struct RootView: View {
         }
         .animation(Motion.modal(reduceMotion: reducesMotion), value: AppState.needsOnboarding(profiles))
         .environment(\.reducesMotion, reducesMotion)
+        // System controls (toggles, sliders, links) follow the theme.
+        .tint(Color.accent)
         .onChange(of: appState.settings.slowerSpeech, initial: true) { _, slower in
             services.voice.prefersSlowerSpeech = slower
         }
