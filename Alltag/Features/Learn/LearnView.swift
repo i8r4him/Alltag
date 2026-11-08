@@ -53,8 +53,8 @@ struct LearnView: View {
         .readableContentMargins()
         .background(.screenBackground)
         .navigationTitle("Learn")
-        .navigationBarTitleDisplayMode(.large)
-        .navigationSubtitle(Text("Short moments, picked from your week."))
+        .toolbarTitleDisplayMode(.inlineLarge)
+        .scrollEdgeEffectStyle(.soft, for: .all)
     }
 }
 

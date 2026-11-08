@@ -41,7 +41,6 @@ struct RootView: View {
             Tab("Learn", systemImage: "bolt", value: AppTab.learn) { stack(.learn) }
             Tab("Memory", systemImage: "book", value: AppTab.memory) { stack(.memory) }
         }
-        .tabBarMinimizeBehavior(.onScrollDown)
         .fullScreenCover(item: $appState.fullScreen, content: fullScreen)
     }
 
@@ -79,6 +78,8 @@ struct RootView: View {
             DebriefView(services: services)
         case .briefing:
             BriefingView(services: services)
+        case .comingUp:
+            ComingUpList()
         case .progress:
             ProgressOverviewView()
         case .profile:

@@ -20,7 +20,7 @@ enum Spacing {
     /// Gap between cards in a grid.
     static let grid: CGFloat = 12
     /// Gap between sections on a screen.
-    static let section: CGFloat = 28
+    static let section: CGFloat = 30
     /// Minimum height of a list row.
     static let rowMinHeight: CGFloat = 50
     /// Minimum size of anything tappable.

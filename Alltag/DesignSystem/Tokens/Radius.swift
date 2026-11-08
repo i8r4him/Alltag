@@ -12,9 +12,9 @@ import SwiftUI
 /// Chips and pills use `Capsule()`, glass buttons use `Circle()`.
 enum Radius {
     /// Hero cards, e.g. Today's Focus.
-    static let hero: CGFloat = 28
+    static let hero: CGFloat = 38
     /// Cards.
-    static let card: CGFloat = 24
+    static let card: CGFloat = 38
     /// Cards inside cards.
     static let innerCard: CGFloat = 20
     /// Option buttons and option cards.

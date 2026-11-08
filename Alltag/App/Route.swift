@@ -23,6 +23,8 @@ enum Route: Hashable {
     case beyond
     case debrief
     case briefing
+    /// Every upcoming calendar event to rehearse.
+    case comingUp
 }
 
 /// Screens presented full-screen over everything else.
