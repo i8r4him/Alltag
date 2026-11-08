@@ -16,7 +16,7 @@ struct FocusCard: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            HStack(alignment: .top, spacing: 16) {
+            HStack(alignment: .center, spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Moving an appointment")
                         .font(.title3.weight(.semibold))
