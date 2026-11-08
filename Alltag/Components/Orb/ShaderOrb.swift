@@ -39,6 +39,8 @@ enum OrbStyle {
     case sphere
     /// A glowing ring of twisting translucent ribbons.
     case ribbon
+    /// Clouds of warm light inside a dark glass sphere, Siri-like.
+    case glow
 }
 
 /// How the orb moves in each conversation state. Pure, so it can be tested.
@@ -75,6 +77,8 @@ struct ShaderOrb: View {
     var palette = OrbPalette.amber
     /// The soft light around the orb, 0…1.
     var glow = 0.5
+    /// `false` draws one still frame and never redraws.
+    var animates = true
 
     @Environment(\.reducesMotion) private var reduceMotion
     @State private var isVisible = true
@@ -82,8 +86,10 @@ struct ShaderOrb: View {
     @State private var clock = OrbClock()
 
     var body: some View {
-        TimelineView(.animation(paused: reduceMotion || !isVisible)) { context in
-            let time = clock.advance(to: context.date, speed: reduceMotion ? 0 : dynamics.speed)
+        TimelineView(.animation(paused: !animates || reduceMotion || !isVisible)) { context in
+            let time = animates
+                ? clock.advance(to: context.date, speed: reduceMotion ? 0 : dynamics.speed)
+                : Self.stillTime
             GeometryReader { proxy in
                 Rectangle()
                     .colorEffect(shader(
@@ -108,10 +114,14 @@ struct ShaderOrb: View {
         .accessibilityHidden(true)
     }
 
+    /// The moment shown when the orb doesn't move: a balanced pose.
+    private static let stillTime: Float = 2.2
+
     private var shader: ShaderFunction {
         switch style {
         case .sphere: ShaderLibrary.orb
         case .ribbon: ShaderLibrary.ribbonOrb
+        case .glow: ShaderLibrary.glowOrb
         }
     }
 
@@ -124,12 +134,25 @@ struct ShaderOrb: View {
     }
 }
 
-/// The golden ribbon ring: one line to drop in, e.g. `RibbonOrb().frame(width: 200)`.
-struct RibbonOrb: View {
+/// Clouds of warm light in a dark glass sphere: one line to drop in, e.g.
+/// `GlowOrb().frame(width: 220)`. Still by default; `animates: true` lets the light drift.
+struct GlowOrb: View {
     var dynamics = OrbDynamics(state: .idle)
+    var animates = false
 
     var body: some View {
-        ShaderOrb(style: .ribbon, dynamics: dynamics, palette: .gold)
+        ShaderOrb(style: .glow, dynamics: dynamics, palette: .gold, animates: animates)
+    }
+}
+
+/// The golden ribbon ring: one line to drop in, e.g. `RibbonOrb().frame(width: 200)`.
+/// Still by default; `animates: true` lets it turn.
+struct RibbonOrb: View {
+    var dynamics = OrbDynamics(state: .idle)
+    var animates = false
+
+    var body: some View {
+        ShaderOrb(style: .ribbon, dynamics: dynamics, palette: .gold, animates: animates)
     }
 }
 
@@ -151,7 +174,8 @@ final class OrbClock {
 #if DEBUG
 /// Tune the orb on a device: state, voice level, glow and size.
 struct OrbPlayground: View {
-    @State private var style = OrbStyle.ribbon
+    @State private var style = OrbStyle.glow
+    @State private var animates = true
     @State private var state = VoiceOrbState.idle
     @State private var level = 0.5
     @State private var glow = 0.5
@@ -161,13 +185,14 @@ struct OrbPlayground: View {
         VStack(spacing: 24) {
             Spacer(minLength: 0)
             ShaderOrb(style: style, dynamics: OrbDynamics(state: state, level: level),
-                      palette: style == .ribbon ? .gold : .amber, glow: glow)
+                      palette: style == .sphere ? .amber : .gold, glow: glow, animates: animates)
                 .frame(width: size, height: size)
                 .animation(.easeInOut(duration: 0.4), value: state)
             Spacer(minLength: 0)
 
             VStack(alignment: .leading, spacing: 12) {
                 Picker(selection: $style) {
+                    Text(verbatim: "Glow").tag(OrbStyle.glow)
                     Text(verbatim: "Ribbon").tag(OrbStyle.ribbon)
                     Text(verbatim: "Sphere").tag(OrbStyle.sphere)
                 } label: { Text(verbatim: "Style") }
@@ -177,6 +202,7 @@ struct OrbPlayground: View {
                 } label: { Text(verbatim: "State") }
                 .pickerStyle(.segmented)
                 // Developer-only: not localised.
+                Toggle(isOn: $animates) { Text(verbatim: "Moves") }
                 LabeledContent { Slider(value: $level) } label: { Text(verbatim: "Voice level") }
                 LabeledContent { Slider(value: $glow) } label: { Text(verbatim: "Glow") }
                 LabeledContent { Slider(value: $size, in: 80...320) } label: { Text(verbatim: "Size") }

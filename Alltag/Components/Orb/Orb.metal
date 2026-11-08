@@ -149,6 +149,29 @@ static float ribbon(float r, float a, float outer, float phase, float energy, fl
     bright += ribbon(r, a, outer - 0.01, 2.4 - time * 0.35, energy, pixel) * 0.8;
     bright *= 1.0 + energy * 0.4;
 
+    // Inside the opening: a smaller, fainter ring turned against the outer one…
+    float scale = 0.68;
+    float innerRing = ribbon(r / scale, -a + 1.1, outer, 0.9 - time * 0.3, energy, pixel / scale)
+                    + ribbon(r / scale, -a + 1.1, outer - 0.01, 3.3 + time * 0.2, energy, pixel / scale) * 0.8;
+    bright += innerRing * 0.42;
+
+    // …fine curved filaments spiralling into the centre, like an iris…
+    float spiral = 9.0 * a + 6.5 * log(r + 0.04);
+    float filaments = pow(1.0 - abs(sin(spiral)), 22.0)
+                    + pow(1.0 - abs(sin(-9.0 * a + 6.5 * log(r + 0.04) + 0.8)), 22.0) * 0.6;
+    float core = smoothstep(0.46, 0.1, r) * smoothstep(0.02, 0.12, r);
+    bright += filaments * core * 0.7;
+
+    // …a warm haze in the middle…
+    bright += exp(-r * r * 9.0) * 0.26;
+
+    // …and a few tiny sparkles.
+    float2 cell = floor(uv * 14.0);
+    float2 local = fract(uv * 14.0) - 0.5;
+    float seed = hash(float3(cell, 4.2));
+    float sparkle = step(0.86, seed) * exp(-dot(local, local) / (0.004 + pixel * pixel * 40.0));
+    bright += sparkle * smoothstep(0.62, 0.2, r) * 0.6;
+
     // Glow: around the outside of the ring, and faintly inside it.
     float glowOut = exp(-max(r - outer, 0.0) * 13.0) * step(outer, r) * smoothstep(1.0, 0.85, r);
     float glowIn = exp(-max(outer - r, 0.0) * 7.0) * (1.0 - step(outer, r)) * 0.35;
@@ -163,4 +186,85 @@ static float ribbon(float r, float a, float outer, float phase, float energy, fl
     float alpha = saturate(max(col.r, max(col.g, col.b)));
     col /= max(1.0, max(col.r, max(col.g, col.b)));
     return half4(half3(col), half(alpha));
+}
+
+// MARK: Glow orb
+
+/// A soft cloud of light: an elongated glow at `center`, turned by `angle`,
+/// with edges made organic by noise.
+static float lobe(float2 uv, float2 center, float angle, float2 stretch, float softness, float seed, float time) {
+    float2 d = uv - center;
+    float c = cos(angle), s = sin(angle);
+    d = float2(c * d.x + s * d.y, -s * d.x + c * d.y) / stretch;
+    // Wobble the shape so it never looks drawn.
+    float wobble = noise(float3(uv * 2.4, seed + time * 0.2)) - 0.5;
+    float dist = length(d) + wobble * 0.35;
+    return exp(-dist * dist / softness);
+}
+
+/// Clouds of warm light floating inside a dark glass sphere, blending into each
+/// other and turning near-white where they meet, with a thin glowing edge.
+///
+/// - size: the view's size in points.
+/// - time: seconds, already multiplied by the speed.
+/// - energy: 0 calm … 1 excited (brighter, bigger clouds).
+/// - deep, mid, light, rim: the palette.
+[[ stitchable ]] half4 glowOrb(float2 position, half4 color, float2 size, float time, float energy,
+                              half4 deep, half4 mid, half4 light, half4 rim) {
+    float radius = min(size.x, size.y) * 0.5;
+    float2 uv = (position - size * 0.5) / (radius * 0.86);   // the sphere fills 86% of the view
+    float r = length(uv);
+    float pixel = 1.0 / (radius * 0.86);
+
+    // Outside the sphere: only a soft halo.
+    float halo = exp(-max(r - 1.0, 0.0) * 7.0) * smoothstep(1.16, 1.0, r) * (0.35 + energy * 0.3);
+    if (r > 1.0) {
+        float3 h = float3(rim.rgb) * halo;
+        return half4(half3(h), half(halo));
+    }
+
+    float z = sqrt(max(0.0, 1.0 - r * r));
+    float grow = 1.0 + energy * 0.35;
+
+    // Bend space with a slow swirl, so the light curves like silk instead of sitting in blobs.
+    float twist = (1.0 - r) * 1.6 + sin(time * 0.2) * 0.3;
+    float ct = cos(twist), st = sin(twist);
+    float2 w = float2(ct * uv.x - st * uv.y, st * uv.x + ct * uv.y);
+    w += 0.22 * float2(noise(float3(uv * 1.6, 2.0 + time * 0.15)) - 0.5,
+                       noise(float3(uv * 1.6, 9.0 + time * 0.15)) - 0.5);
+
+    // Four large clouds of light, each its own warm colour, overlapping.
+    float3 gold = float3(mid.rgb);
+    float3 honey = float3(light.rgb);
+    float3 amber = float3(rim.rgb);
+    float3 ember = float3(deep.rgb) * 1.5;
+    float3 col = float3(0.0);
+    col += gold  * lobe(w, float2(0.32 + cos(time * 0.31) * 0.08, -0.22), 0.5,
+                        float2(1.05, 0.38) * grow, 0.42, 1.0, time) * 1.0;
+    col += amber * lobe(w, float2(-0.30, 0.18 + sin(time * 0.27) * 0.08), -0.7,
+                        float2(0.95, 0.36) * grow, 0.42, 7.0, time) * 1.0;
+    col += ember * lobe(w, float2(0.18, 0.42), 2.4,
+                        float2(0.85, 0.34) * grow, 0.4, 13.0, time) * 0.9;
+    col += honey * lobe(w, float2(-0.05, -0.02), 0.2,
+                        float2(0.42, 0.36) * grow, 0.3, 19.0, time) * (0.5 + energy * 0.4);
+
+    // Glass: deep inside, a thin glowing edge, a soft reflection at the top.
+    float3 glass = float3(deep.rgb) * 0.08 * (0.5 + z);
+    float fresnel = pow(1.0 - z, 4.0);
+    float3 edge = float3(rim.rgb) * fresnel * 1.2;
+    float3 halfway = normalize(normalize(float3(-0.4, 0.7, 0.6)) + float3(0, 0, 1));
+    float reflection = pow(max(dot(float3(uv.x, -uv.y, z), halfway), 0.0), 260.0) * 0.3;
+
+    // More contrast: deep shadows, bright light, warm in between.
+    col = pow(col, float3(1.35, 1.45, 1.7)) * 1.7;
+    // Clouds fade slightly towards the edge, as if seen through curved glass.
+    col *= 0.55 + 0.45 * z;
+    col = glass + col + edge + reflection;
+
+    // Soft shoulder: overlaps turn warm white instead of clipping.
+    col = 1.0 - exp(-col * 1.4);
+
+    float alpha = 1.0 - smoothstep(1.0 - pixel * 1.5, 1.0, r);
+    col = mix(float3(rim.rgb) * halo, col, alpha);
+    return half4(half3(col), half(max(alpha, halo)));
 }

@@ -65,8 +65,8 @@ Alltag/                                   ← repo root
 │  │
 │  ├─ Components/                         app-specific building blocks
 │  │  ├─ Orb/
-│  │  │  ├─ Orb.metal                    shaders: glassy amber sphere (orb), golden ribbon ring (ribbonOrb)
-│  │  │  └─ ShaderOrb.swift              ShaderOrb (.sphere / .ribbon), RibbonOrb, OrbPalette, OrbDynamics (state → speed, energy), OrbPlayground (DEBUG, Settings › Developer)
+│  │  │  ├─ Orb.metal                    shaders: glassy sphere (orb), ribbon ring (ribbonOrb), Siri-like light in glass (glowOrb)
+│  │  │  └─ ShaderOrb.swift              ShaderOrb (.sphere / .ribbon / .glow), GlowOrb, RibbonOrb, OrbPalette, OrbDynamics (state → speed, energy), OrbPlayground (DEBUG, Settings › Developer)
 │  │  ├─ VoiceOrb.swift
 │  │  ├─ WordTile.swift                plain / key (outlined) / highlighted / placed
 │  │  ├─ PatternBar.swift              slots with amber emphasis
@@ -148,7 +148,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Home/
 │  │  │  ├─ HomeView.swift                the Today tab; profile Menu in the toolbar
 │  │  │  ├─ HomeHeader.swift              Avatar
-│  │  │  ├─ TodayHero.swift               golden RibbonOrb (shader), Words · Spoken · Level (→ Progress)
+│  │  │  ├─ TodayHero.swift               GlowOrb (still, shader), Words · Spoken · Level (→ Progress)
 │  │  │  ├─ FocusCard.swift               glass card, Start talking (.glassProminent)
 │  │  │  ├─ ComingUpCard.swift
 │  │  │  ├─ FromYourDayList.swift

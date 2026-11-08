@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// The top of Today: the golden ribbon ring that starts today's conversation, and
+/// The top of Today: the glowing orb that starts today's conversation, and
 /// three numbers that open Progress.
 struct TodayHero: View {
     let words: Int
@@ -28,8 +28,8 @@ struct TodayHero: View {
                 starts += 1
                 onStart()
             } label: {
-                // The golden ribbon ring. For the glassy sphere: `ShaderOrb()`.
-                RibbonOrb()
+                // Warm light in dark glass. Also: `RibbonOrb()` (ring), `ShaderOrb()` (sphere).
+                GlowOrb()
                     .frame(width: orbSize, height: orbSize)
             }
                 .buttonStyle(.card)
