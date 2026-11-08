@@ -39,11 +39,11 @@ enum CompanionPalette: String, CaseIterable, Identifiable {
 
     var id: Self { self }
 
-    /// Shown in Settings › Developer only, so not localised.
-    var title: String {
+    /// Shown in Settings › Appearance.
+    var title: LocalizedStringResource {
         switch self {
         case .gold: "Gold"
-        case .copper: "Copper amber"
+        case .copper: "Copper"
         case .roseGold: "Rose gold"
         case .champagne: "Champagne"
         case .pearl: "Pearl"
@@ -301,8 +301,6 @@ struct CompanionEditor: View {
     @AppStorage(CompanionLook.Key.drifts) private var drifts = false
     @Bindable private var theme = AppTheme.shared
 
-    private var palette: CompanionPalette { theme.palette }
-
     // Developer-only screen: the labels are not localised.
     var body: some View {
         List {
@@ -314,19 +312,7 @@ struct CompanionEditor: View {
                     .listRowBackground(Color.black)
             }
             Section {
-                ScrollView(.horizontal) {
-                    HStack(spacing: 14) {
-                        ForEach(CompanionPalette.allCases) { option in
-                            Button { theme.palette = option } label: { swatch(option) }
-                                .buttonStyle(.plain)
-                                .accessibilityLabel(Text(verbatim: option.title))
-                                .accessibilityAddTraits(palette == option ? .isSelected : [])
-                        }
-                    }
-                    .padding(.vertical, 6)
-                }
-                .scrollIndicators(.hidden)
-                .sensoryFeedback(.selection, trigger: palette)
+                ThemePicker()
             } header: {
                 Text(verbatim: "Theme")
             } footer: {
@@ -354,23 +340,6 @@ struct CompanionEditor: View {
         .navigationTitle(Text(verbatim: "Companion"))
     }
 
-    private func swatch(_ option: CompanionPalette) -> some View {
-        VStack(spacing: 6) {
-            Circle()
-                .fill(RadialGradient(colors: [option.light, option.mid, option.deep],
-                                     center: UnitPoint(x: 0.35, y: 0.3), startRadius: 0, endRadius: 26))
-                .overlay(Circle().strokeBorder(option.rim, lineWidth: 1.5))
-                .frame(width: 44, height: 44)
-                .padding(3)
-                .overlay(Circle().strokeBorder(.white, lineWidth: palette == option ? 2 : 0))
-            Text(verbatim: option.title)
-                .font(.caption2)
-                .foregroundStyle(palette == option ? .primary : .secondary)
-                .lineLimit(1)
-                .fixedSize()
-        }
-    }
-
     private func slider(_ title: String, value: Binding<Double>, in range: ClosedRange<Double>) -> some View {
         LabeledContent {
             Slider(value: value, in: range)
@@ -384,7 +353,7 @@ struct CompanionEditor: View {
     private var values: String {
         let numbers = [("rim", rim), ("silk", silk), ("halo", halo), ("eyeSize", eyeSize), ("eyeSpacing", eyeSpacing)]
             .map { "\($0.0) \($0.1.formatted(.number.precision(.fractionLength(2))))" }
-        return (["palette \(palette.rawValue)"] + numbers + ["lively \(lively)", "drifts \(drifts)"])
+        return (["palette \(theme.palette.rawValue)"] + numbers + ["lively \(lively)", "drifts \(drifts)"])
             .joined(separator: " · ")
     }
 

@@ -121,6 +121,14 @@ private struct SettingsSections: View {
         }
         .pickerStyle(.navigationLink)
 
+        Section {
+            ThemePicker()
+        } header: {
+            Text("Appearance")
+        } footer: {
+            Text("Colours your companion and the app.")
+        }
+
         Section("Alltag Pro") {
             ProCard(isPro: settings.isPro) {
                 if !settings.isPro { toast = ToastMessage(text: "Your 7-day trial has started.") }

@@ -195,6 +195,7 @@ Alltag/                                   ← repo root
 │  │  │  └─ ProfileView.swift
 │  │  ├─ Settings/
 │  │  │  ├─ SettingsView.swift
+│  │  │  ├─ ThemePicker.swift           Appearance: colour swatches that set the theme and the companion
 │  │  │  ├─ SettingsModel.swift           permission toggles, on-device AI status
 │  │  │  └─ DataExport.swift              Export my data (JSON)
 │  │  └─ Beyond/
