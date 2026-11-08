@@ -139,19 +139,39 @@ struct ShaderOrb: View {
 
 /// The companion: a glass bubble with golden silk inside and two glowing eyes.
 /// One line to drop in, e.g. `CompanionOrb().frame(width: 220)`.
-/// Still by default; `animates: true` lets the silk drift.
+/// The bubble is still by default (`animates: true` lets the silk drift);
+/// the eyes blink and glance around now and then unless `lively` is off.
 struct CompanionOrb: View {
     var dynamics = OrbDynamics(state: .idle)
     var animates = false
+    var lively = true
 
     var body: some View {
         ShaderOrb(style: .bubble, dynamics: dynamics, palette: .gold, animates: animates)
-            .overlay { CompanionEyes() }
+            .overlay { CompanionEyes(lively: lively) }
     }
 }
 
-/// Two soft, glowing capsules, sized to the orb.
-private struct CompanionEyes: View {
+/// Where the eyes look, as a fraction of the orb's size. Pure, so it can be tested.
+enum CompanionGaze {
+    static let horizontal: ClosedRange<Double> = -0.06...0.06
+    static let vertical: ClosedRange<Double> = -0.035...0.025
+
+    /// A glance somewhere nearby, never straight ahead.
+    static func random(using generator: inout some RandomNumberGenerator) -> CGSize {
+        var x = Double.random(in: horizontal, using: &generator)
+        if abs(x) < 0.02 { x = x < 0 ? -0.03 : 0.03 }
+        return CGSize(width: x, height: Double.random(in: vertical, using: &generator))
+    }
+}
+
+/// Two soft, glowing capsules, sized to the orb, that blink and glance around.
+struct CompanionEyes: View {
+    var lively = true
+
+    @Environment(\.reducesMotion) private var reduceMotion
+    @State private var isBlinking = false
+    @State private var gaze = CGSize.zero
     private let eye = Color(red: 1.0, green: 0.96, blue: 0.86)  // warm cream
 
     var body: some View {
@@ -162,13 +182,52 @@ private struct CompanionEyes: View {
                     Capsule()
                         .fill(eye)
                         .frame(width: side * 0.07, height: side * 0.15)
+                        .scaleEffect(x: 1, y: isBlinking ? 0.1 : 1)
                         .shadow(color: OrbPalette.gold.rim.opacity(0.9), radius: side * 0.04)
                         .shadow(color: eye.opacity(0.6), radius: side * 0.015)
                 }
             }
+            .offset(x: gaze.width * side, y: gaze.height * side)
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
         .accessibilityHidden(true)
+        // Cancelled when the orb leaves the screen (e.g. another tab).
+        .task(id: lively && !reduceMotion) {
+            guard lively, !reduceMotion else { return }
+            await live()
+        }
+    }
+
+    /// Blinks and glances at natural, irregular moments until cancelled.
+    private func live() async {
+        var generator = SystemRandomNumberGenerator()
+        while !Task.isCancelled {
+            guard await pause(2.5...5.5) else { return }
+            if Double.random(in: 0...1, using: &generator) < 0.35 {
+                withAnimation(.spring(duration: 0.45, bounce: 0.2)) {
+                    gaze = CompanionGaze.random(using: &generator)
+                }
+                guard await pause(1.0...2.4) else { return }
+                withAnimation(.spring(duration: 0.5, bounce: 0.15)) { gaze = .zero }
+            } else {
+                await blink()
+                if Double.random(in: 0...1, using: &generator) < 0.2 {
+                    guard await pause(0.12...0.18) else { return }
+                    await blink()
+                }
+            }
+        }
+    }
+
+    private func blink() async {
+        withAnimation(.easeIn(duration: 0.07)) { isBlinking = true }
+        _ = await pause(0.09...0.09)
+        withAnimation(.easeOut(duration: 0.13)) { isBlinking = false }
+    }
+
+    /// Sleeps for a random time in `range`; `false` once cancelled.
+    private func pause(_ range: ClosedRange<Double>) async -> Bool {
+        (try? await Task.sleep(for: .seconds(Double.random(in: range)))) != nil
     }
 }
 

@@ -40,3 +40,26 @@ struct ShaderOrbTests {
         #expect(clock.advance(to: start.addingTimeInterval(3), speed: 0) == 1)
     }
 }
+
+@Suite("Companion eyes")
+struct CompanionEyesTests {
+    /// A deterministic generator, so the test is repeatable.
+    private struct Seeded: RandomNumberGenerator {
+        var state: UInt64
+        mutating func next() -> UInt64 {
+            state = state &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
+            return state
+        }
+    }
+
+    @Test("Glances stay close to the middle and never look straight ahead")
+    func glances() {
+        var generator = Seeded(state: 42)
+        for _ in 0..<500 {
+            let gaze = CompanionGaze.random(using: &generator)
+            #expect(CompanionGaze.horizontal.contains(gaze.width))
+            #expect(CompanionGaze.vertical.contains(gaze.height))
+            #expect(abs(gaze.width) >= 0.02)
+        }
+    }
+}
