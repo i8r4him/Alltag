@@ -41,12 +41,12 @@ struct TodayHero: View {
                 onProgress()
             } label: {
                 HStack(alignment: .top) {
-                    stat(Text(words, format: .number), label: "words",
-                         symbol: "character.book.closed.fill", tint: .accent)
-                    stat(Text(minutesSpoken, format: .number), label: "minutes",
-                         symbol: "waveform", tint: .success)
-                    stat(Text(verbatim: level.title), label: "level",
-                         symbol: "chart.bar.fill", tint: Self.levelTint)
+                    stat(Text(words, format: .number), label: "WORDS",
+                         symbol: "character.book.closed.fill")
+                    stat(Text(minutesSpoken, format: .number), label: "MINUTES",
+                         symbol: "waveform")
+                    stat(Text(verbatim: level.title), label: "LEVEL",
+                         symbol: "chart.bar.fill")
                 }
                 .contentShape(.rect)
             }
@@ -59,11 +59,8 @@ struct TodayHero: View {
         .fontDesign(.rounded)
     }
 
-    /// A soft blue for the level, next to the theme colour and green.
-    private static let levelTint = Color(hex: 0x8E9BFF)
-
-    /// A big number with its coloured word and symbol underneath.
-    private func stat(_ value: Text, label: LocalizedStringResource, symbol: String, tint: Color) -> some View {
+    /// A big number with its word and symbol underneath, in the theme colour.
+    private func stat(_ value: Text, label: LocalizedStringResource, symbol: String) -> some View {
         VStack(spacing: 4) {
             value
                 .font(.system(size: 40, weight: .bold, design: .rounded))
@@ -71,7 +68,7 @@ struct TodayHero: View {
             Label { Text(label) } icon: { Image(systemName: symbol) }
                 .font(.headline)
                 .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(tint)
+                .foregroundStyle(.accent)
         }
         .frame(maxWidth: .infinity)
     }
