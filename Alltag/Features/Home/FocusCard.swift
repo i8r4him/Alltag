@@ -63,6 +63,24 @@ struct FocusCard: View {
     }
 }
 
+/// The Start talking button, shared by every Focus card design.
+struct StartTalkingButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        GlassEffectContainer {
+            Button(action: action) {
+                Label("Start talking", systemImage: "waveform")
+                    .font(.title3.weight(.bold))
+                    .fontDesign(.rounded)
+                    .frame(maxWidth: .infinity, minHeight: 34)
+            }
+            .buttonStyle(AmberButtonStyle())
+            .accessibilityHint("Starts a conversation at the dentist.")
+        }
+    }
+}
+
 /// A glass capsule with two soft amber lights rising from its bottom edge.
 private struct AmberButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
