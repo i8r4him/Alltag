@@ -53,6 +53,7 @@ struct ComingUpCard: View {
             // Not the screen's readable-width margins (they are inherited).
             .contentMargins(.horizontal, 0, for: .scrollContent)
         }
+        .fontDesign(.rounded)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
@@ -64,6 +65,9 @@ private struct ComingUpTile: View {
     let now: Date
 
     @ScaledMetric(relativeTo: .title3) private var side: CGFloat = 196
+
+    /// The gap between the artwork and the tile's corner.
+    private static let artworkInset: CGFloat = 16
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -81,7 +85,7 @@ private struct ComingUpTile: View {
                         .lineLimit(2)
                         .minimumScaleFactor(0.8)
                     Text("Rehearse \(event.rehearsalMinutes) min")
-                        .font(.subheadline)
+                        .font(.default)
                         .foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 4)
@@ -89,9 +93,10 @@ private struct ComingUpTile: View {
         }
         .padding(18)
         .overlay(alignment: .topTrailing) {
-            ScenarioArtwork(systemImage: event.systemImage, symbolSize: 26, cornerRadius: 12)
+            ScenarioArtwork(systemImage: event.systemImage, symbolSize: 26, cornerRadius: 12,
+                            topTrailingRadius: Radius.hero - Self.artworkInset)
                 .frame(width: 46, height: 46)
-                .padding(16)
+                .padding(Self.artworkInset)
         }
         .focusSurface(side: side)
         .multilineTextAlignment(.leading)

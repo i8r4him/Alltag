@@ -52,10 +52,14 @@ struct ScenarioArtwork: View {
     let systemImage: String
     var symbolSize: CGFloat = 52
     var cornerRadius: CGFloat = 18
+    /// The top-right corner, when it sits in a container's corner and should
+    /// run parallel to it (container radius minus the gap).
+    var topTrailingRadius: CGFloat?
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color.accentFill.opacity(0.85), Color.accentFill.opacity(0.25)],
+            // Two colours from the theme: its bright accent into its deep tone.
+            LinearGradient(colors: [Color.accentFill.opacity(0.95), AppTheme.shared.palette.deep.opacity(0.8)],
                            startPoint: .topTrailing, endPoint: .bottomLeading)
             RadialGradient(colors: [.white.opacity(0.35), .clear],
                            center: UnitPoint(x: 0.25, y: 0.2), startRadius: 0, endRadius: 60)
@@ -65,7 +69,10 @@ struct ScenarioArtwork: View {
                 .rotationEffect(.degrees(-12))
                 .offset(x: 8, y: 6)
         }
-        .clipShape(.rect(cornerRadius: cornerRadius, style: .continuous))
+        .clipShape(UnevenRoundedRectangle(
+            topLeadingRadius: cornerRadius, bottomLeadingRadius: cornerRadius,
+            bottomTrailingRadius: cornerRadius, topTrailingRadius: topTrailingRadius ?? cornerRadius,
+            style: .continuous))
         // Fades out at the bottom, into the card.
         .mask {
             LinearGradient(stops: [.init(color: .black, location: 0.55), .init(color: .clear, location: 1)],
