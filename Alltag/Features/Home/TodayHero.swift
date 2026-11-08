@@ -16,21 +16,34 @@ struct TodayHero: View {
     let onStart: () -> Void
     let onProgress: () -> Void
 
+    /// Counts taps, to play haptic feedback.
+    @State private var starts = 0
+    @State private var progressTaps = 0
+
     var body: some View {
         VStack(spacing: 32) {
-            Button(action: onStart) { HeroOrb() }
+            Button {
+                starts += 1
+                onStart()
+            } label: { HeroOrb() }
                 .buttonStyle(.card)
+                .sensoryFeedback(.impact(weight: .medium), trigger: starts)
                 .accessibilityLabel("Start today's conversation")
 
-            Button(action: onProgress) {
+            Button {
+                progressTaps += 1
+                onProgress()
+            } label: {
                 HStack(alignment: .top) {
                     stat("Words", value: Text(words, format: .number), tint: .accent)
                     stat("Spoken", value: Text("\(minutesSpoken) min"), tint: .success)
                     stat("Level", value: Text(verbatim: level.title), tint: .secondary)
                 }
+                .fontDesign(.rounded)
                 .contentShape(.rect)
             }
             .buttonStyle(.tile)
+            .sensoryFeedback(.impact(weight: .light), trigger: progressTaps)
             .accessibilityElement(children: .combine)
             .accessibilityHint("Opens your progress.")
         }

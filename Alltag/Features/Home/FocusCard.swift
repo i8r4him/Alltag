@@ -12,18 +12,31 @@ struct FocusCard: View {
     let action: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack(alignment: .top, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
+            HStack {
+                Text("Today's focus")
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(.accent)
+                Spacer(minLength: 8)
+                Label("5 min", systemImage: "clock")
+                    .labelStyle(.titleAndIcon)
+                    .font(.footnote.weight(.semibold))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .glassEffect(.regular, in: .capsule)
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Moving an appointment")
+                    .textRole(.title2)
+                    .fixedSize(horizontal: false, vertical: true)
+
                 VStack(alignment: .leading, spacing: 6) {
-                    Eyebrow(title: "Today's focus")
-                    Text("Moving an appointment")
-                        .textRole(.cardTitle)
-                    Text("A phone call at the dentist. Picks up the word order you mixed up yesterday.")
-                        .textRole(.bodySmall)
-                        .foregroundStyle(.secondary)
+                    Label("Practises the word order you mixed up yesterday", systemImage: "calendar")
                 }
-                Spacer(minLength: 0)
-                Pill(title: "5 min")
+                .textRole(.body)
+                .foregroundStyle(.secondary)
+                .labelStyle(FocusDetailLabelStyle())
             }
 
             Button(action: action) {
@@ -31,14 +44,79 @@ struct FocusCard: View {
                     .font(.body.weight(.semibold))
                     .frame(maxWidth: .infinity, minHeight: 34)
             }
-            .buttonStyle(.glassProminent)
-            .tint(.accentFill)
-            .foregroundStyle(.onAccent)
+            .buttonStyle(AmberButtonStyle())
             .accessibilityHint("Starts a conversation at the dentist.")
         }
         .padding(Spacing.cardLarge)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+        .fontDesign(.rounded)
+    }
+}
+
+/// A glass capsule with two soft amber lights rising from its bottom edge.
+private struct AmberButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(.white)
+            .padding(.vertical, 12)
+            .background {
+                ZStack {
+                    BottomLight(color: Self.honey, x: 0.3)
+                    BottomLight(color: Self.orange, x: 0.78)
+                }
+                .clipShape(.capsule)
+                .overlay {
+                    // The rim: faint white at the top, the lights' colours along the bottom.
+                    Capsule().strokeBorder(
+                        LinearGradient(colors: [.white.opacity(0.18), .clear],
+                                       startPoint: .top, endPoint: .center),
+                        lineWidth: 1)
+                    Capsule().strokeBorder(
+                        LinearGradient(colors: [.clear, Self.honey.opacity(0.7), Self.orange.opacity(0.8), .clear],
+                                       startPoint: .leading, endPoint: .trailing),
+                        lineWidth: 1)
+                        .mask {
+                            LinearGradient(colors: [.clear, .black], startPoint: .center, endPoint: .bottom)
+                        }
+                }
+            }
+            .glassEffect(.regular.interactive(), in: .capsule)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+            .sensoryFeedback(.impact(weight: .medium), trigger: configuration.isPressed) { _, pressed in pressed }
+    }
+
+    static let honey = Color(red: 1.00, green: 0.80, blue: 0.48)   // #FFCC7A
+    static let orange = Color(red: 0.95, green: 0.55, blue: 0.22)  // #F28C38
+}
+
+/// A soft light centred just below the bottom edge, fading upwards.
+private struct BottomLight: View {
+    let color: Color
+    let x: CGFloat
+
+    var body: some View {
+        RadialGradient(colors: [color.opacity(0.55), color.opacity(0.18), .clear],
+                       center: UnitPoint(x: x, y: 1.1),
+                       startRadius: 0, endRadius: 140)
+    }
+}
+
+/// An icon in a fixed-width column, so both detail lines start at the same edge.
+private struct FocusDetailLabelStyle: LabelStyle {
+    @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = 22
+
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            configuration.icon
+                .font(.subheadline)
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.accent)
+                .frame(width: iconWidth)
+            configuration.title
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
 

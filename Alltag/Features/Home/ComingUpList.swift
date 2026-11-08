@@ -37,7 +37,8 @@ struct ComingUpList: View {
             }
         }
         .navigationTitle("Coming up")
-        .navigationSubtitle(Text("Rehearse from your Calendar"))
+        .toolbarTitleDisplayMode(.inlineLarge)
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .task { events = (try? await services.calendar.upcomingEvents()) ?? [] }
     }
 

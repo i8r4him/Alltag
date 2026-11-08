@@ -22,7 +22,7 @@ struct ComingUpTests {
 
         #expect(ComingUp.isTomorrow(dentist, now: now))
         let detail = String(localized: ComingUp.detail(for: dentist, now: now))
-        #expect(detail.hasSuffix("· rehearse 5 min"))
+        #expect(detail.hasSuffix("· 5 min"))
         #expect(detail.hasPrefix(dentist.start.formatted(.dateTime.hour().minute())))
     }
 
