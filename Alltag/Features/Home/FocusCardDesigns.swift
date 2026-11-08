@@ -16,6 +16,7 @@ enum FocusCardDesign: Int, CaseIterable, Identifiable {
     case bubble
     case poster
     case compact
+    case artwork
 
     var id: Self { self }
 
@@ -27,6 +28,7 @@ enum FocusCardDesign: Int, CaseIterable, Identifiable {
         case .bubble: "Speech bubble"
         case .poster: "Poster"
         case .compact: "Compact"
+        case .artwork: "Artwork"
         }
     }
 }
@@ -85,6 +87,7 @@ private struct FocusCardVariant: View {
         case .bubble: bubble
         case .poster: poster
         case .compact: compact
+        case .artwork: artwork
         }
     }
 
@@ -218,6 +221,37 @@ private struct FocusCardVariant: View {
         .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
     }
 
+    // MARK: 7 Artwork
+
+    private var artwork: some View {
+        VStack(spacing: 18) {
+            HStack(alignment: .top, spacing: 16) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(verbatim: "Moving an appointment")
+                        .font(.title3.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(verbatim: "A short phone call at the dentist.")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                ScenarioArtwork(systemImage: "cross.case.fill")
+                    .frame(width: 96, height: 96)
+            }
+            StartTalkingButton(action: action)
+        }
+        .padding(Spacing.cardLarge)
+        .background {
+            RoundedRectangle(cornerRadius: Radius.hero, style: .continuous)
+                .fill(.surface)
+                .overlay {
+                    RoundedRectangle(cornerRadius: Radius.hero, style: .continuous)
+                        .strokeBorder(.white.opacity(0.06), lineWidth: 1)
+                }
+        }
+    }
+
     // MARK: Parts
 
     private func icon(size: CGFloat, font: Font) -> some View {
@@ -240,6 +274,33 @@ private struct FocusCardVariant: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+}
+
+/// A small square illustration of a scenario: a soft wash in the theme colour
+/// with a large symbol, fading out at the bottom like a photo.
+private struct ScenarioArtwork: View {
+    let systemImage: String
+
+    var body: some View {
+        ZStack {
+            LinearGradient(colors: [Color.accentFill.opacity(0.85), Color.accentFill.opacity(0.25)],
+                           startPoint: .topTrailing, endPoint: .bottomLeading)
+            RadialGradient(colors: [.white.opacity(0.35), .clear],
+                           center: UnitPoint(x: 0.25, y: 0.2), startRadius: 0, endRadius: 60)
+            Image(systemName: systemImage)
+                .font(.system(size: 52, weight: .light))
+                .foregroundStyle(.white.opacity(0.85))
+                .rotationEffect(.degrees(-12))
+                .offset(x: 8, y: 6)
+        }
+        .clipShape(.rect(cornerRadius: 18, style: .continuous))
+        // Fades out at the bottom, into the card.
+        .mask {
+            LinearGradient(stops: [.init(color: .black, location: 0.55), .init(color: .clear, location: 1)],
+                           startPoint: .top, endPoint: .bottom)
+        }
+        .accessibilityHidden(true)
     }
 }
 
