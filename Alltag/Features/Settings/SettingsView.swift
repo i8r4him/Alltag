@@ -31,6 +31,11 @@ struct SettingsView: View {
             }
             moreSection
             replaySection
+            #if DEBUG
+            Section(header: Text(verbatim: "Developer")) {
+                NavigationLink { OrbPlayground() } label: { Text(verbatim: "Orb playground") }
+            }
+            #endif
         }
         // The system's inset-grouped margins already adapt to wide screens.
         .listStyle(.insetGrouped)

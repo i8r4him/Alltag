@@ -64,6 +64,9 @@ Alltag/                                   ← repo root
 │  │     └─ ComponentGallery.swift        previews of every component
 │  │
 │  ├─ Components/                         app-specific building blocks
+│  │  ├─ Orb/
+│  │  │  ├─ Orb.metal                    shader: glassy amber sphere, flowing colour, rim light
+│  │  │  └─ ShaderOrb.swift              ShaderOrb, OrbPalette, OrbDynamics (state → speed, energy), OrbPlayground (DEBUG, Settings › Developer)
 │  │  ├─ VoiceOrb.swift
 │  │  ├─ WordTile.swift                plain / key (outlined) / highlighted / placed
 │  │  ├─ PatternBar.swift              slots with amber emphasis
