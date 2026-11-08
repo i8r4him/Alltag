@@ -65,8 +65,8 @@ Alltag/                                   ← repo root
 │  │
 │  ├─ Components/                         app-specific building blocks
 │  │  ├─ Orb/
-│  │  │  ├─ Orb.metal                    shaders: glassy sphere (orb), ribbon ring (ribbonOrb), Siri-like light in glass (glowOrb), companion bubble (bubbleOrb)
-│  │  │  └─ ShaderOrb.swift              ShaderOrb (.sphere / .ribbon / .glow / .bubble), CompanionOrb (with eyes), GlowOrb, RibbonOrb, OrbPalette, OrbDynamics (state → speed, energy), OrbPlayground (DEBUG, Settings › Developer)
+│  │  │  ├─ Orb.metal                    bubbleOrb shader: dark glass, golden rim, smoky silk
+│  │  │  └─ CompanionOrb.swift           CompanionOrb (eyes blink and glance), CompanionLook (saved look), OrbDynamics, CompanionEditor (DEBUG, Settings › Developer)
 │  │  ├─ VoiceOrb.swift
 │  │  ├─ WordTile.swift                plain / key (outlined) / highlighted / placed
 │  │  ├─ PatternBar.swift              slots with amber emphasis

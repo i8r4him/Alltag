@@ -28,7 +28,7 @@ struct TodayHero: View {
                 starts += 1
                 onStart()
             } label: {
-                // The companion. Also: `GlowOrb()`, `RibbonOrb()`, `ShaderOrb()`.
+                // The companion; its look is edited in Settings › Developer.
                 CompanionOrb()
                     .frame(width: orbSize, height: orbSize)
             }

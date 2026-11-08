@@ -1,5 +1,5 @@
 //
-//  ShaderOrbTests.swift
+//  CompanionOrbTests.swift
 //  AlltagTests
 //
 //  Created by Ibrahim Abdullah on 08.11.26.
@@ -9,8 +9,8 @@ import Foundation
 import Testing
 @testable import Alltag
 
-@Suite("Shader orb")
-struct ShaderOrbTests {
+@Suite("Companion orb")
+struct CompanionOrbTests {
     @Test("Idle is the calmest state; thinking flows fastest")
     func states() {
         let idle = OrbDynamics(state: .idle)

@@ -33,7 +33,7 @@ struct SettingsView: View {
             replaySection
             #if DEBUG
             Section(header: Text(verbatim: "Developer")) {
-                NavigationLink { OrbPlayground() } label: { Text(verbatim: "Orb playground") }
+                NavigationLink { CompanionEditor() } label: { Text(verbatim: "Companion") }
             }
             #endif
         }
