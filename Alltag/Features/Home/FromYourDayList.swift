@@ -163,13 +163,13 @@ struct BeyondRow: View {
             .padding(.horizontal, Spacing.card)
             .padding(.vertical, Spacing.card)
             .frame(maxWidth: .infinity, minHeight: 90, alignment: .leading)
-            .background(.surface, in: .rect(cornerRadius: Radius.innerCard, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: Radius.innerCard, style: .continuous)
                     .strokeBorder(.separator, style: StrokeStyle(lineWidth: 1, dash: [5, 5]))
             }
             .contentShape(.rect(cornerRadius: Radius.innerCard, style: .continuous))
         }
+        .fontDesign(.rounded)
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
     }

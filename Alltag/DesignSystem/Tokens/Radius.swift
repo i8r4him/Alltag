@@ -16,7 +16,7 @@ enum Radius {
     /// Cards.
     static let card: CGFloat = 38
     /// Cards inside cards.
-    static let innerCard: CGFloat = 20
+    static let innerCard: CGFloat = 38
     /// Option buttons and option cards.
     static let option: CGFloat = 18
     /// Tiles, e.g. Coming up tiles and word tiles.
