@@ -52,11 +52,13 @@ struct StarSky: View {
             // Each star twinkles at its own pace and sways by a point or two.
             let pace = motion.next(in: 0.5...1.1)
             let phase = motion.next(in: 0...(2 * .pi))
-            let sway = motion.next(in: 1.5...3)
-            let twinkle = 0.55 + 0.45 * sin(time * pace + phase)
+            let sway = motion.next(in: 3...6)
+            // Dips almost to nothing, then flares a little above its base brightness.
+            let twinkle = 0.65 + 0.6 * sin(time * pace + phase)
             let point = CGPoint(x: base.x + sway * sin(time * 0.31 + phase),
                                 y: base.y + sway * 0.6 * cos(time * 0.27 + phase))
-            glow(in: context, at: point, radius: starRadius, colour: colour.opacity(strength * twinkle))
+            glow(in: context, at: point, radius: starRadius * (0.9 + 0.2 * twinkle),
+                 colour: colour.opacity(strength * max(twinkle, 0.05)))
         }
     }
 
