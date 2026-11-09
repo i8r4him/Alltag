@@ -67,8 +67,8 @@ Alltag/                                   ← repo root
 │  ├─ Components/                         app-specific building blocks
 │  │  ├─ Orb/
 │  │  │  ├─ Orb.metal                    bubbleOrb shader: dark glass, golden rim, smoky silk
+│  │  │  ├─ VoiceOrbState.swift          idle / listening / thinking / speaking
 │  │  │  └─ CompanionOrb.swift           CompanionOrb (eyes blink and glance), CompanionPalette (7 colours), CompanionLook (saved look), OrbDynamics, CompanionEditor (DEBUG, Settings › Developer)
-│  │  ├─ VoiceOrb.swift
 │  │  ├─ WordTile.swift                plain / key (outlined) / highlighted / placed
 │  │  ├─ PatternBar.swift              slots with amber emphasis
 │  │  └─ EqualizerBars.swift
@@ -344,11 +344,11 @@ Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's init
 6. "Learning beyond the app" ticket → Beyond.
 
 ### Conversation (full-screen)
-Header: close · title/meta (scenario) · voice/keyboard segmented glass. Goal pill below.
+Today's sky background and rounded type. Header: close · title/meta (scenario) · voice/keyboard segmented glass. Goal in a glass capsule below.
 Transcript: AI lines 23pt semibold left ("COMPANION" caption, tap toggles English); user lines 18pt right ("YOU") with feedback card (green check "good", coral edit "fix", grey info "note").
-Bottom: keyboard button · **Voice Orb** (132pt) · hint (lightbulb) button; state label below.
-**State machine:** idle → (tap) listening (words appear one at a time, 230ms, amber caret) → thinking (orb scales 0.8, amber spinner ring) → AI reply appended → speaking (orb wobble 1.1s) → idle. After last line → summary sheet (2 turns · 1 fix · 2 phrases saved; CTA "Practise your fixes · 1 min", "Done"). Every fix (what you said, the correction, the rule) is saved to Memory › Mistakes, and "Practise your fixes" asks about your saved mistakes (the samples only when there are none). Live voice conversations are checked on device with Apple Intelligence when they end, so they get feedback cards and the same summary.
-Orb: idle = grey-white radial sphere with mic, slow breathe 4s; active = warm amber radial + glow; listening = 2 expanding rings 1.6s.
+Bottom: keyboard button · **the companion** (`CompanionOrb`, 150pt, tap to speak) · hint (lightbulb) button; state label below. The "Try saying" hint is on the Focus card's surface.
+**State machine:** idle → (tap) listening (words appear one at a time, 230ms, amber caret) → thinking (the silk swirls faster) → AI reply appended → speaking (livelier silk) → idle. After last line → summary sheet (2 turns · 1 fix · 2 phrases saved; CTA "Practise your fixes · 1 min", "Done"). Every fix (what you said, the correction, the rule) is saved to Memory › Mistakes, and "Practise your fixes" asks about your saved mistakes (the samples only when there are none). Live voice conversations are checked on device with Apple Intelligence when they end, so they get feedback cards and the same summary.
+Companion: `OrbDynamics` sets its speed and energy per state; it grows slightly while listening, always drifts in a conversation, and stands still with Reduce Motion.
 Text mode: field "Antworte auf Deutsch…" + accent send. Scenarios: dentist, post office, train (see MockData in HTML `SCEN`).
 Native: `Speech` (`SpeechAnalyzer` + `SpeechTranscriber`, de-DE — the newer API that replaces `SFSpeechRecognizer`), `AVSpeechSynthesizer`, haptics on state changes.
 
