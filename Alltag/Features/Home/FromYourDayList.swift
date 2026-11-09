@@ -15,8 +15,6 @@ struct FromYourDayList: View {
     let onOpen: (Route) -> Void
     let onPresent: (FullScreenRoute) -> Void
 
-    @State private var briefingDesign = BriefingCardDesign.current
-
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionHeader(title: "From your day") {
@@ -24,8 +22,7 @@ struct FromYourDayList: View {
             }
             .padding(.horizontal, 4)
 
-            DaySpotlightList(items: items, briefingDesign: briefingDesign)
-            BriefingCardSwitcher(design: $briefingDesign)
+            DaySpotlightList(items: items, briefingWords: briefingWords)
         }
     }
 
@@ -62,35 +59,16 @@ private struct DayItem: Identifiable {
     let action: () -> Void
 }
 
-/// A featured first action with a compact list for the remaining actions.
+/// The briefing card first, then a compact list for the remaining actions.
 private struct DaySpotlightList: View {
     let items: [DayItem]
-    let briefingDesign: BriefingCardDesign
+    let briefingWords: Int
 
     var body: some View {
         VStack(spacing: Spacing.grid) {
-            if briefingDesign != .current, let first = items.first {
-                BriefingCard(design: briefingDesign, words: MockBriefing.briefing.words, action: first.action)
-            } else if let first = items.first {
-                Button(action: first.action) {
-                    HStack(alignment: .bottom, spacing: Spacing.card) {
-                        label(first, title: .title2.weight(.semibold))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Image(systemName: first.systemImage)
-                            .font(.system(size: 48, weight: .ultraLight))
-                            .foregroundStyle(.accent)
-                            .frame(width: 76, height: 76)
-                            .accessibilityHidden(true)
-                    }
-                    .padding(Spacing.cardLarge)
-                    .frame(maxWidth: .infinity, minHeight: 158, alignment: .bottomLeading)
-                    .glassEffect(.regular.tint(Color.accent.opacity(AccentTint.selected)).interactive(),
-                                 in: .rect(cornerRadius: Radius.card))
-                }
-                .buttonStyle(.plain)
-                .accessibilityElement(children: .combine)
+            if let first = items.first {
+                BriefingCard(words: briefingWords, action: first.action)
             }
-
             VStack(spacing: 0) {
                 ForEach(Array(items.dropFirst().enumerated()), id: \.element.id) { index, item in
                     if index > 0 { Divider().padding(.leading, 56) }
