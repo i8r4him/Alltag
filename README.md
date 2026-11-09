@@ -148,6 +148,7 @@ Alltag/                                   ← repo root
 │  │  │     └─ SummaryStep.swift
 │  │  ├─ Home/
 │  │  │  ├─ HomeView.swift                the Today tab; profile Menu in the toolbar
+│  │  │  ├─ StarSky.swift                static night haze in the theme colour
 │  │  │  ├─ HomeHeader.swift              Avatar
 │  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Spoken · Level (→ Progress)
 │  │  │  ├─ FocusCard.swift               title, line and scenario artwork; Start talking (glass, lights from below)
@@ -333,7 +334,7 @@ Top: back glass button · 6 progress segments (accent filled) · "Skip". The seg
 Option card: min-height 60, radius 18, `#1C1C1E`; selected = accent 10% fill + accent 55% 1pt border + filled check.
 
 ### Today (Home)
-Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's initial → a native `Menu` (Profile, Progress, Settings). A warm amber glow sits behind the top of the screen.
+Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's initial → a native `Menu` (Profile, Progress, Settings). A soft haze and a few faint stars in the theme colour sit over the glow at the top of the screen.
 1. **Orb** — a static amber sphere (drawn once, never animated) → today's Conversation.
 2. **Words · Spoken · Level** — three numbers → Progress.
 3. **Today's Focus** — glass card: eyebrow, "Moving an appointment", "5 min" pill, full-width **Start talking** (`.glassProminent`).
