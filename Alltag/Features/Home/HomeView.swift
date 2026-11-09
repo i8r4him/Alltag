@@ -17,8 +17,6 @@ struct HomeView: View {
     @Query private var profiles: [UserProfile]
     @Query private var memoryItems: [MemoryItem]
     @State private var events: [CalendarEvent] = []
-    /// Temporary: the star sky being compared.
-    @State private var sky = SkyChoice.claude(.dust)
 
     private var name: String { profiles.first?.name ?? "" }
     private var newReadingWords: Int { FromYourDay.newReadingWords(in: memoryItems) }
@@ -26,7 +24,6 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
-                StarSkySwitcher(choice: $sky)
                 TodayHero(words: memoryItems.count, minutesSpoken: MockProgress.report.minutesSpoken, level: level,
                           onStart: startFocus, onProgress: { appState.open(.progress) })
 
@@ -54,9 +51,7 @@ struct HomeView: View {
             ZStack {
                 RadialGradient(colors: [.accentFill.opacity(0.22), .clear],
                                center: .top, startRadius: 0, endRadius: 420)
-                SkyBackground(choice: sky)
-                    .id(sky)
-                    .transition(.opacity)
+                StarSky()
             }
             .ignoresSafeArea()
             .background(.screenBackground)
