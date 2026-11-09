@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum CodexSkyStyle: Int, CaseIterable {
-    case crescent, meteors, orbits, softFocus
+    case crescent, meteors, orbits, softFocus, nightHaze
 
     var name: String {
         switch self {
@@ -16,6 +16,7 @@ enum CodexSkyStyle: Int, CaseIterable {
         case .meteors: "Meteors"
         case .orbits: "Orbits"
         case .softFocus: "Soft focus"
+        case .nightHaze: "Night haze"
         }
     }
 }
@@ -29,12 +30,15 @@ struct CodexStarSky: View {
             guard size.width > 0, size.height > 0 else { return }
             var sky = Drawing(context: context, size: size, colour: colour,
                               random: SeededRandom(seed: 147 + UInt64(style.rawValue)))
-            sky.scatter()
+            if style != .nightHaze {
+                sky.scatter()
+            }
             switch style {
             case .crescent: sky.crescent()
             case .meteors: sky.meteors()
             case .orbits: sky.orbits()
             case .softFocus: sky.softFocus()
+            case .nightHaze: sky.nightHaze()
             }
         }
         .allowsHitTesting(false)
@@ -120,15 +124,33 @@ struct CodexStarSky: View {
                 let point = scatteredPoint()
                 let radius = random.next(in: 3...9)
                 let strength = random.next(in: 0.14...0.34) * fade(at: point)
-                context.fill(disc(at: point, radius: radius), with: .radialGradient(
-                    Gradient(stops: [
-                        .init(color: colour.opacity(strength), location: 0),
-                        .init(color: colour.opacity(strength * 0.6), location: 0.45),
-                        .init(color: colour.opacity(0), location: 1)
-                    ]),
-                    center: point, startRadius: 0, endRadius: radius
-                ))
+                glow(at: point, radius: radius, opacity: strength)
             }
+        }
+
+        /// A soft wash from above the screen with a few barely visible stars.
+        mutating func nightHaze() {
+            let radius = min(size.width * 0.72, size.height * 0.42)
+            glow(at: CGPoint(x: size.width * 0.48, y: -radius * 0.18), radius: radius, opacity: 0.14)
+            glow(at: CGPoint(x: size.width * 0.78, y: radius * 0.04), radius: radius * 0.55, opacity: 0.045)
+            for _ in 0..<14 {
+                let point = CGPoint(x: size.width * random.next(in: 0.05...0.95),
+                                    y: size.height * pow(random.next(in: 0...1), 1.4) * 0.29)
+                let starRadius = random.next(in: 1...2.2)
+                let strength = random.next(in: 0.06...0.17) * fade(at: point)
+                glow(at: point, radius: starRadius, opacity: strength)
+            }
+        }
+
+        private func glow(at point: CGPoint, radius: CGFloat, opacity: CGFloat) {
+            context.fill(disc(at: point, radius: radius), with: .radialGradient(
+                Gradient(stops: [
+                    .init(color: colour.opacity(opacity), location: 0),
+                    .init(color: colour.opacity(opacity * 0.6), location: 0.45),
+                    .init(color: colour.opacity(0), location: 1)
+                ]),
+                center: point, startRadius: 0, endRadius: radius
+            ))
         }
 
         private mutating func scatteredPoint() -> CGPoint {
