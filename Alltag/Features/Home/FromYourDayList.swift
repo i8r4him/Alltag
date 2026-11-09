@@ -15,6 +15,8 @@ struct FromYourDayList: View {
     let onOpen: (Route) -> Void
     let onPresent: (FullScreenRoute) -> Void
 
+    @State private var briefingDesign = BriefingCardDesign.current
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionHeader(title: "From your day") {
@@ -22,7 +24,8 @@ struct FromYourDayList: View {
             }
             .padding(.horizontal, 4)
 
-            DaySpotlightList(items: items)
+            DaySpotlightList(items: items, briefingDesign: briefingDesign)
+            BriefingCardSwitcher(design: $briefingDesign)
         }
     }
 
@@ -62,10 +65,13 @@ private struct DayItem: Identifiable {
 /// A featured first action with a compact list for the remaining actions.
 private struct DaySpotlightList: View {
     let items: [DayItem]
+    let briefingDesign: BriefingCardDesign
 
     var body: some View {
         VStack(spacing: Spacing.grid) {
-            if let first = items.first {
+            if briefingDesign != .current, let first = items.first {
+                BriefingCard(design: briefingDesign, words: MockBriefing.briefing.words, action: first.action)
+            } else if let first = items.first {
                 Button(action: first.action) {
                     HStack(alignment: .bottom, spacing: Spacing.card) {
                         label(first, title: .title2.weight(.semibold))
