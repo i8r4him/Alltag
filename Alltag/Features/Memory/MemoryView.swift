@@ -53,10 +53,9 @@ struct MemoryView: View {
             .animation(.easeOut(duration: 0.25), value: expandedID)
         }
         .readableContentMargins()
-        .background(.screenBackground)
+        .skyBackground()
         .navigationTitle("Memory")
-        .navigationBarTitleDisplayMode(.large)
-        .navigationSubtitle(subtitle)
+        .toolbarTitleDisplayMode(.inlineLarge)
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Search your memory"))
         // NEW badges clear once the learner has seen them.
         .onChange(of: tab) { old, _ in

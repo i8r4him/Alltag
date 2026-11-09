@@ -51,7 +51,7 @@ struct LearnView: View {
             .padding(.bottom, 24)
         }
         .readableContentMargins()
-        .background(.screenBackground)
+        .skyBackground()
         .navigationTitle("Learn")
         .toolbarTitleDisplayMode(.inlineLarge)
         .scrollEdgeEffectStyle(.soft, for: .all)

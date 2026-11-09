@@ -46,16 +46,7 @@ struct HomeView: View {
         .scrollIndicators(.hidden)
         .scrollEdgeEffectStyle(.soft, for: .all)
         .readableContentMargins()
-        .background {
-            // A warm glow behind the orb, fading into the screen.
-            ZStack {
-                RadialGradient(colors: [.accentFill.opacity(0.22), .clear],
-                               center: .top, startRadius: 0, endRadius: 420)
-                StarSky()
-            }
-            .ignoresSafeArea()
-            .background(.screenBackground)
-        }
+        .skyBackground()
         .navigationTitle("Alltag")
         .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
