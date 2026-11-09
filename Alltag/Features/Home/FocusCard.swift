@@ -48,22 +48,25 @@ struct FocusCard: View {
 
 /// A small square illustration of a scenario: a soft wash in the theme colour
 /// with a large symbol, fading out at the bottom like a photo.
-private struct ScenarioArtwork: View {
+struct ScenarioArtwork: View {
     let systemImage: String
+    var symbolSize: CGFloat = 52
+    var cornerRadius: CGFloat = 18
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color.accentFill.opacity(0.85), Color.accentFill.opacity(0.25)],
+            // Two colours from the theme: its bright accent into its deep tone.
+            LinearGradient(colors: [Color.accentFill.opacity(0.95), AppTheme.shared.palette.deep.opacity(0.8)],
                            startPoint: .topTrailing, endPoint: .bottomLeading)
             RadialGradient(colors: [.white.opacity(0.35), .clear],
                            center: UnitPoint(x: 0.25, y: 0.2), startRadius: 0, endRadius: 60)
             Image(systemName: systemImage)
-                .font(.system(size: 52, weight: .light))
+                .font(.system(size: symbolSize, weight: .light))
                 .foregroundStyle(.white.opacity(0.85))
                 .rotationEffect(.degrees(-12))
                 .offset(x: 8, y: 6)
         }
-        .clipShape(.rect(cornerRadius: 18, style: .continuous))
+        .clipShape(.rect(cornerRadius: cornerRadius, style: .continuous))
         // Fades out at the bottom, into the card.
         .mask {
             LinearGradient(stops: [.init(color: .black, location: 0.55), .init(color: .clear, location: 1)],

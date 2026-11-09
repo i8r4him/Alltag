@@ -15,34 +15,16 @@ struct ComingUpTests {
     /// Saturday 7 Nov 2026, 19:00.
     let now = Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 7, hour: 19)) ?? .now
 
-    @Test("Tomorrow's event is marked and shows its time and rehearsal length")
-    func tomorrow() async throws {
+    @Test("Tomorrow's event says Tomorrow; later ones their weekday")
+    func day() async throws {
         let events = try await MockCalendarService(now: { now }).upcomingEvents()
         let dentist = try #require(events.first)
-
-        #expect(ComingUp.isTomorrow(dentist, now: now))
-        let detail = String(localized: ComingUp.detail(for: dentist, now: now))
-        #expect(detail.hasSuffix("· 5 min"))
-        #expect(detail.hasPrefix(dentist.start.formatted(.dateTime.hour().minute())))
-    }
-
-    @Test("Later events show weekday, time and length, and aren't marked tomorrow")
-    func later() async throws {
-        let events = try await MockCalendarService(now: { now }).upcomingEvents()
         let train = try #require(events.first { $0.id == "train" })
 
+        #expect(ComingUp.isTomorrow(dentist, now: now))
+        #expect(ComingUp.day(of: dentist, now: now) == "Tomorrow")
         #expect(!ComingUp.isTomorrow(train, now: now))
-        let detail = String(localized: ComingUp.detail(for: train, now: now))
-        #expect(detail == "\(train.start.formatted(.dateTime.weekday(.abbreviated).hour().minute())) · 4 min")
-    }
-
-    @Test("Tiles say when the event starts, in hours within a day, otherwise in days",
-          arguments: [(0.5, "Starts soon"), (14.5, "Starts in 14h"), (23.9, "Starts in 23h"), (24.0, "Starts in 1d"),
-                      (150.0, "Starts in 6d")])
-    func startsIn(hours: Double, expected: String) {
-        let event = CalendarEvent(id: "e", title: "Dentist", start: now.addingTimeInterval(hours * 3_600),
-                                  systemImage: "cross.case", scenario: .dentist)
-        #expect(String(localized: ComingUp.startsIn(event, now: now)) == expected)
+        #expect(ComingUp.day(of: train, now: now) == train.start.formatted(.dateTime.weekday(.wide)))
     }
 
     @Test("The list groups events by day, earliest first")

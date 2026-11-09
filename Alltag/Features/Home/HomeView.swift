@@ -57,6 +57,21 @@ struct HomeView: View {
         .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                } label: {
+                    // Not a Label: toolbars show labels as icons only.
+                    HStack(spacing: 4) {
+                        Image(systemName: "flame.fill")
+                        Text(streak, format: .number)
+                            .fontWeight(.semibold)
+                            .monospacedDigit()
+                    }
+                    .foregroundStyle(.accent)
+                }
+                .accessibilityLabel(Text("^[\(streak) day](inflect: true) in a row"))
+            }
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button { appState.open(.profile) } label: {
                         Label {
@@ -81,6 +96,9 @@ struct HomeView: View {
     }
 
     private var level: Level { profiles.first?.level ?? .a1 }
+
+    /// Days in a row with words saved or picked up.
+    private var streak: Int { Streak.days(activity: memoryItems.map(\.createdAt)) }
 
     private func startFocus() {
         appState.present(.conversation(MockScenarios.todaysFocus))

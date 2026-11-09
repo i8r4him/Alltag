@@ -53,11 +53,13 @@ struct ComingUpCard: View {
             // Not the screen's readable-width margins (they are inherited).
             .contentMargins(.horizontal, 0, for: .scrollContent)
         }
+        .fontDesign(.rounded)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
-/// Calendar → the place, when it starts, the event and the rehearsal.
+/// One upcoming event: the day and a big time, the scenario's artwork in the
+/// corner, then the event and how long rehearsing takes.
 private struct ComingUpTile: View {
     let event: CalendarEvent
     let now: Date
@@ -66,38 +68,53 @@ private struct ComingUpTile: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Image(systemName: event.systemImage)
-                .font(.system(size: 30))
-                .foregroundStyle(.primary)
-                .accessibilityHidden(true)
-
-            Spacer(minLength: 16)
-
-            Text(ComingUp.startsIn(event, now: now))
-                .textRole(.meta)
-                .fontWeight(.semibold)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .overlay(Capsule().strokeBorder(.white.opacity(0.18), lineWidth: 1))
-                .padding(.bottom, 10)
-
-            Text(verbatim: event.title)
-                .textRole(.sectionHeader)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-            Text(ComingUp.detail(for: event, now: now))
-                .font(.body.weight(.medium))
-                .foregroundStyle(.primary.opacity(0.75))
-                .lineLimit(1)
-                .padding(.top, 4)
+            Text(verbatim: ComingUp.day(of: event, now: now))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.accent)
+            Text(event.start, format: .dateTime.hour().minute())
+                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .monospacedDigit()
+            Spacer(minLength: 8)
+            HStack(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: event.title)
+                        .font(.title3.weight(.semibold))
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
+                    Text("Rehearse \(event.rehearsalMinutes) min")
+                        .font(.default)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 4)
+            }
         }
+        .padding(18)
+        .overlay(alignment: .topTrailing) {
+            ScenarioArtwork(systemImage: event.systemImage, symbolSize: 26, cornerRadius: 12)
+                .frame(width: 46, height: 46)
+                .padding(16)
+        }
+        .focusSurface(side: side)
         .multilineTextAlignment(.leading)
-        .padding(20)
-        .frame(width: side, height: side, alignment: .topLeading)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-        // .litCard(cornerRadius: Radius.card)
+        .fontDesign(.rounded)
         .accessibilityElement(children: .combine)
         .accessibilityHint("Rehearse this conversation.")
+    }
+}
+
+private extension View {
+    /// The Focus card's surface: dark, with a thin light edge.
+    func focusSurface(side: CGFloat) -> some View {
+        frame(width: side, height: side, alignment: .topLeading)
+            .background {
+                RoundedRectangle(cornerRadius: Radius.hero, style: .continuous)
+                    .fill(.surface)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: Radius.hero, style: .continuous)
+                            .strokeBorder(.white.opacity(0.06), lineWidth: 1)
+                    }
+            }
+            .clipShape(.rect(cornerRadius: Radius.hero, style: .continuous))
     }
 }
 
@@ -115,20 +132,11 @@ enum ComingUp {
             .sorted { $0.day < $1.day }
     }
 
-    /// "Starts in 14h", "Starts in 3d", or "Starts soon" within the hour.
-    static func startsIn(_ event: CalendarEvent, now: Date) -> LocalizedStringResource {
-        let hours = Int(event.start.timeIntervalSince(now) / 3_600)
-        if hours < 1 { return "Starts soon" }
-        if hours < 24 { return "Starts in \(hours)h" }
-        return "Starts in \(hours / 24)d"
-    }
-
-    /// Tomorrow: "10:00 · 5 min". Later: "Fri 09:12 · 4 min".
-    static func detail(for event: CalendarEvent, now: Date, calendar: Calendar = .current) -> LocalizedStringResource {
-        let time = isTomorrow(event, now: now, calendar: calendar)
-            ? event.start.formatted(.dateTime.hour().minute())
-            : event.start.formatted(.dateTime.weekday(.abbreviated).hour().minute())
-        return "\(time) · \(event.rehearsalMinutes) min"
+    /// "Tomorrow", or the weekday: "Friday".
+    static func day(of event: CalendarEvent, now: Date, calendar: Calendar = .current) -> String {
+        isTomorrow(event, now: now, calendar: calendar)
+            ? String(localized: "Tomorrow")
+            : event.start.formatted(.dateTime.weekday(.wide))
     }
 }
 
