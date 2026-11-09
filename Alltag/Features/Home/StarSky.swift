@@ -204,28 +204,59 @@ struct SeededRandom {
     }
 }
 
-/// Temporary: ‹ 2 / 4 · Constellations › to step through the skies.
-struct StarSkySwitcher: View {
-    @Binding var style: StarSkyStyle
+/// Temporary: all eight skies, four by Claude and four by Codex, in one list.
+enum SkyChoice: Hashable, CaseIterable {
+    case claude(StarSkyStyle)
+    case codex(CodexSkyStyle)
+
+    static let allCases: [SkyChoice] = StarSkyStyle.allCases.map(SkyChoice.claude)
+        + CodexSkyStyle.allCases.map(SkyChoice.codex)
+
+    var name: String {
+        switch self {
+        case .claude(let style): "\(style.name) · Claude"
+        case .codex(let style): "\(style.name) · Codex"
+        }
+    }
+}
+
+/// The chosen sky.
+struct SkyBackground: View {
+    let choice: SkyChoice
 
     var body: some View {
-        let all = StarSkyStyle.allCases
-        HStack(spacing: 14) {
+        switch choice {
+        case .claude(let style): StarSky(style: style)
+        case .codex(let style): CodexStarSky(style: style)
+        }
+    }
+}
+
+/// Temporary: ‹ Sky 3 / 8 · Milky Way · Claude › to step through the skies.
+struct StarSkySwitcher: View {
+    @Binding var choice: SkyChoice
+
+    var body: some View {
+        let all = SkyChoice.allCases
+        let index = all.firstIndex(of: choice) ?? 0
+        HStack(spacing: 12) {
             Button { step(-1) } label: { Image(systemName: "chevron.left") }
-            Text(verbatim: "Sky \(style.rawValue + 1) / \(all.count) · \(style.name)")
+            Text(verbatim: "Sky \(index + 1) / \(all.count) · \(choice.name)")
                 .foregroundStyle(.secondary)
-                .frame(minWidth: 170)
+                .lineLimit(1)
+                .frame(minWidth: 210)
             Button { step(1) } label: { Image(systemName: "chevron.right") }
         }
         .font(.footnote.weight(.semibold))
         .buttonStyle(.glass)
         .frame(maxWidth: .infinity)
-        .sensoryFeedback(.selection, trigger: style)
+        .sensoryFeedback(.selection, trigger: choice)
     }
 
     private func step(_ offset: Int) {
-        let all = StarSkyStyle.allCases
-        withAnimation(.easeInOut(duration: 0.3)) { style = all[(style.rawValue + offset + all.count) % all.count] }
+        let all = SkyChoice.allCases
+        let index = all.firstIndex(of: choice) ?? 0
+        withAnimation(.easeInOut(duration: 0.3)) { choice = all[(index + offset + all.count) % all.count] }
     }
 }
 
