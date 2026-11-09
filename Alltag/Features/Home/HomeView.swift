@@ -17,6 +17,8 @@ struct HomeView: View {
     @Query private var profiles: [UserProfile]
     @Query private var memoryItems: [MemoryItem]
     @State private var events: [CalendarEvent] = []
+    /// Temporary: the star sky being compared.
+    @State private var sky = StarSkyStyle.dust
 
     private var name: String { profiles.first?.name ?? "" }
     private var newReadingWords: Int { FromYourDay.newReadingWords(in: memoryItems) }
@@ -24,6 +26,7 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
+                StarSkySwitcher(style: $sky)
                 TodayHero(words: memoryItems.count, minutesSpoken: MockProgress.report.minutesSpoken, level: level,
                           onStart: startFocus, onProgress: { appState.open(.progress) })
 
@@ -48,10 +51,15 @@ struct HomeView: View {
         .readableContentMargins()
         .background {
             // A warm glow behind the orb, fading into the screen.
-            RadialGradient(colors: [.accentFill.opacity(0.22), .clear],
-                           center: .top, startRadius: 0, endRadius: 420)
-                .ignoresSafeArea()
-                .background(.screenBackground)
+            ZStack {
+                RadialGradient(colors: [.accentFill.opacity(0.22), .clear],
+                               center: .top, startRadius: 0, endRadius: 420)
+                StarSky(style: sky)
+                    .id(sky)
+                    .transition(.opacity)
+            }
+            .ignoresSafeArea()
+            .background(.screenBackground)
         }
         .navigationTitle("Alltag")
         .toolbarTitleDisplayMode(.inlineLarge)
@@ -62,11 +70,12 @@ struct HomeView: View {
                     // Not a Label: toolbars show labels as icons only.
                     HStack(spacing: 4) {
                         Image(systemName: "flame.fill")
+                            .foregroundStyle(
+                                .linearGradient(colors: [.yellow, .orange], startPoint: .top, endPoint: .bottom)
+                            )
                         Text(streak, format: .number)
-                            .fontWeight(.semibold)
                             .monospacedDigit()
                     }
-                    .foregroundStyle(.accent)
                 }
                 .accessibilityLabel(Text("^[\(streak) day](inflect: true) in a row"))
             }
