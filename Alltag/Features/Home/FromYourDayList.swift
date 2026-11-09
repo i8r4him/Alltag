@@ -22,127 +22,139 @@ struct FromYourDayList: View {
             }
             .padding(.horizontal, 4)
 
-            VStack(spacing: 0) {
-                DayRow(title: "Your 60-second briefing",
-                       subtitle: "Built from \(briefingWords) words you are learning",
-                       systemImage: "headphones", tint: .accent) {
-                    onOpen(.briefing)
-                }
-                Divider().padding(.leading, 68)
-                DayRow(title: "How did the bakery go?",
-                       subtitle: "Debrief: find what you couldn't say",
-                       systemImage: "person.wave.2") {
-                    onOpen(.debrief)
-                }
-                if newReadingWords > 0 {
-                    Divider().padding(.leading, 68)
-                    DayRow(title: "^[\(newReadingWords) new word](inflect: true) from Safari",
-                           subtitle: "Spiegel · Mietpreise in Berlin",
-                           systemImage: "safari") {
-                        onOpen(.memory(kind: .fromYourDay))
-                    }
-                }
-                if writingMistakes > 0 {
-                    Divider().padding(.leading, 68)
-                    DayRow(title: "^[\(writingMistakes) writing mistake](inflect: true) to review",
-                           subtitle: "Messages · „seit“ or „für“?",
-                           systemImage: "square.and.pencil", tint: .mistake) {
-                        onPresent(.activity(.mistakes))
-                    }
-                }
-            }
-            .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
-            .clipShape(.rect(cornerRadius: Radius.card, style: .continuous))
+            DaySpotlightList(items: items, briefingWords: briefingWords)
         }
+    }
+
+    /// The things to do today, in order.
+    private var items: [DayItem] {
+        var items = [
+            DayItem(title: "Your 60-second briefing",
+                    subtitle: "Built from \(briefingWords) words you are learning",
+                    systemImage: "headphones") { onOpen(.briefing) },
+            DayItem(title: "How did the bakery go?",
+                    subtitle: "Debrief: find what you couldn't say",
+                    systemImage: "person.wave.2") { onOpen(.debrief) }
+        ]
+        if newReadingWords > 0 {
+            items.append(DayItem(title: "^[\(newReadingWords) new word](inflect: true) from Safari",
+                                 subtitle: "Spiegel · Mietpreise in Berlin",
+                                 systemImage: "safari") { onOpen(.memory(kind: .fromYourDay)) })
+        }
+        if writingMistakes > 0 {
+            items.append(DayItem(title: "^[\(writingMistakes) writing mistake](inflect: true) to review",
+                                 subtitle: "Messages · „seit“ or „für“?",
+                                 systemImage: "square.and.pencil") { onPresent(.activity(.mistakes)) })
+        }
+        return items
     }
 }
 
-/// A row in "From your day": coloured symbol, title, subtitle, chevron.
-private struct DayRow: View {
+/// One thing to do in "From your day".
+private struct DayItem: Identifiable {
+    let id = UUID()
     let title: LocalizedStringResource
     let subtitle: LocalizedStringResource
     let systemImage: String
-    var tint: Color = .primary
     let action: () -> Void
+}
+
+/// The briefing card first, then a compact list for the remaining actions.
+private struct DaySpotlightList: View {
+    let items: [DayItem]
+    let briefingWords: Int
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 19))
-                    .foregroundStyle(tint)
-                    .frame(width: 40, height: 40)
-                    .background(.surfaceSecondary, in: .rect(cornerRadius: 12, style: .continuous))
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .textRole(.bodySmall)
-                        .fontWeight(.medium)
-                    Text(subtitle)
-                        .textRole(.meta)
-                        .foregroundStyle(.secondary)
-                }
-                .multilineTextAlignment(.leading)
-                Spacer(minLength: 8)
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-                    .accessibilityHidden(true)
+        VStack(spacing: Spacing.grid) {
+            if let first = items.first {
+                BriefingCard(words: briefingWords, action: first.action)
             }
-            .padding(.horizontal, Spacing.card)
-            .padding(.vertical, 14)
-            .frame(minHeight: Spacing.rowMinHeight)
-            .contentShape(.rect)
+            VStack(spacing: 0) {
+                ForEach(Array(items.dropFirst().enumerated()), id: \.element.id) { index, item in
+                    if index > 0 { Divider().padding(.leading, 56) }
+                    Button(action: item.action) {
+                        HStack(spacing: Spacing.grid) {
+                            Image(systemName: item.systemImage)
+                                .font(.title3)
+                                .foregroundStyle(.accent)
+                                .frame(width: 34, height: 34)
+                                .background(.accent.opacity(AccentTint.selected),
+                                            in: .rect(cornerRadius: Radius.tile, style: .continuous))
+                                .accessibilityHidden(true)
+                            label(item)
+                            Spacer(minLength: 0)
+                        }
+                        .padding(Spacing.card)
+                        .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
         }
-        .buttonStyle(RowButtonStyle())
-        .accessibilityElement(children: .combine)
+        .fontDesign(.rounded)
+    }
+
+    private func label(_ item: DayItem, title: Font = .headline) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(item.title)
+                .font(title)
+                .foregroundStyle(.primary)
+            Text(item.subtitle)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .multilineTextAlignment(.leading)
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
-/// Highlights a list row while pressed, like a native list.
-private struct RowButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .background(configuration.isPressed ? AnyShapeStyle(.surfaceSecondary) : AnyShapeStyle(.clear))
-    }
-}
-
-/// "Learning beyond the app": an outlined row leading to the concepts.
+/// "Learning beyond the app": a ticket leading to the concepts.
 struct BeyondRow: View {
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: Spacing.card) {
                 Image(systemName: "apps.iphone")
-                    .font(.system(size: 19))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 40, height: 40)
+                    .font(.title2)
+                    .foregroundStyle(.accent)
+                    .frame(width: 58)
                     .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 2) {
+                Path { path in
+                    path.move(to: .zero)
+                    path.addLine(to: CGPoint(x: 0, y: 56))
+                }
+                .stroke(.separator, style: StrokeStyle(lineWidth: 1, dash: [3, 4]))
+                .frame(width: 1, height: 56)
+                .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 3) {
                     Text("Learning beyond the app")
-                        .textRole(.bodySmall)
-                        .fontWeight(.medium)
+                        .font(.headline)
                     Text("Keyboard, Siri & widgets · concepts")
-                        .textRole(.meta)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 .multilineTextAlignment(.leading)
-                Spacer(minLength: 8)
+                .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(.tertiary)
                     .accessibilityHidden(true)
             }
             .padding(.horizontal, Spacing.card)
-            .padding(.vertical, 12)
+            .padding(.vertical, Spacing.card)
+            .frame(maxWidth: .infinity, minHeight: 90, alignment: .leading)
             .overlay {
-                RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
-                    .strokeBorder(.separator, lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: Radius.innerCard, style: .continuous)
+                    .strokeBorder(.separator, style: StrokeStyle(lineWidth: 1, dash: [5, 5]))
             }
-            .contentShape(.rect(cornerRadius: Radius.card, style: .continuous))
+            .contentShape(.rect(cornerRadius: Radius.innerCard, style: .continuous))
         }
-        .buttonStyle(.card)
+        .fontDesign(.rounded)
+        .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
     }
 }

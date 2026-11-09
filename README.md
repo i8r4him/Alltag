@@ -153,7 +153,8 @@ Alltag/                                   ← repo root
 │  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Spoken · Level (→ Progress)
 │  │  │  ├─ FocusCard.swift               title, line and scenario artwork; Start talking (glass, lights from below)
 │  │  │  ├─ ComingUpCard.swift
-│  │  │  ├─ FromYourDayList.swift
+│  │  │  ├─ FromYourDayList.swift         briefing card, Today actions and Beyond row
+│  │  │  ├─ BriefingCard.swift            big "60 seconds", text and play button
 │  │  │  └─ BeyondRow.swift
 │  │  ├─ Conversation/
 │  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls
@@ -340,7 +341,7 @@ Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's init
 3. **Today's Focus** — glass card: eyebrow, "Moving an appointment", "5 min" pill, full-width **Start talking** (`.glassProminent`).
 4. **Coming up** — "Rehearse from your Calendar"; tiles → their Conversation scenarios.
 5. **From your day** list: 60-second briefing · Debrief bakery · 3 new words from Safari (→ Memory filtered) · 1 writing mistake (→ Activity).
-6. "Learning beyond the app" outline row → Beyond.
+6. "Learning beyond the app" ticket → Beyond.
 
 ### Conversation (full-screen)
 Header: close · title/meta (scenario) · voice/keyboard segmented glass. Goal pill below.
