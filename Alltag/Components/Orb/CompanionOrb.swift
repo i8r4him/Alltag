@@ -136,6 +136,8 @@ struct OrbDynamics: Equatable {
 /// Its look comes from `CompanionLook` (Settings › Developer).
 struct CompanionOrb: View {
     var dynamics = OrbDynamics(state: .idle)
+    /// Always drifts (in a conversation), even when the Look setting keeps it still.
+    var isLive = false
 
     @AppStorage(CompanionLook.Key.rim) private var rim = 1.0
     @AppStorage(CompanionLook.Key.silk) private var silk = 1.0
@@ -154,7 +156,7 @@ struct CompanionOrb: View {
     @State private var clock = OrbClock()
 
     var body: some View {
-        let animates = drifts && !reduceMotion && isVisible
+        let animates = (drifts || isLive) && !reduceMotion && isVisible
         TimelineView(.animation(paused: !animates)) { context in
             let time = animates ? clock.advance(to: context.date, speed: dynamics.speed) : Self.stillTime
             GeometryReader { proxy in

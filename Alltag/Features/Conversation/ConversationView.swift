@@ -55,9 +55,9 @@ private struct ConversationContent: View {
                 Text(verbatim: model.scenario.goal)
                     .textRole(.meta)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(.surface, in: .capsule)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+                    .glassEffect(.regular, in: .capsule)
                     .padding(.top, 8)
 
                 TranscriptView(messages: model.messages, heardText: model.heardText)
@@ -75,7 +75,8 @@ private struct ConversationContent: View {
                 }
             }
             .readableWidth(Spacing.focusedWidth)
-            .background(.screenBackground)
+            .fontDesign(.rounded)
+            .skyBackground()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbar }
             .animation(.easeOut(duration: 0.25), value: model.showsHint)
@@ -153,7 +154,10 @@ private struct ConversationContent: View {
                 CircleGlassButton(title: "Type instead", systemImage: "keyboard", size: 48) { model.mode = .text }
                 Spacer()
                 Button { model.orbTapped() } label: {
-                    VoiceOrb(state: model.phase, isFinished: model.isFinished)
+                    CompanionOrb(dynamics: OrbDynamics(state: model.phase), isLive: !model.isFinished)
+                        .frame(width: 150, height: 150)
+                        .scaleEffect(model.phase == .listening ? 1.06 : 1)
+                        .animation(.spring(duration: 0.5), value: model.phase)
                 }
                 .buttonStyle(.plain)
                 // Not `.disabled`: that would dim the orb while thinking and speaking.
@@ -248,9 +252,15 @@ private struct HintCard: View {
                 .textRole(.body)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(.surface, in: .rect(cornerRadius: Radius.tile, style: .continuous))
+        .padding(Spacing.card)
+        .background {
+            RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
+                .fill(.surface)
+                .overlay {
+                    RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
+                        .strokeBorder(.white.opacity(0.06), lineWidth: 1)
+                }
+        }
         .accessibilityElement(children: .combine)
     }
 }
