@@ -7,31 +7,57 @@
 
 import SwiftUI
 
-/// A soft wash from above the screen with a few faint, stationary stars.
+/// A soft wash from above the screen with a few faint stars that twinkle and
+/// drift a little. Still with Reduce Motion, paused when off screen.
 struct StarSky: View {
+    @Environment(\.reducesMotion) private var reduceMotion
+    @State private var isVisible = true
+
     var body: some View {
         let colour = Color.accentFill
-        Canvas { context, size in
-            guard size.width > 0, size.height > 0 else { return }
-            let radius = min(size.width * 0.72, size.height * 0.42)
-            let centre = CGPoint(x: size.width * 0.48, y: -radius * 0.18)
-            let edge = CGPoint(x: size.width * 0.78, y: radius * 0.04)
-            Self.glow(in: context, at: centre, radius: radius, colour: colour.opacity(0.14))
-            Self.glow(in: context, at: edge, radius: radius * 0.55, colour: colour.opacity(0.045))
-
-            // Keep the same star positions as the selected Night haze design.
-            var random = SeededRandom(seed: 151)
-            for _ in 0..<14 {
-                let point = CGPoint(x: size.width * random.next(in: 0.05...0.95),
-                                    y: size.height * pow(random.next(in: 0...1), 1.4) * 0.29)
-                let starRadius = random.next(in: 1...2.2)
-                let remaining = max(0, 1 - point.y / (size.height * 0.66))
-                let strength = random.next(in: 0.06...0.17) * (remaining * remaining)
-                Self.glow(in: context, at: point, radius: starRadius, colour: colour.opacity(strength))
+        // Slow motion only needs 30 frames a second.
+        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion || !isVisible)) { timeline in
+            let time = reduceMotion ? 0 : timeline.date.timeIntervalSinceReferenceDate
+            Canvas { context, size in
+                guard size.width > 0, size.height > 0 else { return }
+                Self.draw(in: context, size: size, time: time, colour: colour)
             }
         }
+        .onAppear { isVisible = true }
+        .onDisappear { isVisible = false }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+
+    private static func draw(in context: GraphicsContext, size: CGSize, time: TimeInterval, colour: Color) {
+        let radius = min(size.width * 0.72, size.height * 0.42)
+        let centre = CGPoint(x: size.width * 0.48, y: -radius * 0.18)
+        let edge = CGPoint(x: size.width * 0.78, y: radius * 0.04)
+        // The haze breathes very slightly (±4% over ~16 s).
+        let breath = 1 + 0.04 * sin(time * 0.4)
+        glow(in: context, at: centre, radius: radius * breath, colour: colour.opacity(0.14))
+        glow(in: context, at: edge, radius: radius * 0.55, colour: colour.opacity(0.045 * breath))
+
+        // Keep the same star positions as the selected Night haze design;
+        // their motion comes from a second, separate sequence.
+        var random = SeededRandom(seed: 151)
+        var motion = SeededRandom(seed: 907)
+        for _ in 0..<14 {
+            let base = CGPoint(x: size.width * random.next(in: 0.05...0.95),
+                               y: size.height * pow(random.next(in: 0...1), 1.4) * 0.29)
+            let starRadius = random.next(in: 1...2.2)
+            let remaining = max(0, 1 - base.y / (size.height * 0.66))
+            let strength = random.next(in: 0.06...0.17) * (remaining * remaining)
+
+            // Each star twinkles at its own pace and sways by a point or two.
+            let pace = motion.next(in: 0.5...1.1)
+            let phase = motion.next(in: 0...(2 * .pi))
+            let sway = motion.next(in: 1.5...3)
+            let twinkle = 0.55 + 0.45 * sin(time * pace + phase)
+            let point = CGPoint(x: base.x + sway * sin(time * 0.31 + phase),
+                                y: base.y + sway * 0.6 * cos(time * 0.27 + phase))
+            glow(in: context, at: point, radius: starRadius, colour: colour.opacity(strength * twinkle))
+        }
     }
 
     private static func glow(in context: GraphicsContext, at point: CGPoint, radius: CGFloat, colour: Color) {
