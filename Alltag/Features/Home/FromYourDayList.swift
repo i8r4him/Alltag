@@ -15,6 +15,9 @@ struct FromYourDayList: View {
     let onOpen: (Route) -> Void
     let onPresent: (FullScreenRoute) -> Void
 
+    /// Temporary: the design being compared.
+    @State private var design = DayListDesign.original
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionHeader(title: "From your day") {
@@ -22,38 +25,300 @@ struct FromYourDayList: View {
             }
             .padding(.horizontal, 4)
 
-            VStack(spacing: 0) {
-                DayRow(title: "Your 60-second briefing",
-                       subtitle: "Built from \(briefingWords) words you are learning",
-                       systemImage: "headphones", tint: .accent) {
-                    onOpen(.briefing)
-                }
+            switch design {
+            case .original: original
+            default: DayListVariant(design: design, items: items)
+            }
+
+            DayListSwitcher(design: $design)
+                .padding(.top, 4)
+        }
+    }
+
+    /// The things to do today, in order.
+    private var items: [DayItem] {
+        var items = [
+            DayItem(title: "Your 60-second briefing",
+                    subtitle: "Built from \(briefingWords) words you are learning",
+                    systemImage: "headphones") { onOpen(.briefing) },
+            DayItem(title: "How did the bakery go?",
+                    subtitle: "Debrief: find what you couldn't say",
+                    systemImage: "person.wave.2") { onOpen(.debrief) }
+        ]
+        if newReadingWords > 0 {
+            items.append(DayItem(title: "^[\(newReadingWords) new word](inflect: true) from Safari",
+                                 subtitle: "Spiegel · Mietpreise in Berlin",
+                                 systemImage: "safari") { onOpen(.memory(kind: .fromYourDay)) })
+        }
+        if writingMistakes > 0 {
+            items.append(DayItem(title: "^[\(writingMistakes) writing mistake](inflect: true) to review",
+                                 subtitle: "Messages · „seit“ or „für“?",
+                                 systemImage: "square.and.pencil") { onPresent(.activity(.mistakes)) })
+        }
+        return items
+    }
+
+    private var original: some View {
+        VStack(spacing: 0) {
+            DayRow(title: "Your 60-second briefing",
+                   subtitle: "Built from \(briefingWords) words you are learning",
+                   systemImage: "headphones", tint: .accent) {
+                onOpen(.briefing)
+            }
+            Divider().padding(.leading, 68)
+            DayRow(title: "How did the bakery go?",
+                   subtitle: "Debrief: find what you couldn't say",
+                   systemImage: "person.wave.2") {
+                onOpen(.debrief)
+            }
+            if newReadingWords > 0 {
                 Divider().padding(.leading, 68)
-                DayRow(title: "How did the bakery go?",
-                       subtitle: "Debrief: find what you couldn't say",
-                       systemImage: "person.wave.2") {
-                    onOpen(.debrief)
-                }
-                if newReadingWords > 0 {
-                    Divider().padding(.leading, 68)
-                    DayRow(title: "^[\(newReadingWords) new word](inflect: true) from Safari",
-                           subtitle: "Spiegel · Mietpreise in Berlin",
-                           systemImage: "safari") {
-                        onOpen(.memory(kind: .fromYourDay))
-                    }
-                }
-                if writingMistakes > 0 {
-                    Divider().padding(.leading, 68)
-                    DayRow(title: "^[\(writingMistakes) writing mistake](inflect: true) to review",
-                           subtitle: "Messages · „seit“ or „für“?",
-                           systemImage: "square.and.pencil", tint: .mistake) {
-                        onPresent(.activity(.mistakes))
-                    }
+                DayRow(title: "^[\(newReadingWords) new word](inflect: true) from Safari",
+                       subtitle: "Spiegel · Mietpreise in Berlin",
+                       systemImage: "safari") {
+                    onOpen(.memory(kind: .fromYourDay))
                 }
             }
-            .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
-            .clipShape(.rect(cornerRadius: Radius.card, style: .continuous))
+            if writingMistakes > 0 {
+                Divider().padding(.leading, 68)
+                DayRow(title: "^[\(writingMistakes) writing mistake](inflect: true) to review",
+                       subtitle: "Messages · „seit“ or „für“?",
+                       systemImage: "square.and.pencil", tint: .mistake) {
+                    onPresent(.activity(.mistakes))
+                }
+            }
         }
+        .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+        .clipShape(.rect(cornerRadius: Radius.card, style: .continuous))
+    }
+}
+
+/// One thing to do in "From your day".
+struct DayItem: Identifiable {
+    let id = UUID()
+    let title: LocalizedStringResource
+    let subtitle: LocalizedStringResource
+    let systemImage: String
+    let action: () -> Void
+}
+
+/// Temporary: designs for "From your day", to compare.
+enum DayListDesign: Int, CaseIterable {
+    case original, artworkList, cards, grid, carousel, minimal
+
+    var name: String {
+        switch self {
+        case .original: "Original"
+        case .artworkList: "Artwork list"
+        case .cards: "Cards"
+        case .grid: "Grid"
+        case .carousel: "Carousel"
+        case .minimal: "Minimal"
+        }
+    }
+}
+
+/// Temporary: ‹ 2 / 6 · Artwork list ›.
+private struct DayListSwitcher: View {
+    @Binding var design: DayListDesign
+
+    var body: some View {
+        let all = DayListDesign.allCases
+        HStack(spacing: 14) {
+            Button { step(-1) } label: { Image(systemName: "chevron.left") }
+            Text(verbatim: "\(design.rawValue + 1) / \(all.count) · \(design.name)")
+                .foregroundStyle(.secondary)
+                .frame(minWidth: 150)
+            Button { step(1) } label: { Image(systemName: "chevron.right") }
+        }
+        .font(.footnote.weight(.semibold))
+        .buttonStyle(.glass)
+        .frame(maxWidth: .infinity)
+        .sensoryFeedback(.selection, trigger: design)
+    }
+
+    private func step(_ offset: Int) {
+        let all = DayListDesign.allCases
+        withAnimation(.snappy) { design = all[(design.rawValue + offset + all.count) % all.count] }
+    }
+}
+
+/// The five new designs, in the Focus card's language.
+private struct DayListVariant: View {
+    let design: DayListDesign
+    let items: [DayItem]
+
+    var body: some View {
+        Group {
+            switch design {
+            case .artworkList: artworkList
+            case .cards: cards
+            case .grid: grid
+            case .carousel: carousel
+            default: minimal
+            }
+        }
+        .fontDesign(.rounded)
+    }
+
+    // MARK: Artwork list
+
+    private var artworkList: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                if index > 0 { Divider().padding(.leading, 76) }
+                Button(action: item.action) {
+                    HStack(spacing: 14) {
+                        ScenarioArtwork(systemImage: item.systemImage, symbolSize: 22, cornerRadius: 12)
+                            .frame(width: 46, height: 46)
+                        texts(item, title: .headline, subtitle: .subheadline)
+                        Spacer(minLength: 8)
+                        chevron
+                    }
+                    .padding(.horizontal, Spacing.card)
+                    .padding(.vertical, 12)
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .surfaceCard(radius: Radius.hero)
+    }
+
+    // MARK: Cards
+
+    private var cards: some View {
+        VStack(spacing: 10) {
+            ForEach(items) { item in
+                Button(action: item.action) {
+                    HStack(spacing: 14) {
+                        texts(item, title: .title3.weight(.semibold), subtitle: .body)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        ScenarioArtwork(systemImage: item.systemImage, symbolSize: 28, cornerRadius: 14)
+                            .frame(width: 58, height: 58)
+                    }
+                    .padding(Spacing.card)
+                    .surfaceCard(radius: Radius.card)
+                }
+                .buttonStyle(.card)
+            }
+        }
+    }
+
+    // MARK: Grid
+
+    private var grid: some View {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+            ForEach(items) { item in
+                Button(action: item.action) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ScenarioArtwork(systemImage: item.systemImage, symbolSize: 22, cornerRadius: 12)
+                            .frame(width: 44, height: 44)
+                        Spacer(minLength: 12)
+                        texts(item, title: .headline, subtitle: .footnote)
+                    }
+                    .padding(14)
+                    .frame(maxWidth: .infinity, minHeight: 150, alignment: .topLeading)
+                    .surfaceCard(radius: Radius.card)
+                }
+                .buttonStyle(.card)
+            }
+        }
+    }
+
+    // MARK: Carousel
+
+    private var carousel: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: Spacing.grid) {
+                ForEach(items) { item in
+                    Button(action: item.action) {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Spacer(minLength: 0)
+                            texts(item, title: .title3.weight(.semibold), subtitle: .subheadline)
+                        }
+                        .padding(18)
+                        .frame(width: 196, height: 196, alignment: .topLeading)
+                        .overlay(alignment: .topTrailing) {
+                            ScenarioArtwork(systemImage: item.systemImage, symbolSize: 26, cornerRadius: 12)
+                                .frame(width: 46, height: 46)
+                                .padding(16)
+                        }
+                        .surfaceCard(radius: Radius.hero)
+                    }
+                    .buttonStyle(.card)
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .scrollTargetBehavior(.viewAligned)
+        .scrollIndicators(.hidden)
+        .scrollClipDisabled()
+        .contentMargins(.horizontal, 0, for: .scrollContent)
+    }
+
+    // MARK: Minimal
+
+    private var minimal: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                if index > 0 { Divider().padding(.leading, 52) }
+                Button(action: item.action) {
+                    HStack(spacing: 14) {
+                        Image(systemName: item.systemImage)
+                            .font(.title3)
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.accent)
+                            .frame(width: 38)
+                            .accessibilityHidden(true)
+                        texts(item, title: .headline, subtitle: .subheadline)
+                        Spacer(minLength: 8)
+                        chevron
+                    }
+                    .padding(.vertical, 14)
+                    .padding(.horizontal, 4)
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    // MARK: Parts
+
+    private func texts(_ item: DayItem, title: Font, subtitle: Font) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(item.title)
+                .font(title)
+                .foregroundStyle(.primary)
+            Text(item.subtitle)
+                .font(subtitle)
+                .foregroundStyle(.secondary)
+        }
+        .multilineTextAlignment(.leading)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var chevron: some View {
+        Image(systemName: "chevron.right")
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.tertiary)
+            .accessibilityHidden(true)
+    }
+}
+
+private extension View {
+    /// The Focus card's surface: dark, with a thin light edge.
+    func surfaceCard(radius: CGFloat) -> some View {
+        background {
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .fill(.surface)
+                .overlay {
+                    RoundedRectangle(cornerRadius: radius, style: .continuous)
+                        .strokeBorder(.white.opacity(0.06), lineWidth: 1)
+                }
+        }
+        .clipShape(.rect(cornerRadius: radius, style: .continuous))
     }
 }
 
