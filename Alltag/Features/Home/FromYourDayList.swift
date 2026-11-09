@@ -126,42 +126,51 @@ private struct DaySpotlightList: View {
     }
 }
 
-/// "Learning beyond the app": an outlined row leading to the concepts.
+/// "Learning beyond the app": a ticket leading to the concepts.
 struct BeyondRow: View {
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: Spacing.card) {
                 Image(systemName: "apps.iphone")
-                    .font(.system(size: 19))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 40, height: 40)
+                    .font(.title2)
+                    .foregroundStyle(.accent)
+                    .frame(width: 58)
                     .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 2) {
+                Path { path in
+                    path.move(to: .zero)
+                    path.addLine(to: CGPoint(x: 0, y: 56))
+                }
+                .stroke(.separator, style: StrokeStyle(lineWidth: 1, dash: [3, 4]))
+                .frame(width: 1, height: 56)
+                .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 3) {
                     Text("Learning beyond the app")
-                        .textRole(.bodySmall)
-                        .fontWeight(.medium)
+                        .font(.headline)
                     Text("Keyboard, Siri & widgets · concepts")
-                        .textRole(.meta)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 .multilineTextAlignment(.leading)
-                Spacer(minLength: 8)
+                .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(.tertiary)
                     .accessibilityHidden(true)
             }
             .padding(.horizontal, Spacing.card)
-            .padding(.vertical, 12)
+            .padding(.vertical, Spacing.card)
+            .frame(maxWidth: .infinity, minHeight: 90, alignment: .leading)
+            .background(.surface, in: .rect(cornerRadius: Radius.innerCard, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
-                    .strokeBorder(.separator, lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: Radius.innerCard, style: .continuous)
+                    .strokeBorder(.separator, style: StrokeStyle(lineWidth: 1, dash: [5, 5]))
             }
-            .contentShape(.rect(cornerRadius: Radius.card, style: .continuous))
+            .contentShape(.rect(cornerRadius: Radius.innerCard, style: .continuous))
         }
-        .buttonStyle(.card)
+        .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
     }
 }

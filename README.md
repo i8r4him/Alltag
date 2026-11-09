@@ -340,7 +340,7 @@ Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's init
 3. **Today's Focus** — glass card: eyebrow, "Moving an appointment", "5 min" pill, full-width **Start talking** (`.glassProminent`).
 4. **Coming up** — "Rehearse from your Calendar"; tiles → their Conversation scenarios.
 5. **From your day** list: 60-second briefing · Debrief bakery · 3 new words from Safari (→ Memory filtered) · 1 writing mistake (→ Activity).
-6. "Learning beyond the app" outline row → Beyond.
+6. "Learning beyond the app" ticket → Beyond.
 
 ### Conversation (full-screen)
 Header: close · title/meta (scenario) · voice/keyboard segmented glass. Goal pill below.
