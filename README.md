@@ -153,8 +153,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Spoken · Level (→ Progress)
 │  │  │  ├─ FocusCard.swift               title, line and scenario artwork; Start talking (glass, lights from below)
 │  │  │  ├─ ComingUpCard.swift
-│  │  │  ├─ FromYourDayList.swift
-│  │  │  ├─ DayListExtraDesigns.swift      eight Today list layouts for comparison
+│  │  │  ├─ FromYourDayList.swift         Spotlight Today actions and Beyond row
 │  │  │  └─ BeyondRow.swift
 │  │  ├─ Conversation/
 │  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls
