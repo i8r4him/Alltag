@@ -75,6 +75,22 @@ struct StarSky: View {
     }
 }
 
+extension View {
+    /// The app's sky: a warm glow in the theme colour from the top, with the
+    /// twinkling stars, over the screen background. Used by Today, Learn and Memory.
+    func skyBackground() -> some View {
+        background {
+            ZStack {
+                RadialGradient(colors: [.accentFill.opacity(0.22), .clear],
+                               center: .top, startRadius: 0, endRadius: 420)
+                StarSky()
+            }
+            .ignoresSafeArea()
+            .background(.screenBackground)
+        }
+    }
+}
+
 /// Repeatable random numbers (SplitMix64), so the stars stay where they are.
 private struct SeededRandom {
     private var state: UInt64
