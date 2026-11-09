@@ -78,8 +78,8 @@ private struct DaySpotlightList: View {
                     }
                     .padding(Spacing.cardLarge)
                     .frame(maxWidth: .infinity, minHeight: 158, alignment: .bottomLeading)
-                    .background(.accent.opacity(AccentTint.selected),
-                                in: .rect(cornerRadius: Radius.card, style: .continuous))
+                    .glassEffect(.regular.tint(Color.accent.opacity(AccentTint.selected)).interactive(),
+                                 in: .rect(cornerRadius: Radius.card))
                 }
                 .buttonStyle(.plain)
                 .accessibilityElement(children: .combine)
