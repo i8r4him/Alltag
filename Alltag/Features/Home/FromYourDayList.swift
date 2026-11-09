@@ -17,9 +17,7 @@ struct FromYourDayList: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "From your day") {
-                Text("Today")
-            }
+            SectionHeader("From your day")
             .padding(.horizontal, 4)
 
             DaySpotlightList(items: items, briefingWords: briefingWords)
