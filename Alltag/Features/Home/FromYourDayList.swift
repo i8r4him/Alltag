@@ -105,6 +105,7 @@ struct DayItem: Identifiable {
 /// Temporary: designs for "From your day", to compare.
 enum DayListDesign: Int, CaseIterable {
     case original, artworkList, cards, grid, carousel, minimal
+    case timeline, spotlight, numbered, ribbons, mosaic, tickets, gallery, compact
 
     var name: String {
         switch self {
@@ -114,11 +115,19 @@ enum DayListDesign: Int, CaseIterable {
         case .grid: "Grid"
         case .carousel: "Carousel"
         case .minimal: "Minimal"
+        case .timeline: "Timeline"
+        case .spotlight: "Spotlight"
+        case .numbered: "Numbered"
+        case .ribbons: "Ribbons"
+        case .mosaic: "Mosaic"
+        case .tickets: "Tickets"
+        case .gallery: "Gallery"
+        case .compact: "Compact"
         }
     }
 }
 
-/// Temporary: ‹ 2 / 6 · Artwork list ›.
+/// Temporary design picker for the Today list.
 private struct DayListSwitcher: View {
     @Binding var design: DayListDesign
 
@@ -155,7 +164,10 @@ private struct DayListVariant: View {
             case .cards: cards
             case .grid: grid
             case .carousel: carousel
-            default: minimal
+            case .minimal: minimal
+            case .timeline, .spotlight, .numbered, .ribbons, .mosaic, .tickets, .gallery, .compact:
+                DayListExtraVariant(design: design, items: items)
+            case .original: EmptyView()
             }
         }
         .fontDesign(.rounded)

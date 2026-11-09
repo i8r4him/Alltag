@@ -154,6 +154,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ FocusCard.swift               title, line and scenario artwork; Start talking (glass, lights from below)
 │  │  │  ├─ ComingUpCard.swift
 │  │  │  ├─ FromYourDayList.swift
+│  │  │  ├─ DayListExtraDesigns.swift      eight Today list layouts for comparison
 │  │  │  └─ BeyondRow.swift
 │  │  ├─ Conversation/
 │  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls
