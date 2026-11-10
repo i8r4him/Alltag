@@ -13,8 +13,7 @@ import SwiftUI
 struct LearnView: View {
     @Environment(AppState.self) private var appState
 
-    @State private var skillsDesign = SkillsDesign.grid
-    @State private var mistakesDesign = MistakesDesign.current
+    @State private var skillsDesign = SkillsDesign.carousel
 
     /// Read and Write get their screens next; for now they open nothing.
     private func open(_ skill: LearnSkill) {
@@ -28,10 +27,7 @@ struct LearnView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.section) {
-                VStack(spacing: Spacing.grid) {
-                    MistakesCard(design: mistakesDesign) { appState.present(.activity(.mistakes)) }
-                    MistakesDesignSwitcher(design: $mistakesDesign)
-                }
+                MistakesCard { appState.present(.activity(.mistakes)) }
                 VStack(spacing: Spacing.grid) {
                     SkillsSection(design: skillsDesign, onOpen: open)
                     SkillsDesignSwitcher(design: $skillsDesign)

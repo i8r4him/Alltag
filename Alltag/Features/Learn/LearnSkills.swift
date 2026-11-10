@@ -32,31 +32,31 @@ enum LearnSkill: CaseIterable, Identifiable {
         }
     }
 
-    /// The next thing waiting in this skill (mock content).
-    var next: LocalizedStringResource {
+    /// How much is waiting, e.g. "4 letters".
+    var count: LocalizedStringResource {
         switch self {
-        case .read: "A letter from your landlord"
-        case .write: "Cancel your appointment"
-        case .listen: "Platform change in Munich"
-        case .grammar: "Verb at the end"
+        case .read: "4 texts"
+        case .write: "3 tasks"
+        case .listen: "5 clips"
+        case .grammar: "2 rules"
         }
     }
 
-    var nextDetail: LocalizedStringResource {
+    /// What's waiting in this skill (mock content): title and detail.
+    var items: [(title: LocalizedStringResource, detail: LocalizedStringResource)] {
         switch self {
-        case .read: "Service charges, explained · A2"
-        case .write: "A short email to the dentist"
-        case .listen: "A station announcement"
-        case .grammar: "2 rules worth a look"
-        }
-    }
-
-    var minutes: Int {
-        switch self {
-        case .read: 3
-        case .write: 4
-        case .listen: 1
-        case .grammar: 2
+        case .read: [("A letter from your landlord", "Service charges · A2 · 3 min"),
+                     ("A notice from the Bürgeramt", "Your appointment · A2 · 2 min"),
+                     ("A form at the doctor's", "Fill it in · B1 · 4 min")]
+        case .write: [("Cancel your appointment", "Email to the dentist · 4 min"),
+                      ("Reply to your landlord", "About the repairs · 5 min"),
+                      ("Tell work you're sick", "A short message · 2 min")]
+        case .listen: [("Platform change in Munich", "Station announcement · 1 min"),
+                       ("A voicemail from the doctor", "Your results · 1 min"),
+                       ("The weather for the weekend", "Radio · 2 min")]
+        case .grammar: [("Verb at the end", "After weil, dass, wenn · 2 min"),
+                        ("seit or für?", "Talking about time · 1 min"),
+                        ("Dative plural", "drei Jahren · 1 min")]
         }
     }
 
@@ -72,13 +72,16 @@ enum LearnSkill: CaseIterable, Identifiable {
 
 /// Temporary: layouts for the skills section, to compare on device.
 enum SkillsDesign: Int, CaseIterable {
-    case grid, rows, cards
+    case carousel, posters, stacks, tabs, circles, banners
 
     var name: String {
         switch self {
-        case .grid: "Grid"
-        case .rows: "Rows"
-        case .cards: "Cards"
+        case .carousel: "Carousel"
+        case .posters: "Posters"
+        case .stacks: "Stacks"
+        case .tabs: "Tabs"
+        case .circles: "Circles"
+        case .banners: "Banners"
         }
     }
 }
@@ -114,6 +117,7 @@ struct SkillsSection: View {
     let onOpen: (LearnSkill) -> Void
 
     @State private var taps = 0
+    @State private var selected = LearnSkill.read
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -121,9 +125,12 @@ struct SkillsSection: View {
                 .textRole(.sectionHeader)
                 .padding(.horizontal, 4)
             switch design {
-            case .grid: grid
-            case .rows: rows
-            case .cards: cards
+            case .carousel: carousel
+            case .posters: posters
+            case .stacks: stacks
+            case .tabs: tabs
+            case .circles: circles
+            case .banners: banners
             }
         }
         .fontDesign(.rounded)
@@ -135,92 +142,234 @@ struct SkillsSection: View {
         onOpen(skill)
     }
 
-    /// 2×2 square tiles like Coming up: artwork, title, what it's about.
-    private var grid: some View {
+    // MARK: Designs
+
+    /// Big square tiles scrolled sideways, like Coming up.
+    private var carousel: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: Spacing.grid) {
+                ForEach(LearnSkill.allCases) { skill in
+                    Button { open(skill) } label: {
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack(alignment: .top) {
+                                Text(skill.count)
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.accent)
+                                Spacer()
+                                ScenarioArtwork(systemImage: skill.systemImage, symbolSize: 24, cornerRadius: 12)
+                                    .frame(width: 50, height: 50)
+                            }
+                            Spacer(minLength: 0)
+                            Text(skill.title)
+                                .font(.title2.weight(.bold))
+                            Text(skill.items[0].title)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(2, reservesSpace: true)
+                        }
+                        .multilineTextAlignment(.leading)
+                        .padding(Spacing.card + 2)
+                        .frame(width: 196, height: 196, alignment: .topLeading)
+                        .learnSurface()
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+        }
+        .scrollIndicators(.hidden)
+        .scrollClipDisabled()
+    }
+
+    /// 2×2 tall cards with the artwork filling the top half.
+    private var posters: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: Spacing.grid),
                             GridItem(.flexible(), spacing: Spacing.grid)],
                   spacing: Spacing.grid) {
             ForEach(LearnSkill.allCases) { skill in
                 Button { open(skill) } label: {
-                    VStack(alignment: .leading, spacing: 0) {
-                        ScenarioArtwork(systemImage: skill.systemImage, symbolSize: 26, cornerRadius: 14)
-                            .frame(width: 54, height: 54)
-                        Spacer(minLength: 16)
-                        Text(skill.title)
-                            .font(.title3.weight(.semibold))
-                        Text(skill.summary)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2, reservesSpace: true)
-                    }
-                    .multilineTextAlignment(.leading)
-                    .padding(Spacing.card)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .aspectRatio(1, contentMode: .fit)
-                    .learnSurface()
-                }
-                .buttonStyle(.plain)
-                .accessibilityElement(children: .combine)
-            }
-        }
-    }
-
-    /// One card, a row per skill: artwork, title, the next thing, length.
-    private var rows: some View {
-        VStack(spacing: 0) {
-            ForEach(Array(LearnSkill.allCases.enumerated()), id: \.element) { index, skill in
-                if index > 0 { Divider().padding(.leading, 84) }
-                Button { open(skill) } label: {
-                    HStack(spacing: 14) {
-                        ScenarioArtwork(systemImage: skill.systemImage, symbolSize: 24, cornerRadius: 13)
-                            .frame(width: 54, height: 54)
-                        VStack(alignment: .leading, spacing: 3) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        ScenarioArtwork(systemImage: skill.systemImage, symbolSize: 40, cornerRadius: 22)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 104)
+                        VStack(alignment: .leading, spacing: 2) {
                             Text(skill.title)
-                                .font(.headline)
-                            Text(skill.next)
+                                .font(.title3.weight(.semibold))
+                            Text(skill.count)
                                 .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.accent)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        Text("\(skill.minutes) min")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.accent)
+                        .padding(.horizontal, 6)
+                        .padding(.bottom, 6)
                     }
-                    .multilineTextAlignment(.leading)
-                    .padding(Spacing.card)
-                    .contentShape(.rect)
+                    .padding(10)
+                    .learnSurface(radius: 32)
                 }
                 .buttonStyle(.plain)
                 .accessibilityElement(children: .combine)
             }
         }
-        .learnSurface()
     }
 
-    /// A small Focus card per skill, showing what's next in it.
-    private var cards: some View {
-        VStack(spacing: Spacing.grid) {
+    /// Like the mistakes deck: each skill is a small stack, its next item on top.
+    private var stacks: some View {
+        VStack(spacing: 30) {
             ForEach(LearnSkill.allCases) { skill in
                 Button { open(skill) } label: {
-                    HStack(alignment: .center, spacing: 16) {
-                        VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 14) {
+                        ScenarioArtwork(systemImage: skill.systemImage, symbolSize: 24, cornerRadius: 14)
+                            .frame(width: 56, height: 56)
+                        VStack(alignment: .leading, spacing: 3) {
                             Text(skill.title)
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(.accent)
-                            Text(skill.next)
-                                .font(.title3.weight(.semibold))
-                            Text(skill.nextDetail)
+                            Text(skill.items[0].title)
+                                .font(.headline)
+                            Text(skill.items[0].detail)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                        ScenarioArtwork(systemImage: skill.systemImage, symbolSize: 34, cornerRadius: 16)
-                            .frame(width: 76, height: 76)
                     }
                     .multilineTextAlignment(.leading)
-                    .padding(Spacing.cardLarge)
-                    .learnSurface()
+                    .padding(Spacing.card)
+                    .learnSurface(radius: 30)
+                    .background(alignment: .bottom) {
+                        RoundedRectangle(cornerRadius: 30, style: .continuous)
+                            .fill(.white.opacity(0.09))
+                            .padding(.horizontal, 16)
+                            .offset(y: 10)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .padding(.bottom, 10)
+    }
+
+    /// A native picker for the skill, and what's waiting in it below.
+    private var tabs: some View {
+        VStack(spacing: Spacing.grid) {
+            Picker("Skill", selection: $selected) {
+                ForEach(LearnSkill.allCases) { skill in
+                    Text(skill.title).tag(skill)
+                }
+            }
+            .pickerStyle(.segmented)
+            VStack(spacing: 0) {
+                ForEach(Array(selected.items.enumerated()), id: \.offset) { index, item in
+                    if index > 0 { Divider().padding(.leading, 82) }
+                    Button { open(selected) } label: {
+                        HStack(spacing: 14) {
+                            ScenarioArtwork(systemImage: selected.systemImage, symbolSize: 22, cornerRadius: 12)
+                                .frame(width: 52, height: 52)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(item.title)
+                                    .font(.headline)
+                                Text(item.detail)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            Image(systemName: "chevron.right")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(.tertiary)
+                        }
+                        .multilineTextAlignment(.leading)
+                        .padding(Spacing.card)
+                        .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            .learnSurface(radius: Radius.card)
+            .animation(.snappy, value: selected)
+        }
+        .sensoryFeedback(.selection, trigger: selected)
+    }
+
+    /// Four round glass buttons, and the next thing for the chosen one.
+    private var circles: some View {
+        VStack(spacing: Spacing.grid) {
+            HStack(spacing: 0) {
+                ForEach(LearnSkill.allCases) { skill in
+                    Button { selected = skill } label: {
+                        VStack(spacing: 8) {
+                            Image(systemName: skill.systemImage)
+                                .font(.title2)
+                                .foregroundStyle(selected == skill ? Color.onAccent : Color.accent)
+                                .frame(width: 64, height: 64)
+                                .background {
+                                    Circle().fill(selected == skill ? Color.accentFill : Color.accent.opacity(0.14))
+                                }
+                            Text(skill.title)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(selected == skill ? .primary : .secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(selected == skill ? .isSelected : [])
+                }
+            }
+            Button { open(selected) } label: {
+                HStack(alignment: .center, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(selected.items[0].title)
+                            .font(.title3.weight(.semibold))
+                        Text(selected.items[0].detail)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    ScenarioArtwork(systemImage: selected.systemImage, symbolSize: 32, cornerRadius: 16)
+                        .frame(width: 76, height: 76)
+                }
+                .multilineTextAlignment(.leading)
+                .padding(Spacing.cardLarge)
+                .learnSurface()
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
+            .animation(.snappy, value: selected)
+        }
+        .sensoryFeedback(.selection, trigger: selected)
+    }
+
+    /// Full-width cards washed in the theme colour from the left, a big symbol on the right.
+    private var banners: some View {
+        VStack(spacing: Spacing.grid) {
+            ForEach(LearnSkill.allCases) { skill in
+                Button { open(skill) } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(skill.title)
+                                .font(.title2.weight(.bold))
+                            Text(skill.summary)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 8)
+                        Image(systemName: skill.systemImage)
+                            .font(.system(size: 52, weight: .light))
+                            .foregroundStyle(.white.opacity(0.85))
+                            .rotationEffect(.degrees(-8))
+                            .offset(x: 10)
+                            .accessibilityHidden(true)
+                    }
+                    .multilineTextAlignment(.leading)
+                    .padding(.horizontal, Spacing.cardLarge)
+                    .frame(height: 104)
+                    .background {
+                        LinearGradient(colors: [AppTheme.shared.palette.deep.opacity(0.35), Color.accentFill.opacity(0.85)],
+                                       startPoint: .leading, endPoint: .trailing)
+                    }
+                    .background(.surface)
+                    .clipShape(.rect(cornerRadius: Radius.card, style: .continuous))
+                    .contentShape(.rect(cornerRadius: Radius.card, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 .accessibilityElement(children: .combine)
