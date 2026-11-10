@@ -42,30 +42,34 @@ enum LearnSkill: CaseIterable, Identifiable {
     }
 }
 
-/// "Practise": a wide banner per skill, washed in the theme colour from the
-/// left, with a big symbol on the right.
+/// "Practise": a wide glass banner per skill, tinted in the theme colour, with
+/// a big symbol on the right.
 struct SkillsSection: View {
     let onOpen: (LearnSkill) -> Void
 
     @State private var taps = 0
+    @State private var tint = BannerTint.soft
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Practise")
                 .textRole(.sectionHeader)
                 .padding(.horizontal, 4)
-            VStack(spacing: Spacing.grid) {
-                ForEach(LearnSkill.allCases) { skill in
-                    Button {
-                        taps += 1
-                        onOpen(skill)
-                    } label: {
-                        SkillBanner(skill: skill)
+            GlassEffectContainer(spacing: 0) {
+                VStack(spacing: Spacing.grid) {
+                    ForEach(LearnSkill.allCases) { skill in
+                        Button {
+                            taps += 1
+                            onOpen(skill)
+                        } label: {
+                            SkillBanner(skill: skill, tint: tint.color(for: skill))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityElement(children: .combine)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityElement(children: .combine)
                 }
             }
+            BannerTintSwitcher(tint: $tint)
         }
         .fontDesign(.rounded)
         .sensoryFeedback(.impact(weight: .light), trigger: taps)
@@ -74,6 +78,7 @@ struct SkillsSection: View {
 
 private struct SkillBanner: View {
     let skill: LearnSkill
+    let tint: Color?
 
     @ScaledMetric(relativeTo: .title2) private var height: CGFloat = 104
 
@@ -97,13 +102,68 @@ private struct SkillBanner: View {
         .multilineTextAlignment(.leading)
         .padding(.horizontal, Spacing.cardLarge)
         .frame(minHeight: height)
-        .background {
-            LinearGradient(colors: [AppTheme.shared.palette.deep.opacity(0.35), Color.accentFill.opacity(0.85)],
-                           startPoint: .leading, endPoint: .trailing)
-        }
-        .background(.surface)
+        .glassEffect(.regular.tint(tint), in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
         .clipShape(.rect(cornerRadius: Radius.card, style: .continuous))
         .contentShape(.rect(cornerRadius: Radius.card, style: .continuous))
+    }
+}
+
+/// Temporary: tints for the glass banners, all from the theme, to compare on device.
+enum BannerTint: Int, CaseIterable {
+    case clear, soft, medium, strong, deep, light, shades
+
+    var name: String {
+        switch self {
+        case .clear: "Clear glass"
+        case .soft: "Soft"
+        case .medium: "Medium"
+        case .strong: "Strong"
+        case .deep: "Deep"
+        case .light: "Light"
+        case .shades: "Shades"
+        }
+    }
+
+    /// The tint for `skill`; `nil` is untinted glass.
+    func color(for skill: LearnSkill) -> Color? {
+        let palette = AppTheme.shared.palette
+        switch self {
+        case .clear: return nil
+        case .soft: return Color.accentFill.opacity(0.25)
+        case .medium: return Color.accentFill.opacity(0.45)
+        case .strong: return Color.accentFill.opacity(0.7)
+        case .deep: return palette.deep.opacity(0.6)
+        case .light: return palette.light.opacity(0.35)
+        case .shades:
+            let shades = [palette.light, palette.rim, palette.mid, palette.deep]
+            let index = LearnSkill.allCases.firstIndex(of: skill) ?? 0
+            return shades[index].opacity(0.5)
+        }
+    }
+}
+
+/// Temporary: steps through the banner tints.
+private struct BannerTintSwitcher: View {
+    @Binding var tint: BannerTint
+
+    var body: some View {
+        let all = BannerTint.allCases
+        HStack(spacing: 14) {
+            Button { step(-1) } label: { Image(systemName: "chevron.left") }
+            Text(verbatim: "\(tint.rawValue + 1) / \(all.count) · \(tint.name)")
+                .foregroundStyle(.secondary)
+                .frame(minWidth: 130)
+            Button { step(1) } label: { Image(systemName: "chevron.right") }
+        }
+        .font(.footnote.weight(.semibold))
+        .buttonStyle(.glass)
+        .frame(maxWidth: .infinity)
+        .sensoryFeedback(.selection, trigger: tint)
+    }
+
+    private func step(_ offset: Int) {
+        let all = BannerTint.allCases
+        withAnimation(.snappy) { tint = all[(tint.rawValue + offset + all.count) % all.count] }
     }
 }
 
