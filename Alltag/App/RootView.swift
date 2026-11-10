@@ -76,6 +76,10 @@ struct RootView: View {
             LearnView()
         case .read:
             ReadView()
+        case .write:
+            WriteView()
+        case .listen:
+            ListenView()
         case .grammar:
             GrammarView()
         case .debrief:

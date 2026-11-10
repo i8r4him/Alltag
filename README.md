@@ -175,14 +175,19 @@ Alltag/                                   ← repo root
 │  │  ├─ Learn/
 │  │  │  ├─ LearnView.swift               Fix your mistakes, then Practise (everything apart from speaking)
 │  │  │  ├─ MistakesCard.swift            a deck of your mistakes, the first on top
+│  │  │  ├─ LearnComponents.swift         LearnScreen, LearnHeroCard, LearnSection, LearnList, LearnRow
 │  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour
 │  │  │  ├─ ActivityView.swift            native toolbar (close, segments), options, audio, done
 │  │  │  ├─ ActivityModel.swift           one pick per question, scoring, audio
 │  │  │  └─ MistakePractice.swift         conversation fixes → Memory › Mistakes → practice questions
+│  │  ├─ Write/
+│  │  │  └─ WriteView.swift               picked task, tasks from daily life (Sie / du), useful phrases
+│  │  ├─ Listen/
+│  │  │  └─ ListenView.swift              picked clip, speed, real situations
 │  │  ├─ Read/
 │  │  │  └─ ReadView.swift                scan a letter, your reading list (from Safari), picked for you, from daily life
 │  │  ├─ Grammar/
-│  │  │  ├─ GrammarView.swift             mistakes focus, native level picker, topics with status dots
+│  │  │  ├─ GrammarView.swift             worth a look, cheat sheets, all rules by level with status
 │  │  │  ├─ GrammarProgress.swift         solved status and counts (tested)
 │  │  │  ├─ RuleView.swift                numbered steps: heard, notice, rule, your own German
 │  │  │  ├─ RuleModel.swift               word-order task, check, solved
@@ -210,6 +215,7 @@ Alltag/                                   ← repo root
 │  │  ├─ MockTranslations.swift           TR
 │  │  ├─ MockMemoryItems.swift            MEM
 │  │  ├─ MockReading.swift                Read screen: saved articles, texts from daily life
+│  │  ├─ MockWriteListen.swift            Write tasks and phrases, Listen clips
 │  │  ├─ MockActivities.swift             ACTS
 │  │  ├─ MockRules.swift                  RULES
 │  │  ├─ MockLevels.swift                 LEVELS
