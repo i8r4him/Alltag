@@ -74,6 +74,8 @@ struct RootView: View {
             MemoryView(kind: kind, search: search)
         case .learn:
             LearnView()
+        case .read:
+            ReadView()
         case .grammar:
             GrammarView()
         case .debrief:

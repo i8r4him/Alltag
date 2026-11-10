@@ -15,6 +15,8 @@ enum Route: Hashable {
     /// or searching for a word (e.g. from Siri).
     case memory(kind: MemoryKind? = nil, search: String? = nil)
     case learn
+    /// Learn › Read: your reading list, texts from daily life and the letter scan.
+    case read
     case grammar
     case rule(id: String)
     case progress

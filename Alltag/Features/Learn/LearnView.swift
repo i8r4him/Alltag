@@ -13,12 +13,13 @@ import SwiftUI
 struct LearnView: View {
     @Environment(AppState.self) private var appState
 
-    /// Read and Write get their screens next; for now they open nothing.
+    /// Write gets its screen later; for now it opens nothing.
     private func open(_ skill: LearnSkill) {
         switch skill {
         case .listen: appState.present(.activity(.listen))
+        case .read: appState.open(.read)
         case .grammar: appState.open(.grammar)
-        case .read, .write: break
+        case .write: break
         }
     }
 

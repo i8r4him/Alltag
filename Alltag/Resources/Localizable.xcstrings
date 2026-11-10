@@ -25,6 +25,26 @@
         }
       }
     },
+    "%@ · %@ · %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · %3$lld min"
+          }
+        }
+      }
+    },
+    "%@ · %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld min"
+          }
+        }
+      }
+    },
     "%@ · lesson in a later version" : {},
     "%@, %@" : {
       "localizations" : {
@@ -113,7 +133,13 @@
     "^[%lld new word](inflect: true) from Safari" : {},
     "^[%lld phrase](inflect: true)" : {},
     "^[%lld writing mistake](inflect: true) to review" : {},
+    "A change of shift" : {},
+    "A form at the doctor's" : {},
     "A gentle nudge, never more than twice a day" : {},
+    "A letter from your landlord" : {},
+    "A menu at the café" : {},
+    "A notice from Deutsche Bahn" : {},
+    "A notice from the Bürgeramt" : {},
     "A rough guess is fine — we adjust as you go." : {},
     "A sample answer. Turn on Apple Intelligence for debriefs of your own moments." : {},
     "A short phone call at the dentist." : {},
@@ -138,6 +164,7 @@
     "Alltag never sees content from other apps unless you share it, select it, or type it in the Alltag keyboard." : {},
     "Alltag Pro" : {},
     "Also follows your device setting" : {},
+    "An email from work" : {},
     "Announcements and calls" : {},
     "Antworte auf Deutsch…" : {},
     "Appearance" : {},
@@ -196,6 +223,7 @@
     "Each one is optional. You can change them any time in Settings." : {},
     "End conversation" : {},
     "end of the workday" : {},
+    "Engineering works" : {},
     "English" : {},
     "English or German." : {},
     "Evening" : {},
@@ -205,6 +233,7 @@
     "Exactly right." : {},
     "Export my data" : {},
     "Feel at home here — appointments, neighbours, work." : {},
+    "Fill it in" : {},
     "Find the words" : {},
     "Finding the words…" : {},
     "First steps" : {},
@@ -216,6 +245,8 @@
     "Follow lectures and write with confidence." : {},
     "Football" : {},
     "Formal" : {},
+    "From daily life" : {},
+    "From Safari" : {},
     "From your day" : {},
     "From your mistakes" : {},
     "From your own German" : {},
@@ -228,6 +259,7 @@
     "Getting there" : {},
     "Gold" : {},
     "Good" : {},
+    "Got a letter?" : {},
     "Grammar" : {},
     "Grammar Rule" : {},
     "Grammar rule" : {},
@@ -329,6 +361,7 @@
     "Opens a grammar rule in Alltag, with a real example and a short task." : {},
     "Opens your progress." : {},
     "Opens your words and phrases in Alltag." : {},
+    "Order lunch" : {},
     "Other" : {},
     "Partner & family" : {},
     "Pattern" : {},
@@ -340,6 +373,7 @@
     "Phrasebook" : {},
     "phrases saved" : {},
     "Phrases you needed, grouped by where you needed them." : {},
+    "Picked for you" : {},
     "Play announcement" : {},
     "Play briefing" : {},
     "Plays the phrase." : {},
@@ -395,6 +429,8 @@
     "Saved to Memory" : {},
     "Saved to Memory: %@." : {},
     "Saved to phrasebook ✓" : {},
+    "Scan a letter" : {},
+    "Scan it, and Alltag explains it simply." : {},
     "Scan menus, letters and signs" : {},
     "Search your memory" : {},
     "SECONDS" : {},
@@ -430,6 +466,7 @@
     "Start a Conversation" : {},
     "Start free trial" : {},
     "Start learning" : {},
+    "Start reading · %lld min" : {},
     "Start review" : {},
     "Start talking" : {},
     "Start today's conversation" : {},
@@ -521,13 +558,16 @@
     "You've reached your live voice limit for today. Keep practising on your iPhone." : {},
     "Your 60-second briefing" : {},
     "Your 7-day trial has started." : {},
+    "Your appointment" : {},
     "Your briefing" : {},
     "Your briefing · 60 sec" : {},
     "Your briefings and examples will be about these." : {},
     "Your first name" : {},
     "Your first step is waiting on Home. From now on, Alltag starts noticing words from your day." : {},
     "Your own sentence" : {},
+    "Your reading list" : {},
     "Your sentence" : {},
+    "Your service charges, explained." : {},
     "Your words in today's news" : {},
     "±0" : {},
     "“Practise for two minutes.”" : {},
