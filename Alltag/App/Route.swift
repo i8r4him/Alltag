@@ -17,6 +17,10 @@ enum Route: Hashable {
     case learn
     /// Learn › Read: your reading list, texts from daily life and the letter scan.
     case read
+    /// Learn › Write: tasks from daily life and useful phrases.
+    case write
+    /// Learn › Listen: real audio situations.
+    case listen
     case grammar
     case rule(id: String)
     case progress
