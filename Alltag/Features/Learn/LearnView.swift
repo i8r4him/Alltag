@@ -35,7 +35,10 @@ struct LearnView: View {
         ScrollView {
             VStack(spacing: Spacing.section) {
                 ToolsSection(onOpen: open)
-                MistakesCard { appState.present(.activity(.mistakes)) }
+                LearnSection(title: "Fix your mistakes", note: Text("1 min")) {
+                    MistakesCard { appState.present(.activity(.mistakes)) }
+                }
+                .fontDesign(.rounded)
                 SkillsSection(onOpen: open)
             }
             .padding(.horizontal, Spacing.screen)

@@ -113,6 +113,7 @@
       }
     },
     "+%lld" : {},
+    "1 min" : {},
     "1 of ^[%lld mistake](inflect: true)" : {},
     "1 word or phrase, gathered from your days." : {},
     "5 min" : {},
@@ -256,6 +257,7 @@
     "First, what should we call you?" : {},
     "Fix" : {},
     "FIX YOUR MISTAKES" : {},
+    "Fix your mistakes" : {},
     "Fluent — I want polish" : {},
     "Focus" : {},
     "Follow lectures and write with confidence." : {},
