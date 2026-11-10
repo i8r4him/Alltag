@@ -12,7 +12,6 @@ import SwiftUI
 /// then Read, Write, Listen and Grammar.
 struct LearnView: View {
     @Environment(AppState.self) private var appState
-    @State private var toolsDesign = ToolsDesign.tiles
     @State private var toolTaps = 0
 
     /// How to say it and Articles get their screens next; for now they give feedback only.
@@ -35,10 +34,7 @@ struct LearnView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.section) {
-                VStack(spacing: Spacing.grid) {
-                    ToolsSection(design: toolsDesign, onOpen: open)
-                    ToolsDesignSwitcher(design: $toolsDesign)
-                }
+                ToolsSection(onOpen: open)
                 MistakesCard { appState.present(.activity(.mistakes)) }
                 SkillsSection(onOpen: open)
             }
@@ -51,17 +47,6 @@ struct LearnView: View {
         .navigationTitle("Learn")
         .toolbarTitleDisplayMode(.inlineLarge)
         .scrollEdgeEffectStyle(.soft, for: .all)
-        .toolbar {
-            if toolsDesign == .toolbar {
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    ForEach(LearnTool.allCases) { tool in
-                        Button { open(tool) } label: {
-                            Label { Text(tool.title) } icon: { Image(systemName: tool.systemImage) }
-                        }
-                    }
-                }
-            }
-        }
         .sensoryFeedback(.impact(weight: .light), trigger: toolTaps)
     }
 }

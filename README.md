@@ -177,7 +177,8 @@ Alltag/                                   ← repo root
 │  │  │  ├─ WordRow.swift
 │  │  │  └─ PhrasebookTab.swift           (#33)
 │  │  ├─ Learn/
-│  │  │  ├─ LearnView.swift               Fix your mistakes, then Practise (everything apart from speaking)
+│  │  │  ├─ LearnView.swift               tools, Fix your mistakes, then Practise (everything apart from speaking)
+│  │  │  ├─ LearnTools.swift              "How do I say …?" field, Translate and Articles
 │  │  │  ├─ MistakesCard.swift            a deck of your mistakes, the first on top
 │  │  │  ├─ LearnComponents.swift         LearnScreen, LearnHeroCard, LearnSection, LearnList, LearnRow
 │  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour
