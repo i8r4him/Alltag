@@ -26,7 +26,12 @@ struct GrammarProgress {
     }
 
     /// The level shown first: the learner's own if it has topics, otherwise B1.
-    static func initialLevel(for profileLevel: Level?) -> Level {
+    /// Grammar topics where the learner made a mistake, across all levels.
+    static func rulesWithMistakes() -> Int {
+        Level.selectable.flatMap { MockLevels.topics(for: $0) }.filter { $0.status == .mistake }.count
+    }
+
+        static func initialLevel(for profileLevel: Level?) -> Level {
         guard let profileLevel, Level.selectable.contains(profileLevel) else { return .b1 }
         return profileLevel
     }

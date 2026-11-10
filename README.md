@@ -173,9 +173,9 @@ Alltag/                                   ← repo root
 │  │  │  ├─ WordRow.swift
 │  │  │  └─ PhrasebookTab.swift           (#33)
 │  │  ├─ Learn/
-│  │  │  ├─ LearnView.swift               For you, Fix your mistakes card, practice moments, Grammar, Progress
-│  │  │  ├─ ForYouCarousel.swift          tall scenario cards, scrolled sideways
-│  │  │  ├─ GrammarCard.swift
+│  │  │  ├─ LearnView.swift               Fix your mistakes, then Practise (everything apart from speaking)
+│  │  │  ├─ MistakesCard.swift            a deck of your mistakes, the first on top
+│  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour
 │  │  │  ├─ ActivityView.swift            native toolbar (close, segments), options, audio, done
 │  │  │  ├─ ActivityModel.swift           one pick per question, scoring, audio
 │  │  │  └─ MistakePractice.swift         conversation fixes → Memory › Mistakes → practice questions
