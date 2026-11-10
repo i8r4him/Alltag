@@ -19,6 +19,7 @@ struct GrammarView: View {
     private var shownLevel: Level { level ?? GrammarProgress.initialLevel(for: profiles.first?.level) }
 
     @State private var taps = 0
+    @State private var chooserDesign = LevelChooserDesign.circles
 
     private var focusRules: [(rule: GrammarRule, reason: String)] {
         MockLevels.focus.compactMap { focus in MockRules.rule(id: focus.ruleID).map { ($0, focus.reason) } }
@@ -59,14 +60,11 @@ struct GrammarView: View {
             LearnSection(title: "All rules",
                          note: Text("\(progress.solvedCount(at: shownLevel)) of \(MockLevels.topics(for: shownLevel).count) solved")) {
                 VStack(alignment: .leading, spacing: Spacing.grid) {
-                    Picker("Level", selection: Binding(get: { shownLevel }, set: { level = $0 })) {
-                        ForEach(Level.selectable) { Text(verbatim: $0.title).tag($0) }
+                    LevelChooser(design: chooserDesign,
+                                 selection: Binding(get: { shownLevel }, set: { level = $0 })) { level in
+                        (progress.solvedCount(at: level), MockLevels.topics(for: level).count)
                     }
-                    .pickerStyle(.segmented)
-                    Text(shownLevel.summary)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 4)
+                    LevelChooserSwitcher(design: $chooserDesign)
                     VStack(spacing: 0) {
                         ForEach(Array(MockLevels.topics(for: shownLevel).enumerated()), id: \.offset) { index, topic in
                             if index > 0 { Divider().padding(.leading, 40) }
