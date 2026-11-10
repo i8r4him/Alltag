@@ -173,12 +173,14 @@ Alltag/                                   ← repo root
 │  │  │  ├─ WordRow.swift
 │  │  │  └─ PhrasebookTab.swift           (#33)
 │  │  ├─ Learn/
-│  │  │  ├─ LearnView.swift               For you, Fix your mistakes card, practice moments, Grammar, Progress
-│  │  │  ├─ ForYouCarousel.swift          tall scenario cards, scrolled sideways
-│  │  │  ├─ GrammarCard.swift
+│  │  │  ├─ LearnView.swift               Fix your mistakes, then Practise (everything apart from speaking)
+│  │  │  ├─ MistakesCard.swift            a deck of your mistakes, the first on top
+│  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour
 │  │  │  ├─ ActivityView.swift            native toolbar (close, segments), options, audio, done
 │  │  │  ├─ ActivityModel.swift           one pick per question, scoring, audio
 │  │  │  └─ MistakePractice.swift         conversation fixes → Memory › Mistakes → practice questions
+│  │  ├─ Read/
+│  │  │  └─ ReadView.swift                scan a letter, your reading list (from Safari), picked for you, from daily life
 │  │  ├─ Grammar/
 │  │  │  ├─ GrammarView.swift             mistakes focus, native level picker, topics with status dots
 │  │  │  ├─ GrammarProgress.swift         solved status and counts (tested)
@@ -207,6 +209,7 @@ Alltag/                                   ← repo root
 │  │  ├─ MockScenarios.swift              SCEN
 │  │  ├─ MockTranslations.swift           TR
 │  │  ├─ MockMemoryItems.swift            MEM
+│  │  ├─ MockReading.swift                Read screen: saved articles, texts from daily life
 │  │  ├─ MockActivities.swift             ACTS
 │  │  ├─ MockRules.swift                  RULES
 │  │  ├─ MockLevels.swift                 LEVELS

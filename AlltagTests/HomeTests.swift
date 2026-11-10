@@ -16,7 +16,7 @@ struct HomeTests {
 
     @Test("The prototype's sample data gives 2 rules worth a look")
     func rulesWorthALook() {
-        #expect(GrammarCard.rulesWithMistakes() == 2)
+        #expect(GrammarProgress.rulesWithMistakes() == 2)
     }
 
     @Test("New words count only today's words from reading")
