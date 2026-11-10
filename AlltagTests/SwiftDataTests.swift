@@ -94,4 +94,51 @@ struct SwiftDataTests {
         let places = Set(try context.fetch(FetchDescriptor<Phrase>()).map(\.place))
         #expect(places == ["At the doctor", "Trains & travel", "With my landlord", "At work"])
     }
+
+    @Test("A practice session is saved with its kind and seconds")
+    func practiceSession() throws {
+        context.insert(PracticeSession(kind: .sixtySeconds, secondsSpoken: 60))
+        context.insert(PracticeSession(kind: .review, secondsSpoken: -5))
+        try context.save()
+
+        let sessions = try context.fetch(FetchDescriptor<PracticeSession>(sortBy: [SortDescriptor(\.secondsSpoken)]))
+        #expect(sessions.map(\.kind) == [.review, .sixtySeconds])
+        #expect(sessions.map(\.secondsSpoken) == [0, 60])
+    }
+
+    @Test("Every model follows CloudKit's rules, so iCloud sync can be switched on")
+    func modelsAreCloudKitReady() {
+        for entity in AlltagStore.schema.entities {
+            #expect(entity.uniquenessConstraints.isEmpty, "\(entity.name) has #Unique")
+            for attribute in entity.attributes {
+                let name = "\(entity.name).\(attribute.name)"
+                #expect(!attribute.isUnique, "\(name) is unique")
+                #expect(attribute.isOptional || attribute.defaultValue != nil, "\(name) needs a default")
+            }
+            for relationship in entity.relationships {
+                #expect(relationship.isOptional, "\(entity.name).\(relationship.name) must be optional")
+            }
+        }
+    }
+
+    @Test("A version 1 store opens as version 2 and keeps its data")
+    func migratesFromVersionOne() throws {
+        let folder = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Alltag.store")
+
+        do {
+            let schema = Schema(versionedSchema: AlltagSchemaV1.self)
+            let old = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url))
+            old.mainContext.insert(SolvedRule(ruleID: "weil"))
+            try old.mainContext.save()
+        }
+
+        let new = try AlltagStore.makeContainer(url: url)
+        #expect(try new.mainContext.fetch(FetchDescriptor<SolvedRule>()).map(\.ruleID) == ["weil"])
+        new.mainContext.insert(PracticeSession(kind: .conversation, secondsSpoken: 90))
+        try new.mainContext.save()
+        #expect(try new.mainContext.fetchCount(FetchDescriptor<PracticeSession>()) == 1)
+    }
 }
