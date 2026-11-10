@@ -75,12 +75,13 @@ Alltag/                                   ← repo root
 │  │
 │  ├─ Models/
 │  │  ├─ Persistent/                      SwiftData @Model
-│  │  │  ├─ AlltagStore.swift            schema V1, migration plan, container, sample-data seeding
+│  │  │  ├─ AlltagStore.swift            schema V1 → V2, migration plan, container, sample-data seeding (every model CloudKit-ready)
 │  │  │  ├─ UserProfile.swift
 │  │  │  ├─ MemoryItem.swift
 │  │  │  ├─ Phrase.swift
 │  │  │  ├─ SolvedRule.swift
-│  │  │  └─ SavedTranslation.swift
+│  │  │  ├─ SavedTranslation.swift
+│  │  │  └─ PracticeSession.swift        one practice (kind, seconds spoken) behind the streak and minutes
 │  │  ├─ Content/                         plain structs for lesson content
 │  │  │  ├─ Scenario.swift               Scenario, ConversationLine, Feedback
 │  │  │  ├─ Activity.swift
@@ -90,6 +91,7 @@ Alltag/                                   ← repo root
 │  │  │  └─ Briefing.swift               Briefing, Debrief, PlacementQuestion
 │  │  └─ Enums/
 │  │     ├─ MemoryKind.swift              MemoryKind, MemorySource
+│  │     ├─ PracticeKind.swift            conversation / sixtySeconds / review
 │  │     ├─ Level.swift                   A1–C2
 │  │     ├─ Goal.swift
 │  │     ├─ NativeLanguage.swift
@@ -425,7 +427,7 @@ All Apple frameworks — nothing to install.
 | Framework | Used for |
 |---|---|
 | SwiftUI + Observation | All screens and app state |
-| SwiftData | Profile, words, phrasebook, progress, saved translations |
+| SwiftData | Profile, words, phrasebook, practice sessions, saved translations. Every model follows CloudKit's rules (defaults, nothing unique, optional relationships) so iCloud sync can be switched on |
 | AVFoundation (`AVSpeechSynthesizer`) | Speaking German aloud |
 | AVFoundation (`AVAudioEngine`) | Live microphone capture and audio playback |
 | Foundation (`URLSession`, `URLSessionWebSocketTask`) | Supabase authentication and OpenAI Realtime voice |

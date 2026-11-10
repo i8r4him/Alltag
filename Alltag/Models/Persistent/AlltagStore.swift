@@ -18,22 +18,40 @@ nonisolated enum AlltagSchemaV1: VersionedSchema {
     }
 }
 
+/// Version 2 adds `PracticeSession`, behind the streak and the minutes spoken.
+nonisolated enum AlltagSchemaV2: VersionedSchema {
+    static let versionIdentifier = Schema.Version(2, 0, 0)
+
+    static var models: [any PersistentModel.Type] {
+        AlltagSchemaV1.models + [PracticeSession.self]
+    }
+}
+
+/// Every model in the current schema has to follow CloudKit's rules, so iCloud
+/// sync (#54) can be switched on without changing them: every property optional
+/// or with a default, nothing unique, every relationship optional.
+/// `SwiftDataTests` checks this.
 nonisolated enum AlltagMigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] { [AlltagSchemaV1.self] }
-    static var stages: [MigrationStage] { [] }
+    static var schemas: [any VersionedSchema.Type] { [AlltagSchemaV1.self, AlltagSchemaV2.self] }
+    static var stages: [MigrationStage] {
+        [.lightweight(fromVersion: AlltagSchemaV1.self, toVersion: AlltagSchemaV2.self)]
+    }
 }
 
 /// Creates the app's model container and fills it with sample data.
 enum AlltagStore {
+    /// The current schema.
+    static var schema: Schema { Schema(versionedSchema: AlltagSchemaV2.self) }
+
     /// The container used by the app, or an in-memory one for previews and tests.
-    /// iCloud sync stays off until the paid Developer Program is active (#54).
-    static func makeContainer(inMemory: Bool = false) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: AlltagSchemaV1.self)
-        let configuration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: inMemory,
-            cloudKitDatabase: .none
-        )
+    /// `url` places the store somewhere else, for migration tests.
+    /// iCloud sync stays off until the last step of `3 · Memory` (#54).
+    static func makeContainer(inMemory: Bool = false, url: URL? = nil) throws -> ModelContainer {
+        let configuration = if let url {
+            ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
+        } else {
+            ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory, cloudKitDatabase: .none)
+        }
         return try ModelContainer(for: schema, migrationPlan: AlltagMigrationPlan.self, configurations: configuration)
     }
 
