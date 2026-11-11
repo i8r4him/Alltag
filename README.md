@@ -243,7 +243,8 @@ Alltag/                                   ← repo root
 │  └─ OnboardingModelTests.swift
 │
 ├─ supabase/                             backend: realtime-session Edge Function, migrations (see supabase/README.md)
-├─ AGENTS.md                              rules for coding agents (Codex)
+├─ AGENTS.md                              rules for every coding agent: build, code, data, design, workflow, plan
+├─ CLAUDE.md                              imports AGENTS.md for Claude Code
 │
 ├─ .github/
 │  ├─ workflows/

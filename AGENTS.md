@@ -38,6 +38,24 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
   - Tests that need real hardware or services are opt-in through an environment variable, like `ALLTAG_LIVE_MODEL` in `AlltagTests/CompanionTests.swift`.
 - **Secrets never go in the repo or the app bundle.** The OpenAI API key lives only in Supabase secrets (see `supabase/README.md`). The Supabase URL and publishable key are public and may be in the app.
 
+## Data (SwiftData, iCloud-ready)
+
+iCloud sync (SwiftData + CloudKit, #54) is switched on at the end of `3 · Memory`. Every model must already follow CloudKit's rules, so switching it on changes no model:
+
+- Every stored property is **optional or has a default value** (`var name: String = ""`).
+- **No `@Attribute(.unique)` and no `#Unique`.** Duplicates are repaired instead (see `AlltagStore.repairDuplicateIDs`).
+- Every **relationship is optional**.
+- `SwiftDataTests.modelsAreCloudKitReady` checks all of this; keep it passing.
+- **A model change means a new schema version.** Add `AlltagSchemaV<n+1>` and a migration stage in `AlltagStore.swift`; never edit an old version. Add a test that opens a store from the previous version.
+- Store enums as their raw value (`kindRaw`) with a computed property, so predicates can filter on them.
+
+## Design language
+
+- **The look comes from Today** (`Features/Home/`): the `.skyBackground()`, Focus-card surfaces (`.learnSurface()`: dark with a faint white stroke), Liquid Glass (`glassEffect`, `.glass` / `.glassProminent` buttons), `.fontDesign(.rounded)`, and `ScenarioArtwork` for illustrations.
+- **Everything follows the theme colour** (`AppTheme.shared.palette`, `.accent`, `.accentFill`). No fixed colours except meaning (coral for mistakes).
+- **Choosing a design:** when a screen's design is open, build two to four options on the branch behind a temporary "‹ n / N ›" glass switcher. The maintainer picks one, and the others and the switcher are removed before the PR is merged.
+- **Smooth interaction:** state that drives one control (a popover, a toggle) lives in that control's own view, so changing it doesn't redraw the whole screen mid-animation (see `StreakButton`).
+
 ## Workflow
 
 1. Work from a GitHub issue in `i8r4him/Alltag`. Use the branch name `feature/<issue#>-short-name`, branched from an up-to-date `main`.
@@ -46,6 +64,7 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
    - The String Catalogs are synced.
    - All tests pass.
    - `README.md` is updated where the architecture tree, the "Simulated vs real" list or the frameworks table changed.
+   - **`AGENTS.md` is updated in the same PR** whenever a rule, a convention or the plan changes, so it never falls behind.
 3. **Commit messages:**
    - A plain subject plus a short body ending with `Closes #<issue>`.
    - **No `Co-Authored-By`, no tool or agent attribution, no "Generated with …" lines** in commits or PRs.
@@ -53,8 +72,19 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
    - Use the issue's labels and milestone.
    - Include a short "what and why" body.
    - Note anything you couldn't verify, for example "needs a real device".
-5. **Don't merge.** Leave the PR for review; the maintainer squash-merges it.
+5. **Don't merge until the maintainer says so.** Then squash-merge with the subject `PR title (#<PR>)`, move the issue to Done on the board, update `main` and delete the branch.
 6. **Ask before** changing the project's targets, adding capabilities or entitlements, or changing anything under `supabase/`.
+7. **One folder.** Work in the main checkout (`~/Developer/Alltag`) and switch branches there; no git worktrees or second copies. The maintainer runs the app from that folder in Xcode.
+8. **The maintainer's uncommitted changes are theirs.** Never stash, discard, reformat or commit them. Stage your own files by path (never `git add -A`), and before switching branches check that the branches don't differ in those files.
+
+## Plan to launch
+
+- **Deadline: v1 is submitted to the App Store by 30 Nov 2026.** v1 is free; Pro comes after launch.
+- **Milestones**, one tab per week: `1 · Today` (16 Nov), `2 · Learn` (22 Nov), `3 · Memory` (25 Nov, ends with iCloud sync), `4 · Testing` (27 Nov), `5 · Launch` (30 Nov). `After launch` is the backlog.
+- **Issues:** each milestone has a few **main features**, each split into **sub-issues** (GitHub sub-issues). One branch and PR per sub-issue.
+- **Labels:** `must-have` (the tab isn't done without it) and `nice-to-have` (if there's time; otherwise it moves to `After launch`).
+- **Real or hidden:** at the end of each week, anything on that tab that doesn't work for real is hidden (App Review guideline 2.1). No mock content ships.
+- Outdated issues are **closed as "not planned"**, never deleted.
 
 ## Project map (short)
 
