@@ -76,7 +76,7 @@ final class ConversationModel {
     private(set) var finishedLiveConversation = false
     /// Checking a finished live conversation for mistakes.
     private(set) var liveReview: LiveReview = .none
-    @ObservationIgnored private var reviewTask: Task<Void, Never>?
+    @ObservationIgnored private lazy var reviewer = LineReviewer(companion: companion, scenario: scenario)
 
     enum LiveReview: Equatable {
         case none
@@ -219,7 +219,7 @@ final class ConversationModel {
     /// Stops listening and speaking, e.g. when the conversation is closed.
     func stop() {
         endedAt = endedAt ?? .now
-        reviewTask?.cancel()
+        reviewer.cancel()
         endCloudSession()
         listenTask?.cancel()
         speech.stopListening()
@@ -358,7 +358,7 @@ extension ConversationModel {
 
     /// Waits for the check of a finished live conversation (used by tests).
     func waitForReview() async {
-        await reviewTask?.value
+        await reviewer.wait()
     }
 
     private func startCloudConversation() {
@@ -407,6 +407,10 @@ extension ConversationModel {
                 let line = ConversationLine(speaker: speaker, german: text, english: "", feedback: nil)
                 messages.append(Message(line: line, realtimeID: id))
             }
+            // A learner line that replaces its drafts is final: check it while they talk on.
+            if speaker == .learner, replacesPrevious, let message = messages.first(where: { $0.realtimeID == id }) {
+                review(message)
+            }
         case .interruptTranscript(let id):
             guard let index = messages.firstIndex(where: { $0.realtimeID == id }) else { return }
             let line = messages[index].line
@@ -451,26 +455,34 @@ extension ConversationModel {
         hasFallenBack = true
         finishedLiveConversation = true
         if companion.usesOnDeviceModel, turnCount > 0 {
-            liveReview = .reviewing
-            reviewTask = Task { [weak self] in await self?.reviewLiveConversation() }
+            // Lines whose final transcript never arrived are checked now.
+            for message in messages where message.line.speaker == .learner { review(message) }
+            reviewProgressed()
         }
         isFinished = true
     }
 
-    /// Asks the on-device companion about each of the learner's live lines, so
-    /// the transcript and summary show what to fix.
-    private func reviewLiveConversation() async {
-        for index in messages.indices where messages[index].line.speaker == .learner {
-            guard !Task.isCancelled else { return }
+    // MARK: Checking a live conversation
+
+    /// Hands a learner line to the reviewer.
+    private func review(_ message: Message) {
+        guard let index = messages.firstIndex(where: { $0.id == message.id }) else { return }
+        let previous = messages[..<index].last { $0.line.speaker == .companion }?.line.german
+        reviewer.onProgress = { [weak self] in self?.reviewProgressed() }
+        reviewer.check(id: message.id, german: message.line.german, replyingTo: previous)
+    }
+
+    /// Shows the checked lines' feedback, but only once they've stopped talking.
+    private func reviewProgressed() {
+        guard finishedLiveConversation else { return }
+        for index in messages.indices {
             let line = messages[index].line
-            guard !line.german.isEmpty, line.feedback == nil else { continue }
-            let previous = messages[..<index].last { $0.line.speaker == .companion }?.line.german
-            guard let own = try? await companion.feedback(on: line.german, in: scenario, replyingTo: previous),
-                  own.feedback != MockCompanionService.ownSentenceNote else { continue }
+            guard line.feedback == nil, let checked = reviewer.results[messages[index].id],
+                  checked.german == line.german else { continue }
             messages[index].line = ConversationLine(speaker: .learner, german: line.german,
-                                                    english: own.english, feedback: own.feedback)
+                                                    english: checked.english, feedback: checked.feedback)
         }
-        liveReview = .done
+        liveReview = reviewer.isBusy ? .reviewing : .done
     }
 
     private func endCloudSession() {
