@@ -12,6 +12,15 @@ import SwiftUI
 /// then Read, Write, Listen and Grammar.
 struct LearnView: View {
     @Environment(AppState.self) private var appState
+    @State private var toolTaps = 0
+
+    /// How to say it and Articles get their screens next; for now they give feedback only.
+    private func open(_ tool: LearnTool) {
+        switch tool {
+        case .translate: appState.open(.translate())
+        case .howToSay, .articles: toolTaps += 1
+        }
+    }
 
     private func open(_ skill: LearnSkill) {
         switch skill {
@@ -25,7 +34,11 @@ struct LearnView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.section) {
-                MistakesCard { appState.present(.activity(.mistakes)) }
+                ToolsSection(onOpen: open)
+                LearnSection(title: "Fix your mistakes", note: Text("1 min")) {
+                    MistakesCard { appState.present(.activity(.mistakes)) }
+                }
+                .fontDesign(.rounded)
                 SkillsSection(onOpen: open)
             }
             .padding(.horizontal, Spacing.screen)
@@ -37,6 +50,7 @@ struct LearnView: View {
         .navigationTitle("Learn")
         .toolbarTitleDisplayMode(.inlineLarge)
         .scrollEdgeEffectStyle(.soft, for: .all)
+        .sensoryFeedback(.impact(weight: .light), trigger: toolTaps)
     }
 }
 
