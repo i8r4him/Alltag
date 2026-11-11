@@ -95,6 +95,10 @@ enum AlltagStore {
             try seedSampleDataIfEmpty(container.mainContext)
             let mara = UserProfile(name: "Mara", level: .b1, interests: Interest.defaultSelection, hasCompletedOnboarding: true)
             container.mainContext.insert(mara)
+            for daysAgo in 0..<3 {
+                let date = Calendar.current.date(byAdding: .day, value: -daysAgo, to: .now) ?? .now
+                container.mainContext.insert(PracticeSession(kind: .conversation, secondsSpoken: 180, date: date))
+            }
             return container
         } catch {
             fatalError("Could not create the preview container: \(error)")
