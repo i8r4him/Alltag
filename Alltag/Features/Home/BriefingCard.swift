@@ -54,14 +54,7 @@ struct BriefingCard: View {
         }
         .padding(Spacing.cardLarge)
         .frame(maxWidth: .infinity)
-        .background {
-            RoundedRectangle(cornerRadius: Radius.hero, style: .continuous)
-                .fill(.surface)
-                .overlay {
-                    RoundedRectangle(cornerRadius: Radius.hero, style: .continuous)
-                        .strokeBorder(.white.opacity(0.06), lineWidth: 1)
-                }
-        }
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
         .fontDesign(.rounded)
         .sensoryFeedback(.impact(weight: .light), trigger: taps)
     }

@@ -34,14 +34,7 @@ struct FocusCard: View {
             StartTalkingButton(action: action)
         }
         .padding(Spacing.cardLarge)
-        .background {
-            RoundedRectangle(cornerRadius: Radius.hero, style: .continuous)
-                .fill(.surface)
-                .overlay {
-                    RoundedRectangle(cornerRadius: Radius.hero, style: .continuous)
-                        .strokeBorder(.white.opacity(0.06), lineWidth: 1)
-                }
-        }
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
         .fontDesign(.rounded)
     }
 }
