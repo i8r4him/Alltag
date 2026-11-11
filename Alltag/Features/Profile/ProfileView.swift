@@ -8,24 +8,54 @@
 import SwiftData
 import SwiftUI
 
-/// The learner's profile: goal, this week, languages, interests, situations.
+/// The learner's profile, in Today's design: who they are, this week,
+/// their goal, languages and interests.
+///
+/// The goal bar and "Where I can manage" are hidden until they're real
+/// (Situations, #178).
 struct ProfileView: View {
-    var report: ProgressReport = MockProgress.report
     @Environment(AppState.self) private var appState
     @Query private var profiles: [UserProfile]
     @Query private var items: [MemoryItem]
     @Query private var solved: [SolvedRule]
+    @Query private var sessions: [PracticeSession]
+
+    private var stats: [ProfileStat] {
+        [ProfileStat(value: ProfileStats.minutesThisWeek(in: sessions), label: "MINUTES", symbol: "waveform"),
+         ProfileStat(value: ProfileStats.wordsThisWeek(in: items), label: "WORDS", symbol: "character.book.closed.fill"),
+         ProfileStat(value: solved.count, label: "RULES", symbol: "checkmark.seal.fill")]
+    }
 
     var body: some View {
         ScrollView {
             if let profile = profiles.first {
-                content(profile)
-                    .padding(.horizontal, Spacing.screen)
-                    .padding(.bottom, 32)
+                VStack(alignment: .leading, spacing: Spacing.section) {
+                    ProfileHeader(profile: profile, stats: stats)
+                    GoalCard(profile: profile)
+                    LearnSection(title: "Languages") {
+                        LearnList {
+                            LanguageRow(systemImage: "character.bubble.fill", name: Text("German"),
+                                        status: Text("Learning · \(profile.level.title)"), highlighted: true)
+                            LanguageRow(systemImage: "house.fill", name: Text(profile.nativeLanguage.title),
+                                        status: Text("Native"), highlighted: false)
+                        }
+                    }
+                    LearnSection(title: "What I care about") {
+                        Text("Shapes your briefings, situations and examples.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 4)
+                        InterestChips(profile: profile)
+                    }
+                }
+                .padding(.horizontal, Spacing.screen)
+                .padding(.bottom, 32)
             }
         }
+        .fontDesign(.rounded)
         .readableContentMargins()
-        .background(.screenBackground)
+        .scrollEdgeEffectStyle(.soft, for: .all)
+        .skyBackground()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -33,159 +63,120 @@ struct ProfileView: View {
             }
         }
     }
+}
 
-    @ViewBuilder
-    private func content(_ profile: UserProfile) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            header(profile)
-            GoalCard(profile: profile, report: report).padding(.top, 14)
+/// One of the three numbers for this week.
+private struct ProfileStat: Identifiable {
+    let value: Int
+    let label: LocalizedStringResource
+    let symbol: String
+    var id: String { symbol }
+}
 
-            section("This week")
-            HStack(spacing: 8) {
-                StatTile(value: Text("\(report.minutesSpoken) min"), label: "spoken")
-                StatTile(value: Text(ProfileStats.wordsThisWeek(in: items), format: .number), label: "words met")
-                StatTile(value: Text(solved.count, format: .number), label: "rules solved")
-            }
+/// A big number with its word and symbol underneath, like Today's.
+private struct BigStat: View {
+    let stat: ProfileStat
 
-            section("Languages")
-            VStack(spacing: 0) {
-                languageRow(Text("German"), status: Text("Learning · \(profile.level.title)"), highlighted: true)
-                Divider().padding(.leading, Spacing.card)
-                languageRow(Text(profile.nativeLanguage.title), status: Text("Native"), highlighted: false)
-            }
-            .background(.surface, in: .rect(cornerRadius: Radius.innerCard, style: .continuous))
-
-            section("What I care about", subtitle: "Shapes your briefings, situations and examples.")
-            InterestChips(profile: profile)
-
-            section("Where I can manage")
-            situationsRow
-        }
-    }
-
-    private func header(_ profile: UserProfile) -> some View {
-        VStack(spacing: 10) {
-            Avatar(name: profile.name, diameter: 88)
-            Text(verbatim: profile.name)
-                .textRole(.title2)
-                .accessibilityAddTraits(.isHeader)
-            Text("Learning German since \(profile.learningSince.formatted(.dateTime.month(.wide).year()))")
-                .textRole(.bodySmall)
-                .foregroundStyle(.secondary)
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(stat.value, format: BigNumber.style(for: stat.value))
+                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            Label { Text(stat.label) } icon: { Image(systemName: stat.symbol) }
+                .font(.subheadline.weight(.semibold))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.accent)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
         .frame(maxWidth: .infinity)
-        .multilineTextAlignment(.center)
-        .padding(.top, 8)
-    }
-
-    private func section(_ title: LocalizedStringKey, subtitle: LocalizedStringKey? = nil) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            SectionHeader(title)
-            if let subtitle {
-                Text(subtitle).textRole(.bodySmall).foregroundStyle(.secondary)
-            }
-        }
-        .padding(.horizontal, 4)
-        .padding(.top, 16)
-    }
-
-    private func languageRow(_ name: Text, status: Text, highlighted: Bool) -> some View {
-        HStack {
-            name.textRole(.body)
-            Spacer()
-            status
-                .textRole(.meta)
-                .fontWeight(highlighted ? .semibold : .regular)
-                .foregroundStyle(highlighted ? AnyShapeStyle(.accent) : AnyShapeStyle(.secondary))
-        }
-        .padding(.horizontal, Spacing.card)
-        .padding(.vertical, 14)
-        .accessibilityElement(children: .combine)
-    }
-
-    private var situationsRow: some View {
-        Button { appState.open(.progress) } label: {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(ProfileStats.situationsSummary(report))
-                        .textRole(.body)
-                    if let next = report.nextToWorkOn {
-                        Text("Next to work on: \(next.name.lowercased())")
-                            .textRole(.meta)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-                    .accessibilityHidden(true)
-            }
-            .padding(Spacing.card)
-            .background(.surface, in: .rect(cornerRadius: Radius.innerCard, style: .continuous))
-            .contentShape(.rect)
-        }
-        .buttonStyle(.card)
         .accessibilityElement(children: .combine)
     }
 }
 
-/// "MY GOAL" with the learner's goal and the way to the next level.
+/// "Learning German since November 2026".
+private func sinceText(_ profile: UserProfile) -> Text {
+    Text("Learning German since \(profile.learningSince.formatted(.dateTime.month(.wide).year()))")
+}
+
+/// The avatar and name, centred, then the week as one card split in three.
+private struct ProfileHeader: View {
+    let profile: UserProfile
+    let stats: [ProfileStat]
+
+    var body: some View {
+        VStack(spacing: 20) {
+            VStack(spacing: 10) {
+                Avatar(name: profile.name, diameter: 88)
+                    .overlay { Circle().strokeBorder(.accent.opacity(0.6), lineWidth: 2) }
+                Text(verbatim: profile.name)
+                    .font(.title.bold())
+                    .accessibilityAddTraits(.isHeader)
+                sinceText(profile)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .multilineTextAlignment(.center)
+            .padding(.top, 12)
+
+            VStack(alignment: .leading, spacing: 14) {
+                Label { Text("This week") } icon: { Image(systemName: "calendar") }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                HStack(alignment: .top, spacing: 0) {
+                    ForEach(Array(stats.enumerated()), id: \.element.id) { index, stat in
+                        if index > 0 { Divider().frame(height: 52) }
+                        BigStat(stat: stat)
+                    }
+                }
+            }
+            .padding(Spacing.cardLarge)
+            .learnSurface()
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+/// "MY GOAL" with the learner's goal, on a Focus surface.
 private struct GoalCard: View {
     let profile: UserProfile
-    let report: ProgressReport
-
-    private var nextLevel: Level? { Level.allCases.drop(while: { $0 != profile.level }).dropFirst().first }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Eyebrow(title: "My goal")
-            Text(profile.goal.statement)
-                .font(.system(.title3, weight: .semibold))
-            if let nextLevel {
-                HStack(spacing: 10) {
-                    GeometryReader { proxy in
-                        ZStack(alignment: .leading) {
-                            Capsule().fill(.surfaceSecondary)
-                            Capsule().fill(.accentFill).frame(width: proxy.size.width * report.progressToNextLevel)
-                        }
-                    }
-                    .frame(height: 5)
-                    // Level code and target are content, not catalog text.
-                    Text(verbatim: "\(nextLevel.title) \(report.nextLevelTarget)")
-                        .textRole(.meta)
-                        .foregroundStyle(.secondary)
-                }
-                .accessibilityElement(children: .combine)
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                Eyebrow(title: "My goal")
+                Text(profile.goal.statement)
+                    .font(.title3.weight(.semibold))
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            ScenarioArtwork(systemImage: "flag.fill", symbolSize: 26, cornerRadius: 16)
+                .frame(width: 64, height: 64)
         }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background {
-            RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
-                .fill(.surface)
-                .overlay {
-                    RadialGradient(colors: [.accentFill.opacity(0.12), .clear], center: .topTrailing, startRadius: 0, endRadius: 240)
-                        .clipShape(.rect(cornerRadius: Radius.card, style: .continuous))
-                }
-        }
+        .padding(Spacing.cardLarge)
+        .learnSurface()
     }
 }
 
-/// A number with a small label.
-private struct StatTile: View {
-    let value: Text
-    let label: LocalizedStringResource
+/// A language with how the learner knows it.
+private struct LanguageRow: View {
+    let systemImage: String
+    let name: Text
+    let status: Text
+    let highlighted: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            value.textRole(.sectionHeader)
-            Text(label).textRole(.caption).foregroundStyle(.secondary)
+        HStack(spacing: 14) {
+            ScenarioArtwork(systemImage: systemImage, symbolSize: 22, cornerRadius: 12)
+                .frame(width: 52, height: 52)
+            name.font(.headline)
+            Spacer()
+            status
+                .font(.subheadline.weight(highlighted ? .semibold : .regular))
+                .foregroundStyle(highlighted ? AnyShapeStyle(.accent) : AnyShapeStyle(.secondary))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(.surface, in: .rect(cornerRadius: Radius.option, style: .continuous))
+        .padding(Spacing.card)
         .accessibilityElement(children: .combine)
     }
 }
@@ -215,6 +206,12 @@ private struct InterestChips: View {
 
 /// Numbers for the Profile, kept out of the view so they can be tested.
 enum ProfileStats {
+    /// Whole minutes spoken in the last seven days.
+    static func minutesThisWeek(in sessions: [PracticeSession], now: Date = .now, calendar: Calendar = .current) -> Int {
+        let weekAgo = calendar.date(byAdding: .day, value: -7, to: now) ?? now
+        return sessions.filter { $0.date > weekAgo }.minutesSpoken
+    }
+
     static func wordsThisWeek(in items: [MemoryItem], now: Date = .now, calendar: Calendar = .current) -> Int {
         let weekAgo = calendar.date(byAdding: .day, value: -7, to: now) ?? now
         return items.filter { $0.createdAt > weekAgo }.count
