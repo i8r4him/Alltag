@@ -15,7 +15,7 @@ struct LearnHeroCard: View {
     let systemImage: String
     let buttonTitle: LocalizedStringResource
     let buttonImage: String
-    /// The filled theme-colour button, for the screen's main action.
+    /// The app's big button, for the screen's main action.
     var isProminent = false
     let action: () -> Void
 
@@ -37,21 +37,23 @@ struct LearnHeroCard: View {
                     .frame(width: 88, height: 88)
             }
             if isProminent {
-                button.buttonStyle(.glassProminent).tint(Color.accentFill)
+                Button(action: action) { buttonLabel }
+                    .buttonStyle(.primary)
             } else {
-                button.buttonStyle(.glass)
+                Button(action: action) {
+                    buttonLabel
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, minHeight: 34)
+                }
+                .buttonStyle(.glass)
             }
         }
         .padding(Spacing.cardLarge)
         .learnSurface()
     }
 
-    private var button: some View {
-        Button(action: action) {
-            Label { Text(buttonTitle) } icon: { Image(systemName: buttonImage) }
-                .font(.headline)
-                .frame(maxWidth: .infinity, minHeight: 34)
-        }
+    private var buttonLabel: some View {
+        Label { Text(buttonTitle) } icon: { Image(systemName: buttonImage) }
     }
 }
 

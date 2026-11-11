@@ -53,7 +53,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Layout/
 │  │  │  └─ ReadableWidth.swift           .readableContentMargins() / .readableWidth() for wide screens
 │  │  └─ Components/
-│  │     ├─ Buttons.swift                 PrimaryButtonStyle (.primary/.primaryCompact),
+│  │     ├─ Buttons.swift                 PrimaryButtonStyle (.primary: the big glass button with the theme's lights; .primaryCompact),
 │  │     │                                OutlineButtonStyle (.outline), GlassButton
 │  │     ├─ Pill.swift                    Pill, ChipButtonStyle (.chip(isSelected:))
 │  │     ├─ Headers.swift                 Eyebrow, SectionHeader (.large/.grouped)
