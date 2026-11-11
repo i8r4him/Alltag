@@ -73,6 +73,8 @@ final class ConversationModel {
     private var cloudSession: (any RealtimeConversationSession)?
     /// The live voice has been asked for but hasn't said or heard anything yet.
     private(set) var isConnecting = false
+    /// Free talk was refused because today's live conversations are used up.
+    private(set) var hasReachedLimit = false
     private(set) var finishedLiveConversation = false
     /// Checking a finished live conversation for mistakes.
     private(set) var liveReview: LiveReview = .none
@@ -423,21 +425,12 @@ extension ConversationModel {
     private func cloudFailed(_ error: any Error, session: any RealtimeConversationSession) {
         guard cloudSession === session else { return }
         fallBackFromCloud()
-        var text: LocalizedStringResource
-        switch error as? RealtimeServiceError {
-        case .dailyLimit: text = "You've reached your live voice limit for today. Keep practising on your iPhone."
-        case .busy: text = "Live voice is busy right now. You can keep practising on your iPhone."
-        default: text = "Live voice is unavailable. You can keep practising on your iPhone."
-        }
-        if scenario.isFreeTalk {
-            // Free talk has no script, so the companion can only be tried again.
-            if case .dailyLimit? = error as? RealtimeServiceError {
-                text = "You've talked a lot today. Come back tomorrow for more."
-            } else {
-                text = "I can't talk right now. Tap me to try again."
-            }
-        }
-        notice = ToastMessage(text: text, systemImage: "waveform.slash")
+        let reason = error as? RealtimeServiceError
+        // Free talk has no script to fall back to, so the limit gets its own screen.
+        hasReachedLimit = scenario.isFreeTalk && reason == .dailyLimit
+        guard !hasReachedLimit else { return }
+        notice = ToastMessage(text: LiveVoiceNotice.text(for: reason, freeTalk: scenario.isFreeTalk),
+                              systemImage: "waveform.slash")
     }
 
     private func fallBackFromCloud() {

@@ -76,32 +76,10 @@ private struct ConversationContent: View {
                         .padding(.top, 8)
                 }
 
-                TranscriptView(messages: model.messages, heardText: model.heardText)
-
-                if model.needsCloudConsent {
-                    CloudConsentCard {
-                        appState.settings.usesCloudForPro = true
-                        model.setCloudVoiceConsent(true)
-                        SoundEffects.play(.focus)
-                        Task {
-                            try? await Task.sleep(for: .milliseconds(450))
-                            model.orbTapped()
-                        }
-                    }
-                    .padding(.horizontal, 22)
-                    .padding(.bottom, 12)
-                }
-
-                if model.showsHint, let line = model.expectedLine {
-                    HintCard(german: line.german)
-                        .padding(.horizontal, 22)
-                        .padding(.bottom, 12)
-                        .transition(.opacity)
-                }
-
-                switch model.mode {
-                case .voice: voiceControls
-                case .text: textControls
+                if model.hasReachedLimit {
+                    LiveLimitView { appState.dismissFullScreen() }
+                } else {
+                    talking
                 }
             }
             .readableWidth(Spacing.focusedWidth)
@@ -182,6 +160,37 @@ private struct ConversationContent: View {
         .pickerStyle(.segmented)
         .labelStyle(.iconOnly)
         .frame(width: 96)
+    }
+
+    /// The transcript and the controls under it.
+    @ViewBuilder private var talking: some View {
+        TranscriptView(messages: model.messages, heardText: model.heardText)
+
+        if model.needsCloudConsent {
+            CloudConsentCard {
+                appState.settings.usesCloudForPro = true
+                model.setCloudVoiceConsent(true)
+                SoundEffects.play(.focus)
+                Task {
+                    try? await Task.sleep(for: .milliseconds(450))
+                    model.orbTapped()
+                }
+            }
+            .padding(.horizontal, 22)
+            .padding(.bottom, 12)
+        }
+
+        if model.showsHint, let line = model.expectedLine {
+            HintCard(german: line.german)
+                .padding(.horizontal, 22)
+                .padding(.bottom, 12)
+                .transition(.opacity)
+        }
+
+        switch model.mode {
+        case .voice: voiceControls
+        case .text: textControls
+        }
     }
 
     // MARK: Bottom controls
