@@ -31,7 +31,7 @@ App ──(client secret)──▶ OpenAI Realtime API (audio both ways)
 | Status | `error` | Meaning |
 |---|---|---|
 | 401 | `unauthorized` | No or expired Supabase token. Refresh it and retry once. |
-| 429 | `daily_limit` | This learner used today's sessions (`REALTIME_PER_USER_DAILY`, default 10). |
+| 429 | `daily_limit` | This learner used today's sessions (`REALTIME_PER_USER_DAILY`, default 10). Developer accounts are exempt (see below). |
 | 429 | `busy` | Everyone together reached `REALTIME_GLOBAL_DAILY` (default 200). |
 | 502 | `upstream` | OpenAI refused. Check the function logs. |
 | 503 | `not_configured` / `unavailable` | No `OPENAI_API_KEY` set, or the database is unreachable. |
@@ -59,7 +59,19 @@ Required dashboard setting: under **Authentication → Sign In / Providers**, tu
   - Set a monthly budget limit in the OpenAI dashboard.
 - The table `realtime_sessions` has RLS on and no policies, so only the function (service role) can read or write it.
 
+### No daily limit while developing
+
+Accounts listed in `realtime_developers` skip the **per-user** limit. The global limit still applies to them.
+
+- Find your account: it's the `user_id` with the most recent rows in `realtime_sessions` after you start a conversation on your device. The app keeps it in the Keychain, so it survives reinstalling.
+- Add it in the SQL editor:
+  ```sql
+  insert into public.realtime_developers (user_id, note) values ('<user id>', 'Ibrahim’s iPhone');
+  ```
+- Remove the row to get the normal limit back. The app can't read or change this table.
+
 ## Files
 
 - `functions/realtime-session/index.ts`: the function. Deploy it with JWT verification on.
 - `migrations/20261107200000_realtime_sessions.sql`: the session log used for the limits.
+- `migrations/20261111100000_realtime_developers.sql`: the accounts that skip the per-user limit.

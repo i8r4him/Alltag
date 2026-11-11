@@ -15,7 +15,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 const MODEL = Deno.env.get("REALTIME_MODEL") ?? "gpt-realtime";
 const VOICE = Deno.env.get("REALTIME_VOICE") ?? "marin";
-/** Client secrets per user per rolling 24 hours. */
+/** Client secrets per user per rolling 24 hours. Accounts in `realtime_developers` are exempt. */
 const PER_USER_DAILY = Number(Deno.env.get("REALTIME_PER_USER_DAILY") ?? "10");
 /** Client secrets for everyone per rolling 24 hours — a ceiling on the OpenAI bill. */
 const GLOBAL_DAILY = Number(Deno.env.get("REALTIME_GLOBAL_DAILY") ?? "200");
@@ -51,17 +51,22 @@ Deno.serve(async (req) => {
   const context = typeof body.instructions === "string" ? body.instructions.slice(0, MAX_CONTEXT) : "";
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const [mine, everyone] = await Promise.all([
+  const [mine, everyone, developer] = await Promise.all([
     admin.from("realtime_sessions").select("id", { count: "exact", head: true })
       .eq("user_id", user.id).gte("created_at", since),
     admin.from("realtime_sessions").select("id", { count: "exact", head: true })
       .gte("created_at", since),
+    admin.from("realtime_developers").select("user_id", { count: "exact", head: true })
+      .eq("user_id", user.id),
   ]);
   if (mine.error || everyone.error) {
     console.error("Counting sessions failed", mine.error ?? everyone.error);
     return json({ error: "unavailable" }, 503);
   }
-  if ((mine.count ?? 0) >= PER_USER_DAILY) return json({ error: "daily_limit" }, 429);
+  // Developer accounts skip the per-user limit; if the lookup fails, the limit applies.
+  if (developer.error) console.error("Looking up the developer list failed", developer.error);
+  const isDeveloper = !developer.error && (developer.count ?? 0) > 0;
+  if (!isDeveloper && (mine.count ?? 0) >= PER_USER_DAILY) return json({ error: "daily_limit" }, 429);
   if ((everyone.count ?? 0) >= GLOBAL_DAILY) return json({ error: "busy" }, 429);
 
   const upstream = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
