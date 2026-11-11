@@ -8,7 +8,7 @@
 import SwiftData
 import SwiftUI
 
-/// The learner's profile, in Today's design: who they are, this week,
+/// The learner's profile, in Today's design (sky, glass cards): who they are, this week,
 /// their goal, languages and interests.
 ///
 /// The goal bar and "Where I can manage" are hidden until they're real
@@ -33,12 +33,14 @@ struct ProfileView: View {
                     ProfileHeader(profile: profile, stats: stats)
                     GoalCard(profile: profile)
                     LearnSection(title: "Languages") {
-                        LearnList {
+                        VStack(spacing: 0) {
                             LanguageRow(systemImage: "character.bubble.fill", name: Text("German"),
                                         status: Text("Learning · \(profile.level.title)"), highlighted: true)
+                            Divider().padding(.leading, 82)
                             LanguageRow(systemImage: "house.fill", name: Text(profile.nativeLanguage.title),
                                         status: Text("Native"), highlighted: false)
                         }
+                        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
                     }
                     LearnSection(title: "What I care about") {
                         Text("Shapes your briefings, situations and examples.")
@@ -133,13 +135,13 @@ private struct ProfileHeader: View {
                 }
             }
             .padding(Spacing.cardLarge)
-            .learnSurface()
+            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
         }
         .frame(maxWidth: .infinity)
     }
 }
 
-/// "MY GOAL" with the learner's goal, on a Focus surface.
+/// "MY GOAL" with the learner's goal, on glass.
 private struct GoalCard: View {
     let profile: UserProfile
 
@@ -155,7 +157,7 @@ private struct GoalCard: View {
                 .frame(width: 64, height: 64)
         }
         .padding(Spacing.cardLarge)
-        .learnSurface()
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
     }
 }
 

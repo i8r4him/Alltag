@@ -52,7 +52,7 @@ iCloud sync (SwiftData + CloudKit, #54) is switched on at the end of `3 · Memor
 ## Design language
 
 - **The look comes from Today** (`Features/Home/`): the `.skyBackground()`, Liquid Glass (`glassEffect`, `.glass` / `.glassProminent` buttons), `.fontDesign(.rounded)`, and `ScenarioArtwork` for illustrations.
-- **Cards:** Today's cards are clear Liquid Glass (`.glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))`). Learn and the profile still use the dark Focus surface (`.learnSurface()`: dark with a faint white stroke) until they're moved over.
+- **Cards:** Today's and the profile's cards are clear Liquid Glass (`.glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))`). Learn still uses the dark Focus surface (`.learnSurface()`: dark with a faint white stroke) until they're moved over.
 - **Everything follows the theme colour** (`AppTheme.shared.palette`, `.accent`, `.accentFill`). No fixed colours except meaning (coral for mistakes).
 - **Choosing a design:** when a screen's design is open, build two to four options on the branch behind a temporary "‹ n / N ›" glass switcher. The maintainer picks one, and the others and the switcher are removed before the PR is merged.
 - **Smooth interaction:** state that drives one control (a popover, a toggle) lives in that control's own view, so changing it doesn't redraw the whole screen mid-animation (see `StreakButton`).
