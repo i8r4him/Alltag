@@ -7,7 +7,14 @@
 
 import Foundation
 
-/// Days in a row with learning activity.
+/// One day in the streak's week.
+struct StreakDay: Identifiable, Equatable {
+    let date: Date
+    let practised: Bool
+    var id: Date { date }
+}
+
+/// Days in a row with practice: the days with at least one `PracticeSession`.
 enum Streak {
     /// Consecutive days with activity, counting back from today, or from
     /// yesterday when there's nothing yet today (the streak isn't lost until
@@ -26,5 +33,16 @@ enum Streak {
             day = previous
         }
         return count
+    }
+
+    /// The last seven days, oldest first and ending today, with whether the
+    /// learner practised on each.
+    static func week(activity: [Date], today: Date = .now, calendar: Calendar = .current) -> [StreakDay] {
+        let days = Set(activity.map { calendar.startOfDay(for: $0) })
+        let start = calendar.startOfDay(for: today)
+        return (0..<7).reversed().compactMap { offset in
+            calendar.date(byAdding: .day, value: -offset, to: start)
+                .map { StreakDay(date: $0, practised: days.contains($0)) }
+        }
     }
 }

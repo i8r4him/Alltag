@@ -149,7 +149,9 @@ Alltag/                                   ← repo root
 │  │  │     ├─ PermissionsStep.swift
 │  │  │     └─ SummaryStep.swift
 │  │  ├─ Home/
-│  │  │  ├─ HomeView.swift                the Today tab; profile Menu in the toolbar
+│  │  │  ├─ HomeView.swift                the Today tab; streak flame and profile Menu in the toolbar
+│  │  │  ├─ Streak.swift                  days in a row with practice, and the last seven days
+│  │  │  ├─ StreakPopover.swift           tap the flame: days in a row, the week, what to do today
 │  │  │  ├─ StarSky.swift                static night haze in the theme colour
 │  │  │  ├─ HomeHeader.swift              Avatar
 │  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Spoken · Level (→ Progress)

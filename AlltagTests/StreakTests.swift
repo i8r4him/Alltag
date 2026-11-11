@@ -35,4 +35,13 @@ struct StreakTests {
     func broken(days: [Int]) {
         #expect(Streak.days(activity: days.map { daysAgo($0) }, today: today, calendar: calendar) == 0)
     }
+
+    @Test("The week is the last seven days, ending today, with the days practised")
+    func week() {
+        let week = Streak.week(activity: [daysAgo(0), daysAgo(0, hour: 20), daysAgo(2), daysAgo(9)],
+                               today: today, calendar: calendar)
+        #expect(week.count == 7)
+        #expect(week.last?.date == calendar.startOfDay(for: today))
+        #expect(week.map(\.practised) == [false, false, false, false, true, false, true])
+    }
 }

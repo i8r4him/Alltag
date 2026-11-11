@@ -34,6 +34,12 @@ struct SettingsView: View {
             #if DEBUG
             Section(header: Text(verbatim: "Developer")) {
                 NavigationLink { CompanionEditor() } label: { Text(verbatim: "Companion") }
+                // Until conversations and the 60 seconds record sessions (#169, #184).
+                Button { addSession(daysAgo: 0) } label: { Text(verbatim: "Add practice today (2 min)") }
+                Button { addSession(daysAgo: 1) } label: { Text(verbatim: "Add practice yesterday (2 min)") }
+                Button(role: .destructive) {
+                    try? modelContext.delete(model: PracticeSession.self)
+                } label: { Text(verbatim: "Delete all practice") }
             }
             #endif
         }
@@ -48,6 +54,13 @@ struct SettingsView: View {
             model.message = nil
         }
     }
+
+    #if DEBUG
+    private func addSession(daysAgo: Int) {
+        let date = Calendar.current.date(byAdding: .day, value: -daysAgo, to: .now) ?? .now
+        modelContext.insert(PracticeSession(kind: .conversation, secondsSpoken: 120, date: date))
+    }
+    #endif
 
     private var moreSection: some View {
         Section("More") {

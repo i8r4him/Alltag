@@ -16,6 +16,8 @@ struct HomeView: View {
     @Environment(\.services) private var services
     @Query private var profiles: [UserProfile]
     @Query private var memoryItems: [MemoryItem]
+    @Query private var sessions: [PracticeSession]
+    @State private var showsStreak = false
     @State private var events: [CalendarEvent] = []
 
     private var name: String { profiles.first?.name ?? "" }
@@ -52,6 +54,7 @@ struct HomeView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
+                    showsStreak = true
                 } label: {
                     // Not a Label: toolbars show labels as icons only.
                     HStack(spacing: 4) {
@@ -64,6 +67,11 @@ struct HomeView: View {
                     }
                 }
                 .accessibilityLabel(Text("^[\(streak) day](inflect: true) in a row"))
+                .popover(isPresented: $showsStreak) {
+                    StreakPopover(days: streak, week: Streak.week(activity: sessions.map(\.date)))
+                        .presentationCompactAdaptation(.popover)
+                }
+                .sensoryFeedback(.impact(weight: .light), trigger: showsStreak) { _, shows in shows }
             }
             ToolbarSpacer(.fixed, placement: .topBarTrailing)
             ToolbarItem(placement: .topBarTrailing) {
@@ -92,8 +100,8 @@ struct HomeView: View {
 
     private var level: Level { profiles.first?.level ?? .a1 }
 
-    /// Days in a row with words saved or picked up.
-    private var streak: Int { Streak.days(activity: memoryItems.map(\.createdAt)) }
+    /// Days in a row with practice.
+    private var streak: Int { Streak.days(activity: sessions.map(\.date)) }
 
     private func startFocus() {
         appState.present(.conversation(MockScenarios.todaysFocus))
