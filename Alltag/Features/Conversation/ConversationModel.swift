@@ -71,6 +71,8 @@ final class ConversationModel {
     private var usesCloudVoice: Bool
     private var hasFallenBack = false
     private var cloudSession: (any RealtimeConversationSession)?
+    /// The live voice has been asked for but hasn't said or heard anything yet.
+    private(set) var isConnecting = false
     private(set) var finishedLiveConversation = false
     /// Checking a finished live conversation for mistakes.
     private(set) var liveReview: LiveReview = .none
@@ -130,6 +132,7 @@ final class ConversationModel {
     /// Under the orb: "Tap to speak", "Listening… tap when done", …
     var stateLabel: LocalizedStringResource? {
         if isUsingCloudVoice {
+            if isConnecting { return "Connecting…" }
             switch phase {
             case .idle, .listening: return "Live voice · Tap to finish"
             case .thinking: return "Thinking…"
@@ -365,6 +368,7 @@ extension ConversationModel {
         cloudSession = session
         if messages.count == 1, messages[0].realtimeID == nil { messages.removeAll() }
         phase = .thinking
+        isConnecting = true
         notice = nil
         cloudTask = Task { [weak self, session] in
             do {
@@ -391,6 +395,7 @@ extension ConversationModel {
     }
 
     private func applyCloudEvent(_ event: RealtimeConversationEvent) {
+        isConnecting = false
         switch event {
         case .phase(let phase):
             self.phase = phase
@@ -476,6 +481,7 @@ extension ConversationModel {
         cloudTask = nil
         cloudDeadline?.cancel()
         cloudDeadline = nil
+        isConnecting = false
         messages.removeAll { $0.line.german.isEmpty }
         phase = .idle
     }
