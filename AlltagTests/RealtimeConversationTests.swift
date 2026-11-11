@@ -207,6 +207,19 @@ struct RealtimeConversationTests {
         #expect(realtime.starts == 2)
     }
 
+    @Test("At the daily limit free talk shows the limit screen, not a notice")
+    func freeTalkLimit() async {
+        let realtime = StubRealtimeService(error: .dailyLimit)
+        let model = makeModel(realtime: realtime, scenario: MockScenarios.freeTalk)
+
+        model.orbTapped()
+        await model.waitForCloudConversation()
+
+        #expect(model.hasReachedLimit)
+        #expect(model.notice == nil)
+        #expect(!model.isUsingCloudVoice)
+    }
+
     @Test("When the learner talks over the companion, its line stays and ends in …")
     func interruptedLine() async throws {
         let realtime = StubRealtimeService()

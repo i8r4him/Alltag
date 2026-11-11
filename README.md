@@ -166,6 +166,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls; free talk: voice only, consent card
 │  │  │  ├─ ConversationModel.swift       state machine
 │  │  │  ├─ LineReviewer.swift            checks live learner lines on device while the conversation goes on (#209)
+│  │  │  ├─ LiveLimitView.swift           free talk at the daily limit: what happened, when again, what still works (#210)
 │  │  │  ├─ TranscriptView.swift          companion lines (cut off with …), learner lines in a theme-tinted bubble, heard text with caret
 │  │  │  ├─ FeedbackCard.swift
 │  │  │  └─ SummarySheet.swift            (#30)
