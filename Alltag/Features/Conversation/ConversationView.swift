@@ -308,11 +308,8 @@ private struct CloudConsentCard: View {
                 .foregroundStyle(.secondary)
             Button(action: onAllow) {
                 Text("Allow and start")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, minHeight: 34)
             }
-            .buttonStyle(.glassProminent)
-            .tint(.accentFill)
+            .buttonStyle(.primary)
         }
         .padding(Spacing.card)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))

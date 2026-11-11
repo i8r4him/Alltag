@@ -61,11 +61,8 @@ private struct ScanLetterCard: View {
             }
             Button(action: action) {
                 Label("Scan a letter", systemImage: "camera.viewfinder")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, minHeight: 34)
             }
-            .buttonStyle(.glassProminent)
-            .tint(Color.accentFill)
+            .buttonStyle(.primary)
         }
         .padding(Spacing.cardLarge)
         .learnSurface()

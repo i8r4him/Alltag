@@ -69,7 +69,7 @@ struct ScenarioArtwork: View {
     }
 }
 
-/// The Start talking button: glass with two soft lights rising from its bottom edge.
+/// The Start talking button: the app's big button with a waveform.
 struct StartTalkingButton: View {
     let action: () -> Void
 
@@ -77,67 +77,10 @@ struct StartTalkingButton: View {
         GlassEffectContainer {
             Button(action: action) {
                 Label("Start talking", systemImage: "waveform")
-                    .font(.title3.weight(.bold))
-                    .fontDesign(.rounded)
-                    .frame(maxWidth: .infinity, minHeight: 34)
             }
-            .buttonStyle(AmberButtonStyle())
+            .buttonStyle(.primary)
             .accessibilityHint("Starts a conversation at the dentist.")
         }
-    }
-}
-
-/// A glass capsule with two soft amber lights rising from its bottom edge.
-private struct AmberButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .foregroundStyle(.white)
-            .padding(.vertical, 12)
-            .background {
-                ZStack {
-                    BottomLight(color: Self.honey, x: 0.3)
-                    BottomLight(color: Self.orange, x: 0.78)
-                }
-                .clipShape(.capsule)
-                .overlay {
-                    // The rim: faint white at the top, the lights' colours along the bottom.
-                    Capsule().strokeBorder(
-                        LinearGradient(colors: [.white.opacity(0.18), .clear],
-                                       startPoint: .top, endPoint: .center),
-                        lineWidth: 1)
-                    Capsule().strokeBorder(
-                        LinearGradient(colors: [.clear, Self.honey.opacity(0.7), Self.orange.opacity(0.8), .clear],
-                                       startPoint: .leading, endPoint: .trailing),
-                        lineWidth: 1)
-                        .mask {
-                            LinearGradient(colors: [.clear, .black], startPoint: .center, endPoint: .bottom)
-                        }
-                }
-            }
-            // Interactive glass animates the press itself (scale and glow); a second
-            // scale animation on the same layer fights it and drops frames.
-            .glassEffect(.regular.interactive(), in: .capsule)
-            .sensoryFeedback(.impact(weight: .medium), trigger: configuration.isPressed) { _, pressed in pressed }
-    }
-
-    /// The two lights, from the theme. Gold keeps its original honey and orange.
-    static var honey: Color {
-        AppTheme.shared.palette == .gold ? Color(hex: 0xFFCC7A) : AppTheme.shared.palette.mid
-    }
-    static var orange: Color {
-        AppTheme.shared.palette == .gold ? Color(hex: 0xF28C38) : AppTheme.shared.palette.rim
-    }
-}
-
-/// A soft light centred just below the bottom edge, fading upwards.
-private struct BottomLight: View {
-    let color: Color
-    let x: CGFloat
-
-    var body: some View {
-        RadialGradient(colors: [color.opacity(0.55), color.opacity(0.18), .clear],
-                       center: UnitPoint(x: x, y: 1.1),
-                       startRadius: 0, endRadius: 140)
     }
 }
 

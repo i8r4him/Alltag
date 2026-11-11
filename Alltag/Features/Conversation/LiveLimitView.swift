@@ -33,13 +33,8 @@ struct LiveLimitView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(Spacing.card)
                     .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
-                Button(action: onDone) {
-                    Text("Done")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, minHeight: 34)
-                }
-                .buttonStyle(.glassProminent)
-                .tint(.accentFill)
+                Button(action: onDone) { Text("Done") }
+                    .buttonStyle(.primary)
             }
             .padding(.horizontal, 22)
             .padding(.bottom, 12)
