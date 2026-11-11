@@ -156,7 +156,10 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
             // The learner's mistakes have to stay in the transcript, not be tidied up.
             "transcription": ["model": "gpt-transcribe", "language": "de", "prompt": Self.transcriptionPrompt],
             "noise_reduction": ["type": "near_field"],
-            "turn_detection": ["type": "semantic_vad", "eagerness": "low", "interrupt_response": true, "create_response": true]
+            // A fixed silence, not a guess at whether the sentence is finished: learners
+            // stop mid-sentence to think, and must not be answered while they do.
+            "turn_detection": ["type": "server_vad", "silence_duration_ms": context.thinkingPause,
+                               "interrupt_response": true, "create_response": true]
         ]
         let output: [String: Any] = ["format": format, "voice": voice, "speed": context.slowerSpeech ? 0.8 : 1.0]
         let session: [String: Any] = ["type": "realtime", "output_modalities": ["audio"],

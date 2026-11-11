@@ -11,6 +11,9 @@ struct RealtimeConversationContext {
     let scenario: String
     let instructions: String
     let slowerSpeech: Bool
+    /// How long the learner may stay silent, in milliseconds, before the
+    /// companion answers. Beginners get more time to find their words.
+    let thinkingPause: Int
 
     init(scenario: Scenario, level: Level, slowerSpeech: Bool) {
         self.scenario = scenario.id.rawValue
@@ -28,6 +31,17 @@ struct RealtimeConversationContext {
             Start by greeting the learner in character and inviting them to speak.
             """
         self.slowerSpeech = slowerSpeech
+        self.thinkingPause = Self.thinkingPause(for: level)
+    }
+
+    static func thinkingPause(for level: Level) -> Int {
+        switch level {
+        case .a1: 2800
+        case .a2: 2400
+        case .b1: 2000
+        case .b2: 1600
+        case .c1, .c2: 1200
+        }
     }
 }
 
