@@ -147,7 +147,7 @@ struct RealtimeConversationTests {
     }
 
     @Test("Free talk starts the live voice with free-conversation instructions")
-    func freeTalkStarts() async {
+    func freeTalkStarts() async throws {
         let realtime = StubRealtimeService()
         let model = makeModel(realtime: realtime, scenario: MockScenarios.freeTalk)
 
@@ -157,6 +157,13 @@ struct RealtimeConversationTests {
         await realtime.session.waitUntilRunning()
 
         #expect(model.isUsingCloudVoice)
+        // No placeholder greeting: the first line is the live voice's own.
+        #expect(model.messages.isEmpty)
+        #expect(String(localized: try #require(model.stateLabel)) == "Connecting…")
+        let emit = try #require(realtime.session.emit)
+        emit(.transcript(id: "hello", speaker: .companion, text: "Hallo!", replacesPrevious: true))
+        #expect(model.messages.map(\.line.german) == ["Hallo!"])
+        #expect(String(localized: try #require(model.stateLabel)) != "Connecting…")
         #expect(realtime.context?.scenario == "freeTalk")
         #expect(realtime.context?.instructions.contains("Free conversation") == true)
         model.stop()

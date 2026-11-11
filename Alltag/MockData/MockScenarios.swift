@@ -32,10 +32,8 @@ enum MockScenarios {
         completion: "You talked in German.",
         savedPhrases: [],
         systemImage: "bubble.left.and.bubble.right.fill",
-        script: [
-            ConversationLine(speaker: .companion, german: "Hallo! Wie geht's dir heute?",
-                             english: "Hi! How are you today?")
-        ]
+        // No script: the first line on screen is the live voice's own greeting.
+        script: []
     )
 
     static let dentist = Scenario(
