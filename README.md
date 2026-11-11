@@ -154,7 +154,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ StreakPopover.swift           tap the flame: days in a row, the week, what to do today
 │  │  │  ├─ StarSky.swift                static night haze in the theme colour
 │  │  │  ├─ HomeHeader.swift              Avatar
-│  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Spoken · Level (→ Progress)
+│  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Minutes · Level (→ Progress), BigNumber (1.2k from 1,000)
 │  │  │  ├─ FocusCard.swift               title, line and scenario artwork; Start talking (glass, lights from below)
 │  │  │  ├─ ComingUpCard.swift
 │  │  │  ├─ FromYourDayList.swift         briefing card, Today actions and Beyond row
@@ -205,7 +205,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Progress/
 │  │  │  └─ ProgressOverviewView.swift    level track, situations, skills, retention, insights
 │  │  ├─ Profile/
-│  │  │  └─ ProfileView.swift
+│  │  │  └─ ProfileView.swift            Today's design: avatar, this week (minutes, words, rules), goal, languages, interests
 │  │  ├─ Settings/
 │  │  │  ├─ SettingsView.swift
 │  │  │  ├─ ThemePicker.swift           Appearance: colour swatches that set the theme and the companion

@@ -24,6 +24,16 @@ struct ProfileTests {
         #expect(ProfileStats.wordsThisWeek(in: items, now: now) == 2)
     }
 
+    @Test("Minutes this week add up the practice of the last seven days")
+    func minutesThisWeek() {
+        let sessions = [
+            PracticeSession(kind: .conversation, secondsSpoken: 120, date: now),
+            PracticeSession(kind: .sixtySeconds, secondsSpoken: 60, date: now.addingTimeInterval(-6 * 86_400)),
+            PracticeSession(kind: .conversation, secondsSpoken: 600, date: now.addingTimeInterval(-9 * 86_400))
+        ]
+        #expect(ProfileStats.minutesThisWeek(in: sessions, now: now) == 3)
+    }
+
     @Test("Situations are summarised with the confident part in bold, and the first shaky one is next")
     func situations() {
         let report = MockProgress.report

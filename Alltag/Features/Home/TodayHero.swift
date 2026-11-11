@@ -41,9 +41,9 @@ struct TodayHero: View {
                 onProgress()
             } label: {
                 HStack(alignment: .top) {
-                    stat(Text(words, format: .number), label: "WORDS",
+                    stat(Text(words, format: BigNumber.style(for: words)), label: "WORDS",
                          symbol: "character.book.closed.fill")
-                    stat(Text(minutesSpoken, format: .number), label: "MINUTES",
+                    stat(Text(minutesSpoken, format: BigNumber.style(for: minutesSpoken)), label: "MINUTES",
                          symbol: "waveform")
                     stat(Text(verbatim: level.title), label: "LEVEL",
                          symbol: "chart.bar.fill")
@@ -65,6 +65,8 @@ struct TodayHero: View {
             value
                 .font(.system(size: 40, weight: .bold, design: .rounded))
                 .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
             Label { Text(label) } icon: { Image(systemName: symbol) }
                 .font(.headline)
                 .symbolRenderingMode(.hierarchical)
@@ -72,6 +74,22 @@ struct TodayHero: View {
         }
         .frame(maxWidth: .infinity)
     }
+}
+
+/// How the big numbers on Today and the profile are written: in full below
+/// 1,000, then short where the language has it ("1.2k" in English; German
+/// writes thousands in full), so three still fit side by side.
+enum BigNumber {
+    static func style(for value: Int, locale: Locale = .autoupdatingCurrent) -> IntegerFormatStyle<Int> {
+        let style = IntegerFormatStyle<Int>(locale: locale)
+        return abs(value) < 1_000 ? style : style.notation(.compactName)
+    }
+}
+
+#Preview("Large numbers") {
+    TodayHero(words: 12_480, minutesSpoken: 1_250, level: .c1, onStart: {}, onProgress: {})
+        .padding(Spacing.screen)
+        .background(.screenBackground)
 }
 
 #Preview {
