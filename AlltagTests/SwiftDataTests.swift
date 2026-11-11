@@ -141,4 +141,13 @@ struct SwiftDataTests {
         try new.mainContext.save()
         #expect(try new.mainContext.fetchCount(FetchDescriptor<PracticeSession>()) == 1)
     }
+
+    @Test("Minutes spoken add up the sessions' seconds, in whole minutes")
+    func minutesSpoken() {
+        let sessions = [PracticeSession(kind: .conversation, secondsSpoken: 150),
+                        PracticeSession(kind: .sixtySeconds, secondsSpoken: 60),
+                        PracticeSession(kind: .review)]
+        #expect(sessions.minutesSpoken == 3)
+        #expect([PracticeSession]().minutesSpoken == 0)
+    }
 }

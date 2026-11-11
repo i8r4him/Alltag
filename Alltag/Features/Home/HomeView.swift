@@ -16,6 +16,7 @@ struct HomeView: View {
     @Environment(\.services) private var services
     @Query private var profiles: [UserProfile]
     @Query private var memoryItems: [MemoryItem]
+    @Query private var sessions: [PracticeSession]
     @State private var events: [CalendarEvent] = []
 
     private var name: String { profiles.first?.name ?? "" }
@@ -24,7 +25,7 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
-                TodayHero(words: memoryItems.count, minutesSpoken: MockProgress.report.minutesSpoken, level: level,
+                TodayHero(words: memoryItems.count, minutesSpoken: sessions.minutesSpoken, level: level,
                           onStart: startFocus, onProgress: { appState.open(.progress) })
 
                     FocusCard(action: startFocus)
