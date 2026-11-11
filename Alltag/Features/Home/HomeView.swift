@@ -26,7 +26,7 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
                 TodayHero(words: memoryItems.count, minutesSpoken: sessions.minutesSpoken, level: level,
-                          onStart: startFocus, onProgress: { appState.open(.progress) })
+                          onStart: { appState.present(.conversation(.freeTalk)) }, onProgress: { appState.open(.progress) })
 
                     FocusCard(action: startFocus)
                     if !events.isEmpty {

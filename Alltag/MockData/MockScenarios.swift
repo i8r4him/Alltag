@@ -18,8 +18,25 @@ enum MockScenarios {
         case .dentist: dentist
         case .postOffice: postOffice
         case .station: station
+        case .freeTalk: freeTalk
         }
     }
+
+    /// The orb on Today: just talking, about anything. Not in `all`, so Siri
+    /// and Spotlight only offer the role-plays.
+    static let freeTalk = Scenario(
+        id: .freeTalk,
+        title: "Just talk",
+        meta: "About anything you like",
+        goal: "",
+        completion: "You talked in German.",
+        savedPhrases: [],
+        systemImage: "bubble.left.and.bubble.right.fill",
+        script: [
+            ConversationLine(speaker: .companion, german: "Hallo! Wie geht's dir heute?",
+                             english: "Hi! How are you today?")
+        ]
+    )
 
     static let dentist = Scenario(
         id: .dentist,

@@ -134,8 +134,51 @@ struct RealtimeConversationTests {
         #expect(model.fixCount == 0)
     }
 
+    @Test("Free talk without consent asks first and starts nothing")
+    func freeTalkNeedsConsent() {
+        let realtime = StubRealtimeService()
+        let model = makeModel(realtime: realtime, allowed: false, scenario: MockScenarios.freeTalk)
+
+        #expect(model.needsCloudConsent)
+        #expect(!model.canRespond)
+        model.orbTapped()
+        #expect(realtime.starts == 0)
+    }
+
+    @Test("Free talk starts the live voice with free-conversation instructions")
+    func freeTalkStarts() async {
+        let realtime = StubRealtimeService()
+        let model = makeModel(realtime: realtime, scenario: MockScenarios.freeTalk)
+
+        #expect(!model.needsCloudConsent)
+        #expect(model.canRespond)
+        model.orbTapped()
+        await realtime.session.waitUntilRunning()
+
+        #expect(model.isUsingCloudVoice)
+        #expect(realtime.context?.scenario == "freeTalk")
+        #expect(realtime.context?.instructions.contains("Free conversation") == true)
+        model.stop()
+    }
+
+    @Test("When free talk fails, the companion can be tapped to try again")
+    func freeTalkRetries() async throws {
+        let realtime = StubRealtimeService(error: .upstream)
+        let model = makeModel(realtime: realtime, scenario: MockScenarios.freeTalk)
+
+        model.orbTapped()
+        await model.waitForCloudConversation()
+        #expect(String(localized: try #require(model.notice?.text)).contains("try again"))
+        #expect(model.canRespond)
+
+        model.orbTapped()
+        await model.waitForCloudConversation()
+        #expect(realtime.starts == 2)
+    }
+
     private func makeModel(realtime: StubRealtimeService, allowed: Bool = true, limit: Duration = .seconds(600),
-                           companion: (any CompanionService)? = nil) -> ConversationModel {
+                           companion: (any CompanionService)? = nil,
+                           scenario: Scenario = MockScenarios.dentist) -> ConversationModel {
         let services = AppServices(
             speech: MockSpeechService(wordInterval: .zero),
             voice: MockVoiceService(),
@@ -146,7 +189,7 @@ struct RealtimeConversationTests {
             realtime: realtime
         )
         let timing = ConversationModel.Timing(afterListening: .zero, beforeFinish: .zero, realtimeLimit: limit)
-        return ConversationModel(scenario: MockScenarios.dentist, services: services, timing: timing, usesCloudVoice: allowed)
+        return ConversationModel(scenario: scenario, services: services, timing: timing, usesCloudVoice: allowed)
     }
 }
 
@@ -171,6 +214,7 @@ private final class ReviewingCompanion: CompanionService {
 private final class StubRealtimeService: RealtimeConversationService {
     let session: StubConversationSession
     private(set) var starts = 0
+    private(set) var context: RealtimeConversationContext?
 
     init(error: RealtimeServiceError? = nil) {
         session = StubConversationSession(error: error)
@@ -178,6 +222,7 @@ private final class StubRealtimeService: RealtimeConversationService {
 
     func makeSession(for context: RealtimeConversationContext) -> any RealtimeConversationSession {
         starts += 1
+        self.context = context
         return session
     }
 }

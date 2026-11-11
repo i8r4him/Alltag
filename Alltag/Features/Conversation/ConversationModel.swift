@@ -111,8 +111,14 @@ final class ConversationModel {
 
     var isUsingCloudVoice: Bool { cloudSession != nil }
 
-    /// Whether the learner can start speaking or send text now.
-    var canRespond: Bool { phase == .idle && !isFinished && expectedLine != nil }
+    /// Whether the learner can start speaking or send text now. Free talk has
+    /// no script, so it can only start the live voice.
+    var canRespond: Bool {
+        phase == .idle && !isFinished && (expectedLine != nil || (scenario.isFreeTalk && canStartCloudVoice))
+    }
+
+    /// Free talk needs the live voice, which the learner hasn't allowed yet.
+    var needsCloudConsent: Bool { scenario.isFreeTalk && !usesCloudVoice }
 
     private var canStartCloudVoice: Bool { usesCloudVoice && !hasFallenBack && mode == .voice }
 
@@ -126,7 +132,7 @@ final class ConversationModel {
             }
         }
         switch phase {
-        case .idle where isFinished: return nil
+        case .idle where isFinished || needsCloudConsent: return nil
         case .idle: return canStartCloudVoice ? "Tap for live voice" : "Tap to speak"
         case .listening: return "Listening… tap when done"
         case .thinking: return "Thinking…"
@@ -386,17 +392,26 @@ extension ConversationModel {
     private func cloudFailed(_ error: any Error, session: any RealtimeConversationSession) {
         guard cloudSession === session else { return }
         fallBackFromCloud()
-        let text: LocalizedStringResource
+        var text: LocalizedStringResource
         switch error as? RealtimeServiceError {
         case .dailyLimit: text = "You've reached your live voice limit for today. Keep practising on your iPhone."
         case .busy: text = "Live voice is busy right now. You can keep practising on your iPhone."
         default: text = "Live voice is unavailable. You can keep practising on your iPhone."
         }
+        if scenario.isFreeTalk {
+            // Free talk has no script, so the companion can only be tried again.
+            if case .dailyLimit? = error as? RealtimeServiceError {
+                text = "You've talked a lot today. Come back tomorrow for more."
+            } else {
+                text = "I can't talk right now. Tap me to try again."
+            }
+        }
         notice = ToastMessage(text: text, systemImage: "waveform.slash")
     }
 
     private func fallBackFromCloud() {
-        hasFallenBack = true
+        // Free talk has no script to fall back to, so the orb can try again.
+        hasFallenBack = !scenario.isFreeTalk
         endCloudSession()
         if let first = scenario.script.first, first.speaker == .companion, messages.last?.line != first {
             messages.append(Message(line: first))

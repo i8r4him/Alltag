@@ -107,7 +107,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ VoiceService.swift            VoiceService, SpeechRate, MockVoiceService (silent)
 │  │  │  └─ SystemVoiceService.swift      AVSpeechSynthesizer, de-DE (real in phase 1)
 │  │  ├─ Realtime/
-│  │  │  ├─ RealtimeConversationService.swift         session protocol, context and mock
+│  │  │  ├─ RealtimeConversationService.swift         session protocol, context (role-play or free talk), mock and simulated free talk
 │  │  │  ├─ SupabaseRealtimeClient.swift             anonymous auth, Keychain and session credentials
 │  │  │  ├─ OpenAIRealtimeConversationService.swift  Realtime WebSocket, audio events and transcripts
 │  │  │  └─ RealtimeAudio.swift                      PCM capture, playback and interruption
@@ -161,7 +161,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ BriefingCard.swift            big "60 seconds", text and play button
 │  │  │  └─ BeyondRow.swift
 │  │  ├─ Conversation/
-│  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls
+│  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls; free talk: voice only, consent card
 │  │  │  ├─ ConversationModel.swift       state machine
 │  │  │  ├─ TranscriptView.swift          companion and learner lines, heard text with caret
 │  │  │  ├─ FeedbackCard.swift
@@ -414,7 +414,7 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 - **Real in native build (phase 1):** navigation, all UI states, AVSpeechSynthesizer pronunciation, haptics, local mock data, SwiftData persistence.
 - **Real on iPhone:** German speech recognition with `SpeechAnalyzer` (on device; the simulator keeps the simulated listening). Saying roughly the scripted line continues the script; anything else is your own sentence and gets feedback.
 - **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. On-device conversations keep their scripted replies so each scenario reaches its goal.
-- **Live voice beta on iPhone:** OpenAI Realtime through the existing Supabase credential broker, with both speakers' captions. Cloud voice is opt-in. The simulator keeps the scripted path.
+- **Live voice on iPhone:** OpenAI Realtime through the existing Supabase credential broker, with both speakers' captions. Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange.
 - **Real on iPhone:** translation with Apple's Translation framework (on device; English and German are downloaded once). Apple Intelligence adds word by word, tone and examples; without it the plain translation is shown. The three samples keep their hand-written explanations, and the simulator only knows those.
 - **Simulated:** scripted companion replies & feedback, placement.
 - **Later:** see the framework table below.
