@@ -32,3 +32,8 @@ final class PracticeSession {
         self.secondsSpoken = max(0, secondsSpoken)
     }
 }
+
+extension Sequence<PracticeSession> {
+    /// Whole minutes spoken across the sessions.
+    var minutesSpoken: Int { reduce(0) { $0 + $1.secondsSpoken } / 60 }
+}
