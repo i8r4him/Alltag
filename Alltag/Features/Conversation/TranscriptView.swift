@@ -12,8 +12,6 @@ struct TranscriptView: View {
     let messages: [ConversationModel.Message]
     /// Words heard so far while listening; empty otherwise.
     let heardText: String
-    /// How the learner's lines look (temporary, until a design is picked).
-    var learnerStyle = LearnerStyle.glass
 
     @State private var englishShown: Set<UUID> = []
 
@@ -28,11 +26,11 @@ struct TranscriptView: View {
                             englishShown.formSymmetricDifference([message.id])
                         }
                     case .learner:
-                        LearnerLine(line: message.line, style: learnerStyle)
+                        LearnerLine(line: message.line)
                     }
                 }
                 if !heardText.isEmpty {
-                    HeardText(text: heardText, style: learnerStyle)
+                    HeardText(text: heardText)
                 }
             }
             .padding(.horizontal, 22)
@@ -91,52 +89,24 @@ private struct CompanionLine: View {
     }
 }
 
-/// The three designs for the learner's lines (temporary).
-enum LearnerStyle: Int, CaseIterable {
-    /// A clear glass bubble on the right.
-    case glass
-    /// A bubble tinted in the theme colour.
-    case tinted
-    /// No bubble: the words in the theme colour, with a bar on the right.
-    case accent
-}
-
-/// The learner's words in the chosen design; shared by finished lines and the
-/// words being heard.
+/// The learner's words in a bubble tinted in the theme colour; shared by
+/// finished lines and the words being heard.
 private struct LearnerText: View {
     let text: String
-    let style: LearnerStyle
     var isHearing = false
 
     var body: some View {
-        switch style {
-        case .glass:
-            words
-                .padding(.horizontal, 16)
-                .padding(.vertical, 11)
-                .glassEffect(.regular, in: .rect(cornerRadius: 22, style: .continuous))
-        case .tinted:
-            words
-                .padding(.horizontal, 16)
-                .padding(.vertical, 11)
-                .background {
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .fill(.accentFill.opacity(0.22))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                .strokeBorder(.accent.opacity(0.35), lineWidth: 1)
-                        }
-                }
-        case .accent:
-            HStack(alignment: .top, spacing: 12) {
-                words
-                    .foregroundStyle(isHearing ? AnyShapeStyle(.secondary) : AnyShapeStyle(.accent))
-                Capsule()
-                    .fill(.accentFill)
-                    .frame(width: 3)
+        words
+            .padding(.horizontal, 16)
+            .padding(.vertical, 11)
+            .background {
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(.accentFill.opacity(isHearing ? 0.12 : 0.22))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .strokeBorder(.accent.opacity(0.35), lineWidth: 1)
+                    }
             }
-            .fixedSize(horizontal: false, vertical: true)
-        }
     }
 
     private var words: some View {
@@ -151,11 +121,10 @@ private struct LearnerText: View {
 /// A learner line, right-aligned, with its feedback.
 private struct LearnerLine: View {
     let line: ConversationLine
-    let style: LearnerStyle
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 8) {
-            LearnerText(text: line.german, style: style)
+            LearnerText(text: line.german)
             if let feedback = line.feedback {
                 FeedbackCard(feedback: feedback)
             }
@@ -168,10 +137,9 @@ private struct LearnerLine: View {
     }
 }
 
-/// The words heard so far, in the learner's design, with a blinking caret.
+/// The words heard so far, in a fainter bubble, with a blinking caret.
 private struct HeardText: View {
     let text: String
-    let style: LearnerStyle
     @Environment(\.reducesMotion) private var reduceMotion
 
     var body: some View {
@@ -183,7 +151,7 @@ private struct HeardText: View {
                     .frame(width: 2, height: 18)
                     .opacity(caretVisible ? 1 : 0)
                     .accessibilityHidden(true)
-                LearnerText(text: text, style: style, isHearing: true)
+                LearnerText(text: text, isHearing: true)
             }
         }
         .frame(maxWidth: .infinity, alignment: .trailing)

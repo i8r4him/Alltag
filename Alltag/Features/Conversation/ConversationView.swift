@@ -62,8 +62,6 @@ private struct ConversationContent: View {
     @Environment(\.modelContext) private var modelContext
     @FocusState private var isFieldFocused: Bool
     @State private var showsSummary = false
-    /// The learner-line design being tried (temporary, until one is picked).
-    @State private var learnerStyle = LearnerStyle(rawValue: UserDefaults.standard.integer(forKey: "learnerStyle")) ?? .glass
 
     var body: some View {
         NavigationStack {
@@ -78,10 +76,7 @@ private struct ConversationContent: View {
                         .padding(.top, 8)
                 }
 
-                DesignSwitcher(selection: $learnerStyle)
-                    .padding(.top, 8)
-
-                TranscriptView(messages: model.messages, heardText: model.heardText, learnerStyle: learnerStyle)
+                TranscriptView(messages: model.messages, heardText: model.heardText)
 
                 if model.needsCloudConsent {
                     CloudConsentCard {
@@ -289,31 +284,6 @@ private struct CircleGlassButton: View {
 }
 
 /// "TRY SAYING" with the expected German line.
-/// Temporary "‹ n / N ›" switcher for the learner-line designs; removed once one is picked.
-private struct DesignSwitcher: View {
-    @Binding var selection: LearnerStyle
-
-    var body: some View {
-        let count = LearnerStyle.allCases.count
-        HStack(spacing: 4) {
-            Button { step(-1) } label: { Image(systemName: "chevron.left") }
-            Text(verbatim: "\(selection.rawValue + 1) / \(count)")
-                .font(.subheadline.weight(.semibold).monospacedDigit())
-                .frame(minWidth: 48)
-            Button { step(1) } label: { Image(systemName: "chevron.right") }
-        }
-        .buttonStyle(.glass)
-        .buttonBorderShape(.circle)
-        .controlSize(.small)
-        .sensoryFeedback(.selection, trigger: selection)
-    }
-
-    private func step(_ offset: Int) {
-        let count = LearnerStyle.allCases.count
-        selection = LearnerStyle(rawValue: (selection.rawValue + offset + count) % count) ?? .glass
-    }
-}
-
 /// Free talk needs the live voice: asks once, in the conversation, before the
 /// learner's voice goes to OpenAI.
 private struct CloudConsentCard: View {

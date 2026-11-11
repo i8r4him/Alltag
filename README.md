@@ -106,6 +106,8 @@ Alltag/                                   ← repo root
 │  │  ├─ Voice/
 │  │  │  ├─ VoiceService.swift            VoiceService, SpeechRate, MockVoiceService (silent)
 │  │  │  └─ SystemVoiceService.swift      AVSpeechSynthesizer, de-DE (real in phase 1)
+│  │  ├─ Sound/
+│  │  │  └─ SoundEffects.swift            short app sounds (the focus chime), ambient, follow the silent switch
 │  │  ├─ Realtime/
 │  │  │  ├─ RealtimeConversationService.swift         session protocol, context (role-play or free talk), mock and simulated free talk
 │  │  │  ├─ SupabaseRealtimeClient.swift             anonymous auth, Keychain and session credentials
@@ -163,7 +165,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Conversation/
 │  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls; free talk: voice only, consent card
 │  │  │  ├─ ConversationModel.swift       state machine
-│  │  │  ├─ TranscriptView.swift          companion and learner lines, heard text with caret
+│  │  │  ├─ TranscriptView.swift          companion lines (cut off with …), learner lines in a theme-tinted bubble, heard text with caret
 │  │  │  ├─ FeedbackCard.swift
 │  │  │  └─ SummarySheet.swift            (#30)
 │  │  ├─ Translate/
@@ -232,6 +234,7 @@ Alltag/                                   ← repo root
 │  └─ Resources/
 │     ├─ Assets.xcassets                  AppIcon, AccentColor, Success, Mistake (light + dark)
 │     ├─ Localizable.xcstrings            all UI text (British English); kept in sync by CI
+│     ├─ Sounds/focus.wav                 the soft two-note chime when free talk starts (made for Alltag)
 │     └─ AppShortcuts.xcstrings           Siri phrases
 │
 ├─ AlltagTests/                           Swift Testing (added in M0)
