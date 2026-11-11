@@ -34,7 +34,7 @@ struct TodayHero: View {
             }
                 .buttonStyle(.card)
                 .sensoryFeedback(.impact(weight: .medium), trigger: starts)
-                .accessibilityLabel("Start today's conversation")
+                .accessibilityLabel("Talk with your companion")
 
             Button {
                 progressTaps += 1

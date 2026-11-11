@@ -55,10 +55,10 @@ struct AppIntentsTests {
         #expect(PhraseEntity(phrase).english == "Which platform does the train leave from?")
     }
 
-    @Test("Every scenario and rule is offered as an entity")
+    @Test("Every role-play and rule is offered as an entity; free talk is not")
     func staticEntities() async throws {
         let scenarios = try await ScenarioEntityQuery().allEntities()
-        #expect(scenarios.map(\.id) == Scenario.ID.allCases.map(\.rawValue))
+        #expect(scenarios.map(\.id) == MockScenarios.all.map(\.id.rawValue))
 
         let rules = try await GrammarRuleEntityQuery().entities(for: ["weil", "missing"])
         #expect(rules.map(\.title) == ["Verb at the end after weil, wenn, dass"])

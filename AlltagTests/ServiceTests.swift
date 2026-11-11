@@ -72,7 +72,7 @@ struct ServiceTests {
         #expect(events.count == 3)
         #expect(events.first?.scenario == .dentist)
         #expect(events.map(\.start) == events.map(\.start).sorted())
-        #expect(Set(events.compactMap(\.scenario)) == Set(Scenario.ID.allCases))
+        #expect(Set(events.compactMap(\.scenario)) == Set(MockScenarios.all.map(\.id)))
     }
 
     @Test("Calendar order holds on every day of the week", arguments: 0..<7)

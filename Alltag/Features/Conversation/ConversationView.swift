@@ -15,6 +15,7 @@ struct ConversationView: View {
     @Environment(\.services) private var services
     @Environment(AppState.self) private var appState
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.modelContext) private var modelContext
     @State private var model: ConversationModel?
 
     var body: some View {
@@ -28,8 +29,18 @@ struct ConversationView: View {
         .background(.screenBackground)
         .onAppear {
             if model == nil {
-                model = ConversationModel(scenario: scenario, services: services,
-                                          usesCloudVoice: appState.settings.usesCloudForPro, level: level)
+                let model = ConversationModel(scenario: scenario, services: services,
+                                              usesCloudVoice: appState.settings.usesCloudForPro, level: level)
+                self.model = model
+                // Free talk starts straight away: the learner tapped the companion to talk.
+                // A soft chime first, before the microphone takes over the audio.
+                if scenario.isFreeTalk, model.canRespond {
+                    SoundEffects.play(.focus)
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(450))
+                        if model.canRespond { model.orbTapped() }
+                    }
+                }
             }
         }
         .onChange(of: appState.settings.usesCloudForPro) { _, allowed in
@@ -38,7 +49,10 @@ struct ConversationView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .background { model?.suspendCloudVoice() }
         }
-        .onDisappear { model?.stop() }
+        .onDisappear {
+            model?.stop()
+            model?.recordPractice(in: modelContext)
+        }
     }
 }
 
@@ -52,15 +66,31 @@ private struct ConversationContent: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                Text(verbatim: model.scenario.goal)
-                    .textRole(.meta)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 7)
-                    .glassEffect(.regular, in: .capsule)
-                    .padding(.top, 8)
+                if !model.scenario.goal.isEmpty {
+                    Text(verbatim: model.scenario.goal)
+                        .textRole(.meta)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 7)
+                        .glassEffect(.regular, in: .capsule)
+                        .padding(.top, 8)
+                }
 
                 TranscriptView(messages: model.messages, heardText: model.heardText)
+
+                if model.needsCloudConsent {
+                    CloudConsentCard {
+                        appState.settings.usesCloudForPro = true
+                        model.setCloudVoiceConsent(true)
+                        SoundEffects.play(.focus)
+                        Task {
+                            try? await Task.sleep(for: .milliseconds(450))
+                            model.orbTapped()
+                        }
+                    }
+                    .padding(.horizontal, 22)
+                    .padding(.bottom, 12)
+                }
 
                 if model.showsHint, let line = model.expectedLine {
                     HintCard(german: line.german)
@@ -95,6 +125,7 @@ private struct ConversationContent: View {
             }
             model.savePhrases(in: modelContext)
             model.saveMistakes(in: modelContext)
+            model.recordPractice(in: modelContext)
             showsSummary = true
         }
         .onChange(of: model.liveReview) { _, review in
@@ -135,15 +166,22 @@ private struct ConversationContent: View {
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
         }
-        ToolbarItem(placement: .topBarTrailing) {
-            Picker("Mode", selection: $model.mode) {
-                Label("Voice", systemImage: "mic").tag(ConversationModel.Mode.voice)
-                Label("Keyboard", systemImage: "keyboard").tag(ConversationModel.Mode.text)
+        if !model.scenario.isFreeTalk {
+            ToolbarItem(placement: .topBarTrailing) {
+                modePicker
             }
-            .pickerStyle(.segmented)
-            .labelStyle(.iconOnly)
-            .frame(width: 96)
         }
+    }
+
+    /// Voice or keyboard. Free talk is voice only, so it has none.
+    private var modePicker: some View {
+        Picker("Mode", selection: $model.mode) {
+            Label("Voice", systemImage: "mic").tag(ConversationModel.Mode.voice)
+            Label("Keyboard", systemImage: "keyboard").tag(ConversationModel.Mode.text)
+        }
+        .pickerStyle(.segmented)
+        .labelStyle(.iconOnly)
+        .frame(width: 96)
     }
 
     // MARK: Bottom controls
@@ -151,7 +189,11 @@ private struct ConversationContent: View {
     private var voiceControls: some View {
         VStack(spacing: 12) {
             HStack {
-                CircleGlassButton(title: "Type instead", systemImage: "keyboard", size: 48) { model.mode = .text }
+                if model.scenario.isFreeTalk {
+                    Color.clear.frame(width: 48, height: 48)
+                } else {
+                    CircleGlassButton(title: "Type instead", systemImage: "keyboard", size: 48) { model.mode = .text }
+                }
                 Spacer()
                 Button { model.orbTapped() } label: {
                     CompanionOrb(dynamics: OrbDynamics(state: model.phase), isLive: !model.isFinished)
@@ -164,7 +206,11 @@ private struct ConversationContent: View {
                 .allowsHitTesting(model.isUsingCloudVoice || model.canRespond || model.phase == .listening)
                 .accessibilityLabel(Text(model.isUsingCloudVoice ? "End conversation" : model.stateLabel ?? "Voice"))
                 Spacer()
-                hintButton(size: 48)
+                if model.scenario.isFreeTalk {
+                    Color.clear.frame(width: 48, height: 48)
+                } else {
+                    hintButton(size: 48)
+                }
             }
             Group {
                 if let label = model.stateLabel { Text(label) }
@@ -238,6 +284,32 @@ private struct CircleGlassButton: View {
 }
 
 /// "TRY SAYING" with the expected German line.
+/// Free talk needs the live voice: asks once, in the conversation, before the
+/// learner's voice goes to OpenAI.
+private struct CloudConsentCard: View {
+    let onAllow: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label { Text("Talk with the live voice") } icon: { Image(systemName: "waveform") }
+                .font(.headline)
+                .foregroundStyle(.accent)
+            Text("To hear and answer you, Alltag sends your voice to OpenAI while you talk. You can turn this off in Settings.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Button(action: onAllow) {
+                Text("Allow and start")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, minHeight: 34)
+            }
+            .buttonStyle(.glassProminent)
+            .tint(.accentFill)
+        }
+        .padding(Spacing.card)
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
+    }
+}
+
 private struct HintCard: View {
     let german: String
 

@@ -43,7 +43,7 @@ struct AppServices {
 
     private static func liveRealtime() -> any RealtimeConversationService {
         #if targetEnvironment(simulator)
-        MockRealtimeConversationService()
+        SimulatedRealtimeConversationService()
         #else
         OpenAIRealtimeConversationService()
         #endif

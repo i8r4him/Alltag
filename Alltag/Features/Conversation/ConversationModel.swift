@@ -84,6 +84,11 @@ final class ConversationModel {
     @ObservationIgnored private var listenTask: Task<Void, Never>?
     @ObservationIgnored private var cloudTask: Task<Void, Never>?
     @ObservationIgnored private var cloudDeadline: Task<Void, Never>?
+    /// When the learner started talking, and when the conversation ended,
+    /// for the minutes practised.
+    @ObservationIgnored private var startedAt: Date?
+    @ObservationIgnored private var endedAt: Date?
+    @ObservationIgnored private var hasRecordedPractice = false
 
     init(scenario: Scenario, services: AppServices, timing: Timing = Timing(), usesCloudVoice: Bool = false, level: Level = .a1) {
         self.scenario = scenario
@@ -111,8 +116,14 @@ final class ConversationModel {
 
     var isUsingCloudVoice: Bool { cloudSession != nil }
 
-    /// Whether the learner can start speaking or send text now.
-    var canRespond: Bool { phase == .idle && !isFinished && expectedLine != nil }
+    /// Whether the learner can start speaking or send text now. Free talk has
+    /// no script, so it can only start the live voice.
+    var canRespond: Bool {
+        phase == .idle && !isFinished && (expectedLine != nil || (scenario.isFreeTalk && canStartCloudVoice))
+    }
+
+    /// Free talk needs the live voice, which the learner hasn't allowed yet.
+    var needsCloudConsent: Bool { scenario.isFreeTalk && !usesCloudVoice }
 
     private var canStartCloudVoice: Bool { usesCloudVoice && !hasFallenBack && mode == .voice }
 
@@ -126,7 +137,7 @@ final class ConversationModel {
             }
         }
         switch phase {
-        case .idle where isFinished: return nil
+        case .idle where isFinished || needsCloudConsent: return nil
         case .idle: return canStartCloudVoice ? "Tap for live voice" : "Tap to speak"
         case .listening: return "Listening… tap when done"
         case .thinking: return "Thinking…"
@@ -153,6 +164,7 @@ final class ConversationModel {
             // The listening task notices the stream ending and finishes the turn.
             speech.stopListening()
         case .idle where canRespond:
+            startedAt = startedAt ?? .now
             showsHint = false
             if canStartCloudVoice {
                 startCloudConversation()
@@ -203,6 +215,7 @@ final class ConversationModel {
 
     /// Stops listening and speaking, e.g. when the conversation is closed.
     func stop() {
+        endedAt = endedAt ?? .now
         reviewTask?.cancel()
         endCloudSession()
         listenTask?.cancel()
@@ -286,6 +299,7 @@ final class ConversationModel {
 
         if expectedLine == nil {
             try? await Task.sleep(for: timing.beforeFinish)
+            endedAt = endedAt ?? .now
             isFinished = true
         }
     }
@@ -316,6 +330,16 @@ final class ConversationModel {
 }
 
 extension ConversationModel {
+    /// Saves the conversation as practice, once, so the streak and the minutes
+    /// count it: the time from the learner's first tap to the end. Nothing is
+    /// saved when the learner didn't say anything.
+    func recordPractice(in context: ModelContext, now: Date = .now) {
+        guard !hasRecordedPractice, let startedAt, turnCount > 0 else { return }
+        hasRecordedPractice = true
+        let seconds = Int((endedAt ?? now).timeIntervalSince(startedAt).rounded())
+        context.insert(PracticeSession(kind: .conversation, secondsSpoken: seconds, date: startedAt))
+    }
+
     func setCloudVoiceConsent(_ allowed: Bool) {
         usesCloudVoice = allowed
         if !allowed, isUsingCloudVoice { fallBackFromCloud() }
@@ -378,25 +402,38 @@ extension ConversationModel {
                 let line = ConversationLine(speaker: speaker, german: text, english: "", feedback: nil)
                 messages.append(Message(line: line, realtimeID: id))
             }
-        case .discardTranscript(let id):
-            messages.removeAll { $0.realtimeID == id }
+        case .interruptTranscript(let id):
+            guard let index = messages.firstIndex(where: { $0.realtimeID == id }) else { return }
+            let line = messages[index].line
+            let text = line.german.trimmingCharacters(in: .whitespaces)
+            guard !text.isEmpty, !".?!…".contains(text.last ?? ".") else { return }
+            messages[index].line = ConversationLine(speaker: line.speaker, german: text + "…", english: "", feedback: nil)
         }
     }
 
     private func cloudFailed(_ error: any Error, session: any RealtimeConversationSession) {
         guard cloudSession === session else { return }
         fallBackFromCloud()
-        let text: LocalizedStringResource
+        var text: LocalizedStringResource
         switch error as? RealtimeServiceError {
         case .dailyLimit: text = "You've reached your live voice limit for today. Keep practising on your iPhone."
         case .busy: text = "Live voice is busy right now. You can keep practising on your iPhone."
         default: text = "Live voice is unavailable. You can keep practising on your iPhone."
         }
+        if scenario.isFreeTalk {
+            // Free talk has no script, so the companion can only be tried again.
+            if case .dailyLimit? = error as? RealtimeServiceError {
+                text = "You've talked a lot today. Come back tomorrow for more."
+            } else {
+                text = "I can't talk right now. Tap me to try again."
+            }
+        }
         notice = ToastMessage(text: text, systemImage: "waveform.slash")
     }
 
     private func fallBackFromCloud() {
-        hasFallenBack = true
+        // Free talk has no script to fall back to, so the orb can try again.
+        hasFallenBack = !scenario.isFreeTalk
         endCloudSession()
         if let first = scenario.script.first, first.speaker == .companion, messages.last?.line != first {
             messages.append(Message(line: first))
@@ -404,6 +441,7 @@ extension ConversationModel {
     }
 
     private func finishCloudConversation() {
+        endedAt = endedAt ?? .now
         endCloudSession()
         hasFallenBack = true
         finishedLiveConversation = true
