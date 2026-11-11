@@ -123,6 +123,29 @@ struct RealtimeConversationTests {
         #expect(companion.previous == ["Wann möchten Sie kommen?"])
     }
 
+    @Test("Lines are checked while the conversation goes on, and shown at the end")
+    func reviewDuringConversation() async {
+        let realtime = StubRealtimeService()
+        let companion = ReviewingCompanion()
+        let model = makeModel(realtime: realtime, companion: companion)
+        model.orbTapped()
+        await realtime.session.waitUntilRunning()
+        realtime.session.emit?(.transcript(id: "say", speaker: .learner, text: "Ich komme", replacesPrevious: false))
+        #expect(companion.heard.isEmpty)
+        realtime.session.emit?(.transcript(id: "say", speaker: .learner, text: "Ich komme morgen.", replacesPrevious: true))
+        realtime.session.emit?(.transcript(id: "yes", speaker: .learner, text: "Ja, gerne.", replacesPrevious: true))
+        await model.waitForReview()
+
+        // Checked already, but nothing is shown while they are still talking.
+        #expect(companion.heard == ["Ich komme morgen."])
+        #expect(model.fixCount == 0)
+
+        model.orbTapped()
+        #expect(model.liveReview == .done)
+        #expect(model.fixCount == 1)
+        #expect(companion.heard == ["Ich komme morgen."])
+    }
+
     @Test("Without Apple Intelligence a live conversation isn't checked")
     func noReview() async {
         let realtime = StubRealtimeService()
