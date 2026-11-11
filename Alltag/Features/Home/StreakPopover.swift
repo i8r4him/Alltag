@@ -5,7 +5,39 @@
 //  Created by Ibrahim Abdullah on 11.11.26.
 //
 
+import SwiftData
 import SwiftUI
+
+/// The flame in Today's toolbar: the days in a row, opening `StreakPopover`.
+///
+/// Its own view, with its own query and state, so opening the popover only
+/// redraws the button and not the whole of Today mid-animation.
+struct StreakButton: View {
+    @Query private var sessions: [PracticeSession]
+    @State private var isPresented = false
+
+    private var days: Int { Streak.days(activity: sessions.map(\.date)) }
+
+    var body: some View {
+        Button {
+            isPresented = true
+        } label: {
+            // Not a Label: toolbars show labels as icons only.
+            HStack(spacing: 4) {
+                Image(systemName: "flame.fill")
+                    .foregroundStyle(.linearGradient(colors: [.yellow, .orange], startPoint: .top, endPoint: .bottom))
+                Text(days, format: .number)
+                    .monospacedDigit()
+            }
+        }
+        .accessibilityLabel(Text("^[\(days) day](inflect: true) in a row"))
+        .popover(isPresented: $isPresented) {
+            StreakPopover(days: days, week: Streak.week(activity: sessions.map(\.date)))
+                .presentationCompactAdaptation(.popover)
+        }
+        .sensoryFeedback(.impact(weight: .light), trigger: isPresented) { _, shows in shows }
+    }
+}
 
 /// What the flame on Today means: the days in a row, the last seven days,
 /// and what to do to keep the streak going.
@@ -24,6 +56,7 @@ struct StreakPopover: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             HStack(spacing: 10) {
                 ForEach(week) { day in
@@ -40,7 +73,8 @@ struct StreakPopover: View {
         }
         .fontDesign(.rounded)
         .padding(20)
-        .frame(minWidth: 280)
+        .frame(width: 300)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var message: LocalizedStringResource {
