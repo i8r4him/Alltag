@@ -18,7 +18,7 @@ struct OpenAIRealtimeSessionTests {
         let audio = StubRealtimeAudio()
         let session = makeSession(socket: socket, audio: audio)
         var captions: [String] = []
-        var discarded: [String] = []
+        var interrupted: [String] = []
         socket.onSend = { event in
             switch event["type"] as? String {
             case "session.update":
@@ -44,8 +44,8 @@ struct OpenAIRealtimeSessionTests {
                 switch event {
                 case let .transcript(_, _, text, _) where !text.isEmpty:
                     captions.append(text)
-                case .discardTranscript(let id):
-                    discarded.append(id)
+                case .interruptTranscript(let id):
+                    interrupted.append(id)
                 case .phase(.thinking):
                     session.stop()
                 default:
@@ -55,7 +55,7 @@ struct OpenAIRealtimeSessionTests {
         } catch is CancellationError {}
 
         #expect(captions == ["Morgen?", "Ja"])
-        #expect(discarded == ["reply"])
+        #expect(interrupted == ["reply"])
         #expect(audio.played == [Data([1, 2])])
         #expect(audio.stops == 1)
         #expect(socket.closes == 1)

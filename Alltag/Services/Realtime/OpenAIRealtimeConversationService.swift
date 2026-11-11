@@ -153,7 +153,8 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
         let format: [String: Any] = ["type": "audio/pcm", "rate": SystemRealtimeAudio.sampleRate]
         let input: [String: Any] = [
             "format": format,
-            "transcription": ["model": "gpt-transcribe", "language": "de"],
+            // The learner's mistakes have to stay in the transcript, not be tidied up.
+            "transcription": ["model": "gpt-transcribe", "language": "de", "prompt": Self.transcriptionPrompt],
             "noise_reduction": ["type": "near_field"],
             "turn_detection": ["type": "semantic_vad", "eagerness": "low", "interrupt_response": true, "create_response": true]
         ]
@@ -166,6 +167,10 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
         }
     }
 
+    /// Tells the transcription model to write down exactly what the learner said.
+    static let transcriptionPrompt = "Ein Deutschlerner spricht. Schreibe genau auf, was gesagt wird, "
+        + "Wort für Wort, auch mit Grammatikfehlern. Korrigiere nichts."
+
     private func handle(_ event: ServerEvent, socket: any RealtimeSocket,
                         emit: @escaping (RealtimeConversationEvent) -> Void) async throws {
         switch event.type {
@@ -173,7 +178,7 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
             isListening = true
             if let cut = audio.interrupt() {
                 discardedItems.insert(cut.item)
-                emit(.discardTranscript(id: cut.item))
+                emit(.interruptTranscript(id: cut.item))
                 try await send(["type": "conversation.item.truncate", "item_id": cut.item,
                                 "content_index": 0, "audio_end_ms": cut.milliseconds], over: socket)
             }

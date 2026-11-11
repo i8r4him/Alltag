@@ -84,6 +84,11 @@ final class ConversationModel {
     @ObservationIgnored private var listenTask: Task<Void, Never>?
     @ObservationIgnored private var cloudTask: Task<Void, Never>?
     @ObservationIgnored private var cloudDeadline: Task<Void, Never>?
+    /// When the learner started talking, and when the conversation ended,
+    /// for the minutes practised.
+    @ObservationIgnored private var startedAt: Date?
+    @ObservationIgnored private var endedAt: Date?
+    @ObservationIgnored private var hasRecordedPractice = false
 
     init(scenario: Scenario, services: AppServices, timing: Timing = Timing(), usesCloudVoice: Bool = false, level: Level = .a1) {
         self.scenario = scenario
@@ -159,6 +164,7 @@ final class ConversationModel {
             // The listening task notices the stream ending and finishes the turn.
             speech.stopListening()
         case .idle where canRespond:
+            startedAt = startedAt ?? .now
             showsHint = false
             if canStartCloudVoice {
                 startCloudConversation()
@@ -209,6 +215,7 @@ final class ConversationModel {
 
     /// Stops listening and speaking, e.g. when the conversation is closed.
     func stop() {
+        endedAt = endedAt ?? .now
         reviewTask?.cancel()
         endCloudSession()
         listenTask?.cancel()
@@ -292,6 +299,7 @@ final class ConversationModel {
 
         if expectedLine == nil {
             try? await Task.sleep(for: timing.beforeFinish)
+            endedAt = endedAt ?? .now
             isFinished = true
         }
     }
@@ -322,6 +330,16 @@ final class ConversationModel {
 }
 
 extension ConversationModel {
+    /// Saves the conversation as practice, once, so the streak and the minutes
+    /// count it: the time from the learner's first tap to the end. Nothing is
+    /// saved when the learner didn't say anything.
+    func recordPractice(in context: ModelContext, now: Date = .now) {
+        guard !hasRecordedPractice, let startedAt, turnCount > 0 else { return }
+        hasRecordedPractice = true
+        let seconds = Int((endedAt ?? now).timeIntervalSince(startedAt).rounded())
+        context.insert(PracticeSession(kind: .conversation, secondsSpoken: seconds, date: startedAt))
+    }
+
     func setCloudVoiceConsent(_ allowed: Bool) {
         usesCloudVoice = allowed
         if !allowed, isUsingCloudVoice { fallBackFromCloud() }
@@ -384,8 +402,12 @@ extension ConversationModel {
                 let line = ConversationLine(speaker: speaker, german: text, english: "", feedback: nil)
                 messages.append(Message(line: line, realtimeID: id))
             }
-        case .discardTranscript(let id):
-            messages.removeAll { $0.realtimeID == id }
+        case .interruptTranscript(let id):
+            guard let index = messages.firstIndex(where: { $0.realtimeID == id }) else { return }
+            let line = messages[index].line
+            let text = line.german.trimmingCharacters(in: .whitespaces)
+            guard !text.isEmpty, !".?!…".contains(text.last ?? ".") else { return }
+            messages[index].line = ConversationLine(speaker: line.speaker, german: text + "…", english: "", feedback: nil)
         }
     }
 
@@ -419,6 +441,7 @@ extension ConversationModel {
     }
 
     private func finishCloudConversation() {
+        endedAt = endedAt ?? .now
         endCloudSession()
         hasFallenBack = true
         finishedLiveConversation = true

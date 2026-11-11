@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 import Testing
 @testable import Alltag
 
@@ -174,6 +175,44 @@ struct RealtimeConversationTests {
         model.orbTapped()
         await model.waitForCloudConversation()
         #expect(realtime.starts == 2)
+    }
+
+    @Test("When the learner talks over the companion, its line stays and ends in …")
+    func interruptedLine() async throws {
+        let realtime = StubRealtimeService()
+        let model = makeModel(realtime: realtime, scenario: MockScenarios.freeTalk)
+        model.orbTapped()
+        await realtime.session.waitUntilRunning()
+        let emit = try #require(realtime.session.emit)
+
+        emit(.transcript(id: "cut", speaker: .companion, text: "Was hast du heute", replacesPrevious: true))
+        emit(.interruptTranscript(id: "cut"))
+        emit(.transcript(id: "whole", speaker: .companion, text: "Schön!", replacesPrevious: true))
+        emit(.interruptTranscript(id: "whole"))
+
+        #expect(model.messages.map(\.line.german) == ["Was hast du heute…", "Schön!"])
+        model.stop()
+    }
+
+    @Test("A conversation is saved as practice once, and only when the learner spoke")
+    func recordsPractice() async throws {
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let realtime = StubRealtimeService()
+        let model = makeModel(realtime: realtime, scenario: MockScenarios.freeTalk)
+        model.orbTapped()
+        await realtime.session.waitUntilRunning()
+        let emit = try #require(realtime.session.emit)
+
+        model.recordPractice(in: container.mainContext)
+        #expect(try container.mainContext.fetchCount(FetchDescriptor<PracticeSession>()) == 0)
+
+        emit(.transcript(id: "me", speaker: .learner, text: "Mir geht's gut.", replacesPrevious: true))
+        model.stop()
+        model.recordPractice(in: container.mainContext, now: .now.addingTimeInterval(90))
+        model.recordPractice(in: container.mainContext)
+
+        let sessions = try container.mainContext.fetch(FetchDescriptor<PracticeSession>())
+        #expect(sessions.map(\.kind) == [.conversation])
     }
 
     private func makeModel(realtime: StubRealtimeService, allowed: Bool = true, limit: Duration = .seconds(600),

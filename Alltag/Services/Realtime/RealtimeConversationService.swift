@@ -34,7 +34,9 @@ struct RealtimeConversationContext {
 enum RealtimeConversationEvent {
     case phase(VoiceOrbState)
     case transcript(id: String, speaker: ConversationLine.Speaker, text: String, replacesPrevious: Bool)
-    case discardTranscript(id: String)
+    /// The learner started talking over the companion: its line stops here
+    /// and stays on screen, marked as cut off.
+    case interruptTranscript(id: String)
 }
 
 protocol RealtimeConversationService {

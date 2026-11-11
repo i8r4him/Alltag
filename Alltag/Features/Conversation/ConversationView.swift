@@ -15,6 +15,7 @@ struct ConversationView: View {
     @Environment(\.services) private var services
     @Environment(AppState.self) private var appState
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.modelContext) private var modelContext
     @State private var model: ConversationModel?
 
     var body: some View {
@@ -32,7 +33,14 @@ struct ConversationView: View {
                                               usesCloudVoice: appState.settings.usesCloudForPro, level: level)
                 self.model = model
                 // Free talk starts straight away: the learner tapped the companion to talk.
-                if scenario.isFreeTalk, model.canRespond { model.orbTapped() }
+                // A soft chime first, before the microphone takes over the audio.
+                if scenario.isFreeTalk, model.canRespond {
+                    SoundEffects.play(.focus)
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(450))
+                        if model.canRespond { model.orbTapped() }
+                    }
+                }
             }
         }
         .onChange(of: appState.settings.usesCloudForPro) { _, allowed in
@@ -41,7 +49,10 @@ struct ConversationView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .background { model?.suspendCloudVoice() }
         }
-        .onDisappear { model?.stop() }
+        .onDisappear {
+            model?.stop()
+            model?.recordPractice(in: modelContext)
+        }
     }
 }
 
@@ -51,6 +62,8 @@ private struct ConversationContent: View {
     @Environment(\.modelContext) private var modelContext
     @FocusState private var isFieldFocused: Bool
     @State private var showsSummary = false
+    /// The learner-line design being tried (temporary, until one is picked).
+    @State private var learnerStyle = LearnerStyle(rawValue: UserDefaults.standard.integer(forKey: "learnerStyle")) ?? .glass
 
     var body: some View {
         NavigationStack {
@@ -65,13 +78,20 @@ private struct ConversationContent: View {
                         .padding(.top, 8)
                 }
 
-                TranscriptView(messages: model.messages, heardText: model.heardText)
+                DesignSwitcher(selection: $learnerStyle)
+                    .padding(.top, 8)
+
+                TranscriptView(messages: model.messages, heardText: model.heardText, learnerStyle: learnerStyle)
 
                 if model.needsCloudConsent {
                     CloudConsentCard {
                         appState.settings.usesCloudForPro = true
                         model.setCloudVoiceConsent(true)
-                        model.orbTapped()
+                        SoundEffects.play(.focus)
+                        Task {
+                            try? await Task.sleep(for: .milliseconds(450))
+                            model.orbTapped()
+                        }
                     }
                     .padding(.horizontal, 22)
                     .padding(.bottom, 12)
@@ -110,6 +130,7 @@ private struct ConversationContent: View {
             }
             model.savePhrases(in: modelContext)
             model.saveMistakes(in: modelContext)
+            model.recordPractice(in: modelContext)
             showsSummary = true
         }
         .onChange(of: model.liveReview) { _, review in
@@ -268,6 +289,31 @@ private struct CircleGlassButton: View {
 }
 
 /// "TRY SAYING" with the expected German line.
+/// Temporary "‹ n / N ›" switcher for the learner-line designs; removed once one is picked.
+private struct DesignSwitcher: View {
+    @Binding var selection: LearnerStyle
+
+    var body: some View {
+        let count = LearnerStyle.allCases.count
+        HStack(spacing: 4) {
+            Button { step(-1) } label: { Image(systemName: "chevron.left") }
+            Text(verbatim: "\(selection.rawValue + 1) / \(count)")
+                .font(.subheadline.weight(.semibold).monospacedDigit())
+                .frame(minWidth: 48)
+            Button { step(1) } label: { Image(systemName: "chevron.right") }
+        }
+        .buttonStyle(.glass)
+        .buttonBorderShape(.circle)
+        .controlSize(.small)
+        .sensoryFeedback(.selection, trigger: selection)
+    }
+
+    private func step(_ offset: Int) {
+        let count = LearnerStyle.allCases.count
+        selection = LearnerStyle(rawValue: (selection.rawValue + offset + count) % count) ?? .glass
+    }
+}
+
 /// Free talk needs the live voice: asks once, in the conversation, before the
 /// learner's voice goes to OpenAI.
 private struct CloudConsentCard: View {
