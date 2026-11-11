@@ -89,7 +89,7 @@ private struct DaySpotlightList: View {
                     .accessibilityElement(children: .combine)
                 }
             }
-            .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
         }
         .fontDesign(.rounded)
     }
