@@ -1,5 +1,5 @@
 //
-//  BriefingCard.swift
+//  SixtySecondsCard.swift
 //  Alltag
 //
 //  Created by Ibrahim Abdullah on 09.11.26.
@@ -7,10 +7,9 @@
 
 import SwiftUI
 
-/// "Your briefing": a big "60 seconds" like the Today numbers, the text, and a
-/// play button, on the Focus card's surface.
-struct BriefingCard: View {
-    let words: Int
+/// "60 seconds": a big 60 like the Today numbers, what it is, and a play
+/// button that starts a minute of talking about a random topic.
+struct SixtySecondsCard: View {
     let action: () -> Void
 
     @State private var taps = 0
@@ -29,9 +28,9 @@ struct BriefingCard: View {
             .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Your briefing")
+                Text("Talk for a minute")
                     .font(.title3.weight(.semibold))
-                Text("Built from ^[\(words) word](inflect: true) you are learning.")
+                Text("A random topic. Your mistakes get fixed afterwards.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -50,7 +49,7 @@ struct BriefingCard: View {
             .buttonStyle(.glassProminent)
             .buttonBorderShape(.circle)
             .tint(Color.accentFill)
-            .accessibilityLabel("Listen to your 60-second briefing")
+            .accessibilityLabel("Start 60 seconds of talking")
         }
         .padding(Spacing.cardLarge)
         .frame(maxWidth: .infinity)
@@ -61,7 +60,7 @@ struct BriefingCard: View {
 }
 
 #Preview {
-    BriefingCard(words: 6) {}
+    SixtySecondsCard {}
         .padding(Spacing.screen)
         .background(.screenBackground)
 }
