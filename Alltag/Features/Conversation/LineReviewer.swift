@@ -42,7 +42,7 @@ final class LineReviewer {
     /// Queues a line unless the same words were queued before, or there is
     /// nothing in them to correct. Only the latest wording of a line is checked.
     func check(id: UUID, german: String, replyingTo previous: String?) {
-        guard companion.usesOnDeviceModel, Self.isWorthChecking(german), asked[id] != german else { return }
+        guard companion.canCheckSentences, Self.isWorthChecking(german), asked[id] != german else { return }
         asked[id] = german
         // An earlier wording of the same line needn't be checked any more.
         queue.removeAll { $0.id == id }

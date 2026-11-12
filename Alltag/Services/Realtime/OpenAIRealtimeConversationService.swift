@@ -9,7 +9,7 @@ import Foundation
 import OSLog
 
 struct OpenAIRealtimeConversationService: RealtimeConversationService {
-    private let client = SupabaseRealtimeClient()
+    private let client = SupabaseRealtimeClient.shared
 
     func makeSession(for context: RealtimeConversationContext) -> any RealtimeConversationSession {
         OpenAIRealtimeSession(context: context, credentials: client.credentials, audio: SystemRealtimeAudio())

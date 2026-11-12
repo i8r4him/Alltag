@@ -80,11 +80,11 @@ final class SixtySecondsModel {
         var generator = SystemRandomNumberGenerator()
         let topic = topic ?? TalkTopics.random(for: level, using: &generator)
         self.topic = topic
-        self.reviewer = LineReviewer(companion: services.companion, scenario: Self.scenario(for: topic))
+        self.reviewer = LineReviewer(companion: services.companion, scenario: Self.scenario(for: topic, level: level))
     }
 
     /// Whether the companion can check the sentences (it needs Apple Intelligence).
-    var canCheck: Bool { companion.usesOnDeviceModel }
+    var canCheck: Bool { companion.canCheckSentences }
     var fixCount: Int { lines.filter { $0.feedback?.kind == .fix }.count }
     /// How far the minute has run, 0…1.
     var progress: Double { 1 - Double(secondsLeft) / Double(max(timing.seconds, 1)) }
@@ -105,7 +105,7 @@ final class SixtySecondsModel {
         guard phase == .ready else { return }
         var generator = SystemRandomNumberGenerator()
         topic = TalkTopics.random(for: level, not: topic, using: &generator)
-        reviewer = LineReviewer(companion: companion, scenario: Self.scenario(for: topic))
+        reviewer = LineReviewer(companion: companion, scenario: Self.scenario(for: topic, level: level))
         phase = .picking
     }
 
@@ -269,9 +269,9 @@ final class SixtySecondsModel {
     }
 
     /// What the companion is told when it checks a sentence.
-    private static func scenario(for topic: TalkTopic) -> Scenario {
+    private static func scenario(for topic: TalkTopic, level: Level) -> Scenario {
         Scenario(id: .situation, title: "Talking freely for one minute about „\(topic.title)“", meta: "",
-                 goal: "say as much as they can about the topic; judge only the German",
+                 goal: "say as much as they can about the topic. Learner's level (CEFR): \(level.rawValue.uppercased())",
                  completion: "", savedPhrases: [], systemImage: "timer", script: [])
     }
 

@@ -27,6 +27,9 @@ protocol CompanionService: AnyObject {
     /// Whether answers come from the on-device language model right now,
     /// rather than from Alltag's built-in samples.
     var usesOnDeviceModel: Bool { get }
+    /// Whether `feedback(on:in:replyingTo:)` can really judge a sentence right
+    /// now, with OpenAI or with the on-device model.
+    var canCheckSentences: Bool { get }
     /// Responds to the learner's line at `turn` (0-based index into the
     /// scenario's learner turns).
     func respond(to learnerText: String, in scenario: Scenario, turn: Int) async throws -> CompanionResponse
@@ -34,6 +37,11 @@ protocol CompanionService: AnyObject {
     func feedback(on sentence: String, in scenario: Scenario, replyingTo previous: String?) async throws -> SentenceFeedback
     /// Suggests how to say what the learner wanted to say during `moment`.
     func debrief(_ input: String, about moment: Debrief) async throws -> Debrief
+}
+
+extension CompanionService {
+    /// On its own, a companion checks sentences with the on-device model.
+    var canCheckSentences: Bool { usesOnDeviceModel }
 }
 
 /// Follows the scenario scripts and returns the prototype's debrief. Also the
