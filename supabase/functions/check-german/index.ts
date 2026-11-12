@@ -17,7 +17,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-const MODEL = Deno.env.get("CHECK_MODEL") ?? "gpt-6.1-terra";
+const MODEL = Deno.env.get("CHECK_MODEL") ?? "gpt-6-luna";
 /** Sentences per user per rolling 24 hours. Accounts in `realtime_developers` are exempt. */
 const PER_USER_DAILY = Number(Deno.env.get("CHECK_PER_USER_DAILY") ?? "300");
 /** Sentences for everyone per rolling 24 hours — a ceiling on the OpenAI bill. */
