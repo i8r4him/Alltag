@@ -15,6 +15,8 @@ struct Scenario: Identifiable, Hashable, Sendable {
         case station
         /// Talking about anything with the companion, no role-play (the orb on Today).
         case freeTalk
+        /// An everyday situation from the catalogue, played by the live voice (see `Situation`).
+        case situation
     }
 
     let id: ID
@@ -29,9 +31,14 @@ struct Scenario: Identifiable, Hashable, Sendable {
     let systemImage: String
     /// The scripted conversation (simulated until the companion is live).
     let script: [ConversationLine]
+    /// For a situation, in English for the voice model: who it plays, and what the learner wants.
+    var role = ""
+    var aim = ""
 
     /// A normal conversation about anything, with no script: live voice only.
     var isFreeTalk: Bool { id == .freeTalk }
+    /// Without a script only the live voice can hold this conversation.
+    var isLiveOnly: Bool { script.isEmpty }
 
     /// Number of learner turns in the script.
     var learnerTurns: Int { script.filter { $0.speaker == .learner }.count }

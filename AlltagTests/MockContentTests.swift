@@ -29,7 +29,8 @@ struct MockContentTests {
         #expect(scenario.learnerTurns == 2)
     }
 
-    @Test("Every scenario ID has a scenario", arguments: Scenario.ID.allCases)
+    // Situations come from the catalogue (`Situation.scenario`), not from this lookup.
+    @Test("Every scenario ID has a scenario", arguments: Scenario.ID.allCases.filter { $0 != .situation })
     func scenarioLookup(id: Scenario.ID) {
         #expect(MockScenarios.scenario(id).id == id)
     }

@@ -158,10 +158,13 @@ Alltag/                                   ← repo root
 │  │  │  ├─ HomeHeader.swift              Avatar
 │  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Minutes · Level (→ Progress), BigNumber (1.2k from 1,000)
 │  │  │  ├─ FocusCard.swift               title, line and scenario artwork; Start talking (glass, lights from below)
-│  │  │  ├─ ComingUpCard.swift
 │  │  │  ├─ FromYourDayList.swift         briefing card, Today actions and Beyond row
 │  │  │  ├─ BriefingCard.swift            big "60 seconds", text and play button
 │  │  │  └─ BeyondRow.swift
+│  │  ├─ Situations/                      (#178)
+│  │  │  ├─ SituationCatalogue.swift      the everyday situations, by category; four suggestions a day
+│  │  │  ├─ TodaySituations.swift         "Situations" on Today
+│  │  │  └─ SituationsView.swift          all situations by category; tap one to train it with the live voice
 │  │  ├─ Conversation/
 │  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls; free talk: voice only, consent card
 │  │  │  ├─ ConversationModel.swift       state machine
@@ -359,7 +362,7 @@ Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's init
 1. **Orb** — a static amber sphere (drawn once, never animated) → today's Conversation.
 2. **Words · Spoken · Level** — three numbers → Progress.
 3. **Today's Focus** — glass card: eyebrow, "Moving an appointment", "5 min" pill, full-width **Start talking** (`.glassProminent`).
-4. **Coming up** — "Rehearse from your Calendar"; tiles → their Conversation scenarios.
+4. **Situations** — a few everyday situations (different every day) and "Situations ›" → all of them by category. Tapping one starts a live-voice role-play (`Situation.scenario`).
 5. **From your day** list: 60-second briefing · Debrief bakery · 3 new words from Safari (→ Memory filtered) · 1 writing mistake (→ Activity).
 6. "Learning beyond the app" ticket → Beyond.
 
@@ -453,7 +456,7 @@ All Apple frameworks — nothing to install.
 | Speech (`SpeechAnalyzer`) | Hearing the learner's German | No |
 | Foundation Models | On-device companion replies, corrections, debrief | No |
 | Translation | Real translation | No |
-| EventKit | "Coming up" from Calendar | No |
+| EventKit | Calendar events (not shown in v1 since Situations replaced "Coming up"; #183) | No |
 | UserNotifications | Daily nudges (local) | No |
 | WidgetKit | Word of the day, Review widgets | Yes (App Groups for shared data) |
 | SwiftData + CloudKit | Sync and backup across the learner's iPhones | Yes |

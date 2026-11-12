@@ -29,13 +29,15 @@ enum Route: Hashable {
     case beyond
     case debrief
     case briefing
-    /// Every upcoming calendar event to rehearse.
-    case comingUp
+    /// Every situation to train.
+    case situations
 }
 
 /// Screens presented full-screen over everything else.
 enum FullScreenRoute: Hashable, Identifiable {
     case conversation(Scenario.ID)
+    /// A situation from the catalogue, by its id.
+    case situation(String)
     case activity(Activity.ID)
     /// Replaying onboarding from Settings. First-run onboarding is shown by `RootView`.
     case onboarding

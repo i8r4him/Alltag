@@ -123,11 +123,11 @@ final class ConversationModel {
     /// Whether the learner can start speaking or send text now. Free talk has
     /// no script, so it can only start the live voice.
     var canRespond: Bool {
-        phase == .idle && !isFinished && (expectedLine != nil || (scenario.isFreeTalk && canStartCloudVoice))
+        phase == .idle && !isFinished && (expectedLine != nil || (scenario.isLiveOnly && canStartCloudVoice))
     }
 
     /// Free talk needs the live voice, which the learner hasn't allowed yet.
-    var needsCloudConsent: Bool { scenario.isFreeTalk && !usesCloudVoice }
+    var needsCloudConsent: Bool { scenario.isLiveOnly && !usesCloudVoice }
 
     private var canStartCloudVoice: Bool { usesCloudVoice && !hasFallenBack && mode == .voice }
 
@@ -427,15 +427,15 @@ extension ConversationModel {
         fallBackFromCloud()
         let reason = error as? RealtimeServiceError
         // Free talk has no script to fall back to, so the limit gets its own screen.
-        hasReachedLimit = scenario.isFreeTalk && reason == .dailyLimit
+        hasReachedLimit = scenario.isLiveOnly && reason == .dailyLimit
         guard !hasReachedLimit else { return }
-        notice = ToastMessage(text: LiveVoiceNotice.text(for: reason, freeTalk: scenario.isFreeTalk),
+        notice = ToastMessage(text: LiveVoiceNotice.text(for: reason, freeTalk: scenario.isLiveOnly),
                               systemImage: "waveform.slash")
     }
 
     private func fallBackFromCloud() {
         // Free talk has no script to fall back to, so the orb can try again.
-        hasFallenBack = !scenario.isFreeTalk
+        hasFallenBack = !scenario.isLiveOnly
         endCloudSession()
         if let first = scenario.script.first, first.speaker == .companion, messages.last?.line != first {
             messages.append(Message(line: first))
