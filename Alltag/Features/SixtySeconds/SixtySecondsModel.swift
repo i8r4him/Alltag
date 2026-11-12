@@ -19,8 +19,7 @@ final class SixtySecondsModel {
         /// The topic is chosen; waiting for the learner to start.
         case ready
         case talking
-        /// The minute is over; the last sentences are being checked.
-        case checking
+        /// The minute is over: the sentences are shown, and the fixes arrive as they are found.
         case done
     }
 
@@ -35,6 +34,8 @@ final class SixtySecondsModel {
     struct Timing {
         var seconds = 60
         var tick: Duration = .seconds(1)
+        /// How long the checking may go on after the minute before it is given up.
+        var checkLimit: Duration = .seconds(45)
 
         static let instant = Timing(seconds: 3, tick: .zero)
     }
@@ -46,6 +47,10 @@ final class SixtySecondsModel {
     /// What has been heard so far.
     private(set) var transcript = ""
     private(set) var lines: [Line] = []
+    /// Sentences are still being checked; the result is already on screen.
+    private(set) var isChecking = false
+    /// Goes up whenever a fix arrives, so the screen can save what is new.
+    private(set) var revision = 0
     /// Why talking couldn't start.
     var notice: ToastMessage?
 
@@ -59,7 +64,10 @@ final class SixtySecondsModel {
     @ObservationIgnored private var sentenceIDs: [UUID] = []
     @ObservationIgnored private var startedAt: Date?
     @ObservationIgnored private var secondsSpoken = 0
-    @ObservationIgnored private var hasSaved = false
+    @ObservationIgnored private var record: SessionRecord?
+    @ObservationIgnored private var limitTask: Task<Void, Never>?
+    /// The sentences of the last transcript, to tell which ones have settled.
+    @ObservationIgnored private var previousSentences: [String] = []
     /// The saved copy's id; its recording is a file named after it.
     @ObservationIgnored private let recordID = UUID()
 
@@ -140,35 +148,44 @@ final class SixtySecondsModel {
     func stop() {
         timerTask?.cancel()
         listenTask?.cancel()
+        limitTask?.cancel()
         reviewer.cancel()
+        isChecking = false
         if phase == .talking { speech.stopListening() }
         // A minute that was never finished leaves no recording behind.
-        if !hasSaved { try? FileManager.default.removeItem(at: recordingURL) }
+        if record == nil { try? FileManager.default.removeItem(at: recordingURL) }
     }
 
     private var recordingURL: URL {
         SessionHistory.audioURL(named: SessionHistory.audioFileName(for: recordID))
     }
 
+    /// Waits for the minute and the checking after it (used by tests).
     func waitUntilDone() async {
         await listenTask?.value
+        await reviewer.wait()
     }
 
-    /// Records the practice and saves the fixes to Memory, once.
+    /// Saves the minute: the practice and the copy to reread once, and the
+    /// fixes found so far. Called again whenever more fixes arrive.
     func save(in context: ModelContext, now: Date = .now) {
-        guard phase == .done, !hasSaved, !lines.isEmpty else { return }
-        hasSaved = true
-        context.insert(PracticeSession(kind: .sixtySeconds, secondsSpoken: secondsSpoken, date: startedAt ?? now))
+        guard phase == .done, !lines.isEmpty else { return }
         let detail = String(localized: "60 seconds · \(topic.title)")
+        let saved = lines.map { SessionLine(isLearner: true, german: $0.german, feedback: $0.feedback.map { .init($0) }) }
+        if let record {
+            record.lines = saved
+        } else {
+            context.insert(PracticeSession(kind: .sixtySeconds, secondsSpoken: secondsSpoken, date: startedAt ?? now))
+            let hasRecording = FileManager.default.fileExists(atPath: recordingURL.path)
+            let record = SessionRecord(uuid: recordID, kind: .sixtySeconds, title: detail, secondsSpoken: secondsSpoken, lines: saved,
+                                       audioFileName: hasRecording ? recordingURL.lastPathComponent : "", date: startedAt ?? now)
+            context.insert(record)
+            self.record = record
+        }
         let items = lines.compactMap { line in
             line.feedback.flatMap { MistakePractice.item(said: line.german, feedback: $0, sourceDetail: detail, at: now) }
         }
         MistakePractice.save(items, in: context)
-        // The copy to reread and listen to, in Learn.
-        let saved = lines.map { SessionLine(isLearner: true, german: $0.german, feedback: $0.feedback.map { .init($0) }) }
-        let hasRecording = FileManager.default.fileExists(atPath: recordingURL.path)
-        context.insert(SessionRecord(uuid: recordID, kind: .sixtySeconds, title: detail, secondsSpoken: secondsSpoken, lines: saved,
-                                     audioFileName: hasRecording ? recordingURL.lastPathComponent : "", date: startedAt ?? now))
         try? context.save()
     }
 
@@ -176,11 +193,15 @@ final class SixtySecondsModel {
 
     private func heard(_ text: String) {
         transcript = text
-        // Every sentence but the last is finished: check it while they talk on.
+        // The recogniser keeps rewording what it heard. A sentence is checked while
+        // they talk on only once it has settled: not the last one, and the same as
+        // in the transcript before.
         let sentences = Self.sentences(in: text)
-        for (index, sentence) in sentences.dropLast().enumerated() {
+        for (index, sentence) in sentences.dropLast().enumerated()
+        where previousSentences.indices.contains(index) && previousSentences[index] == sentence {
             reviewer.check(id: id(at: index), german: sentence, replyingTo: nil)
         }
+        previousSentences = sentences
     }
 
     private func finished() async {
@@ -195,15 +216,30 @@ final class SixtySecondsModel {
             secondsLeft = timing.seconds
             return
         }
-        phase = .checking
+        // The sentences are shown straight away; the fixes fill in as they are found.
+        phase = .done
+        reviewer.onProgress = { [weak self] in self?.reviewProgressed() }
         for line in lines { reviewer.check(id: line.id, german: line.german, replyingTo: nil) }
-        await reviewer.wait()
-        for index in lines.indices {
+        reviewProgressed()
+        let limit = timing.checkLimit
+        limitTask = Task { [weak self] in
+            try? await Task.sleep(for: limit)
+            guard !Task.isCancelled, let self, isChecking else { return }
+            reviewer.cancel()
+            isChecking = false
+            revision += 1
+        }
+    }
+
+    /// Puts the fixes found so far under their sentences.
+    private func reviewProgressed() {
+        for index in lines.indices where lines[index].feedback == nil {
             if let checked = reviewer.results[lines[index].id], checked.german == lines[index].german {
                 lines[index].feedback = checked.feedback
             }
         }
-        phase = .done
+        isChecking = reviewer.isBusy
+        revision += 1
     }
 
     private func failed(_ error: any Error) {
