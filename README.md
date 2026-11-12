@@ -81,7 +81,8 @@ Alltag/                                   ← repo root
 │  │  │  ├─ Phrase.swift
 │  │  │  ├─ SolvedRule.swift
 │  │  │  ├─ SavedTranslation.swift
-│  │  │  └─ PracticeSession.swift        one practice (kind, seconds spoken) behind the streak and minutes
+│  │  │  ├─ PracticeSession.swift        one practice (kind, seconds spoken) behind the streak and minutes
+│  │  │  └─ CustomSituation.swift        a situation the learner added (title, what to do, category); schema V3
 │  │  ├─ Content/                         plain structs for lesson content
 │  │  │  ├─ Scenario.swift               Scenario, ConversationLine, Feedback
 │  │  │  ├─ Activity.swift
@@ -163,8 +164,8 @@ Alltag/                                   ← repo root
 │  │  │  └─ BeyondRow.swift
 │  │  ├─ Situations/                      (#178)
 │  │  │  ├─ SituationCatalogue.swift      the everyday situations, by category; four suggestions a day
-│  │  │  ├─ TodaySituations.swift         "Situations" on Today
-│  │  │  └─ SituationsView.swift          all situations by category; tap one to train it with the live voice
+│  │  │  ├─ TodaySituations.swift         "Situations" on Today: large glass tiles in a snapping row
+│  │  │  └─ SituationsView.swift          all situations by category, "+" to add your own (long-press to delete); tap one to train it with the live voice
 │  │  ├─ Conversation/
 │  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls; free talk: voice only, consent card
 │  │  │  ├─ ConversationModel.swift       state machine

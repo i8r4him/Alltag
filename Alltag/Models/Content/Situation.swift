@@ -12,8 +12,22 @@ import Foundation
 struct Situation: Identifiable, Hashable, Sendable {
     enum Category: String, CaseIterable, Identifiable, Sendable {
         case health, authorities, home, work, outAndAbout
+        /// Only for the learner's own situations that fit nowhere else.
+        case other
 
         var id: String { rawValue }
+
+        /// The artwork of a learner's own situation in this category.
+        var systemImage: String {
+            switch self {
+            case .health: "cross.case.fill"
+            case .authorities: "building.columns.fill"
+            case .home: "house.fill"
+            case .work: "briefcase.fill"
+            case .outAndAbout: "figure.walk"
+            case .other: "bubble.left.and.text.bubble.right.fill"
+            }
+        }
 
         var title: LocalizedStringResource {
             switch self {
@@ -22,6 +36,7 @@ struct Situation: Identifiable, Hashable, Sendable {
             case .home: "Home"
             case .work: "Work"
             case .outAndAbout: "Out and about"
+            case .other: "Other"
             }
         }
     }
@@ -37,6 +52,13 @@ struct Situation: Identifiable, Hashable, Sendable {
     let role: String
     /// For the voice model, in English: what the learner wants to achieve.
     let aim: String
+    /// Added by the learner (see `CustomSituation`).
+    var isCustom = false
+
+    /// The learner's own words as display text. There is no catalog entry for them, so they are shown as typed.
+    static func verbatim(_ text: String) -> LocalizedStringResource {
+        LocalizedStringResource(String.LocalizationValue(text))
+    }
 
     static func == (lhs: Situation, rhs: Situation) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }

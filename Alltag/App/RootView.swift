@@ -112,7 +112,7 @@ struct RootView: View {
         case .conversation(let id):
             ConversationView(scenario: MockScenarios.scenario(id), level: profiles.first?.level ?? .a1)
         case .situation(let id):
-            if let situation = SituationCatalogue.situation(id: id) {
+            if let situation = SituationCatalogue.situation(id: id, in: modelContext) {
                 ConversationView(scenario: situation.scenario, level: profiles.first?.level ?? .a1)
             }
         case .activity(let id):

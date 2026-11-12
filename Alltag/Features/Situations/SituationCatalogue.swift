@@ -6,11 +6,19 @@
 //
 
 import Foundation
+import SwiftData
 
 /// The everyday situations Alltag offers to train.
 enum SituationCatalogue {
     static func situation(id: String) -> Situation? {
         all.first { $0.id == id }
+    }
+
+    /// One of Alltag's situations, or one the learner added.
+    static func situation(id: String, in context: ModelContext) -> Situation? {
+        if let situation = situation(id: id) { return situation }
+        let own = (try? context.fetch(FetchDescriptor<CustomSituation>())) ?? []
+        return own.first { $0.situationID == id }?.situation
     }
 
     static func situations(in category: Situation.Category) -> [Situation] {

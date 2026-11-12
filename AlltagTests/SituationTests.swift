@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 import Testing
 @testable import Alltag
 
@@ -15,7 +16,7 @@ struct SituationTests {
     func catalogue() {
         let all = SituationCatalogue.all
         #expect(Set(all.map(\.id)).count == all.count)
-        for category in Situation.Category.allCases {
+        for category in Situation.Category.allCases where category != .other {
             #expect(!SituationCatalogue.situations(in: category).isEmpty)
         }
         #expect(all.allSatisfy { !$0.role.isEmpty && !$0.aim.isEmpty })
@@ -51,5 +52,24 @@ struct SituationTests {
         #expect(context.instructions.contains(situation.role))
         #expect(context.instructions.contains(situation.aim))
         #expect(context.instructions.contains("A2"))
+    }
+
+    @Test("A situation the learner added is found by its id and tells the voice what they want")
+    func custom() throws {
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let own = CustomSituation(title: "  At the vet ", detail: "Explain that my cat isn't eating 100%", category: .health)
+        container.mainContext.insert(own)
+
+        #expect(own.title == "At the vet")
+        let situation = try #require(SituationCatalogue.situation(id: own.situationID, in: container.mainContext))
+        #expect(situation.isCustom)
+        #expect(situation.category == .health)
+        #expect(String(localized: situation.title) == "At the vet")
+        #expect(String(localized: situation.detail) == "Explain that my cat isn't eating 100%")
+        #expect(SituationCatalogue.situation(id: "doctor", in: container.mainContext)?.isCustom == false)
+
+        let context = RealtimeConversationContext(scenario: situation.scenario, level: .b1, slowerSpeech: false)
+        #expect(context.instructions.contains("At the vet"))
+        #expect(context.instructions.contains("my cat isn't eating"))
     }
 }

@@ -142,6 +142,27 @@ struct SwiftDataTests {
         #expect(try new.mainContext.fetchCount(FetchDescriptor<PracticeSession>()) == 1)
     }
 
+    @Test("A version 2 store opens as version 3 and keeps its data")
+    func migratesFromVersionTwo() throws {
+        let folder = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Alltag.store")
+
+        do {
+            let schema = Schema(versionedSchema: AlltagSchemaV2.self)
+            let old = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url))
+            old.mainContext.insert(PracticeSession(kind: .conversation, secondsSpoken: 90))
+            try old.mainContext.save()
+        }
+
+        let new = try AlltagStore.makeContainer(url: url)
+        #expect(try new.mainContext.fetch(FetchDescriptor<PracticeSession>()).map(\.secondsSpoken) == [90])
+        new.mainContext.insert(CustomSituation(title: "At the vet", category: .health))
+        try new.mainContext.save()
+        #expect(try new.mainContext.fetch(FetchDescriptor<CustomSituation>()).map(\.title) == ["At the vet"])
+    }
+
     @Test("Minutes spoken add up the sessions' seconds, in whole minutes")
     func minutesSpoken() {
         let sessions = [PracticeSession(kind: .conversation, secondsSpoken: 150),

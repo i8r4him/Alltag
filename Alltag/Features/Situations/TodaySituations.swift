@@ -13,55 +13,30 @@ struct TodaySituations: View {
     let onShowAll: () -> Void
     let onSelect: (Situation) -> Void
 
-    // Temporary: the maintainer picks one design, then the others and the switcher go.
-    @AppStorage("situationsDesign") private var design = 0
-    private static let designs = 3
-
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Button(action: onShowAll) {
-                    HStack(spacing: 6) {
-                        Text("Situations")
-                            .textRole(.sectionHeader)
-                        Image(systemName: "chevron.right")
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                    .contentShape(.rect)
+            Button(action: onShowAll) {
+                HStack(spacing: 6) {
+                    Text("Situations")
+                        .textRole(.sectionHeader)
+                    Image(systemName: "chevron.right")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(.isHeader)
-                .accessibilityHint("Shows all situations.")
-                Spacer()
-                switcher
+                .contentShape(.rect)
             }
+            .buttonStyle(.plain)
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityHint("Shows all situations.")
 
-            switch design {
-            case 1: SituationRows(situations: Array(situations.prefix(3)), onSelect: onSelect)
-            case 2: SituationGrid(situations: situations, onSelect: onSelect)
-            default: SituationTiles(situations: situations, onSelect: onSelect)
-            }
+            SituationTiles(situations: situations, onSelect: onSelect)
         }
         .fontDesign(.rounded)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-
-    private var switcher: some View {
-        HStack(spacing: 10) {
-            Button { design = (design + Self.designs - 1) % Self.designs } label: { Image(systemName: "chevron.left") }
-            Text(verbatim: "\(design + 1) / \(Self.designs)").monospacedDigit()
-            Button { design = (design + 1) % Self.designs } label: { Image(systemName: "chevron.right") }
-        }
-        .font(.footnote.weight(.semibold))
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .glassEffect(.regular, in: .capsule)
-    }
 }
 
-// MARK: - Design 1: large tiles in a snapping row
-
+/// Large glass tiles in a snapping row.
 private struct SituationTiles: View {
     let situations: [Situation]
     let onSelect: (Situation) -> Void
@@ -112,62 +87,6 @@ private struct SituationTiles: View {
         .accessibilityHint("Practise this situation.")
     }
 }
-
-// MARK: - Design 2: a glass list
-
-private struct SituationRows: View {
-    let situations: [Situation]
-    let onSelect: (Situation) -> Void
-
-    var body: some View {
-        VStack(spacing: 0) {
-            ForEach(Array(situations.enumerated()), id: \.element.id) { index, situation in
-                if index > 0 { Divider().padding(.leading, 72) }
-                Button { onSelect(situation) } label: { SituationRow(situation: situation) }
-                    .buttonStyle(.plain)
-            }
-        }
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-    }
-}
-
-// MARK: - Design 3: a grid of small tiles
-
-private struct SituationGrid: View {
-    let situations: [Situation]
-    let onSelect: (Situation) -> Void
-
-    var body: some View {
-        GlassEffectContainer(spacing: 0) {
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: Spacing.grid), GridItem(.flexible())], spacing: Spacing.grid) {
-                ForEach(situations.prefix(4)) { situation in
-                    Button { onSelect(situation) } label: { tile(situation) }
-                        .buttonStyle(.tile)
-                }
-            }
-        }
-    }
-
-    private func tile(_ situation: Situation) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            ScenarioArtwork(systemImage: situation.systemImage, symbolSize: 24, cornerRadius: 12)
-                .frame(width: 44, height: 44)
-            Text(situation.title)
-                .font(.headline)
-                .lineLimit(2)
-                .minimumScaleFactor(0.8)
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .topLeading)
-        }
-        .padding(Spacing.card)
-        .multilineTextAlignment(.leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28, style: .continuous))
-        .contentShape(.rect(cornerRadius: 28, style: .continuous))
-        .accessibilityElement(children: .combine)
-        .accessibilityHint("Practise this situation.")
-    }
-}
-
-// MARK: - Shared row
 
 /// One situation in a list: its artwork, title and what to do there.
 struct SituationRow: View {
