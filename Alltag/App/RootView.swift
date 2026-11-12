@@ -86,6 +86,10 @@ struct RootView: View {
             DebriefView(services: services)
         case .briefing:
             BriefingView(services: services)
+        case .sessions:
+            SessionsView()
+        case .session(let id):
+            SessionDetailView(id: id)
         case .situations:
             SituationsView()
         case .progress:

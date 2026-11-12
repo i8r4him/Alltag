@@ -60,6 +60,8 @@ final class SixtySecondsModel {
     @ObservationIgnored private var startedAt: Date?
     @ObservationIgnored private var secondsSpoken = 0
     @ObservationIgnored private var hasSaved = false
+    /// The saved copy's id; its recording is a file named after it.
+    @ObservationIgnored private let recordID = UUID()
 
     init(services: AppServices, level: Level, timing: Timing = Timing(), topic: TalkTopic? = nil) {
         self.speech = services.speech
@@ -105,7 +107,7 @@ final class SixtySecondsModel {
         transcript = ""
         secondsLeft = timing.seconds
         startedAt = .now
-        let stream = speech.listen(expected: Self.simulatedTalk)
+        let stream = speech.listen(expected: Self.simulatedTalk, recordingTo: recordingURL)
         listenTask = Task { [weak self] in
             do {
                 for try await text in stream {
@@ -140,6 +142,12 @@ final class SixtySecondsModel {
         listenTask?.cancel()
         reviewer.cancel()
         if phase == .talking { speech.stopListening() }
+        // A minute that was never finished leaves no recording behind.
+        if !hasSaved { try? FileManager.default.removeItem(at: recordingURL) }
+    }
+
+    private var recordingURL: URL {
+        SessionHistory.audioURL(named: SessionHistory.audioFileName(for: recordID))
     }
 
     func waitUntilDone() async {
@@ -156,6 +164,11 @@ final class SixtySecondsModel {
             line.feedback.flatMap { MistakePractice.item(said: line.german, feedback: $0, sourceDetail: detail, at: now) }
         }
         MistakePractice.save(items, in: context)
+        // The copy to reread and listen to, in Learn.
+        let saved = lines.map { SessionLine(isLearner: true, german: $0.german, feedback: $0.feedback.map { .init($0) }) }
+        let hasRecording = FileManager.default.fileExists(atPath: recordingURL.path)
+        context.insert(SessionRecord(uuid: recordID, kind: .sixtySeconds, title: detail, secondsSpoken: secondsSpoken, lines: saved,
+                                     audioFileName: hasRecording ? recordingURL.lastPathComponent : "", date: startedAt ?? now))
         try? context.save()
     }
 

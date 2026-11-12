@@ -256,6 +256,11 @@ struct RealtimeConversationTests {
 
         let sessions = try container.mainContext.fetch(FetchDescriptor<PracticeSession>())
         #expect(sessions.map(\.kind) == [.conversation])
+        // And one copy to reread from Learn, with what was said.
+        let records = try container.mainContext.fetch(FetchDescriptor<SessionRecord>())
+        #expect(records.map(\.title) == [MockScenarios.freeTalk.title])
+        #expect(records.first?.lines.map(\.german) == ["Mir geht's gut."])
+        #expect(records.first?.lines.first?.isLearner == true)
     }
 
     private func makeModel(realtime: StubRealtimeService, allowed: Bool = true, limit: Duration = .seconds(600),

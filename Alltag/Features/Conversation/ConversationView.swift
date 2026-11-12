@@ -107,7 +107,9 @@ private struct ConversationContent: View {
             showsSummary = true
         }
         .onChange(of: model.liveReview) { _, review in
-            if review == .done { model.saveMistakes(in: modelContext) }
+            guard review == .done else { return }
+            model.saveMistakes(in: modelContext)
+            model.updateHistory()
         }
         .sheet(isPresented: $showsSummary) {
             SummarySheet(scenario: model.scenario, turns: model.turnCount, fixes: model.fixCount,

@@ -90,9 +90,11 @@ final class ConversationModel {
     @ObservationIgnored private var cloudDeadline: Task<Void, Never>?
     /// When the learner started talking, and when the conversation ended,
     /// for the minutes practised.
-    @ObservationIgnored private var startedAt: Date?
-    @ObservationIgnored private var endedAt: Date?
-    @ObservationIgnored private var hasRecordedPractice = false
+    @ObservationIgnored private(set) var startedAt: Date?
+    @ObservationIgnored private(set) var endedAt: Date?
+    @ObservationIgnored var hasRecordedPractice = false
+    /// The saved copy of this conversation (see `ConversationModel+History.swift`).
+    @ObservationIgnored var sessionRecord: SessionRecord?
 
     init(scenario: Scenario, services: AppServices, timing: Timing = Timing(), usesCloudVoice: Bool = false, level: Level = .a1) {
         self.scenario = scenario
@@ -335,16 +337,6 @@ final class ConversationModel {
 }
 
 extension ConversationModel {
-    /// Saves the conversation as practice, once, so the streak and the minutes
-    /// count it: the time from the learner's first tap to the end. Nothing is
-    /// saved when the learner didn't say anything.
-    func recordPractice(in context: ModelContext, now: Date = .now) {
-        guard !hasRecordedPractice, let startedAt, turnCount > 0 else { return }
-        hasRecordedPractice = true
-        let seconds = Int((endedAt ?? now).timeIntervalSince(startedAt).rounded())
-        context.insert(PracticeSession(kind: .conversation, secondsSpoken: seconds, date: startedAt))
-    }
-
     func setCloudVoiceConsent(_ allowed: Bool) {
         usesCloudVoice = allowed
         if !allowed, isUsingCloudVoice { fallBackFromCloud() }
