@@ -119,7 +119,8 @@ Deno.serve(async (req) => {
       model: MODEL,
       instructions: INSTRUCTIONS,
       input,
-      max_output_tokens: 400,
+      // The model thinks before it answers, and its thinking counts: 400 was too few and cut answers off.
+      max_output_tokens: 2000,
       store: false,
       text: { format: { type: "json_schema", name: "sentence_check", schema: SCHEMA, strict: true } },
     }),
