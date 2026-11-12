@@ -86,8 +86,8 @@ struct RootView: View {
             DebriefView(services: services)
         case .briefing:
             BriefingView(services: services)
-        case .comingUp:
-            ComingUpList()
+        case .situations:
+            SituationsView()
         case .progress:
             ProgressOverviewView()
         case .profile:
@@ -111,6 +111,10 @@ struct RootView: View {
         switch route {
         case .conversation(let id):
             ConversationView(scenario: MockScenarios.scenario(id), level: profiles.first?.level ?? .a1)
+        case .situation(let id):
+            if let situation = SituationCatalogue.situation(id: id, in: modelContext) {
+                ConversationView(scenario: situation.scenario, level: profiles.first?.level ?? .a1)
+            }
         case .activity(let id):
             ActivityView(activity: id == .mistakes
                          ? MistakePractice.activity(in: modelContext) ?? MockActivities.mistakes

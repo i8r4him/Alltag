@@ -19,6 +19,8 @@ enum MockScenarios {
         case .postOffice: postOffice
         case .station: station
         case .freeTalk: freeTalk
+        // Situations are built from the catalogue (`Situation.scenario`), never looked up here.
+        case .situation: freeTalk
         }
     }
 
