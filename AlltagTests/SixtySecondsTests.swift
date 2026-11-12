@@ -84,6 +84,42 @@ struct SixtySecondsTests {
         #expect(records.first?.audioFileName.isEmpty == true)
     }
 
+    @Test("While the recogniser rewords what it heard, only settled sentences are checked")
+    func rewording() async {
+        let companion = FixingCompanion()
+        // The first sentence changes three times before it settles; the last is only complete at the end.
+        let speech = ScriptedSpeech(updates: [
+            "Ich wohne",
+            "Ich wohne seit zwei. Am",
+            "Ich wohne seit zwei Jahren. Am Wochenende",
+            "Ich wohne seit zwei Jahren in Berlin. Am Wochenende ich",
+            "Ich wohne seit zwei Jahren in Berlin. Am Wochenende ich gehe",
+            "Ich wohne seit zwei Jahren in Berlin. Am Wochenende ich gehe in den Park."
+        ])
+        let model = makeModel(companion: companion, speech: speech)
+        model.topicChosen()
+        model.start()
+        await model.waitUntilDone()
+
+        #expect(model.phase == .done)
+        #expect(!model.isChecking)
+        #expect(model.lines.map(\.german) == ["Ich wohne seit zwei Jahren in Berlin.", "Am Wochenende ich gehe in den Park."])
+        #expect(companion.heard.sorted() == model.lines.map(\.german).sorted())
+        #expect(model.fixCount == 2)
+    }
+
+    @Test("Checking that takes too long is given up, and the sentences stay")
+    func checkingIsCapped() async {
+        let model = makeModel(companion: SlowCompanion(), checkLimit: .milliseconds(50))
+        model.topicChosen()
+        model.start()
+        await model.waitUntilDone()
+
+        #expect(model.phase == .done)
+        #expect(!model.isChecking)
+        #expect(model.lines.count == 4)
+    }
+
     @Test("Without Apple Intelligence the sentences are shown without fixes")
     func withoutChecking() async {
         let model = makeModel(companion: MockCompanionService(thinkingTime: .zero))
@@ -111,9 +147,10 @@ struct SixtySecondsTests {
         #expect(model.reelTitles.last == model.topic.title)
     }
 
-    private func makeModel(companion: any CompanionService) -> SixtySecondsModel {
+    private func makeModel(companion: any CompanionService, speech: (any SpeechService)? = nil,
+                           checkLimit: Duration = .seconds(45)) -> SixtySecondsModel {
         let services = AppServices(
-            speech: MockSpeechService(wordInterval: .zero),
+            speech: speech ?? MockSpeechService(wordInterval: .zero),
             voice: MockVoiceService(),
             translation: MockTranslationService(delay: .zero),
             companion: companion,
@@ -121,7 +158,8 @@ struct SixtySecondsTests {
             notifications: MockNotificationService(),
             realtime: MockRealtimeConversationService()
         )
-        return SixtySecondsModel(services: services, level: .a2, timing: SixtySecondsModel.Timing(seconds: 60, tick: .seconds(60)))
+        let timing = SixtySecondsModel.Timing(seconds: 60, tick: .seconds(60), checkLimit: checkLimit)
+        return SixtySecondsModel(services: services, level: .a2, timing: timing)
     }
 }
 
@@ -141,4 +179,41 @@ private final class FixingCompanion: CompanionService {
     }
 
     func debrief(_ input: String, about moment: Debrief) async throws -> Debrief { moment }
+}
+
+/// A companion that never answers in time; it stops when the check is cancelled.
+private final class SlowCompanion: CompanionService {
+    var usesOnDeviceModel: Bool { true }
+
+    func respond(to learnerText: String, in scenario: Scenario, turn: Int) async throws -> CompanionResponse {
+        CompanionResponse()
+    }
+
+    func feedback(on sentence: String, in scenario: Scenario, replyingTo previous: String?) async throws -> SentenceFeedback {
+        try await Task.sleep(for: .seconds(30))
+        return SentenceFeedback(feedback: MockCompanionService.ownSentenceNote, english: "")
+    }
+
+    func debrief(_ input: String, about moment: Debrief) async throws -> Debrief { moment }
+}
+
+/// Speech that yields a fixed series of transcripts, like a recogniser revising itself.
+private final class ScriptedSpeech: SpeechService {
+    let updates: [String]
+    var authorizationStatus: PermissionStatus { .granted }
+
+    init(updates: [String]) {
+        self.updates = updates
+    }
+
+    func requestAuthorization() async -> PermissionStatus { .granted }
+
+    func listen(expected: String, recordingTo recording: URL?) -> AsyncThrowingStream<String, any Error> {
+        AsyncThrowingStream { continuation in
+            for update in updates { continuation.yield(update) }
+            continuation.finish()
+        }
+    }
+
+    func stopListening() {}
 }
