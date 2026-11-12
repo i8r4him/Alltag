@@ -112,19 +112,27 @@ Deno.serve(async (req) => {
     `The learner said: „${sentence}“`,
   ].filter(Boolean).join("\n");
 
-  const upstream = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: MODEL,
-      instructions: INSTRUCTIONS,
-      input,
-      // The model thinks before it answers, and its thinking counts: 400 was too few and cut answers off.
-      max_output_tokens: 2000,
-      store: false,
-      text: { format: { type: "json_schema", name: "sentence_check", schema: SCHEMA, strict: true } },
-    }),
-  });
+  const request = () =>
+    fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODEL,
+        instructions: INSTRUCTIONS,
+        input,
+        // The model thinks before it answers, and its thinking counts: 400 was too few and cut answers off.
+        max_output_tokens: 2000,
+        store: false,
+        text: { format: { type: "json_schema", name: "sentence_check", schema: SCHEMA, strict: true } },
+      }),
+    });
+  // After a key's permissions change, OpenAI refuses some requests with 401 for a while
+  // (seen for over 20 minutes). The refusal is instant, so ask again a few times.
+  let upstream = await request();
+  for (let attempt = 1; attempt < 5 && upstream.status === 401; attempt++) {
+    await upstream.body?.cancel();
+    upstream = await request();
+  }
   if (!upstream.ok) {
     console.error("OpenAI check failed", upstream.status, await upstream.text());
     return json({ error: "upstream" }, 502);
