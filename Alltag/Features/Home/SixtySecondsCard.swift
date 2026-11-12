@@ -46,7 +46,7 @@ struct SixtySecondsCard: View {
                     .font(.title3)
                     .frame(width: 34, height: 34)
             }
-            .buttonStyle(.glassProminent)
+            .buttonStyle(.glass)
             .buttonBorderShape(.circle)
             .tint(Color.accentFill)
             .accessibilityLabel("Start 60 seconds of talking")
@@ -55,7 +55,7 @@ struct SixtySecondsCard: View {
         .frame(maxWidth: .infinity)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
         .fontDesign(.rounded)
-        .sensoryFeedback(.impact(weight: .light), trigger: taps)
+        .sensoryFeedback(.impact(weight: .medium), trigger: taps)
     }
 }
 
