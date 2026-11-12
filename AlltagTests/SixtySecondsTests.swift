@@ -12,18 +12,27 @@ import Testing
 
 @MainActor
 struct SixtySecondsTests {
-    @Test("Beginners get topics about their own life; from B1 the harder ones join in")
-    func topicsByLevel() {
-        #expect(TalkTopics.topics(for: .a1).allSatisfy { $0.band == .beginner })
-        #expect(TalkTopics.topics(for: .a2) == TalkTopics.topics(for: .a1))
-        #expect(TalkTopics.topics(for: .b1).count == TalkTopics.all.count)
-        #expect(Set(TalkTopics.all.map(\.id)).count == TalkTopics.all.count)
+    @Test("Every level from A1 to C1 has its own 50 topics", arguments: [Level.a1, .a2, .b1, .b2, .c1])
+    func topicsByLevel(level: Level) {
+        let topics = TalkTopics.topics(for: level)
+        #expect(topics.count == 50)
+        #expect(topics.allSatisfy { $0.level == level })
+        #expect(Set(topics.map(\.title)).count == 50)
+        #expect(topics.allSatisfy { !$0.title.isEmpty && $0.question.hasSuffix("?") })
+    }
+
+    @Test("No topic appears at two levels, and C2 talks about C1's topics")
+    func topicsAreDistinct() {
+        #expect(TalkTopics.all.count == 250)
+        #expect(Set(TalkTopics.all.map(\.id)).count == 250)
+        #expect(Set(TalkTopics.all.map(\.title)).count == 250)
+        #expect(TalkTopics.topics(for: .c2) == TalkTopics.topics(for: .c1))
     }
 
     @Test("Another topic is never the same one again")
     func anotherTopic() {
         var generator = SystemRandomNumberGenerator()
-        let first = TalkTopics.all[0]
+        let first = TalkTopics.a1[0]
         for _ in 0..<20 {
             #expect(TalkTopics.random(for: .a1, not: first, using: &generator) != first)
         }
