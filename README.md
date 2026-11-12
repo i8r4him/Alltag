@@ -120,7 +120,8 @@ Alltag/                                   ← repo root
 │  │  │  └─ SystemTranslationService.swift   Translation framework (on device) + Apple Intelligence explanations
 │  │  ├─ Companion/
 │  │  │  ├─ CompanionService.swift        CompanionService, MockCompanionService (scripts, samples, fallback)
-│  │  │  └─ OnDeviceCompanionService.swift   Foundation Models: feedback on own sentences, debriefs
+│  │  │  ├─ OnDeviceCompanionService.swift   Foundation Models: feedback on own sentences, debriefs
+│  │  │  └─ CloudCompanionService.swift   sentences judged by OpenAI through check-german when cloud use is allowed; on device otherwise (#230)
 │  │  ├─ Calendar/CalendarService.swift    CalendarService, CalendarEvent, MockCalendarService
 │  │  └─ Notifications/NotificationService.swift   NotificationService, MockNotificationService
 │  │

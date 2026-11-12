@@ -42,7 +42,7 @@ final class LineReviewer {
     /// Queues a line unless the same words were queued before, or there is
     /// nothing in them to correct.
     func check(id: UUID, german: String, replyingTo previous: String?) {
-        guard companion.usesOnDeviceModel, Self.isWorthChecking(german), asked[id] != german else { return }
+        guard companion.canCheckSentences, Self.isWorthChecking(german), asked[id] != german else { return }
         asked[id] = german
         queue.append(Line(id: id, german: german, previous: previous))
         guard task == nil else { return }

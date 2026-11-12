@@ -439,7 +439,7 @@ extension ConversationModel {
         endCloudSession()
         hasFallenBack = true
         finishedLiveConversation = true
-        if companion.usesOnDeviceModel, turnCount > 0 {
+        if companion.canCheckSentences, turnCount > 0 {
             // Lines whose final transcript never arrived are checked now.
             for message in messages where message.line.speaker == .learner { review(message) }
             reviewProgressed()

@@ -1,7 +1,7 @@
 # Alltag backend (Supabase)
 
 The project is `Alltag` (ref `flbymqlcauvwumznvviq`, region eu-central-1, free plan).
-Its only job is to keep the OpenAI API key off the phone.
+Its only job is to keep the OpenAI API key off the phone: for the live voice, and for checking sentences.
 
 ```
 App ──(Supabase anonymous session)──▶ realtime-session ──(OPENAI_API_KEY)──▶ OpenAI
@@ -70,8 +70,22 @@ Accounts listed in `realtime_developers` skip the **per-user** limit. The global
   ```
 - Remove the row to get the normal limit back. The app can't read or change this table.
 
+## Checking a sentence (`check-german`)
+
+The mistake check after 60 seconds and after conversations. The app sends **text only**, one sentence at a time, never audio.
+
+- Send `POST {URL}/functions/v1/check-german` with the same two headers as above.
+- The body is `{"sentence": "…", "previous": "…", "context": "…", "level": "A2"}`. Only `sentence` is required (500 characters at most).
+- `200` returns `{"kind": "good" | "fix" | "note", "title": "…", "note": "…", "english": "…", "correction": "…"}`.
+- The errors are the same as in the table above, plus `400 bad_request` for a missing sentence.
+- **Nothing the learner said is stored.** The table `german_checks` keeps only who asked and when, for the limits: `CHECK_PER_USER_DAILY` (default 300 sentences) and `CHECK_GLOBAL_DAILY` (default 20,000). Developer accounts skip the per-user limit.
+- The model is `CHECK_MODEL` (default `gpt-6.1-terra`). The request is sent with `store: false`.
+- **The OpenAI key needs the Responses permission.** A key restricted to Realtime answers `401 Missing scopes: api.responses.write`, the function answers `502 upstream`, and the app checks on the device instead. Give the key "Responses: Write" in the OpenAI dashboard (API keys → edit the key → Permissions).
+
 ## Files
 
-- `functions/realtime-session/index.ts`: the function. Deploy it with JWT verification on.
+- `functions/realtime-session/index.ts`: the voice function. Deploy it with JWT verification on.
+- `functions/check-german/index.ts`: the sentence check. Deploy it with JWT verification on.
 - `migrations/20261107200000_realtime_sessions.sql`: the session log used for the limits.
 - `migrations/20261111100000_realtime_developers.sql`: the accounts that skip the per-user limit.
+- `migrations/20261113100000_german_checks.sql`: the check log used for the limits.
