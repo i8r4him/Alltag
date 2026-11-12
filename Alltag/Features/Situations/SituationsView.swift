@@ -59,21 +59,42 @@ struct SituationsView: View {
             VStack(spacing: 0) {
                 ForEach(Array(situations.enumerated()), id: \.element.id) { index, situation in
                     if index > 0 { Divider().padding(.leading, 72) }
-                    Button { appState.present(.situation(situation.id)) } label: {
-                        SituationRow(situation: situation)
-                    }
-                    .buttonStyle(.plain)
-                    .contextMenu {
-                        if let mine = own.first(where: { $0.situationID == situation.id }) {
-                            Button("Delete", systemImage: "trash", role: .destructive) {
-                                modelContext.delete(mine)
-                                try? modelContext.save()
+                    let mine = own.first { $0.situationID == situation.id }
+                    HStack(spacing: 0) {
+                        Button { appState.present(.situation(situation.id)) } label: {
+                            SituationRow(situation: situation)
+                        }
+                        .buttonStyle(.plain)
+                        // Only the learner's own situations can be removed.
+                        if let mine {
+                            Menu {
+                                Button("Delete", systemImage: "trash", role: .destructive) { delete(mine) }
+                            } label: {
+                                Image(systemName: "ellipsis")
+                                    .font(.body.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: Spacing.minTouchTarget, height: Spacing.minTouchTarget)
+                                    .contentShape(.rect)
                             }
+                            .accessibilityLabel(Text("More for \(String(localized: situation.title))"))
+                            .padding(.trailing, 6)
+                        }
+                    }
+                    .contextMenu {
+                        if let mine {
+                            Button("Delete", systemImage: "trash", role: .destructive) { delete(mine) }
                         }
                     }
                 }
             }
             .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+        }
+    }
+
+    private func delete(_ situation: CustomSituation) {
+        withAnimation {
+            modelContext.delete(situation)
+            try? modelContext.save()
         }
     }
 }
