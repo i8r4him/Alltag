@@ -149,6 +149,7 @@ private struct NewSituationSheet: View {
             .onAppear { isTitleFocused = true }
         }
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.hidden)
     }
 }
 
