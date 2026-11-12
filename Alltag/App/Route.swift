@@ -29,6 +29,9 @@ enum Route: Hashable {
     case beyond
     case debrief
     case briefing
+    /// The learner's saved sessions, and one of them.
+    case sessions
+    case session(UUID)
     /// Every situation to train.
     case situations
 }

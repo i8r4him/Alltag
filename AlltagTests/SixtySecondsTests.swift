@@ -74,6 +74,14 @@ struct SixtySecondsTests {
         let mistakes = try container.mainContext.fetch(FetchDescriptor<MemoryItem>()).filter { $0.kind == .mistake }
         #expect(mistakes.count == 4)
         #expect(mistakes.allSatisfy { $0.sourceDetail.contains(model.topic.title) })
+        // One copy to reread, with every sentence and its fix. The simulated speech records nothing.
+        let records = try container.mainContext.fetch(FetchDescriptor<SessionRecord>())
+        #expect(records.count == 1)
+        #expect(records.first?.kind == .sixtySeconds)
+        #expect(records.first?.title.contains(model.topic.title) == true)
+        #expect(records.first?.lines.map(\.german) == model.lines.map(\.german))
+        #expect(records.first?.fixCount == 4)
+        #expect(records.first?.audioFileName.isEmpty == true)
     }
 
     @Test("Without Apple Intelligence the sentences are shown without fixes")

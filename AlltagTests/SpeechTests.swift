@@ -17,7 +17,7 @@ private final class StubSpeech: SpeechService {
     var authorizationStatus: PermissionStatus { .granted }
     func requestAuthorization() async -> PermissionStatus { .granted }
     func stopListening() {}
-    func listen(expected: String) -> AsyncThrowingStream<String, any Error> {
+    func listen(expected: String, recordingTo recording: URL?) -> AsyncThrowingStream<String, any Error> {
         let result = result
         return AsyncThrowingStream { continuation in
             switch result {

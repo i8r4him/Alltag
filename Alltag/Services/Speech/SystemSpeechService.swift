@@ -41,9 +41,9 @@ final class SystemSpeechService: SpeechService {
         return authorizationStatus
     }
 
-    func listen(expected: String) -> AsyncThrowingStream<String, any Error> {
+    func listen(expected: String, recordingTo recording: URL?) -> AsyncThrowingStream<String, any Error> {
         stopListening()
-        let session = ListeningSession(locale: locale)
+        let session = ListeningSession(locale: locale, recording: recording)
         self.session = session
         let (stream, continuation) = AsyncThrowingStream.makeStream(of: String.self)
         let task = Task {
@@ -74,14 +74,16 @@ final class SystemSpeechService: SpeechService {
 /// One listening turn: microphone → analyzer → transcript.
 private actor ListeningSession {
     private let locale: Locale
+    private let recording: URL?
     private var analyzer: SpeechAnalyzer?
     private var microphone: Microphone?
     private var input: AsyncStream<AnalyzerInput>.Continuation?
     private var isStopped = false
     private let logger = Logger(subsystem: "Alltag", category: "Speech")
 
-    init(locale: Locale) {
+    init(locale: Locale, recording: URL?) {
         self.locale = locale
+        self.recording = recording
     }
 
     /// Listens until `stop()`, calling `onText` with the transcript so far.
@@ -104,7 +106,7 @@ private actor ListeningSession {
         let (stream, input) = AsyncStream.makeStream(of: AnalyzerInput.self)
         let analyzer = SpeechAnalyzer(modules: [transcriber])
         try await analyzer.start(inputSequence: stream)
-        let microphone = try Microphone(format: format) { input.yield(AnalyzerInput(buffer: $0)) }
+        let microphone = try Microphone(format: format, recording: recording) { input.yield(AnalyzerInput(buffer: $0)) }
         self.analyzer = analyzer
         self.input = input
         self.microphone = microphone
@@ -143,8 +145,18 @@ private actor ListeningSession {
 /// Its tap runs on the audio thread, so it lives outside the main actor.
 nonisolated private final class Microphone: @unchecked Sendable {
     private let engine = AVAudioEngine()
+    /// The recording being written, when one was asked for. Only the tap writes to it.
+    private var file: AVAudioFile?
 
-    init(format: AVAudioFormat, onBuffer: @escaping @Sendable (AVAudioPCMBuffer) -> Void) throws {
+    init(format: AVAudioFormat, recording: URL? = nil, onBuffer: @escaping @Sendable (AVAudioPCMBuffer) -> Void) throws {
+        // A recording that can't be made must not stop the listening.
+        let file = recording.flatMap { url in
+            try? AVAudioFile(forWriting: url,
+                             settings: [AVFormatIDKey: kAudioFormatMPEG4AAC, AVSampleRateKey: format.sampleRate,
+                                        AVNumberOfChannelsKey: format.channelCount, AVEncoderBitRateKey: 32_000],
+                             commonFormat: format.commonFormat, interleaved: format.isInterleaved)
+        }
+        self.file = file
         let audioSession = AVAudioSession.sharedInstance()
         try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.duckOthers, .defaultToSpeaker])
         try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
@@ -172,7 +184,9 @@ nonisolated private final class Microphone: @unchecked Sendable {
                 status.pointee = .haveData
                 return buffer
             }
-            if error == nil, converted.frameLength > 0 { onBuffer(converted) }
+            guard error == nil, converted.frameLength > 0 else { return }
+            try? file?.write(from: converted)
+            onBuffer(converted)
         }
         engine.prepare()
         try engine.start()
@@ -181,5 +195,7 @@ nonisolated private final class Microphone: @unchecked Sendable {
     func stop() {
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
+        // Letting go of the file finishes writing it.
+        file = nil
     }
 }

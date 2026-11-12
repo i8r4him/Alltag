@@ -82,7 +82,8 @@ Alltag/                                   ← repo root
 │  │  │  ├─ SolvedRule.swift
 │  │  │  ├─ SavedTranslation.swift
 │  │  │  ├─ PracticeSession.swift        one practice (kind, seconds spoken) behind the streak and minutes
-│  │  │  └─ CustomSituation.swift        a situation the learner added (title, what to do, category); schema V3
+│  │  │  ├─ CustomSituation.swift        a situation the learner added (title, what to do, category); schema V3
+│  │  │  └─ SessionRecord.swift          a copy of every session (lines, feedback, recording file); SessionHistory; schema V4
 │  │  ├─ Content/                         plain structs for lesson content
 │  │  │  ├─ Scenario.swift               Scenario, ConversationLine, Feedback
 │  │  │  ├─ Activity.swift
@@ -168,6 +169,10 @@ Alltag/                                   ← repo root
 │  │  │  ├─ TopicReel.swift               the topic is chosen at random, shown as a reel that slows down
 │  │  │  ├─ SixtySecondsModel.swift       topic → 60 s of on-device listening → sentences checked → fixes saved
 │  │  │  └─ SixtySecondsView.swift        choosing, talking with the countdown ring, the result
+│  │  ├─ Sessions/                        (#225)
+│  │  │  ├─ SessionsView.swift            "Your sessions" link on Learn and the list (swipe to delete, delete all)
+│  │  │  ├─ SessionDetailView.swift       one session: lines, fixes, and the recording of a 60-second talk
+│  │  │  └─ RecordingPlayer.swift         play or stop a recording, off the main thread
 │  │  ├─ Situations/                      (#178)
 │  │  │  ├─ SituationCatalogue.swift      the everyday situations, by category; four suggestions a day
 │  │  │  ├─ TodaySituations.swift         "Situations" on Today: large glass tiles in a snapping row

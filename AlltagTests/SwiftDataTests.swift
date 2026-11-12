@@ -163,6 +163,48 @@ struct SwiftDataTests {
         #expect(try new.mainContext.fetch(FetchDescriptor<CustomSituation>()).map(\.title) == ["At the vet"])
     }
 
+    @Test("A version 3 store opens as version 4 and keeps its data")
+    func migratesFromVersionThree() throws {
+        let folder = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Alltag.store")
+
+        do {
+            let schema = Schema(versionedSchema: AlltagSchemaV3.self)
+            let old = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url))
+            old.mainContext.insert(CustomSituation(title: "At the vet", category: .health))
+            try old.mainContext.save()
+        }
+
+        let new = try AlltagStore.makeContainer(url: url)
+        #expect(try new.mainContext.fetch(FetchDescriptor<CustomSituation>()).map(\.title) == ["At the vet"])
+        new.mainContext.insert(SessionRecord(kind: .sixtySeconds, title: "60 seconds"))
+        try new.mainContext.save()
+        #expect(try new.mainContext.fetchCount(FetchDescriptor<SessionRecord>()) == 1)
+    }
+
+    @Test("A saved session gives back its lines and feedback, and counts its fixes")
+    func sessionRecordLines() throws {
+        let fix = Feedback(kind: .fix, title: "Verb second", note: "Am Wochenende gehe ich.", correction: "Am Wochenende gehe ich.")
+        let lines = [
+            SessionLine(ConversationLine(speaker: .companion, german: "Was machst du am Wochenende?", english: "", feedback: nil)),
+            SessionLine(ConversationLine(speaker: .learner, german: "Am Wochenende ich gehe.", english: "", feedback: fix))
+        ]
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        container.mainContext.insert(SessionRecord(kind: .conversation, title: "Just talk", secondsSpoken: 90, lines: lines))
+        try container.mainContext.save()
+
+        let saved = try #require(try container.mainContext.fetch(FetchDescriptor<SessionRecord>()).first)
+        #expect(saved.lines == lines)
+        #expect(saved.fixCount == 1)
+        #expect(saved.lines[1].feedback?.feedback == fix)
+        #expect(SessionHistory.audioURL(of: saved) == nil)
+
+        SessionHistory.deleteAll(in: container.mainContext)
+        #expect(try container.mainContext.fetchCount(FetchDescriptor<SessionRecord>()) == 0)
+    }
+
     @Test("Minutes spoken add up the sessions' seconds, in whole minutes")
     func minutesSpoken() {
         let sessions = [PracticeSession(kind: .conversation, secondsSpoken: 150),
