@@ -17,7 +17,7 @@ struct TodaySituations: View {
         VStack(alignment: .leading, spacing: 12) {
             Button(action: onShowAll) {
                 HStack(spacing: 6) {
-                    Text("Situations")
+                    Text("Life's Situations")
                         .textRole(.sectionHeader)
                     Image(systemName: "chevron.right")
                         .font(.title3.weight(.semibold))
