@@ -23,9 +23,19 @@ protocol SpeechService: AnyObject {
     ///
     /// `expected` is the scripted line; only the simulated service uses it.
     /// Throws a `SpeechError` when listening isn't possible.
-    func listen(expected: String) -> AsyncThrowingStream<String, any Error>
+    ///
+    /// With `recording`, what the microphone hears is also written to that file
+    /// (AAC in an `.m4a`), so the learner can listen to themselves afterwards.
+    func listen(expected: String, recordingTo recording: URL?) -> AsyncThrowingStream<String, any Error>
     /// Ends listening; the stream yields the final transcript and finishes.
     func stopListening()
+}
+
+extension SpeechService {
+    /// Listens without keeping a recording.
+    func listen(expected: String) -> AsyncThrowingStream<String, any Error> {
+        listen(expected: expected, recordingTo: nil)
+    }
 }
 
 /// Simulated recognition: reveals `expected` one word at a time (230ms per
@@ -47,7 +57,8 @@ final class MockSpeechService: SpeechService {
         return authorizationStatus
     }
 
-    func listen(expected: String) -> AsyncThrowingStream<String, any Error> {
+    /// Nothing is recorded: there is no microphone behind the simulated speech.
+    func listen(expected: String, recordingTo recording: URL?) -> AsyncThrowingStream<String, any Error> {
         cancel()
         let words = expected.split(separator: " ").map(String.init)
         let interval = wordInterval
