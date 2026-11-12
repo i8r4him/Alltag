@@ -31,11 +31,12 @@ Judge only that sentence, as spoken German.
 
 kind:
 - "fix": a real mistake in grammar, word order, case, gender, verb form, preposition or word choice.
-- "note": correct, but a native speaker would say it differently, or it does not fit the situation.
+- "note": correct, but a native speaker would clearly say it differently.
 - "good": correct and natural. When in doubt between "good" and "note", choose "good".
 
 Do NOT correct punctuation, capital letters, or spelling that sounds the same: they come from the
 speech recognition, not from the learner. Do not invent mistakes. Never change the meaning.
+Do not judge what the learner talks about or whether it fits the topic: only the German.
 Keep everything that was right exactly as the learner said it.
 
 title: at most six words naming the rule or what is good, in British English.
