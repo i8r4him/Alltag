@@ -163,7 +163,8 @@ Alltag/                                   ← repo root
 │  │  │  ├─ SixtySecondsCard.swift        big "60 seconds", text and play button → 60 seconds of talking
 │  │  │  └─ BeyondRow.swift
 │  │  ├─ SixtySeconds/                    (#184)
-│  │  │  ├─ TalkTopic.swift               topics in German, easier ones for A1–A2
+│  │  │  ├─ TalkTopic.swift               a topic in German; TalkTopics picks one written for the learner's level
+│  │  │  ├─ TalkTopics+A1.swift … +C1     50 topics for each level (C2 uses C1's)
 │  │  │  ├─ TopicReel.swift               the topic is chosen at random, shown as a reel that slows down
 │  │  │  ├─ SixtySecondsModel.swift       topic → 60 s of on-device listening → sentences checked → fixes saved
 │  │  │  └─ SixtySecondsView.swift        choosing, talking with the countdown ring, the result
