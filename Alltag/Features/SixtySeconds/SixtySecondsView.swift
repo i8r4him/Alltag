@@ -44,13 +44,15 @@ struct SixtySecondsView: View {
         .onAppear {
             if model == nil { model = SixtySecondsModel(services: services, level: level) }
         }
-        .onChange(of: model?.phase) { _, phase in
-            if phase == .done { model?.save(in: modelContext) }
-        }
+        // Saved when the minute ends, and again whenever more fixes have arrived.
+        .onChange(of: model?.revision) { model?.save(in: modelContext) }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background { model?.finish() }
         }
-        .onDisappear { model?.stop() }
+        .onDisappear {
+            model?.save(in: modelContext)
+            model?.stop()
+        }
     }
 }
 
@@ -63,7 +65,7 @@ private struct SixtySecondsContent: View {
         Group {
             switch model.phase {
             case .picking, .ready: choosing
-            case .talking, .checking: talking
+            case .talking: talking
             case .done: SixtySecondsResult(model: model, onPractise: onPractise, onDone: onDone)
             }
         }
@@ -140,7 +142,7 @@ private struct SixtySecondsContent: View {
 
             Spacer()
             ZStack {
-                CompanionOrb(dynamics: OrbDynamics(state: model.phase == .talking ? .listening : .thinking), isLive: true)
+                CompanionOrb(dynamics: OrbDynamics(state: .listening), isLive: true)
                     .frame(width: 190, height: 190)
                 Circle()
                     .trim(from: 0, to: 1 - model.progress)
@@ -148,23 +150,14 @@ private struct SixtySecondsContent: View {
                     .rotationEffect(.degrees(-90))
                     .frame(width: 214, height: 214)
                     .animation(.linear(duration: 1), value: model.secondsLeft)
-                    .opacity(model.phase == .talking ? 1 : 0)
             }
             .accessibilityHidden(true)
-            Group {
-                if model.phase == .talking {
-                    Text(model.secondsLeft, format: .number)
-                        .font(.system(size: 56, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                        .contentTransition(.numericText(countsDown: true))
-                        .animation(.default, value: model.secondsLeft)
-                        .accessibilityLabel(Text("\(model.secondsLeft) seconds left"))
-                } else {
-                    Label { Text("Checking your German…") } icon: { ProgressView() }
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                }
-            }
+            Text(model.secondsLeft, format: .number)
+                .font(.system(size: 56, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .contentTransition(.numericText(countsDown: true))
+                .animation(.default, value: model.secondsLeft)
+                .accessibilityLabel(Text("\(model.secondsLeft) seconds left"))
             .frame(height: 70)
             .padding(.top, 8)
 
@@ -186,8 +179,6 @@ private struct SixtySecondsContent: View {
                     .frame(maxWidth: .infinity, minHeight: 34)
             }
             .buttonStyle(.glass)
-            .disabled(model.phase != .talking)
-            .opacity(model.phase == .talking ? 1 : 0)
             .padding(.horizontal, 22)
             .padding(.bottom, 12)
         }
@@ -230,6 +221,12 @@ private struct SixtySecondsResult: View {
                 .padding(Spacing.cardLarge)
                 .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
 
+                if model.isChecking {
+                    Label { Text("Checking your German…") } icon: { ProgressView().controlSize(.small) }
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 4)
+                }
                 if !model.canCheck {
                     Label("Turn on Apple Intelligence to have your mistakes fixed.", systemImage: "sparkles")
                         .font(.footnote)
