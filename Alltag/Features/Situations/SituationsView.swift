@@ -35,7 +35,7 @@ struct SituationsView: View {
         .scrollEdgeEffectStyle(.soft, for: .all)
         .readableContentMargins()
         .skyBackground()
-        .navigationTitle("Situations")
+        .navigationTitle("Life's Situations")
         .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
