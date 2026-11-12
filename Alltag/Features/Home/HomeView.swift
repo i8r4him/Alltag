@@ -31,8 +31,7 @@ struct HomeView: View {
                                    onShowAll: { appState.open(.situations) },
                                    onSelect: { appState.present(.situation($0.id)) })
 
-                    FromYourDayList(briefingWords: MockBriefing.briefing.words.count,
-                                    newReadingWords: newReadingWords,
+                    FromYourDayList(newReadingWords: newReadingWords,
                                     writingMistakes: FromYourDay.writingMistakes(in: memoryItems),
                                     onOpen: { appState.open($0) },
                                     onPresent: { appState.present($0) })

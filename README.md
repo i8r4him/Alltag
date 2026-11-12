@@ -160,8 +160,13 @@ Alltag/                                   ← repo root
 │  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Minutes · Level (→ Progress), BigNumber (1.2k from 1,000)
 │  │  │  ├─ FocusCard.swift               title, line and scenario artwork; Start talking (glass, lights from below)
 │  │  │  ├─ FromYourDayList.swift         briefing card, Today actions and Beyond row
-│  │  │  ├─ BriefingCard.swift            big "60 seconds", text and play button
+│  │  │  ├─ SixtySecondsCard.swift        big "60 seconds", text and play button → 60 seconds of talking
 │  │  │  └─ BeyondRow.swift
+│  │  ├─ SixtySeconds/                    (#184)
+│  │  │  ├─ TalkTopic.swift               topics in German, easier ones for A1–A2
+│  │  │  ├─ TopicReel.swift               the topic is chosen at random, shown as a reel that slows down
+│  │  │  ├─ SixtySecondsModel.swift       topic → 60 s of on-device listening → sentences checked → fixes saved
+│  │  │  └─ SixtySecondsView.swift        choosing, talking with the countdown ring, the result
 │  │  ├─ Situations/                      (#178)
 │  │  │  ├─ SituationCatalogue.swift      the everyday situations, by category; four suggestions a day
 │  │  │  ├─ TodaySituations.swift         "Situations" on Today: large glass tiles in a snapping row

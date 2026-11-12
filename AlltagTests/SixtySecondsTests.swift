@@ -1,0 +1,127 @@
+//
+//  SixtySecondsTests.swift
+//  AlltagTests
+//
+//  Created by Ibrahim Abdullah on 12.11.26.
+//
+
+import Foundation
+import SwiftData
+import Testing
+@testable import Alltag
+
+@MainActor
+struct SixtySecondsTests {
+    @Test("Beginners get topics about their own life; from B1 the harder ones join in")
+    func topicsByLevel() {
+        #expect(TalkTopics.topics(for: .a1).allSatisfy { $0.band == .beginner })
+        #expect(TalkTopics.topics(for: .a2) == TalkTopics.topics(for: .a1))
+        #expect(TalkTopics.topics(for: .b1).count == TalkTopics.all.count)
+        #expect(Set(TalkTopics.all.map(\.id)).count == TalkTopics.all.count)
+    }
+
+    @Test("Another topic is never the same one again")
+    func anotherTopic() {
+        var generator = SystemRandomNumberGenerator()
+        let first = TalkTopics.all[0]
+        for _ in 0..<20 {
+            #expect(TalkTopics.random(for: .a1, not: first, using: &generator) != first)
+        }
+    }
+
+    @Test("The transcript is cut into sentences")
+    func sentences() {
+        let text = "Ich wohne in Berlin. Am Wochenende ich gehe oft in den Park! Und du?"
+        #expect(SixtySecondsModel.sentences(in: text) == [
+            "Ich wohne in Berlin.", "Am Wochenende ich gehe oft in den Park!", "Und du?"
+        ])
+        #expect(SixtySecondsModel.sentences(in: "  ").isEmpty)
+    }
+
+    @Test("A minute of talking ends with every sentence checked, and the fixes saved once")
+    func talking() async throws {
+        let companion = FixingCompanion()
+        let model = makeModel(companion: companion)
+        #expect(model.phase == .picking)
+        model.start()
+        #expect(model.phase == .picking)
+
+        model.topicChosen()
+        model.start()
+        #expect(model.phase == .talking)
+        await model.waitUntilDone()
+
+        #expect(model.phase == .done)
+        #expect(model.lines.count == 4)
+        #expect(model.fixCount == 4)
+        // Each sentence is asked about once, although most were queued while talking.
+        #expect(companion.heard.sorted() == model.lines.map(\.german).sorted())
+
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        model.save(in: container.mainContext)
+        model.save(in: container.mainContext)
+        let sessions = try container.mainContext.fetch(FetchDescriptor<PracticeSession>())
+        #expect(sessions.map(\.kind) == [.sixtySeconds])
+        let mistakes = try container.mainContext.fetch(FetchDescriptor<MemoryItem>()).filter { $0.kind == .mistake }
+        #expect(mistakes.count == 4)
+        #expect(mistakes.allSatisfy { $0.sourceDetail.contains(model.topic.title) })
+    }
+
+    @Test("Without Apple Intelligence the sentences are shown without fixes")
+    func withoutChecking() async {
+        let model = makeModel(companion: MockCompanionService(thinkingTime: .zero))
+        model.topicChosen()
+        model.start()
+        await model.waitUntilDone()
+
+        #expect(model.phase == .done)
+        #expect(!model.canCheck)
+        #expect(model.lines.count == 4)
+        #expect(model.fixCount == 0)
+    }
+
+    @Test("Another topic runs the reel again with a different topic")
+    func pickAnother() {
+        let model = makeModel(companion: MockCompanionService(thinkingTime: .zero))
+        let first = model.topic
+        model.pickAnother()
+        #expect(model.topic == first)
+
+        model.topicChosen()
+        model.pickAnother()
+        #expect(model.phase == .picking)
+        #expect(model.topic != first)
+        #expect(model.reelTitles.last == model.topic.title)
+    }
+
+    private func makeModel(companion: any CompanionService) -> SixtySecondsModel {
+        let services = AppServices(
+            speech: MockSpeechService(wordInterval: .zero),
+            voice: MockVoiceService(),
+            translation: MockTranslationService(delay: .zero),
+            companion: companion,
+            calendar: MockCalendarService(),
+            notifications: MockNotificationService(),
+            realtime: MockRealtimeConversationService()
+        )
+        return SixtySecondsModel(services: services, level: .a2, timing: SixtySecondsModel.Timing(seconds: 60, tick: .seconds(60)))
+    }
+}
+
+/// An on-device companion that finds a fix in every sentence.
+private final class FixingCompanion: CompanionService {
+    private(set) var heard: [String] = []
+    var usesOnDeviceModel: Bool { true }
+
+    func respond(to learnerText: String, in scenario: Scenario, turn: Int) async throws -> CompanionResponse {
+        CompanionResponse()
+    }
+
+    func feedback(on sentence: String, in scenario: Scenario, replyingTo previous: String?) async throws -> SentenceFeedback {
+        heard.append(sentence)
+        return SentenceFeedback(feedback: Feedback(kind: .fix, title: "Verb second", note: "Better: \(sentence)",
+                                                   correction: "Besser: \(sentence)"), english: "")
+    }
+
+    func debrief(_ input: String, about moment: Debrief) async throws -> Debrief { moment }
+}
