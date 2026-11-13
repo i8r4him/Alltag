@@ -199,10 +199,10 @@ Alltag/                                   ← repo root
 │  │  ├─ Learn/
 │  │  │  ├─ LearnView.swift               tools, Fix your mistakes, then Practise (everything apart from speaking)
 │  │  │  ├─ LearnTools.swift              "How do I say …?" field, Translate and Articles
-│  │  │  ├─ MistakesCard.swift            a deck of your mistakes, the first on top
+│  │  │  ├─ MistakesCard.swift            your own mistakes as a glass deck, the wrong words underlined; empty state (#248)
 │  │  │  ├─ LearnComponents.swift         LearnScreen, LearnHeroCard, LearnSection, LearnList, LearnRow
 │  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour
-│  │  │  ├─ ActivityView.swift            native toolbar (close, segments), options, audio, done
+│  │  │  ├─ ActivityView.swift            native toolbar (close, segments), options, audio, done; sky and glass
 │  │  │  ├─ ActivityModel.swift           one pick per question, scoring, audio
 │  │  │  └─ MistakePractice.swift         conversation fixes → Memory › Mistakes → practice questions
 │  │  ├─ Write/

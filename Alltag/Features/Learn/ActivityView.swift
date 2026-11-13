@@ -54,7 +54,8 @@ private struct ActivityContent: View {
             .padding(.horizontal, Spacing.onboarding)
             .readableWidth(Spacing.focusedWidth)
             .frame(maxHeight: .infinity, alignment: .top)
-            .background(.screenBackground)
+            .fontDesign(.rounded)
+            .skyBackground()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -113,7 +114,8 @@ private struct QuestionView: View {
                     .padding(.horizontal, 20)
                     .padding(.vertical, 18)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+                    .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+                    .environment(\.locale, Locale(identifier: "de"))
                 }
 
                 Text(verbatim: model.question.question)
@@ -134,7 +136,7 @@ private struct QuestionView: View {
                         .padding(.horizontal, 18)
                         .padding(.vertical, 16)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(.surface, in: .rect(cornerRadius: Radius.innerCard, style: .continuous))
+                        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
                         .transition(.opacity)
                 }
             }
@@ -187,6 +189,7 @@ private struct OptionButton: View {
             .frame(minHeight: 56)
             .background(background, in: shape)
             .overlay { shape.strokeBorder(border, lineWidth: 1) }
+            .glassEffect(.regular, in: shape)
             .opacity(state == .dimmed ? 0.45 : 1)
             .contentShape(shape)
         }
@@ -203,7 +206,7 @@ private struct OptionButton: View {
         switch state {
         case .right: AnyShapeStyle(.success.opacity(0.14))
         case .wrong: AnyShapeStyle(.mistake.opacity(0.14))
-        case .open, .dimmed: AnyShapeStyle(.surface)
+        case .open, .dimmed: AnyShapeStyle(.clear)
         }
     }
 
@@ -240,7 +243,7 @@ private struct AudioCard: View {
                 EqualizerBars(isPlaying: isPlaying)
             }
             .padding(20)
-            .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
         }
         .buttonStyle(.card)
         .accessibilityLabel(isPlaying ? Text("Pause announcement") : Text("Play announcement"))
