@@ -14,6 +14,8 @@ struct RealtimeConversationContext {
     /// How long the learner may stay silent, in milliseconds, before the
     /// companion answers. Beginners get more time to find their words.
     let thinkingPause: Int
+    /// No script to fall back to (free talk and situations).
+    let isLiveOnly: Bool
 
     init(scenario: Scenario, level: Level, slowerSpeech: Bool) {
         self.scenario = scenario.id.rawValue
@@ -24,6 +26,13 @@ struct RealtimeConversationContext {
             When the learner makes a mistake, keep talking and use the correct form naturally in your reply.
             Learner's German level (CEFR): \(level.rawValue.uppercased())
             Start with a short, warm greeting and ask how their day is going.
+            """ : scenario.id == .situation ? """
+            Role-play an everyday situation in Germany: \(scenario.title).
+            You play \(scenario.role). Stay in that role and speak as that person really would.
+            The learner wants to \(scenario.aim). Don't do it for them: ask, react and let them get there.
+            When they have got it done, close the conversation naturally, the way that person would.
+            Learner's German level (CEFR): \(level.rawValue.uppercased())
+            Start by greeting the learner in character.
             """ : """
             Scenario: \(scenario.title)
             Goal: \(scenario.goal)
@@ -31,6 +40,7 @@ struct RealtimeConversationContext {
             Start by greeting the learner in character and inviting them to speak.
             """
         self.slowerSpeech = slowerSpeech
+        self.isLiveOnly = scenario.isLiveOnly
         self.thinkingPause = Self.thinkingPause(for: level)
     }
 
@@ -81,7 +91,7 @@ struct MockRealtimeConversationService: RealtimeConversationService {
 /// unavailable, so they keep their script.
 struct SimulatedRealtimeConversationService: RealtimeConversationService {
     func makeSession(for context: RealtimeConversationContext) -> any RealtimeConversationSession {
-        context.scenario == Scenario.ID.freeTalk.rawValue ? FreeTalkSession() : MockRealtimeConversationService().makeSession(for: context)
+        context.isLiveOnly ? FreeTalkSession() : MockRealtimeConversationService().makeSession(for: context)
     }
 
     private final class FreeTalkSession: RealtimeConversationSession {

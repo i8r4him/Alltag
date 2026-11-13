@@ -81,7 +81,9 @@ Alltag/                                   ← repo root
 │  │  │  ├─ Phrase.swift
 │  │  │  ├─ SolvedRule.swift
 │  │  │  ├─ SavedTranslation.swift
-│  │  │  └─ PracticeSession.swift        one practice (kind, seconds spoken) behind the streak and minutes
+│  │  │  ├─ PracticeSession.swift        one practice (kind, seconds spoken) behind the streak and minutes
+│  │  │  ├─ CustomSituation.swift        a situation the learner added (title, what to do, category); schema V3
+│  │  │  └─ SessionRecord.swift          a copy of every session (lines, feedback, recording file); SessionHistory; schema V4
 │  │  ├─ Content/                         plain structs for lesson content
 │  │  │  ├─ Scenario.swift               Scenario, ConversationLine, Feedback
 │  │  │  ├─ Activity.swift
@@ -118,7 +120,8 @@ Alltag/                                   ← repo root
 │  │  │  └─ SystemTranslationService.swift   Translation framework (on device) + Apple Intelligence explanations
 │  │  ├─ Companion/
 │  │  │  ├─ CompanionService.swift        CompanionService, MockCompanionService (scripts, samples, fallback)
-│  │  │  └─ OnDeviceCompanionService.swift   Foundation Models: feedback on own sentences, debriefs
+│  │  │  ├─ OnDeviceCompanionService.swift   Foundation Models: feedback on own sentences, debriefs
+│  │  │  └─ CloudCompanionService.swift   sentences judged by OpenAI through check-german when cloud use is allowed; on device otherwise (#230)
 │  │  ├─ Calendar/CalendarService.swift    CalendarService, CalendarEvent, MockCalendarService
 │  │  └─ Notifications/NotificationService.swift   NotificationService, MockNotificationService
 │  │
@@ -158,15 +161,28 @@ Alltag/                                   ← repo root
 │  │  │  ├─ HomeHeader.swift              Avatar
 │  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Minutes · Level (→ Progress), BigNumber (1.2k from 1,000)
 │  │  │  ├─ FocusCard.swift               title, line and scenario artwork; Start talking (glass, lights from below)
-│  │  │  ├─ ComingUpCard.swift
 │  │  │  ├─ FromYourDayList.swift         briefing card, Today actions and Beyond row
-│  │  │  ├─ BriefingCard.swift            big "60 seconds", text and play button
+│  │  │  ├─ SixtySecondsCard.swift        big "60 seconds", text and play button → 60 seconds of talking
 │  │  │  └─ BeyondRow.swift
+│  │  ├─ SixtySeconds/                    (#184)
+│  │  │  ├─ TalkTopic.swift               a topic in German; TalkTopics picks one written for the learner's level
+│  │  │  ├─ TalkTopics+A1.swift … +C1     50 topics for each level (C2 uses C1's)
+│  │  │  ├─ TopicReel.swift               the topic is chosen at random, shown as a reel that slows down
+│  │  │  ├─ SixtySecondsModel.swift       topic → 60 s of on-device listening → sentences checked → fixes saved
+│  │  │  └─ SixtySecondsView.swift        choosing, talking with the countdown ring, the result
+│  │  ├─ Sessions/                        (#225)
+│  │  │  ├─ SessionsView.swift            "Your sessions" link on Learn and the list (swipe to delete, delete all)
+│  │  │  ├─ SessionDetailView.swift       one session: lines, fixes, and the recording of a 60-second talk
+│  │  │  └─ RecordingPlayer.swift         play or stop a recording, off the main thread
+│  │  ├─ Situations/                      (#178)
+│  │  │  ├─ SituationCatalogue.swift      the everyday situations, by category; four suggestions a day
+│  │  │  ├─ TodaySituations.swift         "Situations" on Today: large glass tiles in a snapping row
+│  │  │  └─ SituationsView.swift          all situations by category, "+" to add your own (long-press to delete); tap one to train it with the live voice
 │  │  ├─ Conversation/
 │  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls; free talk: voice only, consent card
 │  │  │  ├─ ConversationModel.swift       state machine
 │  │  │  ├─ LineReviewer.swift            checks live learner lines on device while the conversation goes on (#209)
-│  │  │  ├─ LiveLimitView.swift           free talk at the daily limit: what happened, when again, what still works (#210)
+│  │  │  ├─ LiveProblemView.swift         a live conversation that can't start: limit, no internet, no microphone, busy; try again or Settings (#210, #172)
 │  │  │  ├─ TranscriptView.swift          companion lines (cut off with …), learner lines in a theme-tinted bubble, heard text with caret
 │  │  │  ├─ FeedbackCard.swift
 │  │  │  └─ SummarySheet.swift            (#30)
@@ -217,7 +233,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ SettingsModel.swift           permission toggles, on-device AI status
 │  │  │  └─ DataExport.swift              Export my data (JSON)
 │  │  └─ Beyond/
-│  │     └─ BeyondView.swift              concept previews only
+│  │     └─ BeyondView.swift              tap a word to translate (Apple's Translation) and save it; widget previews; Siri phrases as coming (#190)
 │  │
 │  ├─ MockData/                           prototype data, copied exactly
 │  │  ├─ MockScenarios.swift              SCEN
@@ -359,7 +375,7 @@ Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's init
 1. **Orb** — a static amber sphere (drawn once, never animated) → today's Conversation.
 2. **Words · Spoken · Level** — three numbers → Progress.
 3. **Today's Focus** — glass card: eyebrow, "Moving an appointment", "5 min" pill, full-width **Start talking** (`.glassProminent`).
-4. **Coming up** — "Rehearse from your Calendar"; tiles → their Conversation scenarios.
+4. **Situations** — a few everyday situations (different every day) and "Situations ›" → all of them by category. Tapping one starts a live-voice role-play (`Situation.scenario`).
 5. **From your day** list: 60-second briefing · Debrief bakery · 3 new words from Safari (→ Memory filtered) · 1 writing mistake (→ Activity).
 6. "Learning beyond the app" ticket → Beyond.
 
@@ -453,7 +469,7 @@ All Apple frameworks — nothing to install.
 | Speech (`SpeechAnalyzer`) | Hearing the learner's German | No |
 | Foundation Models | On-device companion replies, corrections, debrief | No |
 | Translation | Real translation | No |
-| EventKit | "Coming up" from Calendar | No |
+| EventKit | Calendar events (not shown in v1 since Situations replaced "Coming up"; #183) | No |
 | UserNotifications | Daily nudges (local) | No |
 | WidgetKit | Word of the day, Review widgets | Yes (App Groups for shared data) |
 | SwiftData + CloudKit | Sync and backup across the learner's iPhones | Yes |

@@ -39,9 +39,7 @@ final class SystemRealtimeAudio: RealtimeAudio {
 
     func start() async throws -> AsyncThrowingStream<Data, any Error> {
         let session = AVAudioSession.sharedInstance()
-        try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetoothHFP])
-        // Activating blocks while the hardware switches over; the async API keeps the UI responsive.
-        guard try await session.activate(options: []) else { throw RealtimeServiceError.unavailable }
+        guard try await Self.prepareSession() else { throw RealtimeServiceError.unavailable }
         isActive = true
         try engine.inputNode.setVoiceProcessingEnabled(true)
 
@@ -58,6 +56,16 @@ final class SystemRealtimeAudio: RealtimeAudio {
         try startEngine(recordingIn: pcm, continuation: continuation)
         watchAudioChanges(session: session, recordingIn: pcm, continuation: continuation)
         return stream
+    }
+
+    /// Switches the audio session to talking and activates it, off the main thread:
+    /// changing the category while a session is active (the chime may still be
+    /// playing) blocks, and so does activating while the hardware switches over.
+    @concurrent
+    nonisolated private static func prepareSession() async throws -> Bool {
+        let session = AVAudioSession.sharedInstance()
+        try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetoothHFP])
+        return try await session.activate(options: [])
     }
 
     func play(_ data: Data, item: String, onPlayed: @escaping @MainActor @Sendable () -> Void) throws {

@@ -16,10 +16,15 @@ enum MistakePractice {
     /// A Memory item for a fix the learner got: `said`, corrected.
     /// `nil` unless `feedback` is a fix with a correction that differs from what was said.
     static func item(said: String, feedback: Feedback, scenario: Scenario, at date: Date = .now) -> MemoryItem? {
+        item(said: said, feedback: feedback, sourceDetail: scenario.title, at: date)
+    }
+
+    /// The same, for a fix that didn't come from a scenario (`sourceDetail` says where it was said).
+    static func item(said: String, feedback: Feedback, sourceDetail: String, at date: Date = .now) -> MemoryItem? {
         guard feedback.kind == .fix, let correction = feedback.correction,
               ConversationModel.normalized(correction) != ConversationModel.normalized(said) else { return nil }
         return MemoryItem(word: correction, meaning: feedback.title, context: correction, contextNote: feedback.note,
-                          kind: .mistake, source: .conversation, sourceDetail: scenario.title,
+                          kind: .mistake, source: .conversation, sourceDetail: sourceDetail,
                           mistakeOriginal: said, strength: 0, nextReview: date, createdAt: date)
     }
 

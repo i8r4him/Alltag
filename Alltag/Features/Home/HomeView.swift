@@ -8,16 +8,14 @@
 import SwiftData
 import SwiftUI
 
-/// Today: the orb and three numbers, Today's Focus, Coming up, From your day
+/// Today: the orb and three numbers, Today's Focus, Situations, From your day
 /// and Learning beyond the app. The title is "Alltag";
 /// the toolbar holds Translate and a profile menu (Profile, Progress, Settings).
 struct HomeView: View {
     @Environment(AppState.self) private var appState
-    @Environment(\.services) private var services
     @Query private var profiles: [UserProfile]
     @Query private var memoryItems: [MemoryItem]
     @Query private var sessions: [PracticeSession]
-    @State private var events: [CalendarEvent] = []
 
     private var name: String { profiles.first?.name ?? "" }
     private var newReadingWords: Int { FromYourDay.newReadingWords(in: memoryItems) }
@@ -29,14 +27,11 @@ struct HomeView: View {
                           onStart: { appState.present(.conversation(.freeTalk)) }, onProgress: { appState.open(.progress) })
 
                     FocusCard(action: startFocus)
-                    if !events.isEmpty {
-                        ComingUpCard(events: events, onShowAll: { appState.open(.comingUp) }, onSelect: { event in
-                            if let scenario = event.scenario { appState.present(.conversation(scenario)) }
-                        })
-                    }
+                    TodaySituations(situations: SituationCatalogue.suggestions(),
+                                   onShowAll: { appState.open(.situations) },
+                                   onSelect: { appState.present(.situation($0.id)) })
 
-                    FromYourDayList(briefingWords: MockBriefing.briefing.words.count,
-                                    newReadingWords: newReadingWords,
+                    FromYourDayList(newReadingWords: newReadingWords,
                                     writingMistakes: FromYourDay.writingMistakes(in: memoryItems),
                                     onOpen: { appState.open($0) },
                                     onPresent: { appState.present($0) })
@@ -76,7 +71,6 @@ struct HomeView: View {
                 .accessibilityLabel("Profile and settings")
             }
         }
-        .task { events = (try? await services.calendar.upcomingEvents()) ?? [] }
     }
 
     private var level: Level { profiles.first?.level ?? .a1 }

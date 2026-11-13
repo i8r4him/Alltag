@@ -27,21 +27,41 @@ nonisolated enum AlltagSchemaV2: VersionedSchema {
     }
 }
 
+/// Version 3 adds `CustomSituation`, the situations a learner adds themselves.
+nonisolated enum AlltagSchemaV3: VersionedSchema {
+    static let versionIdentifier = Schema.Version(3, 0, 0)
+
+    static var models: [any PersistentModel.Type] {
+        AlltagSchemaV2.models + [CustomSituation.self]
+    }
+}
+
+/// Version 4 adds `SessionRecord`, the copy of every session the learner can reread.
+nonisolated enum AlltagSchemaV4: VersionedSchema {
+    static let versionIdentifier = Schema.Version(4, 0, 0)
+
+    static var models: [any PersistentModel.Type] {
+        AlltagSchemaV3.models + [SessionRecord.self]
+    }
+}
+
 /// Every model in the current schema has to follow CloudKit's rules, so iCloud
 /// sync (#54) can be switched on without changing them: every property optional
 /// or with a default, nothing unique, every relationship optional.
 /// `SwiftDataTests` checks this.
 nonisolated enum AlltagMigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] { [AlltagSchemaV1.self, AlltagSchemaV2.self] }
+    static var schemas: [any VersionedSchema.Type] { [AlltagSchemaV1.self, AlltagSchemaV2.self, AlltagSchemaV3.self, AlltagSchemaV4.self] }
     static var stages: [MigrationStage] {
-        [.lightweight(fromVersion: AlltagSchemaV1.self, toVersion: AlltagSchemaV2.self)]
+        [.lightweight(fromVersion: AlltagSchemaV1.self, toVersion: AlltagSchemaV2.self),
+         .lightweight(fromVersion: AlltagSchemaV2.self, toVersion: AlltagSchemaV3.self),
+         .lightweight(fromVersion: AlltagSchemaV3.self, toVersion: AlltagSchemaV4.self)]
     }
 }
 
 /// Creates the app's model container and fills it with sample data.
 enum AlltagStore {
     /// The current schema.
-    static var schema: Schema { Schema(versionedSchema: AlltagSchemaV2.self) }
+    static var schema: Schema { Schema(versionedSchema: AlltagSchemaV4.self) }
 
     /// The container used by the app, or an in-memory one for previews and tests.
     /// `url` places the store somewhere else, for migration tests.

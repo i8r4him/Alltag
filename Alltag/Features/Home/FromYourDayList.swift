@@ -9,7 +9,6 @@ import SwiftUI
 
 /// "From your day": short things to do, built from what happened today.
 struct FromYourDayList: View {
-    let briefingWords: Int
     let newReadingWords: Int
     let writingMistakes: Int
     let onOpen: (Route) -> Void
@@ -20,16 +19,16 @@ struct FromYourDayList: View {
             SectionHeader("From your day")
             .padding(.horizontal, 4)
 
-            DaySpotlightList(items: items, briefingWords: briefingWords)
+            DaySpotlightList(items: items)
         }
     }
 
     /// The things to do today, in order.
     private var items: [DayItem] {
         var items = [
-            DayItem(title: "Your 60-second briefing",
-                    subtitle: "Built from \(briefingWords) words you are learning",
-                    systemImage: "headphones") { onOpen(.briefing) },
+            DayItem(title: "60 seconds",
+                    subtitle: "Talk about a random topic",
+                    systemImage: "timer") { onPresent(.sixtySeconds) },
             DayItem(title: "How did the bakery go?",
                     subtitle: "Debrief: find what you couldn't say",
                     systemImage: "person.wave.2") { onOpen(.debrief) }
@@ -57,15 +56,14 @@ private struct DayItem: Identifiable {
     let action: () -> Void
 }
 
-/// The briefing card first, then a compact list for the remaining actions.
+/// The 60 seconds card first, then a compact list for the remaining actions.
 private struct DaySpotlightList: View {
     let items: [DayItem]
-    let briefingWords: Int
 
     var body: some View {
         VStack(spacing: Spacing.grid) {
             if let first = items.first {
-                BriefingCard(words: briefingWords, action: first.action)
+                SixtySecondsCard(action: first.action)
             }
             VStack(spacing: 0) {
                 ForEach(Array(items.dropFirst().enumerated()), id: \.element.id) { index, item in
@@ -108,7 +106,7 @@ private struct DaySpotlightList: View {
     }
 }
 
-/// "Learning beyond the app": a ticket leading to the concepts.
+/// "Learning beyond the app": a ticket leading to translating what you read, and what is coming.
 struct BeyondRow: View {
     let action: () -> Void
 
@@ -130,7 +128,7 @@ struct BeyondRow: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Learning beyond the app")
                         .font(.headline)
-                    Text("Keyboard, Siri & widgets · concepts")
+                    Text("Translate what you read · widgets and Siri soon")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -174,7 +172,7 @@ enum FromYourDay {
 
 #Preview {
     VStack(spacing: Spacing.grid) {
-        FromYourDayList(briefingWords: 6, newReadingWords: 3, writingMistakes: 1, onOpen: { _ in }, onPresent: { _ in })
+        FromYourDayList(newReadingWords: 3, writingMistakes: 1, onOpen: { _ in }, onPresent: { _ in })
         BeyondRow {}
     }
     .padding(Spacing.screen)

@@ -73,8 +73,8 @@ final class ConversationModel {
     private var cloudSession: (any RealtimeConversationSession)?
     /// The live voice has been asked for but hasn't said or heard anything yet.
     private(set) var isConnecting = false
-    /// Free talk was refused because today's live conversations are used up.
-    private(set) var hasReachedLimit = false
+    /// Why a conversation that needs the live voice couldn't start; it is shown in place of the conversation.
+    private(set) var problem: LiveProblem?
     private(set) var finishedLiveConversation = false
     /// Checking a finished live conversation for mistakes.
     private(set) var liveReview: LiveReview = .none
@@ -90,9 +90,11 @@ final class ConversationModel {
     @ObservationIgnored private var cloudDeadline: Task<Void, Never>?
     /// When the learner started talking, and when the conversation ended,
     /// for the minutes practised.
-    @ObservationIgnored private var startedAt: Date?
-    @ObservationIgnored private var endedAt: Date?
-    @ObservationIgnored private var hasRecordedPractice = false
+    @ObservationIgnored private(set) var startedAt: Date?
+    @ObservationIgnored private(set) var endedAt: Date?
+    @ObservationIgnored var hasRecordedPractice = false
+    /// The saved copy of this conversation (see `ConversationModel+History.swift`).
+    @ObservationIgnored var sessionRecord: SessionRecord?
 
     init(scenario: Scenario, services: AppServices, timing: Timing = Timing(), usesCloudVoice: Bool = false, level: Level = .a1) {
         self.scenario = scenario
@@ -123,11 +125,11 @@ final class ConversationModel {
     /// Whether the learner can start speaking or send text now. Free talk has
     /// no script, so it can only start the live voice.
     var canRespond: Bool {
-        phase == .idle && !isFinished && (expectedLine != nil || (scenario.isFreeTalk && canStartCloudVoice))
+        phase == .idle && !isFinished && (expectedLine != nil || (scenario.isLiveOnly && canStartCloudVoice))
     }
 
     /// Free talk needs the live voice, which the learner hasn't allowed yet.
-    var needsCloudConsent: Bool { scenario.isFreeTalk && !usesCloudVoice }
+    var needsCloudConsent: Bool { scenario.isLiveOnly && !usesCloudVoice }
 
     private var canStartCloudVoice: Bool { usesCloudVoice && !hasFallenBack && mode == .voice }
 
@@ -335,16 +337,6 @@ final class ConversationModel {
 }
 
 extension ConversationModel {
-    /// Saves the conversation as practice, once, so the streak and the minutes
-    /// count it: the time from the learner's first tap to the end. Nothing is
-    /// saved when the learner didn't say anything.
-    func recordPractice(in context: ModelContext, now: Date = .now) {
-        guard !hasRecordedPractice, let startedAt, turnCount > 0 else { return }
-        hasRecordedPractice = true
-        let seconds = Int((endedAt ?? now).timeIntervalSince(startedAt).rounded())
-        context.insert(PracticeSession(kind: .conversation, secondsSpoken: seconds, date: startedAt))
-    }
-
     func setCloudVoiceConsent(_ allowed: Bool) {
         usesCloudVoice = allowed
         if !allowed, isUsingCloudVoice { fallBackFromCloud() }
@@ -425,17 +417,26 @@ extension ConversationModel {
     private func cloudFailed(_ error: any Error, session: any RealtimeConversationSession) {
         guard cloudSession === session else { return }
         fallBackFromCloud()
-        let reason = error as? RealtimeServiceError
-        // Free talk has no script to fall back to, so the limit gets its own screen.
-        hasReachedLimit = scenario.isFreeTalk && reason == .dailyLimit
-        guard !hasReachedLimit else { return }
-        notice = ToastMessage(text: LiveVoiceNotice.text(for: reason, freeTalk: scenario.isFreeTalk),
+        // Without a script there is nothing to fall back to: before anything was said,
+        // the reason gets the whole screen. Later, a notice and the orb to try again.
+        let problem = LiveProblem(error)
+        if scenario.isLiveOnly, problem == .limit || turnCount == 0 {
+            self.problem = problem
+            return
+        }
+        notice = ToastMessage(text: LiveVoiceNotice.text(for: error as? RealtimeServiceError, freeTalk: scenario.isLiveOnly),
                               systemImage: "waveform.slash")
+    }
+
+    /// From the problem screen: start the live voice again.
+    func retryLive() {
+        problem = nil
+        orbTapped()
     }
 
     private func fallBackFromCloud() {
         // Free talk has no script to fall back to, so the orb can try again.
-        hasFallenBack = !scenario.isFreeTalk
+        hasFallenBack = !scenario.isLiveOnly
         endCloudSession()
         if let first = scenario.script.first, first.speaker == .companion, messages.last?.line != first {
             messages.append(Message(line: first))
@@ -447,7 +448,7 @@ extension ConversationModel {
         endCloudSession()
         hasFallenBack = true
         finishedLiveConversation = true
-        if companion.usesOnDeviceModel, turnCount > 0 {
+        if companion.canCheckSentences, turnCount > 0 {
             // Lines whose final transcript never arrived are checked now.
             for message in messages where message.line.speaker == .learner { review(message) }
             reviewProgressed()

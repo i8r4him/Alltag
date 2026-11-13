@@ -17,7 +17,7 @@ enum SoundEffects {
         case focus
     }
 
-    private static var player: AVAudioPlayer?
+    private static let player = Player()
     private static let logger = Logger(subsystem: "i8r4him.Alltag", category: "Sound")
 
     static func play(_ sound: Sound) {
@@ -25,15 +25,28 @@ enum SoundEffects {
             logger.error("Missing sound \(sound.rawValue, privacy: .public)")
             return
         }
-        do {
+        // Starting playback activates the audio session, which can block for a
+        // moment. Off the main thread, so the screen never waits for it.
+        Task {
+            do {
+                try await player.play(url)
+            } catch {
+                logger.error("Couldn't play \(sound.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
+    /// Owns the audio player away from the main thread.
+    private actor Player {
+        private var player: AVAudioPlayer?
+
+        func play(_ url: URL) throws {
             // Ambient: mixes with other audio and stays quiet when the phone is on silent.
             try AVAudioSession.sharedInstance().setCategory(.ambient)
             let player = try AVAudioPlayer(contentsOf: url)
             player.volume = 0.6
             player.play()
             self.player = player
-        } catch {
-            logger.error("Couldn't play \(sound.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
     }
 }

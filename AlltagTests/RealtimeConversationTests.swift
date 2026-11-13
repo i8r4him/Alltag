@@ -192,32 +192,51 @@ struct RealtimeConversationTests {
         model.stop()
     }
 
-    @Test("When free talk fails, the companion can be tapped to try again")
-    func freeTalkRetries() async throws {
-        let realtime = StubRealtimeService(error: .upstream)
+    @Test("Free talk that can't start says why, and Try again starts it again")
+    func freeTalkRetries() async {
+        let realtime = StubRealtimeService(error: RealtimeServiceError.upstream)
         let model = makeModel(realtime: realtime, scenario: MockScenarios.freeTalk)
 
         model.orbTapped()
         await model.waitForCloudConversation()
-        #expect(String(localized: try #require(model.notice?.text)).contains("try again"))
-        #expect(model.canRespond)
+        #expect(model.problem == .unavailable)
+        #expect(model.notice == nil)
 
-        model.orbTapped()
+        model.retryLive()
+        #expect(model.problem == nil)
         await model.waitForCloudConversation()
         #expect(realtime.starts == 2)
     }
 
-    @Test("At the daily limit free talk shows the limit screen, not a notice")
-    func freeTalkLimit() async {
-        let realtime = StubRealtimeService(error: .dailyLimit)
-        let model = makeModel(realtime: realtime, scenario: MockScenarios.freeTalk)
+    @Test("Each reason free talk can't start gets its own screen")
+    func freeTalkProblems() async {
+        let cases: [(any Error, LiveProblem)] = [
+            (RealtimeServiceError.dailyLimit, .limit),
+            (RealtimeServiceError.microphoneDenied, .microphone),
+            (RealtimeServiceError.busy, .busy),
+            (RealtimeServiceError.unavailable, .unavailable),
+            (URLError(.notConnectedToInternet), .offline),
+            (URLError(.timedOut), .offline)
+        ]
+        for (error, problem) in cases {
+            let model = makeModel(realtime: StubRealtimeService(error: error), scenario: MockScenarios.freeTalk)
+            model.orbTapped()
+            await model.waitForCloudConversation()
 
+            #expect(model.problem == problem)
+            #expect(model.notice == nil)
+            #expect(!model.isUsingCloudVoice)
+        }
+    }
+
+    @Test("A role-play with a script keeps going on the iPhone instead")
+    func scriptedHasNoProblemScreen() async {
+        let model = makeModel(realtime: StubRealtimeService(error: URLError(.notConnectedToInternet)))
         model.orbTapped()
         await model.waitForCloudConversation()
 
-        #expect(model.hasReachedLimit)
-        #expect(model.notice == nil)
-        #expect(!model.isUsingCloudVoice)
+        #expect(model.problem == nil)
+        #expect(model.notice != nil)
     }
 
     @Test("When the learner talks over the companion, its line stays and ends in …")
@@ -256,6 +275,11 @@ struct RealtimeConversationTests {
 
         let sessions = try container.mainContext.fetch(FetchDescriptor<PracticeSession>())
         #expect(sessions.map(\.kind) == [.conversation])
+        // And one copy to reread from Learn, with what was said.
+        let records = try container.mainContext.fetch(FetchDescriptor<SessionRecord>())
+        #expect(records.map(\.title) == [MockScenarios.freeTalk.title])
+        #expect(records.first?.lines.map(\.german) == ["Mir geht's gut."])
+        #expect(records.first?.lines.first?.isLearner == true)
     }
 
     private func makeModel(realtime: StubRealtimeService, allowed: Bool = true, limit: Duration = .seconds(600),
@@ -298,7 +322,7 @@ private final class StubRealtimeService: RealtimeConversationService {
     private(set) var starts = 0
     private(set) var context: RealtimeConversationContext?
 
-    init(error: RealtimeServiceError? = nil) {
+    init(error: (any Error)? = nil) {
         session = StubConversationSession(error: error)
     }
 
@@ -311,13 +335,13 @@ private final class StubRealtimeService: RealtimeConversationService {
 
 @MainActor
 private final class StubConversationSession: RealtimeConversationSession {
-    let error: RealtimeServiceError?
+    let error: (any Error)?
     private(set) var stops = 0
     private(set) var emit: ((RealtimeConversationEvent) -> Void)?
     private var finished: CheckedContinuation<Void, Never>?
     private var started: CheckedContinuation<Void, Never>?
 
-    init(error: RealtimeServiceError?) {
+    init(error: (any Error)?) {
         self.error = error
     }
 

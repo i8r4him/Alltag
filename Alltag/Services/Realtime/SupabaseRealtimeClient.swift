@@ -33,6 +33,8 @@ struct RealtimeCredentials: Decodable {
 
 enum RealtimeServiceError: Error, Equatable {
     case unauthorised, dailyLimit, busy, upstream, notConfigured, unavailable, unexpectedResponse
+    /// The learner hasn't allowed the microphone.
+    case microphoneDenied
 }
 
 protocol SupabaseTokenStore {
@@ -100,6 +102,10 @@ final class SupabaseRealtimeClient {
         let errorCode: String?
         let code: String?
     }
+
+    /// The app's one client, so the voice and the sentence check share a sign-in
+    /// and never refresh the same token twice.
+    static let shared = SupabaseRealtimeClient()
 
     private let store: any SupabaseTokenStore
     private let send: Send
@@ -169,15 +175,29 @@ final class SupabaseRealtimeClient {
     }
 
     private func issueCredentials(for context: RealtimeConversationContext, token: String) async throws -> RealtimeCredentials {
-        try Task.checkCancellation()
-        let endpoint = try SupabaseConfiguration.endpoint("functions/v1/realtime-session")
         let body = ["scenario": context.scenario, "instructions": context.instructions]
+        let data = try await call("realtime-session", body: body, token: token)
+        return try JSONDecoder().decode(RealtimeCredentials.self, from: data)
+    }
+
+    /// Calls one of the project's Edge Functions as the signed-in learner and
+    /// returns its answer. Signs in again once when the token was rejected.
+    func post(to function: String, body: [String: String]) async throws -> Data {
+        let token = try await accessToken()
+        do {
+            return try await call(function, body: body, token: token)
+        } catch RealtimeServiceError.unauthorised {
+            return try await call(function, body: body, token: try await accessToken(rejected: token))
+        }
+    }
+
+    private func call(_ function: String, body: [String: String], token: String) async throws -> Data {
+        try Task.checkCancellation()
+        let endpoint = try SupabaseConfiguration.endpoint("functions/v1/\(function)")
         var request = try Self.request(to: endpoint, body: body)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         let (data, status) = try await send(request)
-        if status == 200 {
-            return try JSONDecoder().decode(RealtimeCredentials.self, from: data)
-        }
+        if status == 200 { return data }
 
         let code = (try? JSONDecoder().decode(ErrorResponse.self, from: data))?.error
         switch (status, code) {

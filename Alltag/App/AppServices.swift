@@ -19,13 +19,13 @@ struct AppServices {
     let notifications: any NotificationService
     var realtime: any RealtimeConversationService = MockRealtimeConversationService()
 
-    /// Real voice services and the on-device companion.
+    /// Real voice services, and the companion that checks sentences with OpenAI or on device.
     static func live() -> AppServices {
         AppServices(
             speech: liveSpeech(),
             voice: SystemVoiceService(),
             translation: SystemTranslationService(),
-            companion: OnDeviceCompanionService(),
+            companion: liveCompanion(),
             calendar: MockCalendarService(),
             notifications: MockNotificationService(),
             realtime: liveRealtime()
@@ -38,6 +38,15 @@ struct AppServices {
         MockSpeechService()
         #else
         SystemSpeechService()
+        #endif
+    }
+
+    /// The simulator has no microphone to check sentences from, so it stays off the server.
+    private static func liveCompanion() -> any CompanionService {
+        #if targetEnvironment(simulator)
+        OnDeviceCompanionService()
+        #else
+        CloudCompanionService()
         #endif
     }
 

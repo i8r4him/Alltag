@@ -1,0 +1,283 @@
+//
+//  SixtySecondsModel.swift
+//  Alltag
+//
+//  Created by Ibrahim Abdullah on 12.11.26.
+//
+
+import Foundation
+import NaturalLanguage
+import SwiftData
+
+/// 60 seconds: a random topic, a minute of talking, then what was said with
+/// the mistakes fixed. Everything runs on the iPhone.
+@Observable
+final class SixtySecondsModel {
+    enum Phase: Equatable {
+        /// The reel is choosing a topic.
+        case picking
+        /// The topic is chosen; waiting for the learner to start.
+        case ready
+        case talking
+        /// The minute is over: the sentences are shown, and the fixes arrive as they are found.
+        case done
+    }
+
+    /// One sentence the learner said, with what the companion thinks of it.
+    struct Line: Identifiable, Equatable {
+        let id: UUID
+        var german: String
+        var feedback: Feedback?
+    }
+
+    /// Lengths of things. Short in tests.
+    struct Timing {
+        var seconds = 60
+        var tick: Duration = .seconds(1)
+        /// How long the checking may go on after the minute before it is given up.
+        var checkLimit: Duration = .seconds(45)
+
+        static let instant = Timing(seconds: 3, tick: .zero)
+    }
+
+    let level: Level
+    private(set) var topic: TalkTopic
+    private(set) var phase: Phase = .picking
+    private(set) var secondsLeft: Int
+    /// What has been heard so far.
+    private(set) var transcript = ""
+    private(set) var lines: [Line] = []
+    /// Sentences are still being checked; the result is already on screen.
+    private(set) var isChecking = false
+    /// Goes up whenever a fix arrives, so the screen can save what is new.
+    private(set) var revision = 0
+    /// Why talking couldn't start.
+    var notice: ToastMessage?
+
+    @ObservationIgnored private let speech: any SpeechService
+    @ObservationIgnored private let companion: any CompanionService
+    @ObservationIgnored private let timing: Timing
+    @ObservationIgnored private var reviewer: LineReviewer
+    @ObservationIgnored private var listenTask: Task<Void, Never>?
+    @ObservationIgnored private var timerTask: Task<Void, Never>?
+    /// One id per sentence position, so a sentence that is heard again keeps its id.
+    @ObservationIgnored private var sentenceIDs: [UUID] = []
+    @ObservationIgnored private var startedAt: Date?
+    @ObservationIgnored private var secondsSpoken = 0
+    @ObservationIgnored private var record: SessionRecord?
+    @ObservationIgnored private var limitTask: Task<Void, Never>?
+    /// The sentences of the last transcript, to tell which ones have settled.
+    @ObservationIgnored private var previousSentences: [String] = []
+    /// The saved copy's id; its recording is a file named after it.
+    @ObservationIgnored private let recordID = UUID()
+
+    init(services: AppServices, level: Level, timing: Timing = Timing(), topic: TalkTopic? = nil) {
+        self.speech = services.speech
+        self.companion = services.companion
+        self.level = level
+        self.timing = timing
+        self.secondsLeft = timing.seconds
+        var generator = SystemRandomNumberGenerator()
+        let topic = topic ?? TalkTopics.random(for: level, using: &generator)
+        self.topic = topic
+        self.reviewer = LineReviewer(companion: services.companion, scenario: Self.scenario(for: topic, level: level))
+    }
+
+    /// Whether the companion can check the sentences (it needs Apple Intelligence).
+    var canCheck: Bool { companion.canCheckSentences }
+    var fixCount: Int { lines.filter { $0.feedback?.kind == .fix }.count }
+    /// How far the minute has run, 0…1.
+    var progress: Double { 1 - Double(secondsLeft) / Double(max(timing.seconds, 1)) }
+    /// Topic titles for the reel to run through before it lands on `topic`.
+    var reelTitles: [String] {
+        TalkTopics.topics(for: level).filter { $0 != topic }.shuffled().prefix(9).map(\.title) + [topic.title]
+    }
+
+    // MARK: Actions
+
+    /// The reel has landed.
+    func topicChosen() {
+        if phase == .picking { phase = .ready }
+    }
+
+    /// Another topic: the reel runs again.
+    func pickAnother() {
+        guard phase == .ready else { return }
+        var generator = SystemRandomNumberGenerator()
+        topic = TalkTopics.random(for: level, not: topic, using: &generator)
+        reviewer = LineReviewer(companion: companion, scenario: Self.scenario(for: topic, level: level))
+        phase = .picking
+    }
+
+    func start() {
+        guard phase == .ready else { return }
+        phase = .talking
+        transcript = ""
+        secondsLeft = timing.seconds
+        startedAt = .now
+        let stream = speech.listen(expected: Self.simulatedTalk, recordingTo: recordingURL)
+        listenTask = Task { [weak self] in
+            do {
+                for try await text in stream {
+                    self?.heard(text)
+                }
+                await self?.finished()
+            } catch {
+                self?.failed(error)
+            }
+        }
+        let (seconds, tick) = (timing.seconds, timing.tick)
+        timerTask = Task { [weak self] in
+            for left in stride(from: seconds - 1, through: 0, by: -1) {
+                try? await Task.sleep(for: tick)
+                guard !Task.isCancelled else { return }
+                self?.secondsLeft = left
+            }
+            self?.finish()
+        }
+    }
+
+    /// Time is up, or the learner stopped early: the stream ends with the last words.
+    func finish() {
+        guard phase == .talking else { return }
+        timerTask?.cancel()
+        speech.stopListening()
+    }
+
+    /// Stops everything, e.g. when the screen is closed.
+    func stop() {
+        timerTask?.cancel()
+        listenTask?.cancel()
+        limitTask?.cancel()
+        reviewer.cancel()
+        isChecking = false
+        if phase == .talking { speech.stopListening() }
+        // A minute that was never finished leaves no recording behind.
+        if record == nil { try? FileManager.default.removeItem(at: recordingURL) }
+    }
+
+    private var recordingURL: URL {
+        SessionHistory.audioURL(named: SessionHistory.audioFileName(for: recordID))
+    }
+
+    /// Waits for the minute and the checking after it (used by tests).
+    func waitUntilDone() async {
+        await listenTask?.value
+        await reviewer.wait()
+    }
+
+    /// Saves the minute: the practice and the copy to reread once, and the
+    /// fixes found so far. Called again whenever more fixes arrive.
+    func save(in context: ModelContext, now: Date = .now) {
+        guard phase == .done, !lines.isEmpty else { return }
+        let detail = String(localized: "60 seconds · \(topic.title)")
+        let saved = lines.map { SessionLine(isLearner: true, german: $0.german, feedback: $0.feedback.map { .init($0) }) }
+        if let record {
+            record.lines = saved
+        } else {
+            context.insert(PracticeSession(kind: .sixtySeconds, secondsSpoken: secondsSpoken, date: startedAt ?? now))
+            let hasRecording = FileManager.default.fileExists(atPath: recordingURL.path)
+            let record = SessionRecord(uuid: recordID, kind: .sixtySeconds, title: detail, secondsSpoken: secondsSpoken, lines: saved,
+                                       audioFileName: hasRecording ? recordingURL.lastPathComponent : "", date: startedAt ?? now)
+            context.insert(record)
+            self.record = record
+        }
+        let items = lines.compactMap { line in
+            line.feedback.flatMap { MistakePractice.item(said: line.german, feedback: $0, sourceDetail: detail, at: now) }
+        }
+        MistakePractice.save(items, in: context)
+        try? context.save()
+    }
+
+    // MARK: Listening and checking
+
+    private func heard(_ text: String) {
+        transcript = text
+        // The recogniser keeps rewording what it heard. A sentence is checked while
+        // they talk on only once it has settled: not the last one, and the same as
+        // in the transcript before.
+        let sentences = Self.sentences(in: text)
+        for (index, sentence) in sentences.dropLast().enumerated()
+        where previousSentences.indices.contains(index) && previousSentences[index] == sentence {
+            reviewer.check(id: id(at: index), german: sentence, replyingTo: nil)
+        }
+        previousSentences = sentences
+    }
+
+    private func finished() async {
+        guard phase == .talking else { return }
+        timerTask?.cancel()
+        secondsSpoken = min(timing.seconds, max(0, Int(Date.now.timeIntervalSince(startedAt ?? .now).rounded())))
+        let sentences = Self.sentences(in: transcript)
+        lines = sentences.enumerated().map { Line(id: id(at: $0.offset), german: $0.element, feedback: nil) }
+        guard !lines.isEmpty else {
+            notice = ToastMessage(text: "I didn't hear anything. Try again.", systemImage: "mic.slash")
+            phase = .ready
+            secondsLeft = timing.seconds
+            return
+        }
+        // The sentences are shown straight away; the fixes fill in as they are found.
+        phase = .done
+        reviewer.onProgress = { [weak self] in self?.reviewProgressed() }
+        for line in lines { reviewer.check(id: line.id, german: line.german, replyingTo: nil) }
+        reviewProgressed()
+        let limit = timing.checkLimit
+        limitTask = Task { [weak self] in
+            try? await Task.sleep(for: limit)
+            guard !Task.isCancelled, let self, isChecking else { return }
+            reviewer.cancel()
+            isChecking = false
+            revision += 1
+        }
+    }
+
+    /// Puts the fixes found so far under their sentences.
+    private func reviewProgressed() {
+        for index in lines.indices where lines[index].feedback == nil {
+            if let checked = reviewer.results[lines[index].id], checked.german == lines[index].german {
+                lines[index].feedback = checked.feedback
+            }
+        }
+        isChecking = reviewer.isBusy
+        revision += 1
+    }
+
+    private func failed(_ error: any Error) {
+        timerTask?.cancel()
+        phase = .ready
+        secondsLeft = timing.seconds
+        notice = switch error as? SpeechError {
+        case .notAuthorized: ToastMessage(text: "Allow the microphone and speech recognition in Settings to talk.",
+                                          systemImage: "mic.slash")
+        default: ToastMessage(text: "Listening isn't available on this iPhone right now.", systemImage: "mic.slash")
+        }
+    }
+
+    private func id(at index: Int) -> UUID {
+        while sentenceIDs.count <= index { sentenceIDs.append(UUID()) }
+        return sentenceIDs[index]
+    }
+
+    /// The transcript cut into sentences.
+    static func sentences(in text: String) -> [String] {
+        let tokenizer = NLTokenizer(unit: .sentence)
+        tokenizer.string = text
+        tokenizer.setLanguage(.german)
+        return tokenizer.tokens(for: text.startIndex..<text.endIndex)
+            .map { text[$0].trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    /// What the companion is told when it checks a sentence.
+    private static func scenario(for topic: TalkTopic, level: Level) -> Scenario {
+        Scenario(id: .situation, title: "Talking freely for one minute about „\(topic.title)“", meta: "",
+                 goal: "say as much as they can about the topic. Learner's level (CEFR): \(level.rawValue.uppercased())",
+                 completion: "", savedPhrases: [], systemImage: "timer", script: [])
+    }
+
+    /// What the simulator "hears": it can't recognise speech.
+    private static let simulatedTalk = """
+        Ich wohne seit zwei Jahren in Berlin. Am Wochenende ich gehe oft in den Park. \
+        Meine Schwester besucht mich nächste Woche. Wir wollen zusammen kochen und einen Film sehen.
+        """
+}

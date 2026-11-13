@@ -37,6 +37,7 @@ struct LearnView: View {
                 ToolsSection(onOpen: open)
                 LearnSection(title: "Fix your mistakes", note: Text("1 min")) {
                     MistakesCard { appState.present(.activity(.mistakes)) }
+                    SessionsLink { appState.open(.sessions) }
                 }
                 .fontDesign(.rounded)
                 SkillsSection(onOpen: open)

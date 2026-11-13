@@ -34,7 +34,7 @@ struct ConversationView: View {
                 self.model = model
                 // Free talk starts straight away: the learner tapped the companion to talk.
                 // A soft chime first, before the microphone takes over the audio.
-                if scenario.isFreeTalk, model.canRespond {
+                if scenario.isLiveOnly, model.canRespond {
                     SoundEffects.play(.focus)
                     Task {
                         try? await Task.sleep(for: .milliseconds(450))
@@ -76,8 +76,8 @@ private struct ConversationContent: View {
                         .padding(.top, 8)
                 }
 
-                if model.hasReachedLimit {
-                    LiveLimitView { appState.dismissFullScreen() }
+                if let problem = model.problem {
+                    LiveProblemView(problem: problem, onRetry: { model.retryLive() }, onDone: { appState.dismissFullScreen() })
                 } else {
                     talking
                 }
@@ -107,7 +107,9 @@ private struct ConversationContent: View {
             showsSummary = true
         }
         .onChange(of: model.liveReview) { _, review in
-            if review == .done { model.saveMistakes(in: modelContext) }
+            guard review == .done else { return }
+            model.saveMistakes(in: modelContext)
+            model.updateHistory()
         }
         .sheet(isPresented: $showsSummary) {
             SummarySheet(scenario: model.scenario, turns: model.turnCount, fixes: model.fixCount,
@@ -144,7 +146,7 @@ private struct ConversationContent: View {
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
         }
-        if !model.scenario.isFreeTalk {
+        if !model.scenario.isLiveOnly {
             ToolbarItem(placement: .topBarTrailing) {
                 modePicker
             }
@@ -198,7 +200,7 @@ private struct ConversationContent: View {
     private var voiceControls: some View {
         VStack(spacing: 12) {
             HStack {
-                if model.scenario.isFreeTalk {
+                if model.scenario.isLiveOnly {
                     Color.clear.frame(width: 48, height: 48)
                 } else {
                     CircleGlassButton(title: "Type instead", systemImage: "keyboard", size: 48) { model.mode = .text }
@@ -215,7 +217,7 @@ private struct ConversationContent: View {
                 .allowsHitTesting(model.isUsingCloudVoice || model.canRespond || model.phase == .listening)
                 .accessibilityLabel(Text(model.isUsingCloudVoice ? "End conversation" : model.stateLabel ?? "Voice"))
                 Spacer()
-                if model.scenario.isFreeTalk {
+                if model.scenario.isLiveOnly {
                     Color.clear.frame(width: 48, height: 48)
                 } else {
                     hintButton(size: 48)
