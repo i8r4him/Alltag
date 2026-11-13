@@ -97,7 +97,8 @@ final class OpenAIRealtimeSession: RealtimeConversationSession {
 
     func run(emit: @escaping (RealtimeConversationEvent) -> Void) async throws {
         defer { stop() }
-        guard !isStopped, await audio.requestPermission() else { throw RealtimeServiceError.unavailable }
+        guard !isStopped else { throw RealtimeServiceError.unavailable }
+        guard await audio.requestPermission() else { throw RealtimeServiceError.microphoneDenied }
         try checkRunning()
         let ticket = try await credentials(context)
         try checkRunning()

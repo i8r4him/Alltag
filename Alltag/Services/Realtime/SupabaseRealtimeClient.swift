@@ -33,6 +33,8 @@ struct RealtimeCredentials: Decodable {
 
 enum RealtimeServiceError: Error, Equatable {
     case unauthorised, dailyLimit, busy, upstream, notConfigured, unavailable, unexpectedResponse
+    /// The learner hasn't allowed the microphone.
+    case microphoneDenied
 }
 
 protocol SupabaseTokenStore {

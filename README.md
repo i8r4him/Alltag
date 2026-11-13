@@ -183,7 +183,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls; free talk: voice only, consent card
 │  │  │  ├─ ConversationModel.swift       state machine
 │  │  │  ├─ LineReviewer.swift            checks live learner lines on device while the conversation goes on (#209)
-│  │  │  ├─ LiveLimitView.swift           free talk at the daily limit: what happened, when again, what still works (#210)
+│  │  │  ├─ LiveProblemView.swift         a live conversation that can't start: limit, no internet, no microphone, busy; try again or Settings (#210, #172)
 │  │  │  ├─ TranscriptView.swift          companion lines (cut off with …), learner lines in a theme-tinted bubble, heard text with caret
 │  │  │  ├─ FeedbackCard.swift
 │  │  │  └─ SummarySheet.swift            (#30)
@@ -234,7 +234,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ SettingsModel.swift           permission toggles, on-device AI status
 │  │  │  └─ DataExport.swift              Export my data (JSON)
 │  │  └─ Beyond/
-│  │     └─ BeyondView.swift              concept previews only
+│  │     └─ BeyondView.swift              tap a word to translate (Apple's Translation) and save it; widget previews; Siri phrases as coming (#190)
 │  │
 │  ├─ MockData/                           prototype data, copied exactly
 │  │  ├─ MockScenarios.swift              SCEN

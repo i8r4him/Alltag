@@ -76,8 +76,8 @@ private struct ConversationContent: View {
                         .padding(.top, 8)
                 }
 
-                if model.hasReachedLimit {
-                    LiveLimitView { appState.dismissFullScreen() }
+                if let problem = model.problem {
+                    LiveProblemView(problem: problem, onRetry: { model.retryLive() }, onDone: { appState.dismissFullScreen() })
                 } else {
                     talking
                 }

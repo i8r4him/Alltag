@@ -15,6 +15,11 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
 - CI (`.github/workflows/ci.yml`, self-hosted Mac) runs the same tests and checks that the String Catalogs are in sync. SwiftLint runs in `lint.yml`.
 - The build must have **no new warnings**.
 - If the test run fails with "Failed to create a bundle instance", the simulator hiccuped (it happens after adding a test file). Run it again.
+- **"The test runner crashed before establishing connection"** means the simulator holds data from a *newer* schema version (you tested a branch with a new `AlltagSchemaV<n>`, then switched back). The app can't open a newer store and crashes at launch. Uninstall the app from that simulator (`xcrun simctl uninstall <udid> i8r4him.Alltag`) and run again. The same happens on the maintainer's iPhone: delete the app there.
+- **CI runs on the maintainer's Mac**, on the same simulators. A local test run at the same time can make CI fail with "Simulator device failed to launch". Re-run the failed job (`gh run rerun <id> --failed`); don't change code for it.
+- **A warning to ignore:** `RealtimeConversationTests.swift: main actor-isolated static property 'dentist'` is old. Any other new warning must be fixed.
+- **Lint limits that bite:** a file may have 500 lines (`ConversationModel.swift` is at the limit: put new code in an extension file like `ConversationModel+History.swift`), a line 140 characters, a function body 60 lines.
+- **The simulator can't do the real thing:** it has no microphone behind speech recognition, no Apple Intelligence and no live voice. `AppServices.live()` swaps in simulated services there. Anything that listens, records, checks with the on-device model or talks must be tried on the maintainer's iPhone; say so under "Not verified" in the PR.
 
 ## Code rules
 
@@ -47,6 +52,7 @@ iCloud sync (SwiftData + CloudKit, #54) is switched on at the end of `3 · Memor
 - Every **relationship is optional**.
 - `SwiftDataTests.modelsAreCloudKitReady` checks all of this; keep it passing.
 - **A model change means a new schema version.** Add `AlltagSchemaV<n+1>` and a migration stage in `AlltagStore.swift`; never edit an old version. Add a test that opens a store from the previous version.
+  - The schema is at **V4**. Each version so far *added a model* (V2 `PracticeSession`, V3 `CustomSituation`, V4 `SessionRecord`). Prefer adding a model to changing one: all versions list the same model classes, so changing a class changes every version that lists it.
 - Store enums as their raw value (`kindRaw`) with a computed property, so predicates can filter on them.
 
 ## Design language
@@ -76,6 +82,8 @@ iCloud sync (SwiftData + CloudKit, #54) is switched on at the end of `3 · Memor
    - Note anything you couldn't verify, for example "needs a real device".
 5. **Don't merge until the maintainer says so.** Then squash-merge with the subject `PR title (#<PR>)`, move the issue to Done on the board, update `main` and delete the branch.
 6. **Ask before** changing the project's targets, adding capabilities or entitlements, or changing anything under `supabase/`.
+   - **The server is live, not a test copy.** After an approved change under `supabase/`, the function has to be deployed and the migration applied to the project (`flbymqlcauvwumznvviq`), with JWT verification on; committing the files alone changes nothing. Use the Supabase CLI or connector if you have access, otherwise ask the maintainer to deploy. Then call the function once for real and read its logs (they arrive a few minutes late).
+   - Check OpenAI's current docs before writing against their API; model names and request formats change.
 7. **One folder.** Work in the main checkout (`~/Developer/Alltag`) and switch branches there; no git worktrees or second copies. The maintainer runs the app from that folder in Xcode.
 8. **The maintainer's uncommitted changes are theirs.** Never stash, discard, reformat or commit them. Stage your own files by path (never `git add -A`), and before switching branches check that the branches don't differ in those files.
 
@@ -88,6 +96,39 @@ iCloud sync (SwiftData + CloudKit, #54) is switched on at the end of `3 · Memor
 - **Real or hidden:** at the end of each week, anything on that tab that doesn't work for real is hidden (App Review guideline 2.1). No mock content ships.
 - Outdated issues are **closed as "not planned"**, never deleted.
 
+## Current state (13 Nov 2026)
+
+Rewrite this section when it goes stale; it is a snapshot, not a rule.
+
+**Done on Today**
+- Streak, the three numbers, the profile.
+- The orb's free talk with the live voice (OpenAI Realtime through `realtime-session`).
+- Situations: 19 everyday situations, the learner's own ones with "+", each a live-voice role-play.
+- 60 seconds: a random topic for the learner's exact level (50 per level, A1 to C1), a minute of on-device listening, the result at once with fixes filling in.
+- The mistake check: OpenAI through `check-german` when cloud use is allowed (`usesCloudForPro`), the on-device model otherwise.
+- Session history (built early, belongs to Learn): every session is saved; 60 seconds also keeps its recording; "Your sessions" on Learn.
+- One big button for the whole app (`.buttonStyle(.primary)`).
+
+**Open on Today** (due 16 Nov)
+- **#174** Today's Focus: a new idea instead of "Moving an appointment". Not started. The agent's suggestion: one situation of the day on the Focus card.
+- **#190** Learning beyond the app: rebuild the page (#191 Apple's Translation, #192 widget previews, #193 Siri note). Not started.
+- **#200** Settings: everything real or hidden.
+- **#172** Calm screens for no internet, microphone denied, a dropped session.
+- **#212** The live voice stops hearing after three or four turns. Needs the Xcode console lines filtered by `Realtime` from the maintainer's iPhone.
+- **#211** More thinking time: **PR #219** is open and green, waiting for the maintainer to try it with real talking.
+- **#185** A new title for "From your day": the maintainer's choice.
+- **#171** Save the transcript and the mistakes: done by session history, except "new words reach Memory". Ask whether to close it or move it to the Memory week.
+
+**Never tried on a real device** (the simulator can't): the situation role-plays with the live voice, the 60-second recording and "Listen to yourself", the thinking-time values in PR #219.
+
+**Not planned yet:** `2 · Learn`, `3 · Memory` and `4 · Testing` have no issues. The five old issues in `5 · Launch` (#51, #118, #161, #162, #163) are not sorted.
+
+**Decisions the maintainer has made**
+- The mistake check uses `gpt-6-luna` (their choice, for cost). `CHECK_MODEL` in Supabase's secrets switches it without a new build.
+- One OpenAI key for voice and checks, restricted to those two permissions.
+- Sessions are kept until the learner deletes them. Only 60 seconds is recorded.
+- Own situations are a short form (situation, what to do there, category), not an AI-written scenario.
+
 ## Project map (short)
 
 - `Alltag/App/`: entry point, `AppState`, `AppServices`, routing.
@@ -95,4 +136,4 @@ iCloud sync (SwiftData + CloudKit, #54) is switched on at the end of `3 · Memor
 - `Alltag/Services/<Area>/`: service protocols, mocks and live implementations.
 - `Alltag/DesignSystem/`: tokens and shared components. Use them rather than raw values.
 - `Alltag/Intents/`: App Intents (Siri, Shortcuts, Spotlight).
-- `supabase/`: the Edge Function and migrations, owned by the maintainer.
+- `supabase/`: the Edge Functions (`realtime-session` for the voice, `check-german` for the mistake check) and migrations, owned by the maintainer. See `supabase/README.md`.
