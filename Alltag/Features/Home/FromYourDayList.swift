@@ -106,7 +106,7 @@ private struct DaySpotlightList: View {
     }
 }
 
-/// "Learning beyond the app": a ticket leading to the concepts.
+/// "Learning beyond the app": a ticket leading to translating what you read, and what is coming.
 struct BeyondRow: View {
     let action: () -> Void
 
@@ -128,7 +128,7 @@ struct BeyondRow: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Learning beyond the app")
                         .font(.headline)
-                    Text("Keyboard, Siri & widgets · concepts")
+                    Text("Translate what you read · widgets and Siri soon")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }

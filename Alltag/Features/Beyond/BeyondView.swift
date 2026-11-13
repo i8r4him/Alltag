@@ -7,255 +7,268 @@
 
 import SwiftData
 import SwiftUI
+import Translation
 
-/// Concept previews of Alltag outside the app: keyboard, select & translate,
-/// Siri and widgets. Nothing here registers an extension.
+/// Alltag outside the app: translating what you read works now, with Apple's
+/// Translation; the widgets and the Siri phrases are shown as what is coming.
 struct BeyondView: View {
     @State private var toast: ToastMessage?
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                concept("Keyboard") { KeyboardConcept() }
-                Text("Only sees what you type in its own field — never other apps' content.")
-                    .textRole(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 4)
-
-                concept("Select & translate") { SelectTranslateConcept(toast: $toast) }
-                concept("Siri") { SiriConcept() }
-                concept("Widgets") { WidgetsConcept() }
+            VStack(alignment: .leading, spacing: Spacing.section) {
+                section("Tap a word", badge: "Works now", isLive: true,
+                        note: "Translated on your iPhone with Apple's Translation. In other apps, select a text and choose Translate.") {
+                    TapToTranslate(toast: $toast)
+                }
+                section("Widgets", badge: "Coming soon", note: "Your word of the day and what's ready to review, on the Home Screen.") {
+                    WidgetPreviews()
+                }
+                section("Siri", badge: "Coming with iOS 27.3", note: "Start practising without opening the app.") {
+                    SiriPhrases()
+                }
             }
-            .padding(.horizontal, Spacing.screen)
-            .padding(.bottom, 32)
+            .padding(Spacing.screen)
         }
+        .fontDesign(.rounded)
+        .scrollIndicators(.hidden)
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .readableContentMargins()
-        .background(.screenBackground)
+        .skyBackground()
         .navigationTitle("Beyond the app")
-        .navigationBarTitleDisplayMode(.large)
-        .navigationSubtitle(Text("Concept previews. Nothing here is installed on this device yet."))
+        .toolbarTitleDisplayMode(.inlineLarge)
         .toast($toast)
     }
 
-    private func concept(_ title: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {
+    private func section(_ title: LocalizedStringKey, badge: LocalizedStringKey, isLive: Bool = false,
+                         note: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Text(title).textRole(.cardTitle).accessibilityAddTraits(.isHeader)
-                ConceptBadge()
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Text(title)
+                    .textRole(.sectionHeader)
+                    .accessibilityAddTraits(.isHeader)
+                Text(badge)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(isLive ? AnyShapeStyle(.accent) : AnyShapeStyle(.secondary))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .glassEffect(.regular, in: .capsule)
             }
             .padding(.horizontal, 4)
             content()
+            Text(note)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 4)
         }
-        .padding(.top, 14)
     }
 }
 
-/// "CONCEPT", outlined.
-private struct ConceptBadge: View {
-    var body: some View {
-        Text("Concept")
-            .textCase(.uppercase)
-            .font(.system(size: 9, weight: .semibold))
-            .tracking(0.6)
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 5)
-            .padding(.vertical, 2)
-            .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(.secondary.opacity(0.6), lineWidth: 0.5))
-    }
-}
-
-/// The Alltag keyboard suggesting a more natural sentence.
-private struct KeyboardConcept: View {
-    @State private var isReplaced = false
-    @State private var showsWhy = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(verbatim: isReplaced ? "Ich wohne seit drei Jahren hier." : "Ich wohne hier für drei Jahren.")
-                .textRole(.bodySmall)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(.surfaceSecondary, in: .rect(cornerRadius: 16, style: .continuous))
-                .frame(maxWidth: .infinity, alignment: .trailing)
-
-            if isReplaced {
-                Label("Replaced · logged as a mistake to review", systemImage: "checkmark.circle.fill")
-                    .textRole(.meta)
-                    .foregroundStyle(.success)
-            } else {
-                suggestion
-            }
-            keys
-        }
-        .padding(12)
-        .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
-        .animation(.default, value: isReplaced)
-        .animation(.default, value: showsWhy)
-        .sensoryFeedback(.success, trigger: isReplaced)
-    }
-
-    private var suggestion: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("More natural").textRole(.caption).foregroundStyle(.accent)
-            Text(verbatim: "Ich wohne seit drei Jahren hier.").textRole(.bodySmall)
-            if showsWhy {
-                Text("„seit“ for something that began in the past and is still true. Dative plural: Jahren.")
-                    .textRole(.meta)
-                    .foregroundStyle(.secondary)
-            }
-            HStack(spacing: 8) {
-                Button("Replace") { isReplaced = true }
-                    .buttonStyle(.primaryCompact)
-                Button("Why?") { showsWhy.toggle() }
-                    .buttonStyle(.chip(isSelected: showsWhy))
-            }
-        }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.surfaceSecondary, in: .rect(cornerRadius: Radius.option, style: .continuous))
-    }
-
-    /// Three rows of blank keys.
-    private var keys: some View {
-        VStack(spacing: 6) {
-            keyRow(10)
-            keyRow(9).padding(.horizontal, 12)
-            HStack(spacing: 6) {
-                key.frame(width: 44)
-                key
-                key.frame(width: 44)
-            }
-        }
-        .frame(height: 96)
-        .accessibilityHidden(true)
-    }
-
-    private func keyRow(_ count: Int) -> some View {
-        HStack(spacing: 6) {
-            ForEach(0..<count, id: \.self) { _ in key }
-        }
-    }
-
-    private var key: some View {
-        RoundedRectangle(cornerRadius: 5, style: .continuous).fill(.surfaceSecondary)
-    }
-}
-
-/// Selecting a word in Safari and saving it for practice.
-private struct SelectTranslateConcept: View {
+/// A short German text from everyday life. Tapping a word translates it with
+/// Apple's Translation framework; the word can be saved to Memory.
+///
+/// The framework's `translationTask` is a view modifier, so this view talks to
+/// it directly instead of going through `TranslationService`.
+private struct TapToTranslate: View {
     @Binding var toast: ToastMessage?
     @Environment(\.modelContext) private var modelContext
-    @Query(filter: #Predicate<MemoryItem> { $0.word == "Kündigungsfrist" }) private var saved: [MemoryItem]
+    @Query private var items: [MemoryItem]
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(Self.page)
-                .textRole(.bodySmall)
-                .foregroundStyle(.secondary)
-                .padding(14)
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .firstTextBaseline) {
-                    HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        Text(verbatim: "die").foregroundStyle(.secondary)
-                        Text(verbatim: "Kündigungsfrist")
-                    }
-                    .textRole(.cardTitle)
-                    Spacer()
-                    Text(verbatim: "Alltag").textRole(.caption).foregroundStyle(.tertiary)
-                }
-                Text("notice period — how long before a contract can end")
-                    .textRole(.meta)
-                    .foregroundStyle(.secondary)
-                Button(saved.isEmpty ? "Save for practice" : "Saved", systemImage: saved.isEmpty ? "bookmark" : "checkmark") {
-                    save()
-                }
-                .buttonStyle(.chip(isSelected: !saved.isEmpty))
-                .allowsHitTesting(saved.isEmpty)
-                .padding(.top, 4)
-            }
-            .padding(14)
-            .background(.surfaceSecondary, in: .rect(cornerRadius: Radius.option, style: .continuous))
-            .padding(6)
-        }
-        .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+    @State private var selected: String?
+    @State private var translation: String?
+    @State private var hasFailed = false
+    @State private var configuration: TranslationSession.Configuration?
+    @State private var showsWholeText = false
+
+    private static let text = "Sehr geehrte Mieterin, sehr geehrter Mieter, am Donnerstag wird das Wasser von 9 bis 12 Uhr abgestellt. " +
+        "Bitte entschuldigen Sie die Unannehmlichkeiten. Ihre Hausverwaltung"
+    private static let words = text.split(separator: " ").map(String.init)
+
+    /// The learner's own language, or English for learners whose iPhone is in German.
+    private static var target: Locale.Language {
+        let own = Locale.current.language
+        return own.languageCode == .german ? Locale.Language(identifier: "en") : own
     }
 
-    /// A German page with the selected word highlighted.
-    private static var page: AttributedString {
-        var text = AttributedString("Mieter sollten wissen: Die Kündigungsfrist beträgt in den meisten Fällen drei Monate …")
-        if let range = text.range(of: "Kündigungsfrist") {
-            text[range].backgroundColor = .accentFill.opacity(0.35)
-            text[range].foregroundColor = .primary
+    private var isSaved: Bool {
+        guard let selected else { return false }
+        return items.contains { $0.word == selected }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            FlowLayout(spacing: 5, lineSpacing: 6) {
+                ForEach(Array(Self.words.enumerated()), id: \.offset) { _, word in
+                    let clean = Self.clean(word)
+                    Button { select(clean) } label: {
+                        Text(verbatim: word)
+                            .font(.title3)
+                            .padding(.horizontal, 3)
+                            .padding(.vertical, 1)
+                            .background(selected == clean ? AnyShapeStyle(.accentFill.opacity(0.35)) : AnyShapeStyle(.clear),
+                                        in: .rect(cornerRadius: 6, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Translates this word.")
+                }
+            }
+            .environment(\.locale, Locale(identifier: "de"))
+
+            if let selected {
+                Divider()
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(verbatim: selected)
+                        .font(.title3.weight(.semibold))
+                    Group {
+                        if let translation {
+                            Text(verbatim: translation)
+                        } else if hasFailed {
+                            Text("This word couldn't be translated. Try \"Translate everything\" to download German.")
+                        } else {
+                            ProgressView().controlSize(.small)
+                        }
+                    }
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    if translation != nil {
+                        Button(isSaved ? "Saved" : "Save for practice", systemImage: isSaved ? "checkmark" : "bookmark") { save() }
+                            .buttonStyle(.glass)
+                            .disabled(isSaved)
+                            .padding(.top, 2)
+                    }
+                }
+                .transition(.opacity)
+            }
+
+            Button("Translate everything", systemImage: "translate") { showsWholeText = true }
+                .buttonStyle(.glass)
         }
-        return text
+        .padding(Spacing.cardLarge)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+        .animation(.easeOut(duration: 0.2), value: selected)
+        .animation(.easeOut(duration: 0.2), value: translation)
+        .sensoryFeedback(.selection, trigger: selected)
+        .translationTask(configuration) { session in
+            guard let word = selected else { return }
+            do {
+                let response = try await session.translate(word)
+                if selected == word { translation = response.targetText }
+            } catch {
+                if selected == word { hasFailed = true }
+            }
+        }
+        .translationPresentation(isPresented: $showsWholeText, text: Self.text)
+    }
+
+    private func select(_ word: String) {
+        guard selected != word else { return }
+        selected = word
+        translation = nil
+        hasFailed = false
+        if configuration == nil {
+            configuration = TranslationSession.Configuration(source: Locale.Language(identifier: "de"), target: Self.target)
+        } else {
+            configuration?.invalidate()
+        }
     }
 
     private func save() {
-        modelContext.insert(MemoryItem(article: "die ", word: "Kündigungsfrist",
-                                       meaning: "notice period",
-                                       context: "Die Kündigungsfrist beträgt in den meisten Fällen drei Monate.",
-                                       kind: .saved, source: .safari))
+        guard let selected, let translation, !isSaved else { return }
+        modelContext.insert(MemoryItem(word: selected, meaning: translation, context: Self.text, kind: .saved, source: .translate))
+        try? modelContext.save()
         toast = ToastMessage(text: "Saved to Memory")
     }
-}
 
-/// Siri phrases, each starting the matching flow in the app.
-private struct SiriConcept: View {
-    @Environment(AppState.self) private var appState
-
-    var body: some View {
-        VStack(spacing: 0) {
-            phrase("“Start a German speaking session.”") { appState.present(.conversation(.dentist)) }
-            Divider().padding(.leading, Spacing.card)
-            phrase("“Review my saved words.”") { appState.present(.activity(.recall)) }
-            Divider().padding(.leading, Spacing.card)
-            phrase("“Practise for two minutes.”") { appState.present(.activity(.listen)) }
-        }
-        .background(.surface, in: .rect(cornerRadius: Radius.innerCard, style: .continuous))
-    }
-
-    private func phrase(_ text: LocalizedStringKey, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack {
-                Text(text).textRole(.body).italic()
-                Spacer()
-                Image(systemName: "play.fill").foregroundStyle(.accent).accessibilityHidden(true)
-            }
-            .padding(.horizontal, Spacing.card)
-            .frame(minHeight: Spacing.rowMinHeight)
-            .contentShape(.rect)
-        }
-        .buttonStyle(.card)
-        .accessibilityHint(Text("Starts it in Alltag"))
+    /// The word without the punctuation around it.
+    static func clean(_ word: String) -> String {
+        word.trimmingCharacters(in: .punctuationCharacters.union(.whitespaces))
     }
 }
 
-/// Word of the day and Review widgets.
-private struct WidgetsConcept: View {
+/// What the widgets will show, with the learner's own word and review count.
+private struct WidgetPreviews: View {
+    @Query(sort: \MemoryItem.createdAt, order: .reverse) private var items: [MemoryItem]
+
+    private var word: MemoryItem? { items.first { $0.kind != .mistake } }
+    private var due: Int { items.filter { $0.isDue() }.count }
+
     var body: some View {
-        HStack(spacing: 10) {
-            widget("Word of the day") {
-                Text(verbatim: "der").textRole(.meta).foregroundStyle(.secondary)
-                Text(verbatim: "Feierabend").textRole(.cardTitle)
-                Text("end of the workday").textRole(.caption).foregroundStyle(.secondary)
-            }
-            widget("Review") {
-                Text(6, format: .number).textRole(.largeTitle)
-                Text("ready · 3 min").textRole(.caption).foregroundStyle(.secondary)
+        GlassEffectContainer(spacing: 0) {
+            HStack(spacing: Spacing.grid) {
+                widget("Word of the day") {
+                    if let word {
+                        Text(verbatim: word.article.trimmingCharacters(in: .whitespaces))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Text(verbatim: word.word)
+                            .font(.title3.weight(.semibold))
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.7)
+                        Text(verbatim: word.meaning)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    } else {
+                        Text("Your first saved word appears here.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                widget("Review") {
+                    Text(due, format: .number)
+                        .font(.system(size: 44, weight: .bold, design: .rounded))
+                    Text("ready to review")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
     }
 
     private func widget(_ title: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Eyebrow(title: title)
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .textCase(.uppercase)
+                .tracking(0.6)
+                .foregroundStyle(.accent)
             Spacer(minLength: 8)
             content()
         }
-        .padding(14)
+        .padding(Spacing.card)
         .frame(maxWidth: .infinity, minHeight: 150, alignment: .leading)
-        .background(.surface, in: .rect(cornerRadius: 22, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: 28, style: .continuous))
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// What the learner will be able to say to Siri. Shown, not started.
+private struct SiriPhrases: View {
+    private let phrases: [LocalizedStringKey] = [
+        "“Start a German speaking session.”",
+        "“Review my saved words.”",
+        "“Practise for two minutes.”"
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(phrases.enumerated()), id: \.offset) { index, phrase in
+                if index > 0 { Divider().padding(.leading, Spacing.card) }
+                HStack(spacing: Spacing.grid) {
+                    Image(systemName: "mic.fill")
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                    Text(phrase)
+                        .font(.body)
+                        .italic()
+                    Spacer(minLength: 0)
+                }
+                .padding(Spacing.card)
+            }
+        }
+        .foregroundStyle(.secondary)
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
     }
 }
 

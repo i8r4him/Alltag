@@ -233,7 +233,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ SettingsModel.swift           permission toggles, on-device AI status
 │  │  │  └─ DataExport.swift              Export my data (JSON)
 │  │  └─ Beyond/
-│  │     └─ BeyondView.swift              concept previews only
+│  │     └─ BeyondView.swift              tap a word to translate (Apple's Translation) and save it; widget previews; Siri phrases as coming (#190)
 │  │
 │  ├─ MockData/                           prototype data, copied exactly
 │  │  ├─ MockScenarios.swift              SCEN
