@@ -128,6 +128,9 @@ private struct LearningSection: View {
             } label: {
                 Label { Text("Level") } icon: { ThemeSymbol(systemImage: "chart.bar.fill") }
             }
+            // A few short options: a menu in the row, not a page of its own.
+            .pickerStyle(.menu)
+            .tint(.secondary)
             Picker(selection: $profile.goal) {
                 ForEach(Goal.allCases) { goal in
                     Text(goal.title).tag(goal)
