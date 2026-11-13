@@ -98,38 +98,45 @@ iCloud sync (SwiftData + CloudKit, #54) is switched on at the end of `3 · Memor
 - **Real or hidden:** at the end of each week, anything on that tab that doesn't work for real is hidden (App Review guideline 2.1). No mock content ships.
 - Outdated issues are **closed as "not planned"**, never deleted.
 
-## Current state (13 Nov 2026)
+## Current state (14 Nov 2026)
 
 Rewrite this section when it goes stale; it is a snapshot, not a rule.
 
-**Done on Today**
-- Streak, the three numbers, the profile.
-- The orb's free talk with the live voice (OpenAI Realtime through `realtime-session`).
-- Situations: 19 everyday situations, the learner's own ones with "+", each a live-voice role-play.
-- 60 seconds: a random topic for the learner's exact level (50 per level, A1 to C1), a minute of on-device listening, the result at once with fixes filling in.
-- The mistake check: OpenAI through `check-german` when cloud use is allowed (`usesCloudForPro`), the on-device model otherwise.
-- Session history (built early, belongs to Learn): every session is saved; 60 seconds also keeps its recording; "Your sessions" on Learn.
-- One big button for the whole app (`.buttonStyle(.primary)`).
-
-**Open on Today** (due 16 Nov)
-- **#174** Today's Focus: a new idea instead of "Moving an appointment". Not started. The agent's suggestion: one situation of the day on the Focus card.
-- **#190** Learning beyond the app: rebuild the page (#191 Apple's Translation, #192 widget previews, #193 Siri note). Not started.
-- **#200** Settings: everything real or hidden.
-- **#172** Calm screens for no internet, microphone denied, a dropped session.
+**Today is done** except for three things that wait on the maintainer:
 - **#212** The live voice stops hearing after three or four turns. Needs the Xcode console lines filtered by `Realtime` from the maintainer's iPhone.
-- **#211** More thinking time: **PR #219** is open and green, waiting for the maintainer to try it with real talking.
-- **#185** A new title for "From your day": the maintainer's choice.
+- **#185** A new title for "From your day", and **#194** what the two rows under the 60 seconds become: the maintainer's decisions.
 - **#171** Save the transcript and the mistakes: done by session history, except "new words reach Memory". Ask whether to close it or move it to the Memory week.
 
-**Never tried on a real device** (the simulator can't): the situation role-plays with the live voice, the 60-second recording and "Listen to yourself", the thinking-time values in PR #219.
+**Learn is the focus now** (`2 · Learn`, due 22 Nov). The idea that ties it together: everything the learner does in Learn feeds one loop. What they get wrong is saved to Fix your mistakes and comes back until they know it; every session is kept in Your sessions.
 
-**Not planned yet:** `2 · Learn`, `3 · Memory` and `4 · Testing` have no issues. The five old issues in `5 · Launch` (#51, #118, #161, #162, #163) are not sorted.
+Done on Learn: "How do I say …?", Translate with OpenAI (streamed), Alltag as the default translation app (extension `AlltagTranslation/`), Fix your mistakes with the learner's own mistakes, Your sessions.
+
+The six Learn features, **in this order**:
+1. **#252** der, die, das trainer. Not started; the Articles button does nothing.
+2. **#263** Write: a short task, corrected sentence by sentence. A shell today.
+3. **#269** Read: real-life texts, tap a word, check understanding. A shell today.
+4. **#275** Grammar: rules for every level, linked from the learner's mistakes. Works with 6 rules today.
+5. **#280** Listen: short spoken texts with questions, and dictation. A shell today. The one to hide and move to After launch if the week runs short.
+6. **#285** Polish: every state, light mode, one pass on the iPhone.
+
+**Open decisions (maintainer)**, with the agent's recommendation in each issue: written content, generated content or both (#264, #270); which voice for Listen (#280); Scan a letter in v1 or later (#274).
+
+**Apple's cloud model (#259)** is in the code and switched off. The maintainer has enrolled in the App Store Small Business Program and waits for Apple to assign the entitlement. See `PrivateCloudLanguageModelClient.isEntitled` for how to switch it on.
+
+**Never tried on a real device:** the situation role-plays, the 60-second recording and "Listen to yourself", the thinking-time values (merged untested), the translation panel in other apps, "How do I say …?" with a real answer.
+
+**Not planned yet:** `3 · Memory` and `4 · Testing` have no issues (except #258, light mode). The old issues in `5 · Launch` (#51, #118, #161, #162, #163) are not sorted.
 
 **Decisions the maintainer has made**
-- The mistake check uses `gpt-6-luna` (their choice, for cost). `CHECK_MODEL` in Supabase's secrets switches it without a new build.
-- One OpenAI key for voice and checks, restricted to those two permissions.
+- Text features use `gpt-6-luna` (their choice, for cost). `CHECK_MODEL` and `TRANSLATE_MODEL` in Supabase's secrets switch it without a new build.
+- One OpenAI key for everything, restricted to the permissions it needs.
+- Today's Focus is the situation of the day.
 - Sessions are kept until the learner deletes them. Only 60 seconds is recorded.
-- Own situations are a short form (situation, what to do there, category), not an AI-written scenario.
+- Own situations are a short form, not an AI-written scenario.
+- Calendar suggestions (#183) are not built for now.
+- The four skills stay visible while they are shells; they are built in the order above.
+
+**Two agents share this folder** (this one and Codex). Check `git status` and the current branch before you start, never switch branches under someone else's uncommitted work, and stage your own files by path.
 
 ## Project map (short)
 
