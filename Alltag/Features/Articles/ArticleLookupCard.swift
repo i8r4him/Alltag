@@ -144,14 +144,19 @@ private struct ArticleResultCard: View {
 struct ArticleNounDetail: View {
     let noun: Noun
 
+    /// So VoiceOver reads the German words as German.
+    private static let german = Locale(identifier: "de")
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(verbatim: "\(noun.article.rawValue) \(noun.word)")
                 .font(.title2.weight(.bold))
                 .foregroundStyle(.accent)
+                .environment(\.locale, Self.german)
             Text(verbatim: noun.meaning)
                 .font(.title3)
             if noun.hasPlural {
+                // Localised text: the German locale stays on the German words only.
                 Text("Plural: die \(noun.plural)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -166,9 +171,9 @@ struct ArticleNounDetail: View {
                 Text(verbatim: noun.example)
                     .font(.body.italic())
                     .padding(.top, 4)
+                    .environment(\.locale, Self.german)
             }
         }
-        .environment(\.locale, Locale(identifier: "de"))
         .accessibilityElement(children: .combine)
     }
 }

@@ -116,6 +116,9 @@ private struct ArticleRoundContent: View {
 private struct ArticleQuestion: View {
     let model: ArticleRoundModel
     @Environment(\.modelContext) private var context
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    /// Large, and larger still with the learner's text size.
+    @ScaledMetric(relativeTo: .largeTitle) private var nounSize: CGFloat = 44
 
     var body: some View {
         ScrollView {
@@ -160,7 +163,7 @@ private struct ArticleQuestion: View {
         VStack(spacing: 8) {
             Eyebrow(title: "DER, DIE OR DAS?")
             Text(verbatim: noun.word)
-                .font(.system(size: 44, weight: .bold, design: .rounded))
+                .font(.system(size: nounSize, weight: .bold, design: .rounded))
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
                 .environment(\.locale, Locale(identifier: "de"))
@@ -173,10 +176,12 @@ private struct ArticleQuestion: View {
         .padding(.top, 36)
     }
 
-    /// The three articles side by side.
+    /// The three articles side by side, or one under the other at the accessibility text sizes.
     private func answers(for noun: Noun) -> some View {
-        GlassEffectContainer(spacing: 12) {
-            HStack(spacing: 12) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 12))
+        return GlassEffectContainer(spacing: 12) {
+            layout {
                 ForEach(Article.allCases) { article in
                     ArticleOption(article: article, state: state(of: article, for: noun)) {
                         model.pick(article, in: context)
@@ -202,11 +207,14 @@ private struct ArticleOption: View {
     let state: Status
     let action: () -> Void
 
+    @ScaledMetric(relativeTo: .title) private var articleSize: CGFloat = 30
+    @ScaledMetric(relativeTo: .title) private var minHeight: CGFloat = 104
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 6) {
                 Text(verbatim: article.rawValue)
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .font(.system(size: articleSize, weight: .bold, design: .rounded))
                     .foregroundStyle(.primary)
                 Group {
                     switch state {
@@ -217,7 +225,7 @@ private struct ArticleOption: View {
                 }
                 .font(.title3)
             }
-            .frame(maxWidth: .infinity, minHeight: 104)
+            .frame(maxWidth: .infinity, minHeight: minHeight)
             .background(background, in: shape)
             .overlay { shape.strokeBorder(border, lineWidth: 1.5) }
             // Interactive glass answers the touch itself, like the app's buttons.
