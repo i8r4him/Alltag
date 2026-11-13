@@ -125,6 +125,8 @@ struct RootView: View {
             }
         case .sixtySeconds:
             SixtySecondsView(level: profiles.first?.level ?? .a1)
+        case .articles:
+            ArticleRoundView(level: profiles.first?.level ?? .a1)
         case .activity(let id):
             ActivityView(activity: id == .mistakes
                          ? MistakePractice.activity(in: modelContext) ?? MockActivities.mistakes

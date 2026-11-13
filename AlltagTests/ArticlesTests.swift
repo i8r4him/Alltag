@@ -124,3 +124,65 @@ struct ArticleFlowTests {
         #expect(state.path.isEmpty)
     }
 }
+
+/// Answers with the same nouns every time, or fails.
+private struct StubArticleService: ArticleService {
+    var nouns: [Noun] = [Noun(.die, "Wohnung", "Wohnungen", "flat"), Noun(.das, "Haus", "Häuser", "house"),
+                         Noun(.der, "Tisch", "Tische", "table")]
+    var fails = false
+
+    func request(word: String?, level: Level, excluding: [String]) async throws -> ArticleAnswer {
+        if fails { throw RealtimeServiceError.unavailable }
+        return ArticleAnswer(nouns: nouns, note: "")
+    }
+}
+
+@MainActor
+struct ArticleRoundModelTests {
+    private func services(_ articles: StubArticleService) -> AppServices {
+        var services = AppServices.mock()
+        services.articles = articles
+        return services
+    }
+
+    @Test("A round loads, keeps a wrong answer as a mistake, and counts as practice when it ends")
+    func round() async throws {
+        let defaults = try #require(UserDefaults(suiteName: "ArticleRoundModelTests-\(UUID().uuidString)"))
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let model = ArticleRoundModel(services: services(StubArticleService()), level: .a2, defaults: defaults)
+        #expect(model.phase == .loading)
+
+        model.start()
+        while model.phase == .loading { await Task.yield() }
+        #expect(model.phase == .playing)
+        #expect(model.asked == 3)
+        #expect(defaults.stringArray(forKey: ArticleRoundModel.recentKey)?.count == 3)
+
+        let first = try #require(model.current)
+        let wrong = try #require(Article.allCases.first { $0 != first.article })
+        model.pick(wrong, in: container.mainContext)
+        #expect(model.isRight == false)
+        #expect(model.saveFailed == false)
+        #expect(try container.mainContext.fetch(FetchDescriptor<MemoryItem>()).count == 1)
+
+        model.next(in: container.mainContext)
+        while let noun = model.current {
+            model.pick(noun.article, in: container.mainContext)
+            model.next(in: container.mainContext)
+        }
+        #expect(model.phase == .done)
+        #expect(model.rightFirstTime == 2)
+        #expect(model.missedCount == 1)
+        #expect(try container.mainContext.fetch(FetchDescriptor<PracticeSession>()).map(\.kind) == [.review])
+    }
+
+    @Test("When the nouns don't arrive, the round says so and can be tried again")
+    func failure() async throws {
+        let defaults = try #require(UserDefaults(suiteName: "ArticleRoundModelTests-\(UUID().uuidString)"))
+        let model = ArticleRoundModel(services: services(StubArticleService(fails: true)), level: .a1, defaults: defaults)
+        model.start()
+        while model.phase == .loading { await Task.yield() }
+        #expect(model.phase == .failed)
+        #expect(model.current == nil)
+    }
+}

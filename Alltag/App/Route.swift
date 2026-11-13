@@ -47,6 +47,8 @@ enum FullScreenRoute: Hashable, Identifiable {
     case situation(String)
     /// 60 seconds of talking about a random topic.
     case sixtySeconds
+    /// A round of der, die, das.
+    case articles
     case activity(Activity.ID)
     /// Replaying onboarding from Settings. First-run onboarding is shown by `RootView`.
     case onboarding

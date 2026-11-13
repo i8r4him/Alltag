@@ -2,66 +2,105 @@
 //  ArticleLookupCard.swift
 //  Alltag
 //
-//  Created by Ibrahim Abdullah on 14.11.26.
+//  Created by Ibrahim Abdullah on 13.11.26.
 //
 
 import SwiftData
 import SwiftUI
 
+/// "Look up a word": a noun or its meaning in the field, and its article,
+/// plural, meaning and an example in a glass card below, to save to Memory.
 struct ArticleLookupCard: View {
     let level: Level
     @Environment(\.services) private var services
     @Environment(\.modelContext) private var context
+    @FocusState private var isFieldFocused: Bool
     @State private var text = ""
     @State private var answer: ArticleAnswer?
-    @State private var busy = false
-    @State private var failed = false
+    @State private var isLookingUp = false
+    @State private var notice: ToastMessage?
     @State private var saved = Set<String>()
     @State private var task: Task<Void, Never>?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            TextField("Type a noun or its meaning", text: $text)
-                .font(.title3).submitLabel(.search).onSubmit(lookup)
-                .padding(Spacing.card)
-                .glassEffect(.regular, in: .capsule)
-            Button("Find its article", systemImage: "magnifyingglass", action: lookup)
-                .buttonStyle(.primary).disabled(busy || text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            if busy { ProgressView("Looking up the noun…") }
-            if failed {
-                Text("Couldn’t look up this word. Check your connection and cloud setting, then try again.")
-                    .foregroundStyle(.secondary)
+        VStack(spacing: Spacing.grid) {
+            field
+            if isLookingUp {
+                Label {
+                    Text("Looking it up…")
+                } icon: {
+                    ProgressView()
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .transition(.opacity)
             }
             if let answer {
-                if !answer.note.isEmpty { Text(verbatim: answer.note).foregroundStyle(.secondary) }
+                if !answer.note.isEmpty {
+                    Text(verbatim: answer.note)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 4)
+                }
                 ForEach(answer.nouns) { noun in
-                    VStack(alignment: .leading, spacing: 12) {
-                        ArticleNounDetail(noun: noun)
-                        Button(saved.contains(noun.id) ? "Saved" : "Save to Memory", systemImage: "bookmark") { save(noun) }
-                            .buttonStyle(.glass).disabled(saved.contains(noun.id))
-                    }
-                    .padding(Spacing.cardLarge)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero))
+                    ArticleResultCard(noun: noun, isSaved: saved.contains(noun.id)) { save(noun) }
                 }
             }
         }
-        .onChange(of: text) { _, _ in task?.cancel(); answer = nil; failed = false; busy = false; saved = [] }
-        .onDisappear { task?.cancel(); busy = false }
+        .animation(.easeOut(duration: 0.25), value: answer?.nouns)
+        .animation(.easeOut(duration: 0.25), value: isLookingUp)
+        .toast($notice)
+        .onChange(of: text) { _, _ in
+            task?.cancel()
+            isLookingUp = false
+            answer = nil
+            saved = []
+        }
+        .onDisappear { task?.cancel() }
     }
 
-    private func lookup() {
+    /// The field, in the look of "How do I say …?": a glass capsule with the symbol on the left.
+    private var field: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "magnifyingglass")
+                .font(.title3)
+                .foregroundStyle(.accent)
+                .accessibilityHidden(true)
+            TextField("A noun, or what it means", text: $text)
+                .font(.title3)
+                .focused($isFieldFocused)
+                .submitLabel(.search)
+                .autocorrectionDisabled()
+                .onSubmit(lookUp)
+            if !text.isEmpty {
+                Button("Clear", systemImage: "xmark.circle.fill") { text = "" }
+                    .labelStyle(.iconOnly)
+                    .foregroundStyle(.secondary)
+                    .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 20)
+        .frame(height: 60)
+        .glassEffect(.regular.interactive(), in: .capsule)
+    }
+
+    private func lookUp() {
         let word = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !word.isEmpty, !busy else { return }
-        busy = true
-        failed = false
+        guard !word.isEmpty, !isLookingUp else { return }
+        isFieldFocused = false
+        isLookingUp = true
         task = Task {
             do {
                 let result = try await services.articles.request(word: word, level: level, excluding: [])
                 guard !Task.isCancelled else { return }
                 answer = result
-            } catch { if !Task.isCancelled { failed = true } }
-            if !Task.isCancelled { busy = false }
+            } catch {
+                guard !Task.isCancelled else { return }
+                notice = ToastMessage(text: "Couldn’t look it up. Check your connection and that Alltag may use the cloud.",
+                                      systemImage: "wifi.exclamationmark")
+            }
+            isLookingUp = false
         }
     }
 
@@ -69,19 +108,77 @@ struct ArticleLookupCard: View {
         do {
             try ArticleMemory.save(noun, in: context)
             saved.insert(noun.id)
-        } catch { failed = true }
+            notice = ToastMessage(text: "Saved to Memory")
+        } catch {
+            notice = ToastMessage(text: "Couldn’t save it. Try again.", systemImage: "exclamationmark.triangle")
+        }
     }
 }
 
+/// One meaning of the looked-up noun, with "Save to Memory".
+private struct ArticleResultCard: View {
+    let noun: Noun
+    let isSaved: Bool
+    let onSave: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            ArticleNounDetail(noun: noun)
+            Button(action: onSave) {
+                if isSaved {
+                    Label("Saved", systemImage: "checkmark")
+                } else {
+                    Label("Save to Memory", systemImage: "bookmark")
+                }
+            }
+            .buttonStyle(.primaryCompact)
+            .disabled(isSaved)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.cardLarge)
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+    }
+}
+
+/// A noun with its article in the theme colour, its meaning, plural, note and example.
 struct ArticleNounDetail: View {
     let noun: Noun
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(verbatim: "\(noun.article.rawValue) \(noun.word)").font(.title2.bold()).foregroundStyle(.accent)
+        VStack(alignment: .leading, spacing: 6) {
+            Text(verbatim: "\(noun.article.rawValue) \(noun.word)")
+                .font(.title2.weight(.bold))
+                .foregroundStyle(.accent)
             Text(verbatim: noun.meaning)
-            if noun.hasPlural { Text("Plural: die \(noun.plural)").font(.subheadline).foregroundStyle(.secondary) }
-            if !noun.explanation.isEmpty { Text(verbatim: noun.explanation).foregroundStyle(.secondary) }
-            if !noun.example.isEmpty { Text(verbatim: noun.example).italic() }
+                .font(.title3)
+            if noun.hasPlural {
+                Text("Plural: die \(noun.plural)")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            if !noun.explanation.isEmpty {
+                Text(verbatim: noun.explanation)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 4)
+            }
+            if !noun.example.isEmpty {
+                Text(verbatim: noun.example)
+                    .font(.body.italic())
+                    .padding(.top, 4)
+            }
         }
+        .environment(\.locale, Locale(identifier: "de"))
+        .accessibilityElement(children: .combine)
     }
+}
+
+#Preview {
+    ScrollView {
+        ArticleLookupCard(level: .a2)
+            .padding(Spacing.screen)
+    }
+    .skyBackground()
+    .fontDesign(.rounded)
+    .modelContainer(AlltagStore.preview)
 }

@@ -2,57 +2,109 @@
 //  ArticleRules.swift
 //  Alltag
 //
-//  Created by Ibrahim Abdullah on 14.11.26.
+//  Created by Ibrahim Abdullah on 13.11.26.
 //
 
 import SwiftUI
 
-/// Stable grammar guidance; practice vocabulary comes from the server.
+/// A clue about which article a noun takes: a short title, the clue, and
+/// examples in German.
+struct ArticleRule: Identifiable {
+    let id: String
+    let title: LocalizedStringResource
+    let explanation: LocalizedStringResource
+    let example: String
+
+    static let all: [ArticleRule] = [
+        ArticleRule(id: "genders", title: "Three genders",
+                    explanation: """
+                        Der is masculine, die is feminine and das is neuter. They are grammatical, \
+                        so they say little about the thing itself.
+                        """,
+                    example: "der Tisch · die Tür · das Fenster"),
+        ArticleRule(id: "feminine", title: "Feminine endings",
+                    explanation: "Nouns ending in -ung, -heit, -keit and -schaft are feminine.",
+                    example: "die Wohnung · die Freiheit · die Möglichkeit · die Freundschaft"),
+        ArticleRule(id: "small", title: "Small things: -chen and -lein",
+                    explanation: "Diminutives ending in -chen or -lein are neuter, even when they are people.",
+                    example: "das Mädchen · das Häuschen · das Büchlein"),
+        ArticleRule(id: "compound", title: "The last noun decides",
+                    explanation: "A compound noun takes the article of its last part.",
+                    example: "die Tür → die Haustür · das Haus → das Krankenhaus"),
+        ArticleRule(id: "plural", title: "The plural is always die",
+                    explanation: "Every plural takes die, so it doesn't tell you the singular's article.",
+                    example: "der Tisch → die Tische · das Kind → die Kinder"),
+        ArticleRule(id: "senses", title: "Some words have two",
+                    explanation: "The article can change with the meaning. Look the word up to see each meaning on its own.",
+                    example: "der See: lake · die See: sea")
+    ]
+}
+
+/// The clues as rows on one glass card; tap a row to read it.
 struct ArticleRules: View {
+    @State private var expanded: Set<String> = []
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("A few useful clues")
-                .font(.title2.bold())
-            Text("Learn a noun with its article and plural. Some patterns help; a word’s meaning can matter too.")
-                .foregroundStyle(.secondary)
-            rule("Three genders", example: "der Tisch · die Tür · das Fenster") {
-                Text("""
-                    Der is masculine, die is feminine and das is neuter. These are grammatical genders: they \
-                    don’t reliably describe a person or object.
-                    """)
-            }
-            rule("Feminine endings", example: "die Wohnung · die Freiheit · die Möglichkeit · die Freundschaft") {
-                Text("""
-                    Nouns formed with the suffixes -ung, -heit, -keit and -schaft are feminine. Recognise the \
-                    suffix, rather than guessing from a word’s final letters.
-                    """)
-            }
-            rule("Small things: -chen and -lein", example: "das Mädchen · das Häuschen · das Büchlein") {
-                Text("Diminutives formed with -chen or -lein are neuter—even when they describe a person.")
-            }
-            rule("The last noun decides", example: "die Tür → die Haustür · das Haus → das Krankenhaus") {
-                Text("In a compound noun, the final noun determines the grammatical gender.")
-            }
-            rule("Plural uses die", example: "der Tisch → die Tische · das Kind → die Kinder") {
-                Text("""
-                    In the nominative, all plural nouns use die. That does not tell you their singular article. \
-                    Articles also change with case in sentences.
-                    """)
-            }
-            rule("Some words have more than one article", example: "der See: lake · die See: sea") {
-                Text("The article can change with the meaning. Look up the word to see the meanings separately.")
+        VStack(spacing: 0) {
+            ForEach(Array(ArticleRule.all.enumerated()), id: \.element.id) { index, rule in
+                if index > 0 { Divider().padding(.leading, Spacing.cardLarge) }
+                ArticleRuleRow(rule: rule, isExpanded: expanded.contains(rule.id)) {
+                    if expanded.contains(rule.id) { expanded.remove(rule.id) } else { expanded.insert(rule.id) }
+                }
             }
         }
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
+        .animation(.easeOut(duration: 0.25), value: expanded)
     }
+}
 
-    private func rule(_ title: LocalizedStringKey, example: String, @ViewBuilder explanation: @escaping () -> some View) -> some View {
-        DisclosureGroup {
-            VStack(alignment: .leading, spacing: 12) {
-                explanation().foregroundStyle(.secondary)
-                Text(verbatim: example).font(.headline).foregroundStyle(.accent)
-            }.padding(.top, 12)
-        } label: { Text(title).font(.headline) }
-        .padding(Spacing.cardLarge)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero))
+private struct ArticleRuleRow: View {
+    let rule: ArticleRule
+    let isExpanded: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 12) {
+                    Text(rule.title)
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Image(systemName: "chevron.down")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                        .accessibilityHidden(true)
+                }
+                Text(verbatim: rule.example)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.accent)
+                    .environment(\.locale, Locale(identifier: "de"))
+                if isExpanded {
+                    Text(rule.explanation)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 2)
+                        .transition(.opacity)
+                }
+            }
+            .multilineTextAlignment(.leading)
+            .padding(.horizontal, Spacing.cardLarge)
+            .padding(.vertical, Spacing.card)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isExpanded ? [.isButton, .isSelected] : .isButton)
+        .sensoryFeedback(.selection, trigger: isExpanded)
     }
+}
+
+#Preview {
+    ScrollView {
+        ArticleRules()
+            .padding(Spacing.screen)
+    }
+    .skyBackground()
+    .fontDesign(.rounded)
 }
