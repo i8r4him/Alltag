@@ -123,7 +123,8 @@ Alltag/                                   ← repo root
 │  │  ├─ Companion/
 │  │  │  ├─ CompanionService.swift        CompanionService, MockCompanionService (scripts, samples, fallback)
 │  │  │  ├─ OnDeviceCompanionService.swift   Foundation Models: feedback on own sentences, debriefs
-│  │  │  └─ CloudCompanionService.swift   sentences judged by OpenAI through check-german when cloud use is allowed; on device otherwise (#230)
+│  │  │  ├─ PrivateCloudLanguageModelClient.swift   Apple's cloud model (Private Cloud Compute), light reasoning (#259)
+│  │  │  └─ CloudCompanionService.swift   sentences judged by Apple's cloud model, then OpenAI (check-german), then on device (#230, #259)
 │  │  ├─ Calendar/CalendarService.swift    CalendarService, CalendarEvent, MockCalendarService
 │  │  └─ Notifications/NotificationService.swift   NotificationService, MockNotificationService
 │  │

@@ -41,13 +41,9 @@ struct AppServices {
         #endif
     }
 
-    /// The simulator has no microphone to check sentences from, so it stays off the server.
+    /// Checks sentences with Apple's cloud model, then OpenAI, then on device.
     private static func liveCompanion() -> any CompanionService {
-        #if targetEnvironment(simulator)
-        OnDeviceCompanionService()
-        #else
         CloudCompanionService()
-        #endif
     }
 
     private static func liveRealtime() -> any RealtimeConversationService {
