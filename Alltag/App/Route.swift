@@ -13,6 +13,8 @@ enum Route: Hashable {
     case translate(text: String? = nil)
     /// Translate, opened to ask: the field is ready and the answer is German.
     case howToSay
+    /// Look up an article, and the der, die, das trainer.
+    case articles
     /// Memory, optionally filtered to one kind (e.g. words from your day)
     /// or searching for a word (e.g. from Siri).
     case memory(kind: MemoryKind? = nil, search: String? = nil)
@@ -45,6 +47,8 @@ enum FullScreenRoute: Hashable, Identifiable {
     case situation(String)
     /// 60 seconds of talking about a random topic.
     case sixtySeconds
+    /// A round of der, die, das.
+    case articles
     case activity(Activity.ID)
     /// Replaying onboarding from Settings. First-run onboarding is shown by `RootView`.
     case onboarding

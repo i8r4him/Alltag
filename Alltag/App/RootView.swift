@@ -72,6 +72,8 @@ struct RootView: View {
             TranslateView(initialText: text)
         case .howToSay:
             TranslateView(initialText: nil, isAsking: true)
+        case .articles:
+            ArticlesView(level: profiles.first?.level ?? .a1)
         case let .memory(kind, search):
             MemoryView(kind: kind, search: search)
         case .learn:
@@ -123,6 +125,8 @@ struct RootView: View {
             }
         case .sixtySeconds:
             SixtySecondsView(level: profiles.first?.level ?? .a1)
+        case .articles:
+            ArticleRoundView(level: profiles.first?.level ?? .a1)
         case .activity(let id):
             ActivityView(activity: id == .mistakes
                          ? MistakePractice.activity(in: modelContext) ?? MockActivities.mistakes

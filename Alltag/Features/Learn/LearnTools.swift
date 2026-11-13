@@ -25,7 +25,7 @@ enum LearnTool: CaseIterable, Identifiable {
         switch self {
         case .translate: "translate"
         case .howToSay: "quote.bubble.fill"
-        case .articles: "newspaper.fill"
+        case .articles: "textformat.abc"
         }
     }
 }

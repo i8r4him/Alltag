@@ -104,3 +104,7 @@ Translate and "How do I say …?" in the app. Text only.
 - `migrations/20261111100000_realtime_developers.sql`: the accounts that skip the per-user limit.
 - `migrations/20261113100000_german_checks.sql`: the check log used for the limits.
 - `migrations/20261113120000_translations.sql`: the translation log used for the limits.
+
+## Articles (`articles`)
+
+Authenticated OpenAI noun lookup (`action: lookup`, `text`) and random practice batches (`action: practice`, `level`, optional recent `exclude` words). Uses `ARTICLES_MODEL` (default `gpt-6-luna`) with low effort and strict noun JSON, no stored model responses. Shares the existing translation daily quotas and metadata table; no migration. No corpus, transcript or user text is stored by this function. App cloud consent is required. A new round generates ten records once; article taps use those records locally.
