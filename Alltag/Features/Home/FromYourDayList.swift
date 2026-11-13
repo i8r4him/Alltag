@@ -28,7 +28,7 @@ struct FromYourDayList: View {
         var items = [
             DayItem(title: "60 seconds",
                     subtitle: "Talk about a random topic",
-                    systemImage: "timer") { onPresent(.sixtySeconds) },
+                    systemImage: "timer") { onPresent(.sixtySeconds()) },
             DayItem(title: "How did the bakery go?",
                     subtitle: "Debrief: find what you couldn't say",
                     systemImage: "person.wave.2") { onOpen(.debrief) }

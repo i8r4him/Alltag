@@ -160,7 +160,8 @@ Alltag/                                   ← repo root
 │  │  │  ├─ StarSky.swift                static night haze in the theme colour
 │  │  │  ├─ HomeHeader.swift              Avatar
 │  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Minutes · Level (→ Progress), BigNumber (1.2k from 1,000)
-│  │  │  ├─ FocusCard.swift               title, line and scenario artwork; Start talking (glass, lights from below)
+│  │  │  ├─ FocusCard.swift               Today's Focus: title, line, artwork and the big button; "Done today" once its session is saved
+│  │  │  ├─ TodayFocus.swift              what the Focus is today: a situation, the topic of the day or the latest mistake (#174)
 │  │  │  ├─ FromYourDayList.swift         briefing card, Today actions and Beyond row
 │  │  │  ├─ SixtySecondsCard.swift        big "60 seconds", text and play button → 60 seconds of talking
 │  │  │  └─ BeyondRow.swift
@@ -374,7 +375,7 @@ Option card: min-height 60, radius 18, `#1C1C1E`; selected = accent 10% fill + a
 Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's initial → a native `Menu` (Profile, Progress, Settings). A soft haze and a few faint stars in the theme colour sit over the glow at the top of the screen.
 1. **Orb** — a static amber sphere (drawn once, never animated) → today's Conversation.
 2. **Words · Spoken · Level** — three numbers → Progress.
-3. **Today's Focus** — glass card: eyebrow, "Moving an appointment", "5 min" pill, full-width **Start talking** (`.glassProminent`).
+3. **Today's Focus** — glass card with one thing to do today (`TodayFocus`), different every day, and the big button; "Done today" after it was done.
 4. **Situations** — a few everyday situations (different every day) and "Situations ›" → all of them by category. Tapping one starts a live-voice role-play (`Situation.scenario`).
 5. **From your day** list: 60-second briefing · Debrief bakery · 3 new words from Safari (→ Memory filtered) · 1 writing mistake (→ Activity).
 6. "Learning beyond the app" ticket → Beyond.

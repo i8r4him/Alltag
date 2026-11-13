@@ -54,6 +54,17 @@ enum TalkTopics {
 
     static var all: [TalkTopic] { a1 + a2 + b1 + b2 + c1 }
 
+    static func topic(id: String) -> TalkTopic? {
+        all.first { $0.id == id }
+    }
+
+    /// The topic of the day for `level`: the same all day, another one tomorrow.
+    static func daily(for level: Level, on date: Date = .now, calendar: Calendar = .current) -> TalkTopic {
+        let topics = topics(for: level)
+        let day = calendar.ordinality(of: .day, in: .era, for: date) ?? 0
+        return topics[(day * 7) % topics.count]
+    }
+
     /// A random topic for `level`, never `current` again.
     static func random(for level: Level, not current: TalkTopic? = nil,
                        using generator: inout some RandomNumberGenerator) -> TalkTopic {
