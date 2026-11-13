@@ -8,6 +8,7 @@
 import AppIntents
 import SwiftData
 import SwiftUI
+import OSLog
 
 @main
 struct AlltagApp: App {
@@ -38,17 +39,32 @@ struct AlltagApp: App {
         AlltagShortcuts.updateAppShortcutParameters()
     }
 
+    private func importTranslations() {
+        UserDefaults(suiteName: TranslationInbox.group)?.set(AppTheme.shared.palette.rawValue, forKey: CompanionLook.Key.palette)
+        do { try TranslationInbox.importSaved(into: container.mainContext) } catch {
+            let logger = Logger(subsystem: "i8r4him.Alltag", category: "TranslationInbox")
+            logger.error("Import deferred: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(appState)
                 .environment(\.services, services)
-                .task { await SpotlightIndex.reindex(container) }
+                .task {
+                    importTranslations()
+                    await SpotlightIndex.reindex(container)
+                }
         }
         // Words saved during a session reach Spotlight when the app is left.
         .onChange(of: scenePhase) { _, phase in
+            if phase == .active { importTranslations() }
             guard phase == .background else { return }
             Task { await SpotlightIndex.reindex(container) }
+        }
+        .onChange(of: AppTheme.shared.palette) { _, palette in
+            UserDefaults(suiteName: TranslationInbox.group)?.set(palette.rawValue, forKey: CompanionLook.Key.palette)
         }
         .modelContainer(container)
     }

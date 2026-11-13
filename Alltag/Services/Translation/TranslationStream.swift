@@ -11,6 +11,7 @@ import Foundation
 struct TranslationStream {
     private var text = ""
     private var completed = false
+    var sourceIsGerman: Bool? { field("source_is_german") as? Bool }
 
     mutating func receive(_ line: String) throws -> TranslationResult? {
         guard line.hasPrefix("data: ") else { return nil }
@@ -21,7 +22,8 @@ struct TranslationStream {
         if type == "response.completed" { completed = true; return nil }
         guard type == "response.output_text.delta", let delta = event["delta"] as? String else { return nil }
         text += delta
-        guard let german = field("german") as? String, let other = field("other") as? String else { return nil }
+        guard let german = field("german") as? String, let other = field("other") as? String,
+              sourceIsGerman != nil else { return nil }
         let object: [String: Any] = ["german": german, "other": other,
                                      "note": field("note") as? String ?? "",
                                      "words": field("words") as? [[String: Any]] ?? [],
