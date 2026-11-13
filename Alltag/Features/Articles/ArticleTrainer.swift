@@ -37,7 +37,7 @@ final class ArticleTrainer {
         let stored = Set(defaults.stringArray(forKey: Self.missedKey) ?? [])
         let earlier = nouns.filter { stored.contains($0.id) }.shuffled(using: &generator).prefix(Self.roundSize / 2)
         let fresh = nouns.filter { !earlier.contains($0) }.shuffled(using: &generator).prefix(Self.roundSize - earlier.count)
-        let round = (Array(earlier) + Array(fresh)).shuffled(using: &generator)
+        let round = Array(earlier) + Array(fresh)
         queue = round
         asked = round.count
     }

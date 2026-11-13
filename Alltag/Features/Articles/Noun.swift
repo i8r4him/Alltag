@@ -8,7 +8,7 @@
 import Foundation
 
 /// der, die or das.
-enum Article: String, CaseIterable, Identifiable, Sendable {
+enum Article: String, CaseIterable, Identifiable, Codable, Sendable {
     case der, die, das
 
     var id: String { rawValue }
@@ -22,7 +22,7 @@ enum Article: String, CaseIterable, Identifiable, Sendable {
 }
 
 /// A German noun with its article.
-struct Noun: Identifiable, Hashable, Sendable {
+struct Noun: Identifiable, Hashable, Codable, Sendable {
     let article: Article
     let word: String
     /// The plural, or "–" when the noun has none in everyday use. Empty when unknown.
@@ -30,9 +30,23 @@ struct Noun: Identifiable, Hashable, Sendable {
     /// What it means, in English.
     let meaning: String
     /// The level it is taught at; `nil` for the learner's own words and looked-up ones.
-    let level: Level?
+    var level: Level?
+    var example: String = ""
+    var explanation: String = ""
 
-    var id: String { word }
+    enum CodingKeys: String, CodingKey { case article, word, plural, meaning, example, explanation }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        article = try values.decode(Article.self, forKey: .article)
+        word = try values.decode(String.self, forKey: .word)
+        plural = try values.decode(String.self, forKey: .plural)
+        meaning = try values.decode(String.self, forKey: .meaning)
+        example = try values.decodeIfPresent(String.self, forKey: .example) ?? ""
+        explanation = try values.decodeIfPresent(String.self, forKey: .explanation) ?? ""
+    }
+
+    var id: String { article.rawValue + "|" + word }
     var hasPlural: Bool { !plural.isEmpty && plural != "–" }
 
     /// Short, so the lists stay readable: article, noun, plural, meaning, level.
@@ -42,26 +56,5 @@ struct Noun: Identifiable, Hashable, Sendable {
         self.plural = plural
         self.meaning = meaning
         self.level = level
-    }
-}
-
-/// The nouns Alltag teaches: `Nouns+A1.swift` to `Nouns+B2.swift`, 200 in all.
-enum Nouns {
-    static var all: [Noun] { a1 + a2 + b1 + b2 }
-
-    /// The nouns to practise at `level`: its own and the ones below it, so
-    /// earlier words keep coming back. C1 and C2 practise everything.
-    static func nouns(upTo level: Level) -> [Noun] {
-        all.filter { ($0.level ?? .a1) <= level }
-    }
-
-    /// The nouns among the learner's saved words: the ones saved with an article.
-    static func saved(in items: [MemoryItem]) -> [Noun] {
-        var seen = Set<String>()
-        return items.compactMap { item in
-            guard item.kind != .mistake, let article = Article(rawValue: item.article.trimmingCharacters(in: .whitespaces).lowercased()),
-                  seen.insert(item.word).inserted else { return nil }
-            return Noun(article, item.word, "", item.meaning)
-        }
     }
 }

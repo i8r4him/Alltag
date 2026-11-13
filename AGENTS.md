@@ -112,7 +112,7 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 Done on Learn: "How do I say …?", Translate with OpenAI (streamed), Alltag as the default translation app (extension `AlltagTranslation/`), Fix your mistakes with the learner's own mistakes, Your sessions.
 
 The six Learn features, **in this order**:
-1. **#252** der, die, das trainer. Not started; the Articles button does nothing.
+1. **#252** Articles: Rules, Play and Look up. Per the maintainer, practice rounds and noun lookup use OpenAI through `articles`, not bundled vocabulary or Apple fallback. A wrong article is saved immediately as a practiceable mistake; lookup nouns can be saved to Memory. Learn stays the tab root, with Articles pushed inside it. The endpoint shares the translation quota and stores only quota metadata.
 2. **#263** Write: a short task, corrected sentence by sentence. A shell today.
 3. **#269** Read: real-life texts, tap a word, check understanding. A shell today.
 4. **#275** Grammar: rules for every level, linked from the learner's mistakes. Works with 6 rules today.

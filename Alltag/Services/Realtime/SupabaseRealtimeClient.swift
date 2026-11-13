@@ -203,6 +203,7 @@ final class SupabaseRealtimeClient {
         try Task.checkCancellation()
         let endpoint = try SupabaseConfiguration.endpoint("functions/v1/\(function)")
         var request = try Self.request(to: endpoint, body: body)
+        if function == "articles" { request.timeoutInterval = 35 }
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         let (data, status) = try await send(request)
         if status == 200 { return data }

@@ -435,6 +435,10 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 ## State (suggested `@Observable AppState`)
 `userName, nativeLanguage, goal, level, dailyTime, nudgeTime, interests: Set, permissions, isPro, settings toggles, memoryItems, phrasebook, solvedRules: Set, savedTranslations`, plus per-feature view models: `ConversationModel(phase, messages, step, mode, showHint)`, `ActivityModel(index, picked, score, done)`, `RuleModel(picked: [Int], result)`.
 
+## Articles
+
+Articles has Rules, Play and Look up. Rules give short patterns with exceptions and examples; reference: [Goethe-Institut grammar overview](https://lernplattform.goethe.de/pluginfile.php/1502010/mod_folder/content/0/DT_Training_Online_B1_RM-GR_K01-18_en.pdf). `ArticleService` injects cloud noun lookup and fresh exact-level practice rounds through the authenticated `articles` function. No bundled noun corpus supplies the game. `ArticleMemory` writes wrong picks to the existing Fix your mistakes flow and saves lookup nouns to Memory without a schema change. Generated facts still need linguistic review; structured JSON validates shape, not correctness.
+
 ## Simulated vs real
 - **Real in native build (phase 1):** navigation, all UI states, AVSpeechSynthesizer pronunciation, haptics, local mock data, SwiftData persistence.
 - **Real on iPhone:** German speech recognition with `SpeechAnalyzer` (on device; the simulator keeps the simulated listening). Saying roughly the scripted line continues the script; anything else is your own sentence and gets feedback.

@@ -12,63 +12,15 @@ import Testing
 
 @MainActor
 struct ArticlesTests {
-    @Test("The noun lists: 200 different nouns, each level's own, earlier levels kept in practice")
-    func nouns() {
-        #expect(Nouns.all.count == 200)
-        #expect(Set(Nouns.all.map(\.word)).count == 200)
-        #expect(Nouns.a1.allSatisfy { $0.level == .a1 })
-        #expect(Nouns.nouns(upTo: .a1) == Nouns.a1)
-        #expect(Nouns.nouns(upTo: .a2).count == Nouns.a1.count + Nouns.a2.count)
-        #expect(Nouns.nouns(upTo: .c2).count == 200)
-        #expect(Nouns.all.allSatisfy { !$0.word.isEmpty && !$0.meaning.isEmpty && !$0.plural.isEmpty })
-    }
-
-    @Test("The learner's saved words with an article are nouns to train")
-    func savedNouns() {
-        let items = [
-            MemoryItem(article: "die ", word: "Kündigungsfrist", meaning: "notice period", kind: .saved, source: .safari),
-            MemoryItem(article: "die ", word: "Kündigungsfrist", meaning: "notice period", kind: .saved, source: .translate),
-            MemoryItem(word: "verschieben", meaning: "to postpone", kind: .saved, source: .conversation),
-            MemoryItem(article: "der ", word: "Fehler", meaning: "x", kind: .mistake, source: .conversation)
-        ]
-        let nouns = Nouns.saved(in: items)
-        #expect(nouns.map(\.word) == ["Kündigungsfrist"])
-        #expect(nouns.first?.article == .die)
-    }
-
-    @Test("A word is found in Alltag's nouns whatever its case, with an article typed, or by its meaning")
-    func localLookup() {
-        #expect(ArticleLookup.local("tisch", in: Nouns.all)?.article == .der)
-        #expect(ArticleLookup.local("  die Apotheke ", in: Nouns.all)?.word == "Apotheke")
-        #expect(ArticleLookup.local("pharmacy", in: Nouns.all)?.word == "Apotheke")
-        #expect(ArticleLookup.local("Quatsch", in: Nouns.all) == nil)
-        #expect(ArticleLookup.local("", in: Nouns.all) == nil)
-    }
-
-    @Test("Any other word gets its article from the translation")
-    func translatedLookup() {
-        let word = TranslationResult.WordBreakdown(word: "die Kündigungsfrist", grammar: "noun · pl. Kündigungsfristen",
-                                                   meaning: "notice period")
-        let noun = TranslationResult(english: "notice period", german: "Kündigungsfrist", words: [word],
-                                     tones: [], note: "", examples: [])
-        #expect(ArticleLookup.answer(from: noun) == .found(Noun(.die, "Kündigungsfrist", "Kündigungsfristen", "notice period")))
-
-        let plain = TranslationResult(english: "the weather", german: "das Wetter", words: [], tones: [], note: "", examples: [])
-        #expect(ArticleLookup.answer(from: plain) == .found(Noun(.das, "Wetter", "", "the weather")))
-
-        let verb = TranslationResult(english: "to postpone", german: "verschieben",
-                                     words: [.init(word: "verschieben", grammar: "verb", meaning: "to postpone")],
-                                     tones: [], note: "", examples: [])
-        #expect(ArticleLookup.answer(from: verb) == .notANoun(german: "verschieben", meaning: "to postpone"))
-        #expect(ArticleLookup.plural(in: "noun · pl. Termine") == "Termine")
-        #expect(ArticleLookup.plural(in: "noun") == "")
+    private var fixtures: [Noun] {
+        (0..<10).map { Noun(.der, "Testwort\($0)", "Testwörter", "test word") }
     }
 
     @Test("A wrong answer brings the noun back in the round and first in the next one, until it is right")
     func trainer() throws {
         let defaults = try #require(UserDefaults(suiteName: "ArticlesTests-\(UUID().uuidString)"))
         var generator = SystemRandomNumberGenerator()
-        let trainer = ArticleTrainer(nouns: Nouns.a1, defaults: defaults, using: &generator)
+        let trainer = ArticleTrainer(nouns: fixtures, defaults: defaults, using: &generator)
         #expect(trainer.total == ArticleTrainer.roundSize)
         #expect(Set(trainer.queue).count == ArticleTrainer.roundSize)
 
@@ -104,13 +56,71 @@ struct ArticlesTests {
     @Test("Nouns missed before come first in the next round")
     func missedComeFirst() throws {
         let defaults = try #require(UserDefaults(suiteName: "ArticlesTests-\(UUID().uuidString)"))
-        defaults.set(["Tisch", "Bett"], forKey: ArticleTrainer.missedKey)
+        defaults.set(["der|Testwort0", "der|Testwort1"], forKey: ArticleTrainer.missedKey)
         var generator = SystemRandomNumberGenerator()
 
-        let trainer = ArticleTrainer(nouns: Nouns.a1, defaults: defaults, using: &generator)
+        let trainer = ArticleTrainer(nouns: fixtures, defaults: defaults, using: &generator)
 
-        #expect(trainer.queue.contains { $0.word == "Tisch" })
-        #expect(trainer.queue.contains { $0.word == "Bett" })
+        #expect(trainer.queue.contains { $0.word == "Testwort0" })
+        #expect(trainer.queue.contains { $0.word == "Testwort1" })
         #expect(trainer.total == ArticleTrainer.roundSize)
+    }
+}
+
+@MainActor
+struct ArticleFlowTests {
+    @Test("Wrong articles become practiceable mistakes without duplicates")
+    func mistakeHandoff() throws {
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let noun = Noun(.die, "Wohnung", "Wohnungen", "flat")
+        try ArticleMemory.mistake(noun, picked: .der, in: container.mainContext)
+        try ArticleMemory.mistake(noun, picked: .der, in: container.mainContext)
+        try ArticleMemory.mistake(noun, picked: .die, in: container.mainContext)
+        let items = try container.mainContext.fetch(FetchDescriptor<MemoryItem>())
+        #expect(items.count == 1)
+        #expect(items.first?.mistakeOriginal == "der Wohnung")
+        #expect(items.first?.context == "die Wohnung")
+        #expect(MistakePractice.activity(in: container.mainContext)?.questions.count == 1)
+    }
+
+    @Test("Lookup nouns save to Memory once and retain their article")
+    func saveLookup() throws {
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let noun = Noun(.das, "Haus", "Häuser", "house")
+        try ArticleMemory.save(noun, in: container.mainContext)
+        try ArticleMemory.save(noun, in: container.mainContext)
+        let items = try container.mainContext.fetch(FetchDescriptor<MemoryItem>())
+        #expect(items.count == 1)
+        #expect(items.first?.article == "das ")
+        #expect(items.first?.kind == .saved)
+    }
+
+    @Test("Practice sends the learner's exact level and recent words to the server")
+    func generatedRound() async throws {
+        var body: [String: String] = [:]
+        let service = CloudArticleService(send: { request in
+            body = request
+            return Data(#"""
+                {"nouns":[
+                {"article":"das","word":"Haus","plural":"Häuser","meaning":"house"},
+                {"article":"die","word":"Tür","plural":"Türen","meaning":"door"},
+                {"article":"der","word":"Tisch","plural":"Tische","meaning":"table"}],"note":""}
+                """#.utf8)
+        }, allowed: { true })
+        let answer = try await service.request(word: nil, level: .b2, excluding: ["Haus"])
+        #expect(answer.nouns.count == 3)
+        #expect(body["level"] == "B2")
+        #expect(body["action"] == "practice")
+        #expect(body["exclude"] == "Haus")
+    }
+
+    @Test("The Learn tab remains a dashboard and Articles opens inside it")
+    func learnNavigation() {
+        let state = AppState()
+        state.show(.articles)
+        #expect(state.tab == .learn)
+        #expect(state.root(of: .learn) == .learn)
+        state.popToRoot()
+        #expect(state.path.isEmpty)
     }
 }
