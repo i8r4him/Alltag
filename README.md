@@ -228,7 +228,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Profile/
 │  │  │  └─ ProfileView.swift            Today's design: avatar, this week (minutes, words, rules), goal, languages, interests
 │  │  ├─ Settings/
-│  │  │  ├─ SettingsView.swift
+│  │  │  ├─ SettingsView.swift            Today's look; only what works: learning, appearance, privacy, accessibility, more (#200)
 │  │  │  ├─ ThemePicker.swift           Appearance: colour swatches that set the theme and the companion
 │  │  │  ├─ SettingsModel.swift           permission toggles, on-device AI status
 │  │  │  └─ DataExport.swift              Export my data (JSON)
