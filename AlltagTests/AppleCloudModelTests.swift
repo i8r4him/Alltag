@@ -15,7 +15,9 @@ import Testing
 /// It reports what the model says about a set of German sentences, to compare
 /// with OpenAI's answers by eye; it doesn't judge them. `xcodebuild` hides what
 /// tests print, so add `TEST_RUNNER_ALLTAG_PCC_OUT=/path/to/file.txt` to get the report as a file.
+/// Only in a build signed with the entitlement: without it a request stops the process.
 private let runsCloudModelTests = ProcessInfo.processInfo.environment["ALLTAG_PCC"] == "1"
+    && PrivateCloudLanguageModelClient.isEntitled
 
 /// Prints `line` and, when asked for, appends it to the report file.
 private func report(_ line: String) {
