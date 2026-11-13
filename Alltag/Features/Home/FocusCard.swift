@@ -8,8 +8,11 @@
 import SwiftUI
 
 /// "Today's Focus": the one thing to do today. The title and a short line on
-/// the left, the scenario's artwork on the right, and the Start talking button.
+/// the left, its artwork on the right, and the big button. Once it has been
+/// done today, it says so and offers to do it again.
 struct FocusCard: View {
+    let focus: TodayFocus
+    var isDone = false
     let action: () -> Void
 
     @ScaledMetric(relativeTo: .title3) private var artworkSize: CGFloat = 96
@@ -18,20 +21,34 @@ struct FocusCard: View {
         VStack(spacing: 18) {
             HStack(alignment: .center, spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Moving an appointment")
+                    if isDone {
+                        Label("Done today", systemImage: "checkmark.circle.fill")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.accent)
+                    }
+                    Text(verbatim: focus.title)
                         .font(.title3.weight(.semibold))
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("A short phone call at the dentist.")
+                    Text(verbatim: focus.line)
                         .font(.title3)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .combine)
-                ScenarioArtwork(systemImage: "cross.case.fill")
+                ScenarioArtwork(systemImage: focus.systemImage)
                     .frame(width: artworkSize, height: artworkSize)
             }
-            StartTalkingButton(action: action)
+            GlassEffectContainer {
+                Button(action: action) {
+                    if isDone {
+                        Label("Do it again", systemImage: "arrow.counterclockwise")
+                    } else {
+                        Label("Start talking", systemImage: "waveform")
+                    }
+                }
+                .buttonStyle(.primary)
+            }
         }
         .padding(Spacing.cardLarge)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
@@ -69,23 +86,8 @@ struct ScenarioArtwork: View {
     }
 }
 
-/// The Start talking button: the app's big button with a waveform.
-struct StartTalkingButton: View {
-    let action: () -> Void
-
-    var body: some View {
-        GlassEffectContainer {
-            Button(action: action) {
-                Label("Start talking", systemImage: "waveform")
-            }
-            .buttonStyle(.primary)
-            .accessibilityHint("Starts a conversation at the dentist.")
-        }
-    }
-}
-
 #Preview {
-    FocusCard {}
+    FocusCard(focus: .make()) {}
         .padding(Spacing.screen)
         .background(.screenBackground)
 }

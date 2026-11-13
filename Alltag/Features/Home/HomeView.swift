@@ -16,6 +16,7 @@ struct HomeView: View {
     @Query private var profiles: [UserProfile]
     @Query private var memoryItems: [MemoryItem]
     @Query private var sessions: [PracticeSession]
+    @Query private var records: [SessionRecord]
 
     private var name: String { profiles.first?.name ?? "" }
     private var newReadingWords: Int { FromYourDay.newReadingWords(in: memoryItems) }
@@ -26,7 +27,7 @@ struct HomeView: View {
                 TodayHero(words: memoryItems.count, minutesSpoken: sessions.minutesSpoken, level: level,
                           onStart: { appState.present(.conversation(.freeTalk)) }, onProgress: { appState.open(.progress) })
 
-                    FocusCard(action: startFocus)
+                    FocusCard(focus: focus, isDone: focus.isDone(in: records)) { appState.present(focus.route) }
                     TodaySituations(situations: SituationCatalogue.suggestions(),
                                    onShowAll: { appState.open(.situations) },
                                    onSelect: { appState.present(.situation($0.id)) })
@@ -75,9 +76,8 @@ struct HomeView: View {
 
     private var level: Level { profiles.first?.level ?? .a1 }
 
-    private func startFocus() {
-        appState.present(.conversation(MockScenarios.todaysFocus))
-    }
+    /// Today's Focus: the situation of the day.
+    private var focus: TodayFocus { .make() }
 
     /// The learner's initial, or the person symbol before a name is set.
     @ViewBuilder

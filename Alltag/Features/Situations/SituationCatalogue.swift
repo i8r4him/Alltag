@@ -25,11 +25,19 @@ enum SituationCatalogue {
         all.filter { $0.category == category }
     }
 
-    /// A few situations for Today, different every day.
+    /// The situation on Today's Focus card: one a day, through the whole list before any comes back.
+    static func focus(on date: Date = .now, calendar: Calendar = .current) -> Situation {
+        let day = calendar.ordinality(of: .day, in: .era, for: date) ?? 0
+        // 7 shares no factor with the list's length, so every situation gets its day.
+        return all[(day * 7) % all.count]
+    }
+
+    /// A few situations for Today, different every day, and never the one on the Focus card.
     static func suggestions(on date: Date = .now, count: Int = 4, calendar: Calendar = .current) -> [Situation] {
         let day = calendar.ordinality(of: .day, in: .era, for: date) ?? 0
+        let focus = focus(on: date, calendar: calendar)
         let start = (day * count) % all.count
-        return (0..<min(count, all.count)).map { all[(start + $0 * 5) % all.count] }
+        return (0..<all.count).map { all[(start + $0 * 5) % all.count] }.filter { $0 != focus }.prefix(count).map { $0 }
     }
 
     // Ordered so that neighbours come from different parts of life.
