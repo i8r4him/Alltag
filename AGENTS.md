@@ -136,4 +136,4 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 - `Alltag/Services/<Area>/`: service protocols, mocks and live implementations.
 - `Alltag/DesignSystem/`: tokens and shared components. Use them rather than raw values.
 - `Alltag/Intents/`: App Intents (Siri, Shortcuts, Spotlight).
-- `supabase/`: the Edge Functions (`realtime-session` for the voice, `check-german` for the mistake check) and migrations, owned by the maintainer. See `supabase/README.md`.
+- `supabase/`: the Edge Functions (`realtime-session` for the voice, `check-german` for the mistake check, `translate` for translating) and migrations, owned by the maintainer. See `supabase/README.md`.

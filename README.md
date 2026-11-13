@@ -117,7 +117,8 @@ Alltag/                                   ← repo root
 │  │  │  └─ RealtimeAudio.swift                      PCM capture, playback and interruption
 │  │  ├─ Translation/
 │  │  │  ├─ TranslationService.swift      TranslationService, TranslationServiceError, MockTranslationService (3 samples)
-│  │  │  └─ SystemTranslationService.swift   Translation framework (on device) + Apple Intelligence explanations
+│  │  │  ├─ SystemTranslationService.swift   Translation framework (on device) + Apple Intelligence explanations
+│  │  │  └─ CloudTranslationService.swift OpenAI through `translate` when cloud use is allowed; Apple's Translation otherwise (#242)
 │  │  ├─ Companion/
 │  │  │  ├─ CompanionService.swift        CompanionService, MockCompanionService (scripts, samples, fallback)
 │  │  │  ├─ OnDeviceCompanionService.swift   Foundation Models: feedback on own sentences, debriefs
