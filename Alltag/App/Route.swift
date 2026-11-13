@@ -11,6 +11,8 @@ import Foundation
 enum Route: Hashable {
     /// Translate, optionally pre-filled (e.g. from Siri).
     case translate(text: String? = nil)
+    /// Translate, opened to ask: the field is ready and the answer is German.
+    case howToSay
     /// Memory, optionally filtered to one kind (e.g. words from your day)
     /// or searching for a word (e.g. from Siri).
     case memory(kind: MemoryKind? = nil, search: String? = nil)
