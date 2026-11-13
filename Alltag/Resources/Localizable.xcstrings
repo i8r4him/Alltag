@@ -78,6 +78,16 @@
         }
       }
     },
+    "%lld of %lld right first time" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld right first time"
+          }
+        }
+      }
+    },
     "%lld of %lld solved" : {
       "localizations" : {
         "en" : {
@@ -136,6 +146,7 @@
     },
     "^[%lld mistake](inflect: true)" : {},
     "^[%lld new word](inflect: true) from Safari" : {},
+    "^[%lld noun](inflect: true) for your level and from your saved words." : {},
     "^[%lld phrase](inflect: true)" : {},
     "^[%lld sentence](inflect: true)" : {},
     "^[%lld sentence](inflect: true) · ^[%lld thing](inflect: true) to fix, saved to Fix your mistakes" : {
@@ -228,6 +239,7 @@
     "Animal ethics" : {},
     "Animals" : {},
     "Announcements and calls" : {},
+    "Another round" : {},
     "Another topic" : {},
     "Antworte auf Deutsch…" : {},
     "Appearance" : {},
@@ -296,6 +308,7 @@
     "Children and phones" : {},
     "Children or career?" : {},
     "City or countryside?" : {},
+    "Clear" : {},
     "Climate protection" : {},
     "Close" : {},
     "Closing" : {},
@@ -335,6 +348,7 @@
     "Delete all sessions" : {},
     "Delete all sessions?" : {},
     "Democracy under pressure" : {},
+    "der, die or das? Type a word" : {},
     "Describe what's wrong" : {},
     "Design tokens" : {},
     "Dialects" : {},
@@ -354,6 +368,7 @@
     "English" : {},
     "English or German." : {},
     "Evening" : {},
+    "Every article right. These nouns are yours." : {},
     "Everyday life in Germany" : {},
     "Everyday situations" : {},
     "Everything in Learn still works, as often as you like." : {},
@@ -436,6 +451,7 @@
     "How you learn" : {},
     "Humour" : {},
     "I can't talk right now. Tap me to try again." : {},
+    "I couldn't find this word. Check the spelling, or your connection." : {},
     "I didn't catch that. Tap and try again." : {},
     "I didn't hear anything. Try again." : {},
     "I get by in most situations" : {},
@@ -588,6 +604,7 @@
     "New" : {},
     "New situation" : {},
     "News and fake news" : {},
+    "Next" : {},
     "Next time, say" : {},
     "Next year" : {},
     "No courses, no streaks. Alltag learns from your day — what you read, write, plan and say — and turns it into a few minutes of practice." : {},
@@ -643,6 +660,7 @@
     "Play briefing" : {},
     "Plays the phrase." : {},
     "Plays the sentence." : {},
+    "Plural: die %@" : {},
     "Podcast" : {},
     "Politeness" : {},
     "Politics" : {},
@@ -768,6 +786,7 @@
     "Spoken this month" : {},
     "Sport" : {},
     "Sport and health" : {},
+    "Start" : {},
     "Start 60 seconds of talking" : {},
     "Start a Conversation" : {},
     "Start learning" : {},
@@ -839,11 +858,13 @@
     "The weather on the radio" : {},
     "The weather today" : {},
     "The weekend" : {},
+    "These come back next time:" : {},
     "thing to fix" : {},
     "Things I don't like" : {},
     "things to fix" : {},
     "Thinking…" : {},
     "This device doesn't support Apple Intelligence. Corrections use Alltag's built-in explanations." : {},
+    "This isn't a noun, so it has no article." : {},
     "This morning" : {},
     "This rule isn't available any more." : {},
     "This session isn't on this iPhone any more." : {},
@@ -858,6 +879,7 @@
     "Town and country" : {},
     "Tradition and change" : {},
     "Traditions" : {},
+    "Train" : {},
     "Translate" : {},
     "Translate ${text}" : {},
     "Translate everything" : {},

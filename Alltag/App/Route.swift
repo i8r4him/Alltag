@@ -13,6 +13,8 @@ enum Route: Hashable {
     case translate(text: String? = nil)
     /// Translate, opened to ask: the field is ready and the answer is German.
     case howToSay
+    /// Look up an article, and the der, die, das trainer.
+    case articles
     /// Memory, optionally filtered to one kind (e.g. words from your day)
     /// or searching for a word (e.g. from Siri).
     case memory(kind: MemoryKind? = nil, search: String? = nil)

@@ -14,12 +14,11 @@ struct LearnView: View {
     @Environment(AppState.self) private var appState
     @State private var toolTaps = 0
 
-    /// Articles gets its screen next; for now it gives feedback only.
     private func open(_ tool: LearnTool) {
         switch tool {
         case .translate: appState.open(.translate())
         case .howToSay: appState.open(.howToSay)
-        case .articles: toolTaps += 1
+        case .articles: appState.open(.articles)
         }
     }
 
