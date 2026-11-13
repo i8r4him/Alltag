@@ -1,7 +1,7 @@
 # Alltag backend (Supabase)
 
 The project is `Alltag` (ref `flbymqlcauvwumznvviq`, region eu-central-1, free plan).
-Its only job is to keep the OpenAI API key off the phone: for the live voice, and for checking sentences.
+Its only job is to keep the OpenAI API key off the phone: for the live voice, for checking sentences, and for translating.
 
 ```
 App ──(Supabase anonymous session)──▶ realtime-session ──(OPENAI_API_KEY)──▶ OpenAI
@@ -82,10 +82,25 @@ The mistake check after 60 seconds and after conversations. The app sends **text
 - The model is `CHECK_MODEL` (default `gpt-6-luna`, OpenAI's most efficient model). The request is sent with `store: false`.
 - **The OpenAI key needs the Responses permission.** A key restricted to Realtime answers `401 Missing scopes: api.responses.write`, the function answers `502 upstream`, and the app checks on the device instead. Give the key "Responses: Write" in the OpenAI dashboard (API keys → edit the key → Permissions).
 
+## Translating (`translate`)
+
+Translate and "How do I say …?" in the app. Text only.
+
+- Send `POST {URL}/functions/v1/translate` with the same two headers as above.
+- The body is `{"text": "…", "language": "English", "level": "B1"}`. Only `text` is required (600 characters at most). `language` is the learner's own language, by its English name.
+- German text is translated into the learner's language; anything else into natural everyday German.
+- `200` returns `{"german", "other", "source_is_german", "note", "words": [{word, grammar, meaning}], "tones": [{tone, german}], "examples": [{german, other}]}`.
+- **Nothing the learner wrote is stored.** The table `translations` keeps only who asked and when, for the limits: `TRANSLATE_PER_USER_DAILY` (default 200) and `TRANSLATE_GLOBAL_DAILY` (default 20,000). Developer accounts skip the per-user limit.
+- Set `stream` to the string `"true"` to receive OpenAI server-sent events as the answer is generated; without it, the function retains its JSON response for older app versions. Streaming requests count towards the quota when OpenAI accepts them.
+- The model is `TRANSLATE_MODEL` (default `gpt-6-luna`), asked for **low reasoning effort**: about 3 seconds an answer instead of 5 to 10. Sent with `store: false`.
+- It needs the same Responses permission on the OpenAI key as `check-german`.
+
 ## Files
 
 - `functions/realtime-session/index.ts`: the voice function. Deploy it with JWT verification on.
 - `functions/check-german/index.ts`: the sentence check. Deploy it with JWT verification on.
+- `functions/translate/index.ts`: translating. Deploy it with JWT verification on.
 - `migrations/20261107200000_realtime_sessions.sql`: the session log used for the limits.
 - `migrations/20261111100000_realtime_developers.sql`: the accounts that skip the per-user limit.
 - `migrations/20261113100000_german_checks.sql`: the check log used for the limits.
+- `migrations/20261113120000_translations.sql`: the translation log used for the limits.

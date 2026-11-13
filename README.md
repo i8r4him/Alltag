@@ -28,7 +28,7 @@ iPad, Apple Watch and Apple Vision Pro are **not** supported. The design referen
 ## Architecture
 Plain SwiftUI with `@Observable` models and services injected through the SwiftUI environment. No third-party libraries in the app (SwiftLint is a development tool only).
 
-**One app target, organised in folders** (Xcode synchronized folders — the folders on disk are the groups in Xcode). Shared code can move into a local Swift package later, when widgets and extensions arrive.
+**App target plus a Translation UI Provider extension** (#245–247). App folders are Xcode synchronized folders. `AlltagTranslation/` is embedded under `Alltag.app/Extensions/`; it streams translations with cloud consent, supports replacement in editable fields, and queues saved translations or words for Memory through an App Group inbox. See `AlltagTranslation/README.md` for the device checks.
 ```
 Alltag/                                   ← repo root
 ├─ Alltag.xcodeproj
@@ -117,7 +117,9 @@ Alltag/                                   ← repo root
 │  │  │  └─ RealtimeAudio.swift                      PCM capture, playback and interruption
 │  │  ├─ Translation/
 │  │  │  ├─ TranslationService.swift      TranslationService, TranslationServiceError, MockTranslationService (3 samples)
-│  │  │  └─ SystemTranslationService.swift   Translation framework (on device) + Apple Intelligence explanations
+│  │  │  ├─ SystemTranslationService.swift   Translation framework (on device) + Apple Intelligence explanations
+│  │  │  ├─ CloudTranslationService.swift OpenAI through `translate`, streaming the answer as it is generated
+│  │  │  └─ TranslationStream.swift     reads completed sections from the streamed response
 │  │  ├─ Companion/
 │  │  │  ├─ CompanionService.swift        CompanionService, MockCompanionService (scripts, samples, fallback)
 │  │  │  ├─ OnDeviceCompanionService.swift   Foundation Models: feedback on own sentences, debriefs
@@ -200,10 +202,10 @@ Alltag/                                   ← repo root
 │  │  ├─ Learn/
 │  │  │  ├─ LearnView.swift               tools, Fix your mistakes, then Practise (everything apart from speaking)
 │  │  │  ├─ LearnTools.swift              "How do I say …?" field, Translate and Articles
-│  │  │  ├─ MistakesCard.swift            a deck of your mistakes, the first on top
+│  │  │  ├─ MistakesCard.swift            your own mistakes as a glass deck, the wrong words underlined; empty state (#248)
 │  │  │  ├─ LearnComponents.swift         LearnScreen, LearnHeroCard, LearnSection, LearnList, LearnRow
 │  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour
-│  │  │  ├─ ActivityView.swift            native toolbar (close, segments), options, audio, done
+│  │  │  ├─ ActivityView.swift            native toolbar (close, segments), options, audio, done; sky and glass
 │  │  │  ├─ ActivityModel.swift           one pick per question, scoring, audio
 │  │  │  └─ MistakePractice.swift         conversation fixes → Memory › Mistakes → practice questions
 │  │  ├─ Write/
@@ -229,7 +231,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Profile/
 │  │  │  └─ ProfileView.swift            Today's design: avatar, this week (minutes, words, rules), goal, languages, interests
 │  │  ├─ Settings/
-│  │  │  ├─ SettingsView.swift
+│  │  │  ├─ SettingsView.swift            Today's look; only what works: learning, appearance, privacy, accessibility, more (#200)
 │  │  │  ├─ ThemePicker.swift           Appearance: colour swatches that set the theme and the companion
 │  │  │  ├─ SettingsModel.swift           permission toggles, on-device AI status
 │  │  │  └─ DataExport.swift              Export my data (JSON)
@@ -392,7 +394,7 @@ Native: `Speech` (`SpeechAnalyzer` + `SpeechTranscriber`, de-DE — the newer AP
 When **Pro features may use the cloud** is enabled, tapping the orb on an iPhone starts a live voice session. The app sends the scenario title, goal and learner level to the Supabase Edge Function and streams audio directly to OpenAI with the short-lived credential. The transcript stays in memory in the app. Finishing the conversation, leaving voice mode or reaching ten minutes closes the connection. With cloud use off or unavailable, the scripted conversation uses on-device speech.
 
 ### Translate
-Language capsule (English ⇄ German, swap), source card (editable), result card `#232325` with Listen / Slowly / bookmark save (toast "Saved to Memory"). Sections: Word by word (word, grammar note, meaning), Tone (Formal / Neutral — accent / Casual), In context (tap to hear). Unknown input → honest note: live translation will use Apple's Translation framework.
+Language capsule, editable source card, Translate button and result card with Listen / Slowly / bookmark save. The OpenAI translation appears first, followed by Word by word, Tone and In context as each section arrives.
 
 ### Memory
 Segmented Words | Phrasebook.
@@ -437,7 +439,7 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 - **Real on iPhone:** German speech recognition with `SpeechAnalyzer` (on device; the simulator keeps the simulated listening). Saying roughly the scripted line continues the script; anything else is your own sentence and gets feedback.
 - **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. On-device conversations keep their scripted replies so each scenario reaches its goal.
 - **Live voice on iPhone:** OpenAI Realtime through the existing Supabase credential broker, with both speakers' captions. Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange.
-- **Real on iPhone:** translation with Apple's Translation framework (on device; English and German are downloaded once). Apple Intelligence adds word by word, tone and examples; without it the plain translation is shown. The three samples keep their hand-written explanations, and the simulator only knows those.
+- **Translate:** OpenAI through Supabase when cloud use is allowed. The translation, words, tone and examples appear as they arrive. If cloud use is unavailable, the screen reports the error rather than showing an on-device translation.
 - **Simulated:** scripted companion replies & feedback, placement.
 - **Later:** see the framework table below.
 

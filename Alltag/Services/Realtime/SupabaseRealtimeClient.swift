@@ -117,17 +117,7 @@ final class SupabaseRealtimeClient {
         self.send = send
     }
 
-    func credentials(for context: RealtimeConversationContext) async throws -> RealtimeCredentials {
-        let token = try await accessToken()
-        do {
-            return try await issueCredentials(for: context, token: token)
-        } catch RealtimeServiceError.unauthorised {
-            let refreshed = try await accessToken(rejected: token)
-            return try await issueCredentials(for: context, token: refreshed)
-        }
-    }
-
-    private func accessToken(rejected: String? = nil) async throws -> String {
+    func accessToken(rejected: String? = nil) async throws -> String {
         try Task.checkCancellation()
         if let authentication { return try await authentication.value.access }
         if tokens == nil, let data = try store.load() {
@@ -174,12 +164,6 @@ final class SupabaseRealtimeClient {
         return updated
     }
 
-    private func issueCredentials(for context: RealtimeConversationContext, token: String) async throws -> RealtimeCredentials {
-        let body = ["scenario": context.scenario, "instructions": context.instructions]
-        let data = try await call("realtime-session", body: body, token: token)
-        return try JSONDecoder().decode(RealtimeCredentials.self, from: data)
-    }
-
     /// Calls one of the project's Edge Functions as the signed-in learner and
     /// returns its answer. Signs in again once when the token was rejected.
     func post(to function: String, body: [String: String]) async throws -> Data {
@@ -191,7 +175,31 @@ final class SupabaseRealtimeClient {
         }
     }
 
-    private func call(_ function: String, body: [String: String], token: String) async throws -> Data {
+    /// Reads a function's server-sent events as they arrive.
+    func stream(to function: String, body: [String: String], onLine: (String) throws -> Void) async throws {
+        let token = try await accessToken()
+        do {
+            try await stream(to: function, body: body, token: token, onLine: onLine)
+        } catch RealtimeServiceError.unauthorised {
+            try await stream(to: function, body: body, token: try await accessToken(rejected: token), onLine: onLine)
+        }
+    }
+
+    private func stream(to function: String, body: [String: String], token: String,
+                        onLine: (String) throws -> Void) async throws {
+        var request = try Self.request(to: SupabaseConfiguration.endpoint("functions/v1/\(function)"), body: body)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        let (bytes, response) = try await URLSession.shared.bytes(for: request)
+        guard let http = response as? HTTPURLResponse else { throw RealtimeServiceError.unavailable }
+        if http.statusCode == 401 { throw RealtimeServiceError.unauthorised }
+        guard http.statusCode == 200 else { throw RealtimeServiceError.unavailable }
+        for try await line in bytes.lines {
+            try Task.checkCancellation()
+            try onLine(line)
+        }
+    }
+
+    func call(_ function: String, body: [String: String], token: String) async throws -> Data {
         try Task.checkCancellation()
         let endpoint = try SupabaseConfiguration.endpoint("functions/v1/\(function)")
         var request = try Self.request(to: endpoint, body: body)

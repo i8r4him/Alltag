@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 /// Turns the learner's own mistakes into Memory items and practice.
 enum MistakePractice {
@@ -78,6 +79,39 @@ enum MistakePractice {
                         title: items.count == 1 ? String(localized: "One small fix")
                                                 : String(localized: "\(items.count) small fixes"),
                         questions: questions)
+    }
+
+    /// Which words of `said` are the mistake: the ones that aren't in `correction`
+    /// at that place. A sentence that only lacks a word has none, and neither has one
+    /// that was reworded altogether.
+    static func wrongWords(said: String, correction: String) -> Set<Int> {
+        let words: (String) -> [String] = { text in
+            text.split(whereSeparator: \.isWhitespace).map { ConversationModel.normalized(String($0)) }
+        }
+        let spoken = words(said)
+        let difference = spoken.difference(from: words(correction))
+        let wrong = Set(difference.insertions.compactMap { change in
+            if case .insert(let offset, _, _) = change { offset } else { nil }
+        })
+        // When most of the sentence differs, the correction is a rewording: marking words would say nothing.
+        return wrong.count * 2 > spoken.count ? [] : wrong
+    }
+
+    /// What the learner said, in quotes, with the wrong words underlined in coral.
+    static func quote(said: String, correction: String) -> Text {
+        let wrong = wrongWords(said: said, correction: correction)
+        var text = AttributedString("„")
+        for (index, word) in said.split(whereSeparator: \.isWhitespace).enumerated() {
+            if index > 0 { text += AttributedString(" ") }
+            var part = AttributedString(String(word))
+            if wrong.contains(index) {
+                part.underlineStyle = Text.LineStyle(pattern: .solid, color: .mistake)
+            } else if !wrong.isEmpty {
+                part.foregroundColor = .secondary
+            }
+            text += part
+        }
+        return Text(text + AttributedString("“"))
     }
 
     private static func key(_ correction: String, _ original: String) -> String {

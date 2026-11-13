@@ -10,15 +10,19 @@ import SwiftUI
 import Translation
 
 /// Translate: English ⇄ German with word-by-word, tone and examples.
+///
+/// Opened from "How do I say …?" (`isAsking`), it is the same screen ready to
+/// be asked: the keyboard is up, there is no welcome, and Return translates.
 struct TranslateView: View {
     let initialText: String?
+    var isAsking = false
     @Environment(\.services) private var services
     @State private var model: TranslateModel?
 
     var body: some View {
         Group {
             if let model {
-                TranslateContent(model: model)
+                TranslateContent(model: model, isAsking: isAsking)
             } else {
                 Color.clear
             }
@@ -33,17 +37,29 @@ struct TranslateView: View {
 
 private struct TranslateContent: View {
     @Bindable var model: TranslateModel
+    var isAsking = false
+    @FocusState private var isFieldFocused: Bool
     @Environment(\.modelContext) private var modelContext
     @Query private var savedTranslations: [SavedTranslation]
     @State private var toast: ToastMessage?
     /// Set to ask the system to download the translation languages.
     @State private var download: TranslationSession.Configuration?
+    @State private var translationTask: Task<Void, Never>?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                if !isAsking, !model.hasAttempted, model.result == nil {
+                    TranslateWelcome { model.input = $0 }
+                        .padding(.vertical, Spacing.card)
+                }
                 sourceCard
-                resultCard
+                Button(isAsking ? "Say it in German" : "Translate", systemImage: isAsking ? "quote.bubble.fill" : "translate") {
+                    translate()
+                }
+                .buttonStyle(.primary)
+                .disabled(model.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.isTranslating)
+                if model.hasAttempted || model.result != nil { resultCard }
                 if let result = model.result {
                     VStack(alignment: .leading, spacing: 24) {
                         if !result.words.isEmpty { WordByWordSection(words: result.words) }
@@ -53,7 +69,7 @@ private struct TranslateContent: View {
                                 Task { await model.listen(to: german) }
                             }
                         }
-                        if model.isExplaining {
+                        if model.isExplaining || model.isTranslating {
                             Label("Adding word by word, tone and examples…", systemImage: "sparkles")
                                 .textRole(.meta)
                                 .foregroundStyle(.secondary)
@@ -62,24 +78,25 @@ private struct TranslateContent: View {
                     }
                     .padding(.top, 14)
                 }
-                Text("Concept: select text in any app → Translate → Alltag to land here.")
-                    .textRole(.caption)
-                    .foregroundStyle(.tertiary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 10)
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 32)
             .animation(.easeOut(duration: 0.25), value: model.result)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(.screenBackground)
+        .skyBackground()
+        .fontDesign(.rounded)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .principal) { languageCapsule }
+            ToolbarItem(placement: .principal) {
+                if isAsking {
+                    Text("How do I say …?").font(.headline)
+                } else {
+                    languageCapsule
+                }
+            }
         }
+        .onAppear { if isAsking { isFieldFocused = true } }
         .translationTask(download) { session in
             do {
                 try await session.prepareTranslation()
@@ -90,13 +107,26 @@ private struct TranslateContent: View {
             }
             download = nil
         }
-        .task(id: model.input) {
-            // Wait until typing pauses before translating.
-            try? await Task.sleep(for: .milliseconds(300))
-            guard !Task.isCancelled else { return }
-            await model.translate()
+        .task {
+            if !model.input.isEmpty { await model.translate() }
+        }
+        .onChange(of: model.input) { _, input in
+            translationTask?.cancel()
+            model.clearResult()
+            // When asking, Return sends the question: the field grows with the text,
+            // so Return would otherwise only start a new line.
+            if isAsking, input.hasSuffix("\n") {
+                model.input = input.trimmingCharacters(in: .newlines)
+                isFieldFocused = false
+                translate()
+            }
         }
         .toast($toast)
+    }
+
+    private func translate() {
+        translationTask?.cancel()
+        translationTask = Task { await model.translate() }
     }
 
     // MARK: Header
@@ -105,7 +135,9 @@ private struct TranslateContent: View {
         HStack(spacing: 4) {
             Text(model.sourceLabel)
                 .padding(.horizontal, 10)
-            Button("Swap languages", systemImage: "arrow.left.arrow.right") { model.swap() }
+            Button("Swap languages", systemImage: "arrow.left.arrow.right") {
+                model.swap()
+            }
                 .labelStyle(.iconOnly)
                 .font(.footnote.weight(.semibold))
                 .frame(width: 32, height: 32)
@@ -122,18 +154,22 @@ private struct TranslateContent: View {
 
     private var sourceCard: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(model.sourceLabel)
-                .textRole(.meta)
-                .foregroundStyle(.secondary)
-            TextField("Type or paste text", text: $model.input, axis: .vertical)
+            if !isAsking {
+                Text(model.sourceLabel)
+                    .textRole(.meta)
+                    .foregroundStyle(.secondary)
+            }
+            TextField(isAsking ? "How do I say …?" : "Type or paste text", text: $model.input, axis: .vertical)
                 .font(.title3)
                 .lineLimit(2...6)
-                .accessibilityLabel(Text(model.sourceLabel))
+                .focused($isFieldFocused)
+                .submitLabel(isAsking ? .go : .return)
+                .accessibilityLabel(isAsking ? Text("What do you want to say?") : Text(model.sourceLabel))
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
     }
 
     private var resultCard: some View {
@@ -154,7 +190,7 @@ private struct TranslateContent: View {
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.resultCard, in: .rect(cornerRadius: Radius.card, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
     }
 
     private var resultActions: some View {
@@ -195,29 +231,13 @@ private struct TranslateContent: View {
                 }
                 .buttonStyle(.primaryCompact)
             }
+        } else if !model.hasAttempted {
+            Text("Type or paste text to translate.")
+                .foregroundStyle(.secondary)
         } else {
-            samples
-        }
-    }
-
-    private var samples: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Alltag can't translate this right now. Try one of these:")
+            Text("Translation is unavailable. Check your connection and cloud setting, then try again.")
                 .textRole(.bodySmall)
                 .foregroundStyle(.secondary)
-            ForEach(MockTranslations.all, id: \.english) { sample in
-                Button { model.use(sample) } label: {
-                    Text(verbatim: sample.english)
-                        .textRole(.bodySmall)
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(.leading)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(.controlFill, in: .rect(cornerRadius: 14, style: .continuous))
-                }
-                .buttonStyle(.card)
-            }
         }
     }
 }

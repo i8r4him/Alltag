@@ -115,4 +115,21 @@ struct MistakePracticeTests {
         #expect(MistakePractice.item(said: "Hallo", feedback: Feedback(kind: .good, title: "", note: ""),
                                      scenario: MockScenarios.dentist) == nil)
     }
+
+    @Test("The wrong words of a sentence are the ones the correction doesn't have there")
+    func wrongWords() {
+        // A wrong word: only that word.
+        #expect(MistakePractice.wrongWords(said: "Ich komme mit mein Freund.", correction: "Ich komme mit meinem Freund.") == [3])
+        // Wrong word order: the words that had to move.
+        let order = MistakePractice.wrongWords(said: "Am Wochenende ich gehe in den Park.",
+                                               correction: "Am Wochenende gehe ich in den Park.")
+        #expect(order.count == 1)
+        #expect(order.isSubset(of: [2, 3]))
+        // A missing word: nothing in what was said is wrong by itself.
+        #expect(MistakePractice.wrongWords(said: "Ich gehe Kino.", correction: "Ich gehe ins Kino.").isEmpty)
+        // Reworded altogether: nothing is marked.
+        #expect(MistakePractice.wrongWords(said: "Ich will das machen jetzt sofort.", correction: "Das mache ich gleich.").isEmpty)
+        // Capitals and punctuation don't count.
+        #expect(MistakePractice.wrongWords(said: "ich wohne in berlin", correction: "Ich wohne in Berlin.").isEmpty)
+    }
 }
