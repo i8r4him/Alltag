@@ -10,15 +10,19 @@ import SwiftUI
 import Translation
 
 /// Translate: English ⇄ German with word-by-word, tone and examples.
+///
+/// Opened from "How do I say …?" (`isAsking`), it is the same screen ready to
+/// be asked: the keyboard is up, there is no welcome, and Return translates.
 struct TranslateView: View {
     let initialText: String?
+    var isAsking = false
     @Environment(\.services) private var services
     @State private var model: TranslateModel?
 
     var body: some View {
         Group {
             if let model {
-                TranslateContent(model: model)
+                TranslateContent(model: model, isAsking: isAsking)
             } else {
                 Color.clear
             }
@@ -33,6 +37,8 @@ struct TranslateView: View {
 
 private struct TranslateContent: View {
     @Bindable var model: TranslateModel
+    var isAsking = false
+    @FocusState private var isFieldFocused: Bool
     @Environment(\.modelContext) private var modelContext
     @Query private var savedTranslations: [SavedTranslation]
     @State private var toast: ToastMessage?
@@ -43,14 +49,13 @@ private struct TranslateContent: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                if !model.hasAttempted && model.result == nil {
+                if !isAsking, !model.hasAttempted, model.result == nil {
                     TranslateWelcome { model.input = $0 }
                         .padding(.vertical, Spacing.card)
                 }
                 sourceCard
-                Button("Translate", systemImage: "translate") {
-                    translationTask?.cancel()
-                    translationTask = Task { await model.translate() }
+                Button(isAsking ? "Say it in German" : "Translate", systemImage: isAsking ? "quote.bubble.fill" : "translate") {
+                    translate()
                 }
                 .buttonStyle(.primary)
                 .disabled(model.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.isTranslating)
@@ -83,8 +88,15 @@ private struct TranslateContent: View {
         .fontDesign(.rounded)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .principal) { languageCapsule }
+            ToolbarItem(placement: .principal) {
+                if isAsking {
+                    Text("How do I say …?").font(.headline)
+                } else {
+                    languageCapsule
+                }
+            }
         }
+        .onAppear { if isAsking { isFieldFocused = true } }
         .translationTask(download) { session in
             do {
                 try await session.prepareTranslation()
@@ -98,11 +110,23 @@ private struct TranslateContent: View {
         .task {
             if !model.input.isEmpty { await model.translate() }
         }
-        .onChange(of: model.input) { _, _ in
+        .onChange(of: model.input) { _, input in
             translationTask?.cancel()
             model.clearResult()
+            // When asking, Return sends the question: the field grows with the text,
+            // so Return would otherwise only start a new line.
+            if isAsking, input.hasSuffix("\n") {
+                model.input = input.trimmingCharacters(in: .newlines)
+                isFieldFocused = false
+                translate()
+            }
         }
         .toast($toast)
+    }
+
+    private func translate() {
+        translationTask?.cancel()
+        translationTask = Task { await model.translate() }
     }
 
     // MARK: Header
@@ -130,13 +154,17 @@ private struct TranslateContent: View {
 
     private var sourceCard: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(model.sourceLabel)
-                .textRole(.meta)
-                .foregroundStyle(.secondary)
-            TextField("Type or paste text", text: $model.input, axis: .vertical)
+            if !isAsking {
+                Text(model.sourceLabel)
+                    .textRole(.meta)
+                    .foregroundStyle(.secondary)
+            }
+            TextField(isAsking ? "How do I say …?" : "Type or paste text", text: $model.input, axis: .vertical)
                 .font(.title3)
                 .lineLimit(2...6)
-                .accessibilityLabel(Text(model.sourceLabel))
+                .focused($isFieldFocused)
+                .submitLabel(isAsking ? .go : .return)
+                .accessibilityLabel(isAsking ? Text("What do you want to say?") : Text(model.sourceLabel))
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 14)
