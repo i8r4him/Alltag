@@ -73,8 +73,8 @@ final class ConversationModel {
     private var cloudSession: (any RealtimeConversationSession)?
     /// The live voice has been asked for but hasn't said or heard anything yet.
     private(set) var isConnecting = false
-    /// Free talk was refused because today's live conversations are used up.
-    private(set) var hasReachedLimit = false
+    /// Why a conversation that needs the live voice couldn't start; it is shown in place of the conversation.
+    private(set) var problem: LiveProblem?
     private(set) var finishedLiveConversation = false
     /// Checking a finished live conversation for mistakes.
     private(set) var liveReview: LiveReview = .none
@@ -417,12 +417,21 @@ extension ConversationModel {
     private func cloudFailed(_ error: any Error, session: any RealtimeConversationSession) {
         guard cloudSession === session else { return }
         fallBackFromCloud()
-        let reason = error as? RealtimeServiceError
-        // Free talk has no script to fall back to, so the limit gets its own screen.
-        hasReachedLimit = scenario.isLiveOnly && reason == .dailyLimit
-        guard !hasReachedLimit else { return }
-        notice = ToastMessage(text: LiveVoiceNotice.text(for: reason, freeTalk: scenario.isLiveOnly),
+        // Without a script there is nothing to fall back to: before anything was said,
+        // the reason gets the whole screen. Later, a notice and the orb to try again.
+        let problem = LiveProblem(error)
+        if scenario.isLiveOnly, problem == .limit || turnCount == 0 {
+            self.problem = problem
+            return
+        }
+        notice = ToastMessage(text: LiveVoiceNotice.text(for: error as? RealtimeServiceError, freeTalk: scenario.isLiveOnly),
                               systemImage: "waveform.slash")
+    }
+
+    /// From the problem screen: start the live voice again.
+    func retryLive() {
+        problem = nil
+        orbTapped()
     }
 
     private func fallBackFromCloud() {
