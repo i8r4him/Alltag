@@ -132,6 +132,8 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 
 ## Project map (short)
 
+- `AlltagTranslation/`: ExtensionKit Translation UI Provider foundation (#245). Development-only until #246 implements translation and #247 implements Memory saving. The host app declares the default-translation entitlement; both host and extension declare network access. Do not ship the placeholder panel.
+
 - `Alltag/App/`: entry point, `AppState`, `AppServices`, routing.
 - `Alltag/Features/<Screen>/`: views and their `@Observable` models.
 - `Alltag/Services/<Area>/`: service protocols, mocks and live implementations.
