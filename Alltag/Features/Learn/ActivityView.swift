@@ -121,7 +121,7 @@ private struct QuestionView: View {
                 Text(verbatim: model.question.question)
                     .textRole(.cardTitle)
 
-                VStack(spacing: 10) {
+                VStack(spacing: 12) {
                     ForEach(model.question.options.indices, id: \.self) { option in
                         OptionButton(text: model.question.options[option], state: model.state(ofOption: option)) {
                             model.pick(option)
@@ -170,7 +170,7 @@ private struct OptionButton: View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Text(verbatim: text)
-                    .textRole(.body)
+                    .font(.title3.weight(.medium))
                     .foregroundStyle(.primary)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -184,12 +184,13 @@ private struct OptionButton: View {
                 }
             }
             .font(.title3)
-            .padding(.horizontal, 18)
-            .padding(.vertical, 14)
-            .frame(minHeight: 56)
+            .padding(.horizontal, 22)
+            .padding(.vertical, 16)
+            .frame(minHeight: 64)
             .background(background, in: shape)
-            .overlay { shape.strokeBorder(border, lineWidth: 1) }
-            .glassEffect(.regular, in: shape)
+            .overlay { shape.strokeBorder(border, lineWidth: 1.5) }
+            // Interactive glass answers the touch itself, like the app's buttons.
+            .glassEffect(state == .open ? .regular.interactive() : .regular, in: shape)
             .opacity(state == .dimmed ? 0.45 : 1)
             .contentShape(shape)
         }
@@ -200,12 +201,13 @@ private struct OptionButton: View {
         .animation(.easeOut(duration: 0.25), value: state)
     }
 
-    private var shape: RoundedRectangle { RoundedRectangle(cornerRadius: Radius.option, style: .continuous) }
+    /// Rounder than a plain option, like the app's other glass cards.
+    private var shape: RoundedRectangle { RoundedRectangle(cornerRadius: 26, style: .continuous) }
 
     private var background: AnyShapeStyle {
         switch state {
-        case .right: AnyShapeStyle(.success.opacity(0.14))
-        case .wrong: AnyShapeStyle(.mistake.opacity(0.14))
+        case .right: AnyShapeStyle(.success.opacity(0.22))
+        case .wrong: AnyShapeStyle(.mistake.opacity(0.22))
         case .open, .dimmed: AnyShapeStyle(.clear)
         }
     }
