@@ -49,7 +49,8 @@ private struct ArticlesHeroCard: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .combine)
-                ScenarioArtwork(systemImage: "textformat.abc")
+                // "Abc" is wider than the other symbols; at the default size it runs off the tile.
+                ScenarioArtwork(systemImage: "textformat.abc", symbolSize: 38)
                     .frame(width: artworkSize, height: artworkSize)
             }
             GlassEffectContainer {
