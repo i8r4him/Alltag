@@ -5,6 +5,7 @@
 //  Created by Ibrahim Abdullah on 13.11.26.
 //
 
+import SwiftData
 import SwiftUI
 
 /// Learn › Articles: a round of der, die, das to play, a word to look up,
