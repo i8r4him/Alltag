@@ -1,20 +1,28 @@
-# Default translation provider — foundation (#245)
+# Alltag default translation extension
 
-This target uses Apple's Translation Provider Extension template and `TranslationUIProviderSelectedTextScene`. The host embeds `AlltagTranslation.appex` in its `Extensions` directory and declares `com.apple.developer.translation-app`. Both host and extension declare the network-access Info.plist key. No App Group or model-store change is introduced here.
+The ExtensionKit provider receives selected text and presents a scrollable panel using the app's shared glass, typography, colour assets and theme tokens. It uses the same Supabase authentication client and OpenAI stream parser as the app. Voice-only authentication methods remain in the app target.
 
-## Development status
+## Behaviour
 
-The panel currently only receives and displays selected text. It is a development foundation, not a usable translator and not ready for App Store submission. #246 adds the real translation UI and replacement handling; #247 adds the App Group and saving to Memory. Do not ship the placeholder panel.
+- No text is sent until the learner permits cloud translation in the extension.
+- The source can arrive after the sheet opens; the view observes it and restarts its task when it changes.
+- The translation appears first, followed by words, tones and examples as generated.
+- Replacement is offered only when allowed by the source app and after a successful complete response.
+- Save the whole translation or an individual word into the shared App Group inbox. The host imports it into its existing SwiftData Memory store when it opens or becomes active. Existing app data is not moved and the schema is unchanged.
+- Import is duplicate-safe. A shared file is removed only after the database save succeeds.
+- Selected text is limited to the server's 600 UTF-16 code-unit limit; longer selections receive an explanation rather than being silently truncated.
 
-## Device checks still required
+## Signing and device checks
 
-With paid-team signing, let Xcode create profiles for the host and `i8r4him.Alltag.Translation`. Install the app, find it in Settings → Apps → Default Apps → Translation (the precise path can vary by OS), then select text in another app and choose Translate. Verify the provider receives the selected text. Simulator compilation alone does not prove default-app registration or provisioning.
+The host and extension require `group.i8r4him.Alltag` in their provisioning profiles. Automatic signing may register the App Group; if Xcode reports it missing, enable the same App Group on both targets using the paid team.
 
-## Availability and App Review research
+Test on iPhone: select a short sentence in Safari, choose Translate, allow cloud translation, check the streamed answer, save a word, open Alltag → Memory → Saved, and verify that word appears once. Try replacement in an editable text field. Repeat in light/dark mode and with no connection. Simulator builds and stub tests do not prove signed extension launch, Keychain access, App Group provisioning or live-network access on a device.
 
-Apple documents default translation apps from iOS/iPadOS 18.4 onward. Its general documentation and UAE iPhone guide do not state an EU-only restriction; this is evidence that the feature is not described as EU-only, not a guarantee for every region. Confirm on the intended devices/storefronts.
+## Availability and review research
 
-App Review guideline 4.4 requires extension functionality to be accurately described and prohibits marketing, advertising and in-app purchases inside extensions. The development panel must be replaced by the working translation experience before submission. Cloud processing consent and shared Memory handling remain work for #246/#247.
+Apple documents default translation apps from iOS/iPadOS 18.4 onward. Its general documentation and UAE iPhone guide do not state an EU-only restriction; this is not a guarantee for every region. Confirm on the intended devices/storefronts.
+
+App Review guideline 4.4 requires accurate disclosure of extension functionality and prohibits marketing, advertising and in-app purchases in extensions.
 
 Sources checked 13 Nov 2026:
 - https://developer.apple.com/documentation/translationuiprovider/preparing-your-app-to-be-the-default-translation-app

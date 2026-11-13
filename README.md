@@ -28,7 +28,7 @@ iPad, Apple Watch and Apple Vision Pro are **not** supported. The design referen
 ## Architecture
 Plain SwiftUI with `@Observable` models and services injected through the SwiftUI environment. No third-party libraries in the app (SwiftLint is a development tool only).
 
-**App target plus a Translation UI Provider extension foundation** (#245). App folders are Xcode synchronized folders. `AlltagTranslation/` is embedded under `Alltag.app/Extensions/`; its development panel receives selected text but does not translate yet. See `AlltagTranslation/README.md` for the remaining work before shipping.
+**App target plus a Translation UI Provider extension** (#245–247). App folders are Xcode synchronized folders. `AlltagTranslation/` is embedded under `Alltag.app/Extensions/`; it streams translations with cloud consent, supports replacement in editable fields, and queues saved translations or words for Memory through an App Group inbox. See `AlltagTranslation/README.md` for the device checks.
 ```
 Alltag/                                   ← repo root
 ├─ Alltag.xcodeproj
