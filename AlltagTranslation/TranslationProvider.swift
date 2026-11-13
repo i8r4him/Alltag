@@ -95,7 +95,7 @@ struct TranslationPanel: View {
             Text("Selected text is sent through Alltag’s server to OpenAI to translate and explain it. Only text you select is sent.")
                 .foregroundStyle(.secondary)
             Button("Allow cloud translation", systemImage: "translate") { cloudAllowed = true }
-                .buttonStyle(.glassProminent)
+                .buttonStyle(.primary)
         }
     }
 
@@ -113,7 +113,7 @@ struct TranslationPanel: View {
                 Button(saved.contains(translation) ? "Saved for Memory" : "Save to Memory", systemImage: "bookmark") {
                     if let result = model.result { save(german: result.german, meaning: result.english, key: translation) }
                 }
-                .buttonStyle(.glassProminent)
+                .buttonStyle(.primary)
                 .disabled(model.isLoading || model.failed || saved.contains(translation))
                 if saved.contains(translation) {
                     Text("Open Alltag to find it in Memory.").font(.caption).foregroundStyle(.secondary)
@@ -124,7 +124,7 @@ struct TranslationPanel: View {
                 if context.allowsReplacement && !model.isLoading && !model.failed {
                     Button("Replace selection", systemImage: "arrow.triangle.2.circlepath") {
                         context.finish(translation: AttributedString(translation))
-                    }.buttonStyle(.glassProminent)
+                    }.buttonStyle(.glass)
                 }
             }
             .padding(Spacing.cardLarge)
