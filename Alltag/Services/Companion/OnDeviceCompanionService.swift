@@ -110,6 +110,19 @@ final class OnDeviceCompanionService: CompanionService {
 
 /// The prompts sent to the model, kept apart so tests can check them.
 enum CompanionPrompt {
+    /// How a spoken sentence is judged by Apple's cloud model. The same rules as the
+    /// `check-german` Edge Function: real mistakes only, nothing about punctuation or the topic.
+    static let checkInstructions = """
+        You are Alltag, a warm and precise German tutor. A learner SAID the sentence below out loud; \
+        speech recognition wrote it down. Judge only that sentence, as spoken German. \
+        Use "fix" for a real mistake in grammar, word order, case, gender, verb form, preposition or word choice; \
+        "note" when it is correct but a native speaker would clearly say it differently; \
+        "good" when it is correct and natural. When in doubt between "good" and "note", choose "good". \
+        Do not correct punctuation, capital letters or spelling that sounds the same: they come from the speech \
+        recognition. Do not invent mistakes, never change the meaning, and do not judge what the learner talks about. \
+        Write the title and note in British English, simply for A1 and A2 learners. Quote German with „…“.
+        """
+
     static func feedback(on sentence: String, in scenario: Scenario, replyingTo previous: String?) -> String {
         var lines = [
             "Situation: \(scenario.title). The learner's goal: \(scenario.goal)."
