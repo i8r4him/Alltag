@@ -21,8 +21,8 @@ struct PrivateCloudLanguageModelClient: LanguageModelClient {
     /// (it needs the App Store Small Business Program). Without the entitlement in
     /// the signing profile, the model still reports itself available, and a request
     /// then stops the process instead of throwing. To switch it on, do both:
-    /// 1. set `CODE_SIGN_ENTITLEMENTS = Alltag/Alltag.entitlements` for the app target
-    ///    (Signing & Capabilities › + Capability does the same), and
+    /// 1. add `com.apple.developer.private-cloud-compute` (Boolean, true) to
+    ///    `Alltag/Alltag.entitlements` (Signing & Capabilities › + Capability does the same), and
     /// 2. set this to `true`.
     static let isEntitled = false
 
