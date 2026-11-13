@@ -16,6 +16,7 @@ final class TranslateModel {
     var input: String
     private(set) var result: TranslationResult?
     private(set) var isTranslating = false
+    private(set) var hasAttempted = false
     /// Word-by-word, tones and examples are being added.
     private(set) var isExplaining = false
     /// Languages to download before this text can be translated on device.
@@ -26,10 +27,10 @@ final class TranslateModel {
     private let translation: any TranslationService
     private let voice: any VoiceService
 
-    /// Starts with `text`, or the first sample if there is none.
+    /// Starts empty unless another screen supplied text.
     init(text: String?, services: AppServices) {
         let trimmed = text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        input = trimmed.isEmpty ? MockTranslations.all[0].english : trimmed
+        input = trimmed
         translation = services.translation
         voice = services.voice
     }
@@ -69,23 +70,37 @@ final class TranslateModel {
             return
         }
         isTranslating = true
+        defer { isTranslating = false }
+        hasAttempted = true
         missingLanguages = nil
         do {
-            result = try await translation.translate(text)
+            let translated = try await translation.translate(text) { partial in
+                guard !Task.isCancelled, self.input.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
+                self.result = partial
+            }
+            guard !Task.isCancelled, input.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
+            result = translated
         } catch TranslationServiceError.needsDownload(let source, let target) {
+            guard !Task.isCancelled, input.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
             result = nil
             missingLanguages = (source, target)
         } catch {
+            guard !Task.isCancelled, input.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
             result = nil
         }
-        isTranslating = false
 
         guard let plain = result, !plain.isExplained else { return }
         isExplaining = true
         let explained = await translation.explain(plain)
         // Only if the learner hasn't typed something else meanwhile.
-        if result == plain { result = explained }
+        if !Task.isCancelled, input.trimmingCharacters(in: .whitespacesAndNewlines) == text, result == plain { result = explained }
         isExplaining = false
+    }
+
+    func clearResult() {
+        result = nil
+        missingLanguages = nil
+        hasAttempted = false
     }
 
     /// The languages finished downloading: try again.

@@ -37,6 +37,7 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
 - **Style:** `@Observable` models, services injected through `AppServices` in the environment. Screens only talk to service **protocols** (`SpeechService`, `VoiceService`, `CompanionService`, …). A new live implementation goes behind the existing protocol, and the mock stays for previews and tests.
 - The default actor isolation is `MainActor`. Audio callbacks and other off-main work need explicitly `nonisolated` / `@Sendable` code.
 - **British English** in all UI text and comments ("practise", "colour").
+- Translate streams OpenAI's answer section by section. The Translate screen does not substitute Apple's translation when cloud use is unavailable.
 - **Text:** all UI text goes in `Alltag/Resources/Localizable.xcstrings`. German content and other non-localised strings use `Text(verbatim:)`, so they don't create catalog keys. Don't build `Text` with `+`; it's deprecated.
 - **Tests:** Swift Testing (`import Testing`, `@Test`, `#expect`).
   - Tests never touch the network, microphone or speaker; inject stubs.
@@ -136,4 +137,4 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 - `Alltag/Services/<Area>/`: service protocols, mocks and live implementations.
 - `Alltag/DesignSystem/`: tokens and shared components. Use them rather than raw values.
 - `Alltag/Intents/`: App Intents (Siri, Shortcuts, Spotlight).
-- `supabase/`: the Edge Functions (`realtime-session` for the voice, `check-german` for the mistake check) and migrations, owned by the maintainer. See `supabase/README.md`.
+- `supabase/`: the Edge Functions (`realtime-session` for the voice, `check-german` for the mistake check, `translate` for translating) and migrations, owned by the maintainer. See `supabase/README.md`.

@@ -38,12 +38,23 @@ private struct TranslateContent: View {
     @State private var toast: ToastMessage?
     /// Set to ask the system to download the translation languages.
     @State private var download: TranslationSession.Configuration?
+    @State private var translationTask: Task<Void, Never>?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                if !model.hasAttempted && model.result == nil {
+                    TranslateWelcome { model.input = $0 }
+                        .padding(.vertical, Spacing.card)
+                }
                 sourceCard
-                resultCard
+                Button("Translate", systemImage: "translate") {
+                    translationTask?.cancel()
+                    translationTask = Task { await model.translate() }
+                }
+                .buttonStyle(.primary)
+                .disabled(model.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.isTranslating)
+                if model.hasAttempted || model.result != nil { resultCard }
                 if let result = model.result {
                     VStack(alignment: .leading, spacing: 24) {
                         if !result.words.isEmpty { WordByWordSection(words: result.words) }
@@ -53,7 +64,7 @@ private struct TranslateContent: View {
                                 Task { await model.listen(to: german) }
                             }
                         }
-                        if model.isExplaining {
+                        if model.isExplaining || model.isTranslating {
                             Label("Adding word by word, tone and examples…", systemImage: "sparkles")
                                 .textRole(.meta)
                                 .foregroundStyle(.secondary)
@@ -62,20 +73,14 @@ private struct TranslateContent: View {
                     }
                     .padding(.top, 14)
                 }
-                Text("Concept: select text in any app → Translate → Alltag to land here.")
-                    .textRole(.caption)
-                    .foregroundStyle(.tertiary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 10)
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 32)
             .animation(.easeOut(duration: 0.25), value: model.result)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(.screenBackground)
+        .skyBackground()
+        .fontDesign(.rounded)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) { languageCapsule }
@@ -90,11 +95,12 @@ private struct TranslateContent: View {
             }
             download = nil
         }
-        .task(id: model.input) {
-            // Wait until typing pauses before translating.
-            try? await Task.sleep(for: .milliseconds(300))
-            guard !Task.isCancelled else { return }
-            await model.translate()
+        .task {
+            if !model.input.isEmpty { await model.translate() }
+        }
+        .onChange(of: model.input) { _, _ in
+            translationTask?.cancel()
+            model.clearResult()
         }
         .toast($toast)
     }
@@ -105,7 +111,9 @@ private struct TranslateContent: View {
         HStack(spacing: 4) {
             Text(model.sourceLabel)
                 .padding(.horizontal, 10)
-            Button("Swap languages", systemImage: "arrow.left.arrow.right") { model.swap() }
+            Button("Swap languages", systemImage: "arrow.left.arrow.right") {
+                model.swap()
+            }
                 .labelStyle(.iconOnly)
                 .font(.footnote.weight(.semibold))
                 .frame(width: 32, height: 32)
@@ -133,7 +141,7 @@ private struct TranslateContent: View {
         .padding(.horizontal, 18)
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
     }
 
     private var resultCard: some View {
@@ -154,7 +162,7 @@ private struct TranslateContent: View {
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.resultCard, in: .rect(cornerRadius: Radius.card, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
     }
 
     private var resultActions: some View {
@@ -195,29 +203,13 @@ private struct TranslateContent: View {
                 }
                 .buttonStyle(.primaryCompact)
             }
+        } else if !model.hasAttempted {
+            Text("Type or paste text to translate.")
+                .foregroundStyle(.secondary)
         } else {
-            samples
-        }
-    }
-
-    private var samples: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Alltag can't translate this right now. Try one of these:")
+            Text("Translation is unavailable. Check your connection and cloud setting, then try again.")
                 .textRole(.bodySmall)
                 .foregroundStyle(.secondary)
-            ForEach(MockTranslations.all, id: \.english) { sample in
-                Button { model.use(sample) } label: {
-                    Text(verbatim: sample.english)
-                        .textRole(.bodySmall)
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(.leading)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(.controlFill, in: .rect(cornerRadius: 14, style: .continuous))
-                }
-                .buttonStyle(.card)
-            }
         }
     }
 }
