@@ -17,8 +17,6 @@ struct HomeView: View {
     @Query private var memoryItems: [MemoryItem]
     @Query private var sessions: [PracticeSession]
     @Query private var records: [SessionRecord]
-    // Temporary: the maintainer picks what Today's Focus is, then the others and the switcher go.
-    @AppStorage("focusKind") private var focusKind = 0
 
     private var name: String { profiles.first?.name ?? "" }
     private var newReadingWords: Int { FromYourDay.newReadingWords(in: memoryItems) }
@@ -29,10 +27,7 @@ struct HomeView: View {
                 TodayHero(words: memoryItems.count, minutesSpoken: sessions.minutesSpoken, level: level,
                           onStart: { appState.present(.conversation(.freeTalk)) }, onProgress: { appState.open(.progress) })
 
-                    VStack(alignment: .trailing, spacing: 8) {
-                        focusSwitcher
-                        FocusCard(focus: focus, isDone: focus.isDone(in: records)) { appState.present(focus.route) }
-                    }
+                    FocusCard(focus: focus, isDone: focus.isDone(in: records)) { appState.present(focus.route) }
                     TodaySituations(situations: SituationCatalogue.suggestions(),
                                    onShowAll: { appState.open(.situations) },
                                    onSelect: { appState.present(.situation($0.id)) })
@@ -81,24 +76,8 @@ struct HomeView: View {
 
     private var level: Level { profiles.first?.level ?? .a1 }
 
-    /// Today's Focus, of the kind being tried.
-    private var focus: TodayFocus {
-        let mistake = memoryItems.filter { $0.kind == .mistake && !$0.mistakeOriginal.isEmpty }.max { $0.createdAt < $1.createdAt }
-        return .make(TodayFocus.Kind(rawValue: focusKind) ?? .situation, level: level, latestMistake: mistake)
-    }
-
-    private var focusSwitcher: some View {
-        let count = TodayFocus.Kind.allCases.count
-        return HStack(spacing: 10) {
-            Button { focusKind = (focusKind + count - 1) % count } label: { Image(systemName: "chevron.left") }
-            Text(verbatim: "\(focusKind + 1) / \(count)").monospacedDigit()
-            Button { focusKind = (focusKind + 1) % count } label: { Image(systemName: "chevron.right") }
-        }
-        .font(.footnote.weight(.semibold))
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .glassEffect(.regular, in: .capsule)
-    }
+    /// Today's Focus: the situation of the day.
+    private var focus: TodayFocus { .make() }
 
     /// The learner's initial, or the person symbol before a name is set.
     @ViewBuilder

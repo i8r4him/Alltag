@@ -121,8 +121,8 @@ struct RootView: View {
             if let situation = SituationCatalogue.situation(id: id, in: modelContext) {
                 ConversationView(scenario: situation.scenario, level: profiles.first?.level ?? .a1)
             }
-        case .sixtySeconds(let topic):
-            SixtySecondsView(level: profiles.first?.level ?? .a1, topic: topic.flatMap { TalkTopics.topic(id: $0) })
+        case .sixtySeconds:
+            SixtySecondsView(level: profiles.first?.level ?? .a1)
         case .activity(let id):
             ActivityView(activity: id == .mistakes
                          ? MistakePractice.activity(in: modelContext) ?? MockActivities.mistakes

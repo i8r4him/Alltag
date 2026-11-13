@@ -12,8 +12,6 @@ import SwiftUI
 /// minute, and then sees what they said with the mistakes fixed.
 struct SixtySecondsView: View {
     var level: Level = .a1
-    /// The topic to talk about; random when `nil`.
-    var topic: TalkTopic?
     @Environment(\.services) private var services
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
@@ -44,7 +42,7 @@ struct SixtySecondsView: View {
             }
         }
         .onAppear {
-            if model == nil { model = SixtySecondsModel(services: services, level: level, topic: topic) }
+            if model == nil { model = SixtySecondsModel(services: services, level: level) }
         }
         // Saved when the minute ends, and again whenever more fixes have arrived.
         .onChange(of: model?.revision) { model?.save(in: modelContext) }

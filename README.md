@@ -163,7 +163,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ HomeHeader.swift              Avatar
 │  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Minutes · Level (→ Progress), BigNumber (1.2k from 1,000)
 │  │  │  ├─ FocusCard.swift               Today's Focus: title, line, artwork and the big button; "Done today" once its session is saved
-│  │  │  ├─ TodayFocus.swift              what the Focus is today: a situation, the topic of the day or the latest mistake (#174)
+│  │  │  ├─ TodayFocus.swift              what the Focus is today: the situation of the day (#174)
 │  │  │  ├─ FromYourDayList.swift         briefing card, Today actions and Beyond row
 │  │  │  ├─ SixtySecondsCard.swift        big "60 seconds", text and play button → 60 seconds of talking
 │  │  │  └─ BeyondRow.swift

@@ -34,7 +34,6 @@ struct FocusCard: View {
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .environment(\.locale, focus.isGerman ? Locale(identifier: "de") : .current)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .combine)
                 ScenarioArtwork(systemImage: focus.systemImage)
@@ -42,10 +41,10 @@ struct FocusCard: View {
             }
             GlassEffectContainer {
                 Button(action: action) {
-                    Label {
-                        Text(isDone ? "Do it again" : focus.buttonTitle)
-                    } icon: {
-                        Image(systemName: isDone ? "arrow.counterclockwise" : focus.buttonImage)
+                    if isDone {
+                        Label("Do it again", systemImage: "arrow.counterclockwise")
+                    } else {
+                        Label("Start talking", systemImage: "waveform")
                     }
                 }
                 .buttonStyle(.primary)
@@ -88,7 +87,7 @@ struct ScenarioArtwork: View {
 }
 
 #Preview {
-    FocusCard(focus: .make(.situation, level: .b1)) {}
+    FocusCard(focus: .make()) {}
         .padding(Spacing.screen)
         .background(.screenBackground)
 }
