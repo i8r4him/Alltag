@@ -27,14 +27,12 @@ struct TranslateModelTests {
         return TranslateModel(text: text, services: services)
     }
 
-    @Test("Without text it starts with the first sample, English to German")
-    func defaultSample() async {
+    @Test("Without text it starts empty")
+    func defaultInput() async {
         let model = makeModel(nil)
-        #expect(model.input == "Can we move the appointment to tomorrow?")
+        #expect(model.input.isEmpty)
         await model.translate()
-        #expect(!model.sourceIsGerman)
-        #expect(String(localized: model.resultLabel) == "German")
-        #expect(model.resultText == "Können wir den Termin auf morgen verschieben?")
+        #expect(model.result == nil)
     }
 
     @Test("German text translates to English")
@@ -48,7 +46,7 @@ struct TranslateModelTests {
 
     @Test("Swapping puts the translation in the field and flips the direction")
     func swap() async {
-        let model = makeModel()
+        let model = makeModel("Can we move the appointment to tomorrow?")
         await model.translate()
         model.swap()
         await model.translate()
@@ -80,7 +78,7 @@ struct TranslateModelTests {
     func save() async throws {
         let container = try AlltagStore.makeContainer(inMemory: true)
         let context = container.mainContext
-        let model = makeModel()
+        let model = makeModel("Can we move the appointment to tomorrow?")
         await model.translate()
 
         #expect(model.toggleSave(in: context))

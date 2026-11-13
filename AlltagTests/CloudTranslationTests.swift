@@ -20,6 +20,37 @@ struct CloudTranslationTests {
          "examples": [{"german": "Die Apotheke ist geschlossen.", "other": "The pharmacy is closed."}]}
         """.utf8)
 
+    @Test("Streaming delivers the translation before the explanation")
+    func streamsSections() async throws {
+        var updates: [TranslationResult] = []
+        let service = CloudTranslationService(isAllowed: { true }, stream: { body, receive in
+            #expect(body["stream"] == "true")
+            func send(_ delta: String) throws {
+                let data = try JSONSerialization.data(withJSONObject: ["type": "response.output_text.delta", "delta": delta])
+                try receive("data: " + (String(data: data, encoding: .utf8) ?? ""))
+            }
+            try send(#"{"german":"Guten Tag","other":"Good day","source_is_german":false,"#)
+            try send(#""note":"","words":[{"word":"der Tag","grammar":"noun","meaning":"day"}],"#)
+            try send(#""tones":[],"examples":[]}"#)
+            try receive(#"data: {"type":"response.completed"}"#)
+        })
+        let result = try await service.translate("Good day") { updates.append($0) }
+        #expect(updates.first?.german == "Guten Tag")
+        #expect(updates.first?.words.isEmpty == true)
+        #expect(updates.last?.words.first?.word == "der Tag")
+        #expect(result?.words.first?.word == "der Tag")
+    }
+
+    @Test("Streaming without cloud permission does not use Apple Translation")
+    func streamingNeedsConsent() async {
+        let service = CloudTranslationService(isAllowed: { false }, stream: { _, _ in
+            Issue.record("Cloud request must not run without permission")
+        })
+        await #expect(throws: RealtimeServiceError.self) {
+            try await service.translate("Good day") { _ in }
+        }
+    }
+
     @Test("With cloud use allowed, the server translates and explains in one answer")
     func serverTranslates() async throws {
         var sent: [[String: String]] = []

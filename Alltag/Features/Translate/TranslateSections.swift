@@ -17,24 +17,24 @@ struct WordByWordSection: View {
             VStack(spacing: 0) {
                 ForEach(Array(words.enumerated()), id: \.offset) { index, word in
                     if index > 0 { Divider().padding(.leading, 18) }
-                    HStack(alignment: .firstTextBaseline, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(verbatim: word.word).textRole(.cardTitle)
-                            Text(verbatim: word.grammar).textRole(.meta).foregroundStyle(.tertiary)
-                        }
-                        Spacer(minLength: 8)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(verbatim: word.word)
+                            .font(.headline)
+                            .foregroundStyle(.accent)
                         Text(verbatim: word.meaning)
-                            .textRole(.bodySmall)
+                            .font(.body)
+                        Text(verbatim: word.grammar)
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.trailing)
                     }
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(Spacing.card)
                     .accessibilityElement(children: .combine)
                 }
             }
-            .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
         }
+        .fontDesign(.rounded)
     }
 }
 
@@ -46,30 +46,30 @@ struct ToneSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionHeader("Tone").padding(.horizontal, 4)
-            Text(verbatim: note)
+            if !note.isEmpty { Text(verbatim: note)
                 .textRole(.bodySmall)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 4)
+            }
             VStack(spacing: 0) {
                 ForEach(Array(tones.enumerated()), id: \.offset) { index, tone in
                     if index > 0 { Divider().padding(.leading, 18) }
-                    HStack(alignment: .firstTextBaseline, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text(label(for: tone.tone))
                             .textRole(.meta)
                             .fontWeight(.semibold)
-                            .foregroundStyle(tone.tone == .neutral ? AnyShapeStyle(.accent) : AnyShapeStyle(.tertiary))
-                            .frame(width: 62, alignment: .leading)
+                            .foregroundStyle(.accent)
                         Text(verbatim: tone.german)
                             .textRole(.body)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 14)
+                    .padding(Spacing.card)
                     .accessibilityElement(children: .combine)
                 }
             }
-            .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
         }
+        .fontDesign(.rounded)
     }
 
     private func label(for tone: TranslationResult.ToneVariant.Tone) -> LocalizedStringResource {
@@ -105,7 +105,7 @@ struct InContextSection: View {
                     .padding(.horizontal, 18)
                     .padding(.vertical, 14)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(.surface, in: .rect(cornerRadius: Radius.innerCard, style: .continuous))
+                    .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
                     .contentShape(.rect(cornerRadius: Radius.innerCard, style: .continuous))
                 }
                 .buttonStyle(.card)

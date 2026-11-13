@@ -14,18 +14,22 @@ import OSLog
 /// on-device service (Apple's Translation) translates instead.
 final class CloudTranslationService: TranslationService {
     typealias Send = (_ body: [String: String]) async throws -> Data
+    typealias Stream = (_ body: [String: String], _ onLine: (String) throws -> Void) async throws -> Void
 
     private let onDevice: any TranslationService
     private let isAllowed: () -> Bool
     private let send: Send
+    private let stream: Stream
     private let logger = Logger(subsystem: "i8r4him.Alltag", category: "Translation")
 
     init(onDevice: any TranslationService = SystemTranslationService(),
          isAllowed: @escaping () -> Bool = { UserDefaults.standard.bool(forKey: "usesCloudForPro") },
-         send: @escaping Send = { try await SupabaseRealtimeClient.shared.post(to: "translate", body: $0) }) {
+         send: @escaping Send = { try await SupabaseRealtimeClient.shared.post(to: "translate", body: $0) },
+         stream: @escaping Stream = { try await SupabaseRealtimeClient.shared.stream(to: "translate", body: $0, onLine: $1) }) {
         self.onDevice = onDevice
         self.isAllowed = isAllowed
         self.send = send
+        self.stream = stream
     }
 
     func translate(_ text: String) async throws -> TranslationResult? {
@@ -42,9 +46,24 @@ final class CloudTranslationService: TranslationService {
         return try await onDevice.translate(text)
     }
 
-    /// The server's answer is already explained; an on-device one is explained on device.
+    func translate(_ text: String, onUpdate: @escaping (TranslationResult) -> Void) async throws -> TranslationResult? {
+        guard isAllowed() else { throw RealtimeServiceError.unavailable }
+        var parser = TranslationStream()
+        var last: TranslationResult?
+        try await stream([
+            "text": text, "language": Self.learnerLanguage, "stream": "true"
+        ]) { line in
+            if let partial = try parser.receive(line), partial != last {
+                last = partial
+                onUpdate(partial)
+            }
+        }
+        return try parser.finish()
+    }
+
+    /// The server supplies its own explanations.
     func explain(_ result: TranslationResult) async -> TranslationResult {
-        result.isExplained ? result : await onDevice.explain(result)
+        result
     }
 
     /// The learner's language by its English name ("English", "Arabic"), for the

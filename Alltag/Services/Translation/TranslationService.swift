@@ -17,12 +17,19 @@ enum TranslationServiceError: Error, Equatable {
 
 /// Translates between English and German with explanations.
 protocol TranslationService: AnyObject {
+    func translate(_ text: String, onUpdate: @escaping (TranslationResult) -> Void) async throws -> TranslationResult?
     /// The translation of `text`, or `nil` if it can't be translated.
     /// Works in both directions (English → German and German → English).
     /// The result may come without word-by-word, tones and examples; `explain` adds them.
     func translate(_ text: String) async throws -> TranslationResult?
     /// `result` with word-by-word, tones and examples added where possible.
     func explain(_ result: TranslationResult) async -> TranslationResult
+}
+
+extension TranslationService {
+    func translate(_ text: String, onUpdate: @escaping (TranslationResult) -> Void) async throws -> TranslationResult? {
+        try await translate(text)
+    }
 }
 
 /// Knows only the prototype's three samples; anything else returns `nil`.

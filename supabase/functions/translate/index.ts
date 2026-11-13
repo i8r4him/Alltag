@@ -111,6 +111,7 @@ Deno.serve(async (req) => {
   // Only letters and spaces, so the language name can't carry instructions.
   const language = clean(body.language, 40).replace(/[^\p{L} ]/gu, "") || "English";
   const level = clean(body.level, 2).toUpperCase();
+  const streaming = body.stream === "true";
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const [mine, everyone, developer] = await Promise.all([
@@ -142,6 +143,7 @@ Deno.serve(async (req) => {
       headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: MODEL,
+        stream: streaming,
         instructions: instructions(language),
         input,
         // A translation needs little thinking; low effort makes it several seconds quicker.
@@ -161,6 +163,15 @@ Deno.serve(async (req) => {
   if (!upstream.ok) {
     console.error("OpenAI translation failed", upstream.status, await upstream.text());
     return json({ error: "upstream" }, 502);
+  }
+  if (streaming && upstream.body) {
+    const { error: insertError } = await admin.from("translations").insert({ user_id: user.id });
+    if (insertError) console.error("Recording the translation failed", insertError);
+    // Forward OpenAI's typed events without buffering the completed answer.
+    // Non-streaming callers keep the original JSON response below.
+    return new Response(upstream.body, {
+      headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
+    });
   }
   const response = await upstream.json();
   const output = (response.output ?? [])

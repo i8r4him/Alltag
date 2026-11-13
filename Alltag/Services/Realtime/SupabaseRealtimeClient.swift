@@ -191,6 +191,30 @@ final class SupabaseRealtimeClient {
         }
     }
 
+    /// Reads a function's server-sent events as they arrive.
+    func stream(to function: String, body: [String: String], onLine: (String) throws -> Void) async throws {
+        let token = try await accessToken()
+        do {
+            try await stream(to: function, body: body, token: token, onLine: onLine)
+        } catch RealtimeServiceError.unauthorised {
+            try await stream(to: function, body: body, token: try await accessToken(rejected: token), onLine: onLine)
+        }
+    }
+
+    private func stream(to function: String, body: [String: String], token: String,
+                        onLine: (String) throws -> Void) async throws {
+        var request = try Self.request(to: SupabaseConfiguration.endpoint("functions/v1/\(function)"), body: body)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        let (bytes, response) = try await URLSession.shared.bytes(for: request)
+        guard let http = response as? HTTPURLResponse else { throw RealtimeServiceError.unavailable }
+        if http.statusCode == 401 { throw RealtimeServiceError.unauthorised }
+        guard http.statusCode == 200 else { throw RealtimeServiceError.unavailable }
+        for try await line in bytes.lines {
+            try Task.checkCancellation()
+            try onLine(line)
+        }
+    }
+
     private func call(_ function: String, body: [String: String], token: String) async throws -> Data {
         try Task.checkCancellation()
         let endpoint = try SupabaseConfiguration.endpoint("functions/v1/\(function)")
