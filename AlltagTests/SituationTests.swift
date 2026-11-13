@@ -37,6 +37,40 @@ struct SituationTests {
         #expect(first != SituationCatalogue.suggestions(on: tomorrow, calendar: calendar))
     }
 
+    @Test("The Focus situation changes every day, reaches every situation, and isn't among the suggestions")
+    func focus() throws {
+        let calendar = Calendar(identifier: .gregorian)
+        let start = try #require(calendar.date(from: DateComponents(year: 2026, month: 11, day: 13)))
+        let days = try (0..<SituationCatalogue.all.count).map { try #require(calendar.date(byAdding: .day, value: $0, to: start)) }
+        let focuses = days.map { SituationCatalogue.focus(on: $0, calendar: calendar) }
+
+        #expect(Set(focuses.map(\.id)).count == SituationCatalogue.all.count)
+        for day in days {
+            let suggestions = SituationCatalogue.suggestions(on: day, calendar: calendar)
+            #expect(suggestions.count == 4)
+            #expect(!suggestions.contains(SituationCatalogue.focus(on: day, calendar: calendar)))
+        }
+    }
+
+    @Test("Today's Focus is the situation of the day, and done once its session is saved today")
+    func todayFocus() throws {
+        let calendar = Calendar(identifier: .gregorian)
+        let today = try #require(calendar.date(from: DateComponents(year: 2026, month: 11, day: 13, hour: 9)))
+        let yesterday = try #require(calendar.date(byAdding: .day, value: -1, to: today))
+
+        let focus = TodayFocus.make(on: today, calendar: calendar)
+        let expected = SituationCatalogue.focus(on: today, calendar: calendar)
+        #expect(focus.route == .situation(expected.id))
+        #expect(focus.title == String(localized: expected.title))
+        #expect(focus != TodayFocus.make(on: yesterday, calendar: calendar))
+
+        let done = SessionRecord(kind: .conversation, title: focus.title, date: today)
+        let old = SessionRecord(kind: .conversation, title: focus.title, date: yesterday)
+        let other = SessionRecord(kind: .conversation, title: "Just talk", date: today)
+        #expect(focus.isDone(in: [done], on: today, calendar: calendar))
+        #expect(!focus.isDone(in: [old, other], on: today, calendar: calendar))
+    }
+
     @Test("A situation becomes a live-only conversation that tells the voice its role")
     func conversation() throws {
         let situation = try #require(SituationCatalogue.situation(id: "landlord"))

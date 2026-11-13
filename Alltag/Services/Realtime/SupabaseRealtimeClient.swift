@@ -117,17 +117,7 @@ final class SupabaseRealtimeClient {
         self.send = send
     }
 
-    func credentials(for context: RealtimeConversationContext) async throws -> RealtimeCredentials {
-        let token = try await accessToken()
-        do {
-            return try await issueCredentials(for: context, token: token)
-        } catch RealtimeServiceError.unauthorised {
-            let refreshed = try await accessToken(rejected: token)
-            return try await issueCredentials(for: context, token: refreshed)
-        }
-    }
-
-    private func accessToken(rejected: String? = nil) async throws -> String {
+    func accessToken(rejected: String? = nil) async throws -> String {
         try Task.checkCancellation()
         if let authentication { return try await authentication.value.access }
         if tokens == nil, let data = try store.load() {
@@ -174,12 +164,6 @@ final class SupabaseRealtimeClient {
         return updated
     }
 
-    private func issueCredentials(for context: RealtimeConversationContext, token: String) async throws -> RealtimeCredentials {
-        let body = ["scenario": context.scenario, "instructions": context.instructions]
-        let data = try await call("realtime-session", body: body, token: token)
-        return try JSONDecoder().decode(RealtimeCredentials.self, from: data)
-    }
-
     /// Calls one of the project's Edge Functions as the signed-in learner and
     /// returns its answer. Signs in again once when the token was rejected.
     func post(to function: String, body: [String: String]) async throws -> Data {
@@ -215,7 +199,7 @@ final class SupabaseRealtimeClient {
         }
     }
 
-    private func call(_ function: String, body: [String: String], token: String) async throws -> Data {
+    func call(_ function: String, body: [String: String], token: String) async throws -> Data {
         try Task.checkCancellation()
         let endpoint = try SupabaseConfiguration.endpoint("functions/v1/\(function)")
         var request = try Self.request(to: endpoint, body: body)

@@ -73,6 +73,17 @@ struct OpenAIRealtimeSessionTests {
         let format = try #require(input["format"] as? [String: Any])
         #expect(format["type"] as? String == "audio/pcm")
         #expect(format["rate"] as? Int == 24_000)
+        // The companion waits for a fixed silence, longer for beginners (A2 here).
+        let turns = try #require(input["turn_detection"] as? [String: Any])
+        #expect(turns["type"] as? String == "server_vad")
+        #expect(turns["silence_duration_ms"] as? Int == 2400)
+    }
+
+    @Test("Beginners get more time to think than advanced learners")
+    func thinkingPause() {
+        let pauses = Level.allCases.map(RealtimeConversationContext.thinkingPause)
+        #expect(pauses == pauses.sorted(by: >))
+        #expect(pauses.first ?? 0 > pauses.last ?? 0)
     }
 
     @Test("Authenticates with a bearer header and closes the transport on a setup error")

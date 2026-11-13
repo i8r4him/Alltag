@@ -133,6 +133,8 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 
 ## Project map (short)
 
+- `AlltagTranslation/`: ExtensionKit Translation UI Provider (#245–247), with cloud consent, streamed translation and optional replacement. Host and extension use `group.i8r4him.Alltag` for a file inbox; the app imports saved entries into its existing SwiftData store on activation. Do not move the database into the App Group or modify its schema for this handoff. Paid-team signing and a physical-device check are required for both targets.
+
 - `Alltag/App/`: entry point, `AppState`, `AppServices`, routing.
 - `Alltag/Features/<Screen>/`: views and their `@Observable` models.
 - `Alltag/Services/<Area>/`: service protocols, mocks and live implementations.
