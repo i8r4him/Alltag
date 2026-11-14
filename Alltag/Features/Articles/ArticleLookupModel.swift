@@ -122,8 +122,8 @@ final class ArticleLookupModel {
         saved = Set((answer?.nouns ?? []).filter { (try? ArticleMemory.isSaved($0, in: context)) == true }.map(\.id))
     }
 
-    func removeHistory(at offsets: IndexSet) {
-        history.remove(atOffsets: offsets)
+    func removeHistory(_ lookup: ArticleLookup) {
+        history.removeAll { $0.id == lookup.id }
         storeHistory()
     }
 

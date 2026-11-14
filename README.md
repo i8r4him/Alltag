@@ -62,6 +62,7 @@ Alltag/                                   ← repo root
 │  │     ├─ Indicators.swift              ProgressSegments, StrengthDots
 │  │     ├─ Toast.swift                   ToastView, .toast(_:)
 │  │     ├─ StateCard.swift               StateCard (a state in the Focus card's layout), CloudFailureCard
+│  │     ├─ HistorySheet.swift            things looked up before as glass cards on the sky (Translate, Articles)
 │  │     ├─ FlowLayout.swift              wrapping layout for chips
 │  │     └─ ComponentGallery.swift        previews of every component
 │  │
@@ -200,7 +201,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ TranslateResult.swift         the translation with Listen, Slowly, Copy, Share and the bookmark
 │  │  │  ├─ TranslateLoading.swift        while the translation and its details are on their way
 │  │  │  ├─ TranslateHistory.swift        the recent translations, kept in UserDefaults
-│  │  │  ├─ TranslateHistorySheet.swift   the history sheet: glass cards on the sky
+│  │  │  ├─ TranslateHistorySheet.swift   the history's cards, in the shared `HistorySheet`
 │  │  │  ├─ TranslateModel.swift          direction, swap, translating, why it failed, saving, the history
 │  │  │  └─ TranslateSections.swift       Word by word, Tone, In context: with symbols
 │  │  ├─ Memory/
@@ -230,7 +231,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ArticleTrainer.swift          the round's queue: a missed noun comes back, and first next time
 │  │  │  ├─ ArticleLookupCard.swift       the field; searching, not found, offline and other failure cards
 │  │  │  ├─ ArticleLookupModel.swift      the look-up, why it failed, what is saved, the history (UserDefaults)
-│  │  │  ├─ ArticleLookupHistory.swift    the toolbar's sheet of looked-up words
+│  │  │  ├─ ArticleLookupHistory.swift    the toolbar's sheet of looked-up words: cards in the shared `HistorySheet`
 │  │  │  ├─ ArticleWordCard.swift         a found noun like a dictionary entry, with the bookmark to save or unsave
 │  │  │  ├─ ArticleRules.swift            the clues as a grid of glass tiles (endings, -chen, compounds, the plural)
 │  │  │  ├─ ArticleRuleSheet.swift        a clue zoomed out of its tile: examples, "Next clue"

@@ -7,73 +7,39 @@
 
 import SwiftUI
 
-/// The words looked up before, newest first. Tap one to see it again
-/// without asking the server; swipe to remove it.
+/// The words looked up before, newest first, as glass cards on the sky, like
+/// Translate's history. Tap one to see it again without asking the server;
+/// press and hold to remove it, or clear them all.
 struct ArticleLookupHistory: View {
     let model: ArticleLookupModel
-    @Environment(\.dismiss) private var dismiss
-    @State private var isConfirmingClear = false
-    @State private var taps = 0
 
     var body: some View {
-        NavigationStack {
-            List {
-                ForEach(model.history) { lookup in
-                    Button {
-                        taps += 1
-                        model.show(lookup)
-                        dismiss()
-                    } label: {
-                        row(for: lookup)
+        HistorySheet(text: HistoryText(title: "Looked up", emptyTitle: "No words yet",
+                                       emptyDescription: "The words you look up appear here.",
+                                       clearQuestion: "Clear the words you looked up?"),
+                     items: model.history, onChoose: model.show, onRemove: model.removeHistory, onClear: model.clearHistory) { lookup in
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 6) {
+                    Label {
+                        Text(verbatim: lookup.query).lineLimit(1)
+                    } icon: {
+                        Image(systemName: "magnifyingglass")
                     }
-                    .tint(.primary)
+                    Spacer()
+                    Text(lookup.date, format: .relative(presentation: .named))
+                        .foregroundStyle(.tertiary)
                 }
-                .onDelete(perform: model.removeHistory)
-            }
-            .overlay {
-                if model.history.isEmpty {
-                    ContentUnavailableView("No words yet", systemImage: "clock.arrow.circlepath",
-                                           description: Text("The words you look up appear here."))
-                }
-            }
-            .navigationTitle("Looked up")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done", systemImage: "checkmark") { dismiss() }
-                }
-                if !model.history.isEmpty {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button("Clear", role: .destructive) { isConfirmingClear = true }
-                            .confirmationDialog("Clear the words you looked up?", isPresented: $isConfirmingClear,
-                                                titleVisibility: .visible) {
-                                Button("Clear all", role: .destructive) { model.clearHistory() }
-                            }
-                    }
-                }
-            }
-        }
-        .fontDesign(.rounded)
-        .sensoryFeedback(.impact(weight: .medium), trigger: taps)
-        .presentationDetents([.medium, .large])
-    }
-
-    private func row(for lookup: ArticleLookup) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.secondary)
                 Text(verbatim: lookup.nouns.map { "\($0.article.rawValue) \($0.word)" }.joined(separator: " · "))
-                    .font(.headline)
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.accent)
+                    .lineLimit(2)
                     .environment(\.locale, ArticleNounDetail.german)
                 Text(verbatim: lookup.nouns.map(\.meaning).joined(separator: " · "))
-                    .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                    .lineLimit(2)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            Text(lookup.date, format: .relative(presentation: .named))
-                .font(.footnote)
-                .foregroundStyle(.tertiary)
         }
-        .accessibilityElement(children: .combine)
     }
 }
