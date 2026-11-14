@@ -18,6 +18,7 @@ struct AppServices {
     let calendar: any CalendarService
     let notifications: any NotificationService
     var articles: any ArticleService = UnavailableArticleService()
+    var writing: any WritingService = MockWritingService()
     var realtime: any RealtimeConversationService = MockRealtimeConversationService()
 
     /// Real voice services, and the companion that checks sentences with OpenAI or on device.
@@ -30,6 +31,7 @@ struct AppServices {
             calendar: MockCalendarService(),
             notifications: MockNotificationService(),
             articles: CloudArticleService(),
+            writing: CloudWritingService(),
             realtime: liveRealtime()
         )
     }

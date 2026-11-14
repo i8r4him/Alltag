@@ -100,6 +100,7 @@ Translate and "How do I say …?" in the app. Text only.
 - `functions/realtime-session/index.ts`: the voice function. Deploy it with JWT verification on.
 - `functions/check-german/index.ts`: the sentence check. Deploy it with JWT verification on.
 - `functions/translate/index.ts`: translating. Deploy it with JWT verification on.
+- `functions/write/index.ts`: Learn › Write's tasks and corrections. Deploy it with JWT verification on.
 - `migrations/20261107200000_realtime_sessions.sql`: the session log used for the limits.
 - `migrations/20261111100000_realtime_developers.sql`: the accounts that skip the per-user limit.
 - `migrations/20261113100000_german_checks.sql`: the check log used for the limits.
@@ -108,3 +109,13 @@ Translate and "How do I say …?" in the app. Text only.
 ## Articles (`articles`)
 
 Authenticated OpenAI noun lookup (`action: lookup`, `text`) and random practice batches (`action: practice`, `level`, optional recent `exclude` words). Uses `ARTICLES_MODEL` (default `gpt-6-luna`) with low effort and strict noun JSON, no stored model responses. Shares the existing translation daily quotas and metadata table; no migration. No corpus, transcript or user text is stored by this function. App cloud consent is required. A new round generates ten records once; article taps use those records locally.
+
+## Writing (`write`)
+
+Learn › Write. Two actions, both with strict JSON and `store: false`; nothing the learner wrote is stored.
+
+- `{"action": "task", "level": "B1", "exclude": "<recent titles>"}` writes a new everyday task for the level: title, situation, recipient, register, three points, the word range, an SF Symbol and three or four phrases. It counts against the translation quota (`translations`).
+- `{"action": "check", "level": "B1", "task": "<the task>", "text": "<the learner's text>", "stream": "true"}` marks the text sentence by sentence (fix, note or good, with the correction), plus the corrected text, whether each point was covered and a short summary. It counts against the sentence-check quota (`german_checks`). With `stream`, OpenAI's events are forwarded so the app shows each sentence as it is done.
+- Models: `WRITE_TASK_MODEL` / `WRITE_TASK_EFFORT` (default `gpt-6-luna`, medium) and `WRITE_CHECK_MODEL` / `WRITE_CHECK_EFFORT` (default `gpt-6-luna`, high). Accounts in `realtime_developers` may pass `model` (`gpt-6-luna`, `gpt-6.1-terra`, `gpt-6.1-sol`) and `effort` to compare; the OpenAI project must allow that model.
+- Every non-streamed answer carries `usage` (model, effort, input, output and reasoning tokens), to compare cost.
+- No migration.

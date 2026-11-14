@@ -84,7 +84,7 @@ struct RootView: View {
         case .read:
             ReadView()
         case .write:
-            WriteView()
+            WriteView(level: profiles.first?.level ?? .a1)
         case .listen:
             ListenView()
         case .grammar:

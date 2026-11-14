@@ -114,30 +114,31 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 
 **Learn is the focus now** (`2 · Learn`, due 22 Nov). The idea that ties it together: everything the learner does in Learn feeds one loop. What they get wrong is saved to Fix your mistakes and comes back until they know it; every session is kept in Your sessions.
 
-Done on Learn: "How do I say …?" (**#304, in its PR:** it answers in place on Learn through `AskInPlace` and `AskModel`, asking the server only on send; the answer card grows under the field and its details open under it, the design the maintainer chose. The `.howToSay` route and `TranslateView(isAsking:)` are still there but Learn's field no longer opens them), Translate with OpenAI (streamed), Alltag as the default translation app (extension `AlltagTranslation/`), Fix your mistakes with the learner's own mistakes, Your sessions.
+Done on Learn: "How do I say …?" (#304, merged in #307: it answers in place on Learn through `AskInPlace` and `AskModel`, asking the server only on send. The `.howToSay` route and `TranslateView(isAsking:)` are still there but Learn's field no longer opens them), Translate with OpenAI (streamed), Alltag as the default translation app (extension `AlltagTranslation/`), Fix your mistakes with the learner's own mistakes, Your sessions.
 
-**Fix your mistakes has a real loop (#251, in its PR):** each answer moves the mistake in Memory through `ReviewSchedule` (pure, date passed in; right → 1, 3, 7, 14 days, then learned; wrong → a step back and due at once). Memory's own review should use the same function. The card shows only due mistakes, the practice (`MistakeRoundView`) never falls back to samples, and it zooms out of the card through a namespace `RootView` puts in the environment. The designs are chosen: the stack card with the quote, a flashcard the learner turns over and rates ("Not yet" / "I knew it"), and a before-and-after card per mistake at the end. Memory's "Start review" still runs sample questions; that is the Memory week.
+**Fix your mistakes has a real loop (#251, merged in #303):** each answer moves the mistake in Memory through `ReviewSchedule` (pure, date passed in; right → 1, 3, 7, 14 days, then learned; wrong → a step back and due at once). Memory's own review should use the same function. The card shows only due mistakes, the practice (`MistakeRoundView`) never falls back to samples, and it zooms out of the card through a namespace `RootView` puts in the environment. The designs are chosen: the stack card with the quote, a flashcard the learner turns over and rates ("Not yet" / "I knew it"), and a before-and-after card per mistake at the end. Memory's "Start review" still runs sample questions; that is the Memory week.
 
 The Learn features, **in this order**:
 1. **#252** Articles: **done** (#292, #294). A round of der, die, das, "Look up a word" with a history, and the clues as tiles. Its parts set the standard the other Learn screens follow (state cards, bookmark that saves and unsaves, medium haptics, zoom into sheets).
 1a. **#295** Translate in the Articles standard, put before Write by the maintainer: **#296** the screen (pair card with the welcome in its lower half, the big button above the keyboard, placeholders while loading, detail cards with symbols, a history; in its PR) and then **#297** the panel in other apps in the same look (in its PR; the designs are chosen). `AlltagTranslation/` is a plain group in the project, not a synchronized folder: a new file there needs a project change, so ask first.
-2. **#263** Write: a short task, corrected sentence by sentence. A shell today.
+2. **#263** Write (**in its PR**, #264–#268): a written set of six tasks per level (`WritingTasks+A/B/C.swift`, offline) plus "New task" from the server, both with phrases. The text is checked by the `write` Edge Function and streamed sentence by sentence (`WritingCheckStream`); fixes go to Fix your mistakes (`MemorySource.writing`) and the text to Your sessions (`PracticeKind.writing`). The correction has three designs behind a temporary "‹ n / 3 ›" switcher (`WritingDesignSwitcher`) until the maintainer picks one.
 3. **#269** Read: real-life texts, tap a word, check understanding. A shell today.
 4. **#275** Grammar: rules for every level, linked from the learner's mistakes. Works with 6 rules today.
 5. **#280** Listen: short spoken texts with questions, and dictation. A shell today. The one to hide and move to After launch if the week runs short.
 6. **#285** Polish: every state, light mode, one pass on the iPhone.
 
-**Open decisions (maintainer)**, with the agent's recommendation in each issue: written content, generated content or both (#264, #270); which voice for Listen (#280); Scan a letter in v1 or later (#274).
+**Open decisions (maintainer)**, with the agent's recommendation in each issue: written content, generated content or both for Read (#270; Write has both); which voice for Listen (#280); Scan a letter in v1 or later (#274).
 
 **Apple's cloud model (#259)** is in the code and switched off. The maintainer has enrolled in the App Store Small Business Program and waits for Apple to assign the entitlement. See `PrivateCloudLanguageModelClient.isEntitled` for how to switch it on.
 
-**Never tried on a real device:** the situation role-plays, the 60-second recording and "Listen to yourself", the thinking-time values (merged untested), the translation panel in other apps, "How do I say …?" with a real answer.
+**Never tried on a real device:** the situation role-plays, the 60-second recording and "Listen to yourself", the thinking-time values (merged untested), the translation panel in other apps, "How do I say …?" with a real answer, Write.
 
 **Not planned yet:** `3 · Memory` and `4 · Testing` have no issues (except #258, light mode). The old issues in `5 · Launch` (#51, #118, #161, #162, #163) are not sorted.
 
 **Decisions the maintainer has made**
 - Text features use `gpt-6-luna` (their choice, for cost). `CHECK_MODEL` and `TRANSLATE_MODEL` in Supabase's secrets switch it without a new build.
 - One OpenAI key for everything, restricted to the permissions it needs.
+- **Write must be high quality and exactly at the learner's level.** The maintainer wanted a stronger model than Luna and the prices of the others. The OpenAI project has no access to `gpt-6.1-terra` or `gpt-6.1-sol` yet (403 `model_not_found`), so `write` uses `gpt-6-luna` (tasks at medium effort, corrections at high). `WRITE_TASK_MODEL`, `WRITE_CHECK_MODEL` and the `*_EFFORT` secrets switch it without a new build.
 - Today's Focus is the situation of the day.
 - Sessions are kept until the learner deletes them. Only 60 seconds is recorded.
 - Own situations are a short form, not an AI-written scenario.

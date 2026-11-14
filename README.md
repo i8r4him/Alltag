@@ -129,6 +129,9 @@ Alltag/                                   ← repo root
 │  │  │  ├─ OnDeviceCompanionService.swift   Foundation Models: feedback on own sentences, debriefs
 │  │  │  ├─ PrivateCloudLanguageModelClient.swift   Apple's cloud model (Private Cloud Compute), light reasoning (#259)
 │  │  │  └─ CloudCompanionService.swift   sentences judged by Apple's cloud model, then OpenAI (check-german), then on device (#230, #259)
+│  │  ├─ Writing/
+│  │  │  ├─ WritingService.swift          WritingService, CloudWritingService (`write`), MockWritingService
+│  │  │  └─ WritingCheckStream.swift      hands on each corrected sentence as soon as it is complete (tested)
 │  │  ├─ Calendar/CalendarService.swift    CalendarService, CalendarEvent, MockCalendarService
 │  │  └─ Notifications/NotificationService.swift   NotificationService, MockNotificationService
 │  │
@@ -239,8 +242,13 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ArticleRuleSheet.swift        a clue zoomed out of its tile: examples, "Next clue"
 │  │  │  ├─ ArticleMemory.swift           wrong picks → Memory › Mistakes; looked-up nouns → Memory › Saved
 │  │  │  └─ Noun.swift                    Article, Noun
-│  │  ├─ Write/
-│  │  │  └─ WriteView.swift               picked task, tasks from daily life (Sie / du), useful phrases
+│  │  ├─ Write/                           (#263)
+│  │  │  ├─ WriteView.swift               today's task for the level, "New task" from the server, the written set
+│  │  │  ├─ WritingTask.swift             a task (situation, recipient, Sie / du, three points, phrases), the set's day pick
+│  │  │  ├─ WritingTasks+A/B/C.swift      the written set: six tasks per level, A1 to C1
+│  │  │  ├─ WriteModel.swift              writing, the check, saving to Your sessions and Fix your mistakes (tested)
+│  │  │  ├─ WritingSessionView.swift      the task card, phrases, the growing text field and word count, Check
+│  │  │  └─ WritingResultView.swift       the summary, the sentences (three designs on trial), corrected text, points
 │  │  ├─ Listen/
 │  │  │  └─ ListenView.swift              picked clip, speed, real situations
 │  │  ├─ Read/
@@ -274,7 +282,7 @@ Alltag/                                   ← repo root
 │  │  ├─ MockTranslations.swift           TR
 │  │  ├─ MockMemoryItems.swift            MEM
 │  │  ├─ MockReading.swift                Read screen: saved articles, texts from daily life
-│  │  ├─ MockWriteListen.swift            Write tasks and phrases, Listen clips
+│  │  ├─ MockWriteListen.swift            Listen clips
 │  │  ├─ MockActivities.swift             ACTS
 │  │  ├─ MockRules.swift                  RULES
 │  │  ├─ MockLevels.swift                 LEVELS
@@ -474,6 +482,7 @@ Learn › Articles, in Today's look. A glass hero card starts **a round**: ten n
 - **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. On-device conversations keep their scripted replies so each scenario reaches its goal.
 - **Live voice on iPhone:** OpenAI Realtime through the existing Supabase credential broker, with both speakers' captions. Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange.
 - **Translate:** OpenAI through Supabase when cloud use is allowed. The translation, words, tone and examples appear as they arrive. If cloud use is unavailable, the screen reports the error rather than showing an on-device translation.
+- **Write:** the written set (six tasks per level) works offline. "New task" and the correction ask OpenAI through the `write` function when cloud use is allowed; the sentences arrive one by one, and the fixes go to Fix your mistakes. The on-device model isn't used: it can't mark a whole text well enough.
 - **Simulated:** scripted companion replies & feedback, placement.
 - **Later:** see the framework table below.
 

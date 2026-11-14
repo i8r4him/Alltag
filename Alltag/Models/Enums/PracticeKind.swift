@@ -15,4 +15,15 @@ enum PracticeKind: String, Codable, CaseIterable, Sendable {
     case sixtySeconds
     /// Reviewing words or fixing mistakes.
     case review
+    /// Writing a text in Learn › Write.
+    case writing
+
+    /// The symbol next to a saved session.
+    var systemImage: String {
+        switch self {
+        case .sixtySeconds: "timer"
+        case .writing: "square.and.pencil"
+        case .conversation, .review: "waveform"
+        }
+    }
 }
