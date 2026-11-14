@@ -7,51 +7,21 @@
 
 import SwiftUI
 
-/// TEMPORARY (#296): the parts of Translate whose design is still open. Each
-/// has two to four options; the maintainer picks one with the switcher next to
+/// TEMPORARY (#296): the part of Translate whose design is still open. It
+/// has four options; the maintainer picks one with the switcher next to
 /// the part, and the others and this file are removed before the PR is merged.
 enum TranslateDesignPart: String, CaseIterable {
-    case start, input, button, result, details, loading, history
+    case start
 
     var key: String { "translate.design.\(rawValue)" }
 
-    var count: Int {
-        switch self {
-        case .start: 4
-        case .input: 3
-        case .button: 4
-        case .result: 3
-        case .details: 4
-        case .loading: 3
-        case .history: 2
-        }
-    }
+    var count: Int { 4 }
 
     /// Not localised: it never ships.
-    var name: String {
-        switch self {
-        case .start: "Empty start"
-        case .input: "Input"
-        case .button: "Translate button"
-        case .result: "Result"
-        case .details: "Details"
-        case .loading: "Loading"
-        case .history: "History"
-        }
-    }
+    var name: String { "Empty start" }
 
     /// What each option is, shown beside the switcher.
-    var options: [String] {
-        switch self {
-        case .start: ["Welcome card", "One merged card", "Prompts as chips", "Field only"]
-        case .input: ["Pair card", "Language bar", "Compact field"]
-        case .button: ["Below the card", "In the card", "Pinned at the bottom", "Round arrow"]
-        case .result: ["Circles", "Labelled row", "Listen + menu"]
-        case .details: ["Three cards", "Segmented", "Collapsible", "Tone chips"]
-        case .loading: ["Spinner", "Placeholder", "One by one"]
-        case .history: ["List", "Cards"]
-        }
-    }
+    var options: [String] { ["Welcome card", "One merged card", "Prompts as chips", "Field only"] }
 
     /// The stored choice, kept inside the part's range.
     func clamped(_ value: Int) -> Int { min(max(value, 1), count) }
@@ -60,13 +30,10 @@ enum TranslateDesignPart: String, CaseIterable {
 /// The temporary "‹ n / N ›" glass switcher for one part.
 struct DesignSwitcher: View {
     let part: TranslateDesignPart
-    /// Called after the choice changed, e.g. to preview a state that is otherwise brief.
-    var onChange: () -> Void = {}
     @AppStorage private var stored: Int
 
-    init(_ part: TranslateDesignPart, onChange: @escaping () -> Void = {}) {
+    init(_ part: TranslateDesignPart) {
         self.part = part
-        self.onChange = onChange
         _stored = AppStorage(wrappedValue: 1, part.key)
     }
 
@@ -100,7 +67,6 @@ struct DesignSwitcher: View {
         Button {
             // Wraps round: after the last option comes the first.
             stored = (selection - 1 + offset + part.count) % part.count + 1
-            onChange()
         } label: {
             Image(systemName: systemImage)
                 .font(.caption.weight(.bold))

@@ -49,26 +49,17 @@ private struct TranslateContent: View {
     @State private var taps = 0
     /// Set by swap: translate the new text once changing it has cleared the old result.
     @State private var translatesAfterSwap = false
-    /// The tone picked from the chips in the result; `nil` shows the first translation.
-    @State private var tone: TranslationResult.ToneVariant.Tone?
     @State private var isShowingHistory = false
     @Namespace private var transition
 
-    // TEMPORARY (#296): the design chosen for each part, and a look at the loading state.
+    // TEMPORARY (#296): the design chosen for the empty start.
     @AppStorage(TranslateDesignPart.start.key) private var startDesign = 1
-    @AppStorage(TranslateDesignPart.input.key) private var inputDesign = 1
-    @AppStorage(TranslateDesignPart.button.key) private var buttonDesign = 1
-    @AppStorage(TranslateDesignPart.result.key) private var resultDesign = 1
-    @AppStorage(TranslateDesignPart.details.key) private var detailsDesign = 1
-    @AppStorage(TranslateDesignPart.loading.key) private var loadingDesign = 1
-    @State private var isPreviewingLoading = false
-    @State private var previewTask: Task<Void, Never>?
 
     private var isEmpty: Bool { model.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     private var prompt: LocalizedStringResource { isAsking ? "How do I say …?" : "Type or paste text" }
     /// Nothing has been asked yet: the welcome, or whatever takes its place.
-    private var isStart: Bool { !isAsking && !model.hasAttempted && model.result == nil && !isPreviewingLoading }
-    private var isLoadingResult: Bool { isPreviewingLoading || (model.isTranslating && model.result == nil) }
+    private var isStart: Bool { !isAsking && !model.hasAttempted && model.result == nil }
+    private var isLoadingResult: Bool { model.isTranslating && model.result == nil }
 
     var body: some View {
         ScrollView {
@@ -77,28 +68,21 @@ private struct TranslateContent: View {
                     DesignSwitcher(.start)
                     if startDesign == 1 { TranslateWelcome(onChoose: use) }
                 }
-                DesignSwitcher(.input)
                 input
                 if isStart, startDesign == 3 { TranslatePromptChips(onChoose: use) }
-                if buttonDesign == 1 { translateButton }
-                DesignSwitcher(.button)
-                DesignSwitcher(.loading, onChange: previewLoading)
                 states
                 details
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 32)
             .animation(.easeOut(duration: 0.25), value: model.result)
-            .animation(.easeOut(duration: 0.25), value: isPreviewingLoading)
         }
         .scrollDismissesKeyboard(.interactively)
         .safeAreaInset(edge: .bottom) {
             // Like a message composer: the button stays above the keyboard.
-            if buttonDesign == 3 {
-                translateButton
-                    .padding(.horizontal, Spacing.screen)
-                    .padding(.vertical, 8)
-            }
+            translateButton
+                .padding(.horizontal, Spacing.screen)
+                .padding(.vertical, 8)
         }
         .skyBackground()
         .fontDesign(.rounded)
@@ -132,7 +116,6 @@ private struct TranslateContent: View {
             if !model.input.isEmpty { await model.translate() }
         }
         .onChange(of: model.input) { _, input in inputChanged(to: input) }
-        .onChange(of: model.result?.german) { _, _ in tone = nil }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
         .toast($toast)
     }
@@ -145,9 +128,8 @@ private struct TranslateContent: View {
 extension TranslateContent {
     /// The languages, the field and the swap, with the translation in the lower half.
     private var input: some View {
-        TranslateInputCard(design: inputDesign, text: $model.input, sourceLabel: model.sourceLabel,
-                           resultLabel: model.resultLabel, prompt: prompt, isFocused: $isFieldFocused,
-                           button: inlineButton, onSwap: swap, onEdit: { taps += 1 },
+        TranslateInputCard(text: $model.input, sourceLabel: model.sourceLabel, prompt: prompt,
+                           isFocused: $isFieldFocused, onSwap: swap, onEdit: { taps += 1 },
                            showsLower: isLoadingResult || model.result != nil || startDesign <= 2,
                            lower: { lower })
     }
@@ -156,13 +138,10 @@ extension TranslateContent {
     @ViewBuilder
     private var lower: some View {
         if isLoadingResult {
-            TranslateLoadingResult(design: loadingDesign, label: model.resultLabel)
-        } else if let text = shownText {
-            VStack(alignment: .leading, spacing: 12) {
-                DesignSwitcher(.result)
-                TranslateResultBlock(design: resultDesign, label: model.resultLabel, text: text,
-                                     isSaved: model.isSaved(in: savedTranslations), tones: toneChoice, handlers: handlers)
-            }
+            TranslateLoadingResult(label: model.resultLabel)
+        } else if let text = model.resultText {
+            TranslateResultBlock(label: model.resultLabel, text: text,
+                                 isSaved: model.isSaved(in: savedTranslations), handlers: handlers)
         } else if isStart, startDesign == 2 {
             TranslateWelcomeContent(onChoose: use)
         } else {
@@ -170,49 +149,19 @@ extension TranslateContent {
         }
     }
 
-    private var buttonTitle: LocalizedStringResource { isAsking ? "Say it in German" : "Translate" }
-    private var buttonImage: String { isAsking ? "quote.bubble.fill" : "translate" }
-    private var canTranslate: Bool { !isEmpty && !model.isTranslating }
-
     private var translateButton: some View {
-        Button(action: translate) {
-            Label { Text(buttonTitle) } icon: { Image(systemName: buttonImage) }
+        Button(isAsking ? "Say it in German" : "Translate", systemImage: isAsking ? "quote.bubble.fill" : "translate") {
+            translate()
         }
         .buttonStyle(.primary)
-        .disabled(!canTranslate)
+        .disabled(isEmpty || model.isTranslating)
     }
-
-    /// The button inside the card, for the designs that put it there.
-    private var inlineButton: TranslateInlineButton {
-        let shape: TranslateInlineButton.Shape = switch buttonDesign {
-        case 2: .capsule
-        case 4: .arrow
-        default: .none
-        }
-        return TranslateInlineButton(shape: shape, title: buttonTitle, systemImage: buttonImage,
-                                     isEnabled: canTranslate, action: translate)
-    }
-
-    /// The tones as chips in the result: only when the translation is the German side.
-    private var toneChoice: TranslateToneChoice? {
-        guard detailsDesign == 4, !model.sourceIsGerman, let result = model.result, !result.tones.isEmpty else { return nil }
-        return TranslateToneChoice(tones: result.tones, note: result.note, selection: $tone)
-    }
-
-    /// The German of the tone picked from the chips, if one is.
-    private var tonedGerman: String? {
-        guard toneChoice != nil, let tone else { return nil }
-        return model.result?.tones.first { $0.tone == tone }?.german
-    }
-
-    private var shownText: String? { tonedGerman ?? model.resultText }
 
     private var handlers: TranslateResultHandlers {
         TranslateResultHandlers { slowly in
-            let german = tonedGerman ?? model.result?.german ?? ""
-            Task { await model.listen(to: german, slowly: slowly) }
+            Task { await model.listen(slowly: slowly) }
         } copy: {
-            UIPasteboard.general.string = shownText
+            UIPasteboard.general.string = model.resultText
             toast = ToastMessage(text: "Copied", systemImage: "doc.on.doc.fill")
         } toggleSave: {
             let saved = model.toggleSave(in: modelContext)
@@ -239,18 +188,13 @@ extension TranslateContent {
     /// Word by word, tone and in context, and what is still on its way.
     @ViewBuilder
     private var details: some View {
-        if isPreviewingLoading {
-            TranslateLoadingDetails(design: loadingDesign, pending: TranslateSection.allCases)
-                .padding(.top, 14)
-        } else if let result = model.result {
+        if let result = model.result {
             VStack(alignment: .leading, spacing: Spacing.grid) {
-                DesignSwitcher(.details)
-                TranslateDetails(design: detailsDesign, result: result, hidesTone: toneChoice != nil) { german in
+                TranslateDetails(result: result) { german in
                     Task { await model.listen(to: german) }
                 }
                 if model.isExplaining || model.isTranslating {
-                    TranslateLoadingDetails(design: loadingDesign,
-                                            pending: TranslateSection.allCases.filter { $0.isEmpty(in: result) })
+                    TranslateLoadingDetails(pending: TranslateSection.allCases.filter { $0.isEmpty(in: result) })
                 }
             }
             .padding(.top, 14)
@@ -306,16 +250,6 @@ extension TranslateContent {
         translationTask?.cancel()
         isFieldFocused = false
         model.show(lookup)
-    }
-
-    /// TEMPORARY (#296): shows the loading state for three seconds, since the real one is brief.
-    private func previewLoading() {
-        previewTask?.cancel()
-        isPreviewingLoading = true
-        previewTask = Task {
-            try? await Task.sleep(for: .seconds(3))
-            if !Task.isCancelled { isPreviewingLoading = false }
-        }
     }
 }
 

@@ -133,7 +133,7 @@ struct TranslateModelTests {
         await model.translate()
         let later = makeModel()
         #expect(later.history.lookups.map(\.input) == ["Ich mache jetzt Feierabend."])
-        later.history.remove(at: [0])
+        later.history.lookups.first.map(later.history.remove)
         #expect(makeModel().history.lookups.isEmpty)
         await model.translate()
         model.history.clear()

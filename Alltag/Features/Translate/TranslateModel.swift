@@ -151,8 +151,8 @@ final class TranslateModel {
         await voice.speak(german, rate: slowly ? .slow : .normal)
     }
 
-    func listen(to german: String, slowly: Bool = false) async {
-        await voice.speak(german, rate: slowly ? .slow : .normal)
+    func listen(to german: String) async {
+        await voice.speak(german, rate: .normal)
     }
 
     // MARK: Saving

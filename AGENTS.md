@@ -116,7 +116,7 @@ Done on Learn: "How do I say …?", Translate with OpenAI (streamed), Alltag as 
 
 The Learn features, **in this order**:
 1. **#252** Articles: **done** (#292, #294). A round of der, die, das, "Look up a word" with a history, and the clues as tiles. Its parts set the standard the other Learn screens follow (state cards, bookmark that saves and unsaves, medium haptics, zoom into sheets).
-1a. **#295** Translate in the Articles standard, put before Write by the maintainer: **#296** the screen (in its PR: each part has two to four designs behind a temporary switcher, `TranslateDesign.swift`; the maintainer picks on the iPhone, then the rest and the switchers are removed) and then **#297** the panel in other apps in the same look (needs the iPhone).
+1a. **#295** Translate in the Articles standard, put before Write by the maintainer: **#296** the screen (in its PR: the designs are chosen except the empty start, which still has four behind a temporary switcher, `TranslateDesign.swift`, to remove once the maintainer picks) and then **#297** the panel in other apps in the same look (needs the iPhone).
 2. **#263** Write: a short task, corrected sentence by sentence. A shell today.
 3. **#269** Read: real-life texts, tap a word, check understanding. A shell today.
 4. **#275** Grammar: rules for every level, linked from the learner's mistakes. Works with 6 rules today.

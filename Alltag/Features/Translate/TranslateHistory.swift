@@ -7,7 +7,6 @@
 
 import Foundation
 import Observation
-import SwiftUI
 
 /// A text the learner translated, with everything that came back, so the
 /// history can show it again without asking the server.
@@ -48,11 +47,6 @@ final class TranslationHistory {
         lookups.removeAll { $0.id == lookup.id }
         lookups.insert(lookup, at: 0)
         lookups = Array(lookups.prefix(Self.limit))
-        store()
-    }
-
-    func remove(at offsets: IndexSet) {
-        lookups.remove(atOffsets: offsets)
         store()
     }
 
