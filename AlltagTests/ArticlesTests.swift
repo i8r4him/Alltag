@@ -80,7 +80,7 @@ struct ArticleFlowTests {
         #expect(items.count == 1)
         #expect(items.first?.mistakeOriginal == "der Wohnung")
         #expect(items.first?.context == "die Wohnung")
-        #expect(MistakePractice.activity(in: container.mainContext)?.questions.count == 1)
+        #expect(MistakePractice.round(in: container.mainContext).count == 1)
     }
 
     @Test("Lookup nouns save to Memory once and retain their article")

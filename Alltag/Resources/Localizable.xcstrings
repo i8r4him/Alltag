@@ -78,6 +78,16 @@
         }
       }
     },
+    "%lld of %lld fixed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld fixed"
+          }
+        }
+      }
+    },
     "%lld of %lld right first time" : {
       "localizations" : {
         "en" : {
@@ -111,7 +121,6 @@
     "%lld of 3 allowed" : {},
     "%lld percent" : {},
     "%lld seconds left" : {},
-    "%lld small fixes" : {},
     "%lld words and phrases, gathered from your days." : {},
     "%lld%% of the way to %@" : {
       "localizations" : {
@@ -145,6 +154,7 @@
       }
     },
     "^[%lld mistake](inflect: true)" : {},
+    "^[%lld mistake](inflect: true) to fix" : {},
     "^[%lld new word](inflect: true) from Safari" : {},
     "^[%lld phrase](inflect: true)" : {},
     "^[%lld sentence](inflect: true)" : {},
@@ -215,6 +225,7 @@
     "Adding word by word, tone and examples…" : {},
     "Advice for new learners of German" : {},
     "All" : {},
+    "All fixed for now" : {},
     "All rules" : {},
     "Allow" : {},
     "Allow %@" : {},
@@ -276,6 +287,9 @@
     "Authenticity on social media" : {},
     "Back" : {},
     "Back home" : {},
+    "Back in ^[%lld day](inflect: true)" : {},
+    "Back later today" : {},
+    "Back tomorrow" : {},
     "Based on your real conversations and rehearsals" : {},
     "Being a stranger" : {},
     "Being ill" : {},
@@ -321,6 +335,9 @@
     "Closing" : {},
     "Coffee on Sunday" : {},
     "Colours your companion and the app." : {},
+    "Come back" : {},
+    "Comes back" : {},
+    "Comes back next time" : {},
     "Comfortable, but not always precise" : {},
     "Coming soon" : {},
     "Coming up" : {},
@@ -375,6 +392,7 @@
     "Download the languages" : {},
     "Drinks" : {},
     "Due" : {},
+    "Each one comes back a little later, until you know it." : {},
     "Each one is optional. You can change them any time in Settings." : {},
     "Early bird or late sleeper?" : {},
     "Eating meat" : {},
@@ -410,8 +428,10 @@
     "First steps" : {},
     "First, what should we call you?" : {},
     "Fix" : {},
+    "Fix them" : {},
     "FIX YOUR MISTAKES" : {},
     "Fix your mistakes" : {},
+    "Fixed" : {},
     "Flat viewing" : {},
     "Fluent — I want polish" : {},
     "Focus" : {},
@@ -499,6 +519,7 @@
     "Learn" : {},
     "Learn from your day" : {},
     "Learn German through the life you already live." : {},
+    "Learned" : {},
     "Learning" : {},
     "Learning a language" : {},
     "Learning as an adult" : {},
@@ -641,6 +662,7 @@
     "Not quite. Look where the highlighted word sits in step 2." : {},
     "Not started" : {},
     "Not sure? Find out in one question" : {},
+    "Not yet" : {},
     "Note" : {},
     "Nothing to fix" : {},
     "Notice" : {},
@@ -651,7 +673,6 @@
     "On hold at the Bürgeramt" : {},
     "On Sunday" : {},
     "On-device intelligence" : {},
-    "One small fix" : {},
     "Online help is off" : {},
     "Online or in the shop?" : {},
     "Open Alltag to find it in Memory." : {},
@@ -714,6 +735,7 @@
     "Protecting the environment day to day" : {},
     "Public transport" : {},
     "Punctuality" : {},
+    "Put it right" : {},
     "Read" : {},
     "Reading in the digital age" : {},
     "Ready to review" : {},
@@ -835,6 +857,16 @@
     "Starts a one-minute exercise on your mistakes." : {},
     "Starts a short review of the words you saved in Alltag." : {},
     "Steady progress" : {},
+    "Step %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Step %1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "Still remembered 30 days after you met them" : {},
     "Stop" : {},
     "Strength" : {},
@@ -853,6 +885,7 @@
     "Talk with your companion" : {},
     "Tap a word" : {},
     "Tap for live voice" : {},
+    "Tap the word that’s wrong" : {},
     "Tap the words in order" : {},
     "Tap to fix it" : {},
     "Tap to see English" : {},
@@ -886,7 +919,11 @@
     "The limits of growth" : {},
     "The limits of tolerance" : {},
     "The news" : {},
+    "The next one comes back in ^[%lld day](inflect: true)." : {},
+    "The next one comes back later today." : {},
+    "The next one comes back tomorrow." : {},
     "The nouns didn't arrive" : {},
+    "The ones you missed come back next time." : {},
     "The plural is always die" : {},
     "The power of images" : {},
     "The price of convenience" : {},
@@ -972,6 +1009,7 @@
     "What I care about" : {},
     "What I like about my work" : {},
     "What I'm good at" : {},
+    "What should it be?" : {},
     "What surprised me in Germany" : {},
     "When this is off, the companion can't talk, and 60 seconds is checked on your iPhone. Recordings never leave your iPhone." : {},
     "Where to leave it" : {},
@@ -1002,10 +1040,9 @@
     "Wrong" : {},
     "Yesterday" : {},
     "You have 60 seconds. Say whatever comes to mind." : {},
+    "You know them all. New mistakes land here." : {},
     "You practised today. See you tomorrow." : {},
     "You practised: %@." : {},
-    "You said in a conversation · %@" : {},
-    "You wrote:" : {},
     "You're learning **German**. What do you speak already?" : {},
     "You're set, %@." : {},
     "You've reached your live voice limit for today. Keep practising on your iPhone." : {},
