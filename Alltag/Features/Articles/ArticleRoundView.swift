@@ -212,20 +212,23 @@ private struct ArticleOption: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
-                Text(verbatim: article.rawValue)
-                    .font(.system(size: articleSize, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
-                Group {
-                    switch state {
-                    case .right: Image(systemName: "checkmark.circle.fill").foregroundStyle(.success)
-                    case .wrong: Image(systemName: "xmark.circle.fill").foregroundStyle(.mistake)
-                    case .open, .dimmed: Image(systemName: "circle").opacity(0)
+            // The article alone decides the centre; the mark sits in the corner.
+            Text(verbatim: article.rawValue)
+                .font(.system(size: articleSize, weight: .bold, design: .rounded))
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, minHeight: minHeight)
+                .overlay(alignment: .topTrailing) {
+                    Group {
+                        switch state {
+                        case .right: Image(systemName: "checkmark.circle.fill").foregroundStyle(.success)
+                        case .wrong: Image(systemName: "xmark.circle.fill").foregroundStyle(.mistake)
+                        case .open, .dimmed: EmptyView()
+                        }
                     }
+                    .font(.title3)
+                    .padding(10)
+                    .transition(.scale.combined(with: .opacity))
                 }
-                .font(.title3)
-            }
-            .frame(maxWidth: .infinity, minHeight: minHeight)
             .background(background, in: shape)
             .overlay { shape.strokeBorder(border, lineWidth: 1.5) }
             // Interactive glass answers the touch itself, like the app's buttons.
@@ -291,57 +294,97 @@ private struct ArticleAnswerCard: View {
     }
 }
 
-/// The end of the round.
+/// The end of the round, laid out like the end of 60 seconds: what happened
+/// at the top, the nouns that went wrong on one glass card, and the big
+/// button for what comes next.
 private struct ArticleRoundDone: View {
     let model: ArticleRoundModel
     let onDone: () -> Void
     @Environment(AppState.self) private var appState
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Spacer()
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(.success)
-                .accessibilityHidden(true)
-            Text("\(model.rightFirstTime) of \(model.asked) right first time")
-                .textRole(.title2)
-                .accessibilityAddTraits(.isHeader)
-            Group {
-                if model.missedCount == 0 {
-                    Text("Every article right. Another round brings new nouns.")
-                } else {
-                    Text("The ones you missed are waiting in Fix your mistakes on Learn, and come first next time.")
-                }
-            }
-            .textRole(.body)
-            .foregroundStyle(.secondary)
-            Spacer()
-            VStack(spacing: 8) {
-                Button { model.start() } label: {
-                    Label("Another round", systemImage: "arrow.counterclockwise")
-                }
-                .buttonStyle(.primary)
-                if model.missedCount > 0 {
-                    Button { appState.present(.activity(.mistakes)) } label: {
-                        Text("Practise your mistakes").frame(maxWidth: .infinity)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(model.rightFirstTime) of \(model.asked) right first time")
+                        .font(.title2.weight(.bold))
+                        .accessibilityAddTraits(.isHeader)
+                    Group {
+                        if model.missed.isEmpty {
+                            Text("Every article right. Another round brings new nouns.")
+                        } else {
+                            Text("These are saved to Fix your mistakes and come first next time.")
+                        }
                     }
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.extraLarge)
-                    .tint(.primary)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 4)
+                .padding(.top, 24)
+
+                if model.missed.isEmpty {
+                    ScenarioArtwork(systemImage: "checkmark.seal.fill")
+                        .frame(width: 120, height: 120)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 24)
                 } else {
-                    Button(action: onDone) { Text("Done").frame(maxWidth: .infinity) }
-                        .buttonStyle(.bordered)
-                        .buttonBorderShape(.capsule)
-                        .controlSize(.extraLarge)
-                        .tint(.primary)
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(Array(model.missed.enumerated()), id: \.element.id) { index, noun in
+                            if index > 0 { Divider() }
+                            MissedNounRow(noun: noun)
+                        }
+                    }
+                    .padding(.horizontal, Spacing.cardLarge)
+                    .padding(.vertical, 6)
+                    .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
                 }
             }
-            .padding(.bottom, 8)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .scrollIndicators(.hidden)
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 12) {
+                if model.missed.isEmpty {
+                    Button { model.start() } label: { Text("Another round") }
+                        .buttonStyle(.primary)
+                    Button(action: onDone) { secondaryLabel("Done") }
+                        .buttonStyle(.glass)
+                } else {
+                    Button { appState.present(.activity(.mistakes)) } label: { Text("Practise your mistakes") }
+                        .buttonStyle(.primary)
+                    Button { model.start() } label: { secondaryLabel("Another round") }
+                        .buttonStyle(.glass)
+                }
+            }
+            .padding(.bottom, 12)
+        }
         .sensoryFeedback(.success, trigger: true)
+    }
+
+    /// The quieter button under the big one, as on 60 seconds.
+    private func secondaryLabel(_ title: LocalizedStringResource) -> some View {
+        Text(title)
+            .font(.headline)
+            .frame(maxWidth: .infinity, minHeight: 34)
+    }
+}
+
+/// A noun that went wrong: the right article in the theme colour, and what it means.
+private struct MissedNounRow: View {
+    let noun: Noun
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(verbatim: "\(noun.article.rawValue) \(noun.word)")
+                .font(.title3.weight(.semibold))
+                .environment(\.locale, Locale(identifier: "de"))
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text(verbatim: noun.meaning)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.trailing)
+        }
+        .padding(.vertical, 14)
+        .accessibilityElement(children: .combine)
     }
 }
 

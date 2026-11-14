@@ -52,6 +52,8 @@ final class ArticleRoundModel {
     var rightFirstTime: Int { trainer?.rightFirstTime ?? 0 }
     var asked: Int { trainer?.total ?? 0 }
     var missedCount: Int { trainer?.missed.count ?? 0 }
+    /// The nouns that went wrong this round, in the order they came.
+    var missed: [Noun] { trainer?.missed ?? [] }
 
     /// Asks the server for the round's nouns. Called again by "Try again".
     func start() {
