@@ -50,10 +50,9 @@ private struct TranslateContent: View {
     /// Set by swap: translate the new text once changing it has cleared the old result.
     @State private var translatesAfterSwap = false
     @State private var isShowingHistory = false
+    /// The screen has appeared before: text another screen supplied is translated only the first time.
+    @State private var hasOpened = false
     @Namespace private var transition
-
-    // TEMPORARY (#296): the design chosen for the empty start.
-    @AppStorage(TranslateDesignPart.start.key) private var startDesign = 1
 
     private var isEmpty: Bool { model.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     private var prompt: LocalizedStringResource { isAsking ? "How do I say …?" : "Type or paste text" }
@@ -64,12 +63,7 @@ private struct TranslateContent: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.grid) {
-                if isStart {
-                    DesignSwitcher(.start)
-                    if startDesign == 1 { TranslateWelcome(onChoose: use) }
-                }
                 input
-                if isStart, startDesign == 3 { TranslatePromptChips(onChoose: use) }
                 states
                 details
             }
@@ -113,7 +107,12 @@ private struct TranslateContent: View {
             download = nil
         }
         .task {
-            if !model.input.isEmpty { await model.translate() }
+            // Once, for text another screen supplied. Not again when the tab comes back:
+            // that would ask the server a second time and write the details afresh.
+            // Not awaited here either: leaving the tab cancels this task, not the translation.
+            guard !hasOpened else { return }
+            hasOpened = true
+            if !model.input.isEmpty { translationTask = Task { await model.translate() } }
         }
         .onChange(of: model.input) { _, input in inputChanged(to: input) }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
@@ -129,9 +128,7 @@ extension TranslateContent {
     /// The languages, the field and the swap, with the translation in the lower half.
     private var input: some View {
         TranslateInputCard(text: $model.input, sourceLabel: model.sourceLabel, prompt: prompt,
-                           isFocused: $isFieldFocused, onSwap: swap, onEdit: { taps += 1 },
-                           showsLower: isLoadingResult || model.result != nil || startDesign <= 2,
-                           lower: { lower })
+                           isFocused: $isFieldFocused, onSwap: swap, onEdit: { taps += 1 }, lower: { lower })
     }
 
     /// Under the field: the translation, the wait for it, or what stands there before.
@@ -142,7 +139,7 @@ extension TranslateContent {
         } else if let text = model.resultText {
             TranslateResultBlock(label: model.resultLabel, text: text,
                                  isSaved: model.isSaved(in: savedTranslations), handlers: handlers)
-        } else if isStart, startDesign == 2 {
+        } else if isStart {
             TranslateWelcomeContent(onChoose: use)
         } else {
             TranslateEmptyResult(label: model.resultLabel)

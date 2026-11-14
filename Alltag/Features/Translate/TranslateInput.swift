@@ -18,26 +18,18 @@ struct TranslateInputCard<Lower: View>: View {
     let onSwap: () -> Void
     /// The field was cleared or pasted into.
     let onEdit: () -> Void
-    let showsLower: Bool
     @ViewBuilder let lower: Lower
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    TranslateLanguageChip(label: sourceLabel, isResult: false)
-                    Spacer()
-                    // Without the lower half there is no line for the swap to sit on.
-                    if !showsLower { swapButton }
-                }
+                TranslateLanguageChip(label: sourceLabel, isResult: false)
                 TranslateField(text: $text, prompt: prompt, isFocused: isFocused, onEdit: onEdit)
             }
-            if showsLower {
-                Divider()
-                    .overlay { swapButton }
-                    .padding(.top, 22)
-                lower.padding(.top, 22)
-            }
+            Divider()
+                .overlay { swapButton }
+                .padding(.top, 22)
+            lower.padding(.top, 22)
         }
         .padding(Spacing.cardLarge)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))

@@ -18,14 +18,12 @@ struct TranslatePrompt: Identifiable {
 
     static let all = [
         TranslatePrompt(title: "Ask to meet later", systemImage: "calendar", text: "Could we meet half an hour later?"),
-        TranslatePrompt(title: "Understand a word", systemImage: "text.magnifyingglass", text: "Kündigungsfrist"),
-        TranslatePrompt(title: "Call in sick", systemImage: "cross.case", text: "I’m not feeling well and can’t come in today."),
-        TranslatePrompt(title: "Read a sign", systemImage: "signpost.right", text: "Betreten auf eigene Gefahr")
+        TranslatePrompt(title: "Understand a word", systemImage: "text.magnifyingglass", text: "Kündigungsfrist")
     ]
 }
 
-/// Where to start: what Translate does and two prompts to try, without a
-/// card around it, so it can stand on its own card or share the input's.
+/// Where to start: what Translate does and two prompts to try. It has no card
+/// of its own: it fills the input card's lower half until there is a translation.
 struct TranslateWelcomeContent: View {
     let onChoose: (String) -> Void
 
@@ -57,50 +55,11 @@ struct TranslateWelcomeContent: View {
     }
 
     private var prompts: some View {
-        ForEach(TranslatePrompt.all.prefix(2)) { prompt in
+        ForEach(TranslatePrompt.all) { prompt in
             Button { onChoose(prompt.text) } label: {
                 Label { Text(prompt.title) } icon: { Image(systemName: prompt.systemImage) }
             }
             .buttonStyle(.glass)
-        }
-    }
-}
-
-/// The welcome on its own glass card, in the Focus card's layout.
-struct TranslateWelcome: View {
-    let onChoose: (String) -> Void
-
-    var body: some View {
-        TranslateWelcomeContent(onChoose: onChoose)
-            .padding(Spacing.cardLarge)
-            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-    }
-}
-
-/// The prompts as a row of glass chips to scroll through, under the field.
-struct TranslatePromptChips: View {
-    let onChoose: (String) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Try one")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 4)
-            ScrollView(.horizontal) {
-                GlassEffectContainer(spacing: 8) {
-                    HStack(spacing: 8) {
-                        ForEach(TranslatePrompt.all) { prompt in
-                            Button { onChoose(prompt.text) } label: {
-                                Label { Text(prompt.title) } icon: { Image(systemName: prompt.systemImage) }
-                            }
-                            .buttonStyle(.glass)
-                        }
-                    }
-                }
-            }
-            .scrollIndicators(.hidden)
-            .scrollClipDisabled()
         }
     }
 }
