@@ -193,10 +193,16 @@ Alltag/                                   ← repo root
 │  │  │  ├─ FeedbackCard.swift
 │  │  │  └─ SummarySheet.swift            (#30)
 │  │  ├─ Translate/
-│  │  │  ├─ TranslateView.swift           the title, the welcome, the pair card, the big button, the state cards
-│  │  │  ├─ TranslateInput.swift          the pair card (both languages, swap between), Listen / Slowly / bookmark, the welcome
-│  │  │  ├─ TranslateModel.swift          direction, swap, translating, why it failed, saving
-│  │  │  └─ TranslateSections.swift       Word by word, Tone, In context: a card each, with symbols
+│  │  │  ├─ TranslateView.swift           the title, the parts in order, the toolbar's history, the state cards
+│  │  │  ├─ TranslateStart.swift          the welcome, the prompts and the empty lower half
+│  │  │  ├─ TranslateInput.swift          the languages, the field (clear, system Paste) and the swap
+│  │  │  ├─ TranslateResult.swift         the translation with Listen, Slowly, Copy, Share and the bookmark; tone chips
+│  │  │  ├─ TranslateLoading.swift        while the translation and its details are on their way
+│  │  │  ├─ TranslateHistory.swift        the recent translations, kept in UserDefaults
+│  │  │  ├─ TranslateHistorySheet.swift   the history sheet
+│  │  │  ├─ TranslateDesign.swift         TEMPORARY (#296): the "‹ n / N ›" switcher and the options per part
+│  │  │  ├─ TranslateModel.swift          direction, swap, translating, why it failed, saving, the history
+│  │  │  └─ TranslateSections.swift       Word by word, Tone, In context: with symbols
 │  │  ├─ Memory/
 │  │  │  ├─ MemoryView.swift              large title, segmented Words | Phrasebook, .searchable, review card
 │  │  │  ├─ MemoryFolders.swift           From your day · Saved · Mistakes folders (filter the list)
@@ -411,7 +417,7 @@ Native: `Speech` (`SpeechAnalyzer` + `SpeechTranscriber`, de-DE — the newer AP
 When **Pro features may use the cloud** is enabled, tapping the orb on an iPhone starts a live voice session. The app sends the scenario title, goal and learner level to the Supabase Edge Function and streams audio directly to OpenAI with the short-lived credential. The transcript stays in memory in the app. Finishing the conversation, leaving voice mode or reaching ten minutes closes the connection. With cloud use off or unavailable, the scripted conversation uses on-device speech.
 
 ### Translate
-Title "Translate" (`.inlineLarge`). A Focus-style welcome with two prompts, then one glass card with both languages: the text on top, a swap button on the line between, and the translation below with Listen, Slowly and a bookmark that saves to Memory and takes it out again ("Saved to" / "Removed from Memory" above the tab bar). Swapping translates the other way at once. The OpenAI translation appears first, followed by Word by word, Tone and In context as each section arrives, each on its own card with a symbol (the tones too: formal, neutral, casual). Offline, the cloud switched off, the daily limit, other failures and languages to download each get a `StateCard`. Translate, swap and the prompts give a medium haptic.
+Title "Translate" (`.inlineLarge`). A Focus-style welcome with two prompts, then one glass card with both languages: the text on top, a swap button on the line between, and the translation below with Listen, Slowly and a bookmark that saves to Memory and takes it out again ("Saved to" / "Removed from Memory" above the tab bar). Swapping translates the other way at once. The OpenAI translation appears first, followed by Word by word, Tone and In context as each section arrives, each on its own card with a symbol (the tones too: formal, neutral, casual). Offline, the cloud switched off, the daily limit, other failures and languages to download each get a `StateCard`. Translate, swap and the prompts give a medium haptic. The field has a clear button and the system's Paste button; the translation can be copied and shared. A toolbar button opens the recent translations (kept in `UserDefaults`) in a sheet that zooms out of it; one tap shows a translation again without a request. **While #296 is open**, each part (empty start, input, Translate button, result, details, loading, history) has two to four designs behind a temporary "‹ n / N ›" switcher next to it.
 
 ### Memory
 Segmented Words | Phrasebook.

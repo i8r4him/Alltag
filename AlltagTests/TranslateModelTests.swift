@@ -14,6 +14,14 @@ import Testing
 @MainActor
 struct TranslateModelTests {
     let voice = MockVoiceService()
+    /// The history's own store, so the tests leave the app's alone.
+    let defaults: UserDefaults
+
+    init() throws {
+        let suite = "TranslateModelTests.\(UUID().uuidString)"
+        defaults = try #require(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+    }
 
     func makeModel(_ text: String? = nil) -> TranslateModel {
         let services = AppServices(
@@ -24,7 +32,7 @@ struct TranslateModelTests {
             calendar: MockCalendarService(),
             notifications: MockNotificationService()
         )
-        return TranslateModel(text: text, services: services)
+        return TranslateModel(text: text, services: services, defaults: defaults)
     }
 
     @Test("Without text it starts empty")
@@ -100,5 +108,55 @@ struct TranslateModelTests {
         await model.listen(slowly: true)
         #expect(voice.spoken.map(\.text) == ["Ich mache jetzt Feierabend.", "Ich mache jetzt Feierabend."])
         #expect(voice.spoken.map(\.rate) == [.normal, .slow])
+    }
+
+    @Test("A translation is kept in the history, newest first, each text once")
+    func history() async {
+        let model = makeModel("Ich mache jetzt Feierabend.")
+        await model.translate()
+        model.input = "Can we move the appointment to tomorrow?"
+        await model.translate()
+        model.input = "Ich mache jetzt Feierabend."
+        await model.translate()
+        #expect(model.history.lookups.map(\.input) == ["Ich mache jetzt Feierabend.", "Can we move the appointment to tomorrow?"])
+        #expect(model.history.lookups.first?.translation == "I'm calling it a day.")
+
+        // Unknown text has no translation to keep.
+        model.input = "Where is the station?"
+        await model.translate()
+        #expect(model.history.lookups.count == 2)
+    }
+
+    @Test("The history survives a new model and can be removed from and cleared")
+    func historyIsStored() async {
+        let model = makeModel("Ich mache jetzt Feierabend.")
+        await model.translate()
+        let later = makeModel()
+        #expect(later.history.lookups.map(\.input) == ["Ich mache jetzt Feierabend."])
+        later.history.remove(at: [0])
+        #expect(makeModel().history.lookups.isEmpty)
+        await model.translate()
+        model.history.clear()
+        #expect(makeModel().history.lookups.isEmpty)
+    }
+
+    @Test("Showing a translation from the history needs no request and keeps its details")
+    func showFromHistory() async throws {
+        let model = makeModel("Can we move the appointment to tomorrow?")
+        await model.translate()
+        let lookup = try #require(model.history.lookups.first)
+        model.input = ""
+        model.clearResult()
+
+        model.show(lookup)
+        #expect(model.input == "Can we move the appointment to tomorrow?")
+        #expect(model.restoredInput == model.input)
+        #expect(model.result == lookup.result)
+        #expect(model.resultText == "Können wir den Termin auf morgen verschieben?")
+        #expect(!model.isTranslating)
+
+        // Typing something else afterwards clears it like any other result.
+        model.clearResult()
+        #expect(model.restoredInput == nil)
     }
 }

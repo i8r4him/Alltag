@@ -136,28 +136,117 @@ struct TranslateSectionRows: View {
     }
 }
 
-/// Word by word, tone and in context: each part on its own glass card, its symbol in the header.
+/// Word by word, tone and in context.
+///
+/// TEMPORARY (#296): four designs to choose from.
+/// 1 a glass card each; 2 one card with a segmented picker; 3 cards that fold,
+/// the first one open; 4 as 1, with the tones as chips in the result instead
+/// (`hidesTone`).
 struct TranslateDetails: View {
+    let design: Int
     let result: TranslationResult
+    /// The tones are shown as chips in the result card.
+    var hidesTone = false
     let onListen: (String) -> Void
 
-    private var sections: [TranslateSection] { TranslateSection.allCases.filter { !$0.isEmpty(in: result) } }
+    /// The segment shown in design 2; the first one until the learner picks.
+    @State private var picked: TranslateSection?
+    /// The cards unfolded in design 3; `nil` until the learner folds one: the first is open.
+    @State private var unfolded: Set<TranslateSection>?
+
+    private var sections: [TranslateSection] {
+        TranslateSection.allCases.filter { !$0.isEmpty(in: result) && !(hidesTone && $0 == .tone) }
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            ForEach(sections) { section in
-                VStack(alignment: .leading, spacing: 10) {
-                    Label { Text(section.title) } icon: {
-                        Image(systemName: section.systemImage).foregroundStyle(.accent)
-                    }
-                    .textRole(.sectionHeader)
-                    .padding(.horizontal, 4)
-                    TranslateSectionRows(section: section, result: result, onListen: onListen)
-                        .padding(.horizontal, Spacing.cardLarge)
-                        .padding(.vertical, 6)
-                        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-                }
+        VStack(alignment: .leading, spacing: design == 3 ? Spacing.grid : 24) {
+            switch design {
+            case 2: segmented
+            case 3: ForEach(sections) { folding($0) }
+            default: ForEach(sections) { stacked($0) }
             }
         }
+        .animation(.easeOut(duration: 0.3), value: sections)
+    }
+
+    private func header(_ section: TranslateSection) -> some View {
+        Label { Text(section.title) } icon: {
+            Image(systemName: section.systemImage).foregroundStyle(.accent)
+        }
+        .textRole(.sectionHeader)
+    }
+
+    private func rows(_ section: TranslateSection) -> some View {
+        TranslateSectionRows(section: section, result: result, onListen: onListen)
+            .padding(.horizontal, Spacing.cardLarge)
+            .padding(.vertical, 6)
+    }
+
+    // MARK: 1 · A card each
+
+    private func stacked(_ section: TranslateSection) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            header(section).padding(.horizontal, 4)
+            rows(section)
+                .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+        }
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+
+    // MARK: 2 · Segmented
+
+    @ViewBuilder
+    private var segmented: some View {
+        if let shown = sections.first(where: { $0 == picked }) ?? sections.first {
+            VStack(alignment: .leading, spacing: 4) {
+                if sections.count > 1 {
+                    Picker("Details", selection: Binding { shown } set: { picked = $0 }) {
+                        ForEach(sections) { Text($0.title).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, Spacing.card)
+                    .padding(.top, Spacing.card)
+                } else {
+                    header(shown)
+                        .padding(.horizontal, Spacing.cardLarge)
+                        .padding(.top, Spacing.card)
+                }
+                rows(shown)
+            }
+            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+            .sensoryFeedback(.selection, trigger: picked)
+        }
+    }
+
+    // MARK: 3 · Folding
+
+    private func folding(_ section: TranslateSection) -> some View {
+        let open = unfolded ?? Set(sections.prefix(1))
+        let isOpen = open.contains(section)
+        return VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeOut(duration: 0.25)) { unfolded = open.symmetricDifference([section]) }
+            } label: {
+                HStack {
+                    header(section)
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .rotationEffect(.degrees(isOpen ? 180 : 0))
+                        .accessibilityHidden(true)
+                }
+                .padding(.horizontal, Spacing.cardLarge)
+                .frame(minHeight: 60)
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityAddTraits(isOpen ? .isSelected : [])
+            if isOpen {
+                rows(section).transition(.opacity)
+            }
+        }
+        .glassEffect(.regular, in: .rect(cornerRadius: isOpen ? Radius.hero : 30, style: .continuous))
+        .sensoryFeedback(.impact(weight: .medium), trigger: isOpen)
     }
 }
