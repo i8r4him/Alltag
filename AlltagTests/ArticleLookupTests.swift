@@ -48,7 +48,7 @@ struct ArticleLookupTests {
 
         let restarted = ArticleLookupModel(defaults: defaults)
         #expect(restarted.history.map(\.query) == ["wohnung", "Haus"])
-        restarted.removeHistory(at: [0])
+        restarted.removeHistory(try #require(restarted.history.first))
         #expect(ArticleLookupModel(defaults: defaults).history.map(\.query) == ["Haus"])
     }
 
