@@ -86,10 +86,6 @@ struct TranslationExtensionTests {
             .paragraph("Wir suchen eine erfahrene Pflegefachkraft für unsere Station. Sie arbeiten in einem freundlichen Team."),
             .facts(["Unbefristeter Vertrag"])
         ])
-        #expect(layout.leadIndex == 2)
-        #expect(TranslationLayout.symbol(for: "ab 3.400 € brutto") == "banknote.fill")
-        #expect(TranslationLayout.symbol(for: "38,5 Stunden pro Woche") == "clock.fill")
-        #expect(TranslationLayout.symbol(for: "Hamburg") == "smallcircle.filled.circle")
     }
 
     @Test("A long block without line breaks is broken into paragraphs, losing nothing")

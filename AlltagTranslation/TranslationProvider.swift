@@ -37,10 +37,6 @@ struct TranslationPanel: View {
     @AppStorage("extensionCloudConsent") private var cloudAllowed = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    // TEMPORARY (#297): the designs still to choose between.
-    @AppStorage(PanelDesign.headers.key) private var headerDesign = 1
-    @AppStorage(PanelDesign.longText.key) private var longTextDesign = 1
-
     private var source: String {
         (context.inputText.map { String($0.characters) } ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
     }
@@ -51,7 +47,6 @@ struct TranslationPanel: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                PanelSwitcher(.headers)
                 top
                 if source.isEmpty {
                     ContentUnavailableView("No text selected", systemImage: "text.cursor",
@@ -96,26 +91,12 @@ struct TranslationPanel: View {
 // MARK: - The selected text and its translation
 
 extension TranslationPanel {
-    /// The selected text and the translation: on one card with a line between
-    /// them when the headers are chips (as in the app), otherwise a card each.
+    /// The selected text and its translation, on a card each.
     @ViewBuilder
     private var top: some View {
-        if headerDesign == 2 {
-            VStack(alignment: .leading, spacing: 18) {
-                PanelHeader(kind: .source, design: 2)
-                sourceText
-                if let translation {
-                    Divider()
-                    PanelHeader(kind: .translation, design: 2)
-                    translated(translation)
-                }
-            }
-            .panelCard()
-        } else {
-            PanelSection(kind: .source, design: headerDesign) { sourceText }
-            if let translation {
-                PanelSection(kind: .translation, design: headerDesign) { translated(translation) }
-            }
+        PanelSection(kind: .source) { sourceText }
+        if let translation {
+            PanelSection(kind: .translation) { translated(translation) }
         }
     }
 
@@ -138,8 +119,7 @@ extension TranslationPanel {
 
     private func translated(_ translation: String) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            PanelTranslationText(text: translation, design: longTextDesign)
-            if TranslationLayout(translation).isLong { PanelSwitcher(.longText) }
+            PanelTranslationText(text: translation)
             HStack(spacing: 10) {
                 Button {
                     UIPasteboard.general.string = translation
@@ -241,7 +221,7 @@ extension TranslationPanel {
     private var details: some View {
         if let result = model.result {
             if !result.words.isEmpty {
-                PanelSection(kind: .words, design: headerDesign) {
+                PanelSection(kind: .words) {
                     PanelRows(items: result.words) { word in
                         HStack(alignment: .center, spacing: 12) {
                             VStack(alignment: .leading, spacing: 4) {
@@ -259,7 +239,7 @@ extension TranslationPanel {
                 }
             }
             if !result.tones.isEmpty {
-                PanelSection(kind: .tone, design: headerDesign) {
+                PanelSection(kind: .tone) {
                     PanelRows(items: result.tones) { tone in
                         HStack(alignment: .firstTextBaseline, spacing: 12) {
                             Label { Text(tone.tone.panelTitle) } icon: { Image(systemName: tone.tone.panelSymbol) }
@@ -273,7 +253,7 @@ extension TranslationPanel {
                 }
             }
             if !result.examples.isEmpty {
-                PanelSection(kind: .context, design: headerDesign) {
+                PanelSection(kind: .context) {
                     PanelRows(items: result.examples) { example in
                         VStack(alignment: .leading, spacing: 4) {
                             Text(verbatim: example.german)
@@ -331,64 +311,18 @@ enum PanelKind {
     }
 }
 
-/// A card's header.
-///
-/// TEMPORARY (#297): three designs to choose from.
-/// 1 above the card, large, with the symbol in the accent colour (the app's detail headers);
-/// 2 a chip for the selected text and the translation (the app's pair card), a symbol and a headline for the details;
-/// 3 the symbol on a small tinted tile beside a headline, inside the card.
-struct PanelHeader: View {
-    let kind: PanelKind
-    let design: Int
-
-    var body: some View {
-        switch design {
-        case 2 where kind == .source || kind == .translation:
-            Text(kind.title)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(kind == .translation ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.primary))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 4)
-                .background(kind == .translation ? AnyShapeStyle(.accentFill) : AnyShapeStyle(.controlFill), in: .capsule)
-        case 2:
-            Label { Text(kind.title) } icon: { Image(systemName: kind.systemImage).foregroundStyle(.accent) }
-                .font(.headline)
-        case 3:
-            HStack(spacing: 10) {
-                Image(systemName: kind.systemImage)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.accent)
-                    .frame(width: 32, height: 32)
-                    .background(.accentFill.opacity(0.16), in: .rect(cornerRadius: 10, style: .continuous))
-                    .accessibilityHidden(true)
-                Text(kind.title).font(.headline)
-            }
-        default:
-            Label { Text(kind.title) } icon: { Image(systemName: kind.systemImage).foregroundStyle(.accent) }
-                .textRole(.sectionHeader)
-                .padding(.horizontal, 4)
-        }
-    }
-}
-
-/// A header and its glass card: the header above the card in design 1, inside it otherwise.
+/// A header above its glass card: large, with the symbol in the accent
+/// colour, like the detail headers of the app's Translate screen.
 struct PanelSection<Content: View>: View {
     let kind: PanelKind
-    let design: Int
     @ViewBuilder let content: Content
 
     var body: some View {
-        if design == 1 {
-            VStack(alignment: .leading, spacing: 10) {
-                PanelHeader(kind: kind, design: design)
-                content.panelCard()
-            }
-        } else {
-            VStack(alignment: .leading, spacing: 14) {
-                PanelHeader(kind: kind, design: design)
-                content
-            }
-            .panelCard()
+        VStack(alignment: .leading, spacing: 10) {
+            Label { Text(kind.title) } icon: { Image(systemName: kind.systemImage).foregroundStyle(.accent) }
+                .textRole(.sectionHeader)
+                .padding(.horizontal, 4)
+            content.panelCard()
         }
     }
 }
@@ -427,31 +361,28 @@ struct PanelBookmark: View {
     }
 }
 
-/// The translation: a short phrase large, a long text arranged for reading.
-///
-/// TEMPORARY (#297): three designs for long text to choose from.
-/// 1 a heading and plain paragraphs; 2 a heading, the facts as a list with
-/// symbols, then paragraphs; 3 a heading, the facts on one line, the first
-/// paragraph larger as a lead.
+/// The translation: a short phrase large; a long text in body size, arranged
+/// for reading with a heading, its facts and paragraphs.
 struct PanelTranslationText: View {
     let text: String
-    let design: Int
 
     var body: some View {
         let layout = TranslationLayout(text)
         Group {
             if layout.isLong {
                 VStack(alignment: .leading, spacing: 14) {
-                    ForEach(Array(layout.blocks.enumerated()), id: \.offset) { index, block in
+                    ForEach(Array(layout.blocks.enumerated()), id: \.offset) { _, block in
                         switch block {
                         case .heading(let heading):
                             Text(verbatim: heading).font(.title3.weight(.semibold))
                         case .facts(let facts):
-                            self.facts(facts)
+                            VStack(alignment: .leading, spacing: 4) {
+                                ForEach(Array(facts.enumerated()), id: \.offset) { _, fact in
+                                    Text(verbatim: fact).foregroundStyle(.secondary)
+                                }
+                            }
                         case .paragraph(let paragraph):
-                            Text(verbatim: paragraph)
-                                .font(design == 3 && index == layout.leadIndex ? .title3 : .body)
-                                .lineSpacing(3)
+                            Text(verbatim: paragraph).lineSpacing(3)
                         }
                     }
                 }
@@ -461,35 +392,6 @@ struct PanelTranslationText: View {
         }
         .textSelection(.enabled)
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    @ViewBuilder
-    private func facts(_ facts: [String]) -> some View {
-        switch design {
-        case 2:
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(Array(facts.enumerated()), id: \.offset) { _, fact in
-                    Label {
-                        Text(verbatim: fact)
-                    } icon: {
-                        Image(systemName: TranslationLayout.symbol(for: fact)).foregroundStyle(.accent)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-            .background(.controlFill, in: .rect(cornerRadius: 18, style: .continuous))
-        case 3:
-            Text(verbatim: facts.joined(separator: " · "))
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.secondary)
-        default:
-            VStack(alignment: .leading, spacing: 4) {
-                ForEach(Array(facts.enumerated()), id: \.offset) { _, fact in
-                    Text(verbatim: fact).foregroundStyle(.secondary)
-                }
-            }
-        }
     }
 }
 
@@ -517,71 +419,5 @@ extension View {
         frame(maxWidth: .infinity, alignment: .leading)
             .padding(Spacing.cardLarge)
             .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-    }
-}
-
-// MARK: - Temporary design switcher
-
-/// TEMPORARY (#297): the parts of the panel whose design is still open. The
-/// maintainer picks with the switcher; then the others and this are removed.
-enum PanelDesign: String {
-    case headers, longText
-
-    var key: String { "panel.design.\(rawValue)" }
-
-    /// Not localised: it never ships.
-    var name: String { self == .headers ? "Headers" : "Long text" }
-
-    var options: [String] {
-        switch self {
-        case .headers: ["Above the card", "Chips, one pair card", "Symbol tiles"]
-        case .longText: ["Heading and paragraphs", "Facts as a list", "Facts on a line, lead paragraph"]
-        }
-    }
-}
-
-/// The temporary "‹ n / N ›" glass switcher for one part.
-struct PanelSwitcher: View {
-    let part: PanelDesign
-    @AppStorage private var stored: Int
-
-    init(_ part: PanelDesign) {
-        self.part = part
-        _stored = AppStorage(wrappedValue: 1, part.key)
-    }
-
-    private var count: Int { part.options.count }
-    private var selection: Int { min(max(stored, 1), count) }
-
-    var body: some View {
-        HStack(spacing: 8) {
-            VStack(alignment: .leading, spacing: 0) {
-                Text(verbatim: part.name).font(.caption.weight(.semibold))
-                Text(verbatim: part.options[selection - 1]).font(.caption2).foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 8)
-            HStack(spacing: 2) {
-                step("chevron.left", by: -1)
-                Text(verbatim: "\(selection) / \(count)").font(.caption.weight(.semibold)).monospacedDigit()
-                step("chevron.right", by: 1)
-            }
-            .padding(.horizontal, 4)
-            .glassEffect(.regular.interactive(), in: .capsule)
-        }
-        .sensoryFeedback(.selection, trigger: stored)
-    }
-
-    private func step(_ systemImage: String, by offset: Int) -> some View {
-        Button {
-            stored = (selection - 1 + offset + count) % count + 1
-        } label: {
-            Image(systemName: systemImage)
-                .font(.caption.weight(.bold))
-                .foregroundStyle(.primary)
-                .frame(width: 32, height: 32)
-                .contentShape(.rect)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(verbatim: offset < 0 ? "Previous \(part.name) design" : "Next \(part.name) design"))
     }
 }

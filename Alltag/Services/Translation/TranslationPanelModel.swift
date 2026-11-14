@@ -81,24 +81,6 @@ struct TranslationLayout: Equatable {
         blocks = isLong ? Self.blocks(from: lines) : [.paragraph(text)]
     }
 
-    /// The first paragraph's place in `blocks`, for a design that sets it as a lead.
-    var leadIndex: Int? {
-        blocks.firstIndex { if case .paragraph = $0 { true } else { false } }
-    }
-
-    /// A symbol for a fact, guessed from what it mentions: money, time, or neither.
-    static func symbol(for fact: String) -> String {
-        let lowered = fact.lowercased()
-        if ["€", "$", "£", "eur", "brutto", "netto", "gehalt", "salary", "per hour", "pro stunde"].contains(where: lowered.contains) {
-            return "banknote.fill"
-        }
-        if ["uhr", "stunden", "hours", "vollzeit", "teilzeit", "full-time", "part-time", "woche", "week", "schicht", "shift"]
-            .contains(where: lowered.contains) {
-            return "clock.fill"
-        }
-        return "smallcircle.filled.circle"
-    }
-
     private static let longLength = 140
     private static let bullets = ["• ", "- ", "– ", "* ", "· "]
     private static let separators = [" | ", " · ", " • "]
