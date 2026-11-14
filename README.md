@@ -218,14 +218,11 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ActivityView.swift            the sample activities (recall, listen): toolbar, options, audio, done; sky and glass
 │  │  │  ├─ ActivityModel.swift           one pick per question, scoring, audio
 │  │  │  ├─ MistakePractice.swift         conversation fixes → Memory › Mistakes; which are due, when the next returns
-│  │  │  ├─ MistakeQuestion.swift         one mistake ready to ask: the two choices, the wrong word and its fix, the tiles (tested)
-│  │  │  ├─ MistakeRoundModel.swift       one answer per mistake, each moving it in Memory at once
+│  │  │  ├─ MistakeQuestion.swift         one mistake ready to ask: what was said, the correction, why
+│  │  │  ├─ MistakeRoundModel.swift       one answer per mistake, each moving it in Memory at once (tested)
 │  │  │  ├─ MistakeRoundView.swift        the practice, full screen, zooming out of the card; the explanation after each answer
-│  │  │  ├─ MistakeQuestionViews.swift    the ways to fix one: pick, tap the wrong word, build from tiles
-│  │  │  ├─ MistakeQuestionMore.swift     more ways: fill the gap, type what's missing, a flashcard
-│  │  │  ├─ MistakeRoundEnd.swift         what was fixed, what comes back and when
-│  │  │  ├─ MistakeRoundEndMore.swift     more ends: a ring, before and after, a timeline
-│  │  │  └─ MistakeDesign.swift           TEMPORARY (#251): the "‹ n / N ›" switcher for the question and the round's end
+│  │  │  ├─ MistakeQuestionViews.swift    the flashcard: what was said, "Show the fix", then "Not yet" or "I knew it"
+│  │  │  └─ MistakeRoundEnd.swift         before and after: what was said, the correction, when it comes back
 │  │  ├─ Articles/                        (#252)
 │  │  │  ├─ ArticlesView.swift            Learn › Articles: the round to start, "Look up a word", the clues
 │  │  │  ├─ ArticleRoundView.swift        a round full screen: the noun, der · die · das, the answer, the summary

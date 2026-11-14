@@ -93,7 +93,6 @@ struct MistakePracticeTests {
         let round = MistakeRoundModel(items: MistakePractice.round(in: context, at: now))
         #expect(round.questions.map(\.said) == ["Wann der Zug fährt ab?", "Ich habe es auf mein Handy."])
         #expect(round.questions.map(\.correction) == ["Wann fährt der Zug ab?", "Ich habe es auf meinem Handy."])
-        #expect(round.questions.allSatisfy { $0.options.count == 2 && $0.options[$0.correctIndex] == $0.correction })
         #expect(round.questions[1].explanation == "Dative after „auf“. Where? → dative.")
     }
 

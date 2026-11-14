@@ -160,8 +160,8 @@ private struct QuestionView: View {
 }
 
 /// An answer: green with a check when right, coral with a cross when picked
-/// and wrong, faded when neither. Fix your mistakes uses it too.
-struct OptionButton: View {
+/// and wrong, faded when neither.
+private struct OptionButton: View {
     let text: String
     let state: ActivityModel.OptionState
     let action: () -> Void

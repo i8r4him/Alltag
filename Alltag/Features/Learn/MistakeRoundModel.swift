@@ -9,7 +9,8 @@ import Foundation
 import Observation
 import SwiftData
 
-/// A round of Fix your mistakes: one answer per mistake. Each answer moves
+/// A round of Fix your mistakes: one answer per mistake (the learner turns
+/// the card over and says whether they knew the fix). Each answer moves
 /// the mistake in Memory at once (stronger and further away, or weaker and
 /// back next time), so leaving half-way loses nothing.
 @Observable
@@ -33,8 +34,8 @@ final class MistakeRoundModel {
     @ObservationIgnored private let items: [UUID: MemoryItem]
     @ObservationIgnored private let now: () -> Date
 
-    init(items: [MemoryItem], now: @escaping () -> Date = { .now }, shuffle: ([String]) -> [String] = { $0.shuffled() }) {
-        questions = items.map { MistakeQuestion(item: $0, shuffle: shuffle) }
+    init(items: [MemoryItem], now: @escaping () -> Date = { .now }) {
+        questions = items.map { MistakeQuestion(item: $0) }
         self.items = Dictionary(items.map { ($0.uuid, $0) }) { first, _ in first }
         self.now = now
     }

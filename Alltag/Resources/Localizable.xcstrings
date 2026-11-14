@@ -66,9 +66,7 @@
         }
       }
     },
-    "%lld back next time" : {},
     "%lld confident" : {},
-    "%lld learned" : {},
     "%lld min" : {},
     "%lld of %lld" : {
       "localizations" : {
@@ -336,8 +334,6 @@
     "Closing" : {},
     "Coffee on Sunday" : {},
     "Colours your companion and the app." : {},
-    "Come back" : {},
-    "Comes back" : {},
     "Comes back next time" : {},
     "Comfortable, but not always precise" : {},
     "Coming soon" : {},
@@ -423,7 +419,6 @@
     "Feel at home here — appointments, neighbours, work." : {},
     "Feminine endings" : {},
     "Fill it in" : {},
-    "Fill the gap" : {},
     "Films and series" : {},
     "Find the words" : {},
     "Finding my flat" : {},
@@ -434,7 +429,6 @@
     "FIX YOUR MISTAKES" : {},
     "Fix your mistakes" : {},
     "Fixed" : {},
-    "fixed" : {},
     "Flat viewing" : {},
     "Fluent — I want polish" : {},
     "Focus" : {},
@@ -453,7 +447,6 @@
     "From your mistakes" : {},
     "From your own German" : {},
     "Fruit and vegetables" : {},
-    "Gap" : {},
     "Gender-inclusive language" : {},
     "German" : {},
     "German bureaucracy" : {},
@@ -503,7 +496,6 @@
     "I'm done" : {},
     "If I were mayor" : {},
     "If I won the lottery" : {},
-    "In ^[%lld day](inflect: true)" : {},
     "In context" : {},
     "In progress" : {},
     "In the park" : {},
@@ -655,7 +647,6 @@
     "New situation" : {},
     "News and fake news" : {},
     "Next clue" : {},
-    "Next time" : {},
     "Next time, say" : {},
     "Next year" : {},
     "No courses, no streaks. Alltag learns from your day — what you read, write, plan and say — and turns it into a few minutes of practice." : {},
@@ -742,7 +733,6 @@
     "Protecting the environment day to day" : {},
     "Public transport" : {},
     "Punctuality" : {},
-    "Put it right" : {},
     "Read" : {},
     "Reading in the digital age" : {},
     "Ready to review" : {},
@@ -865,16 +855,6 @@
     "Starts a one-minute exercise on your mistakes." : {},
     "Starts a short review of the words you saved in Alltag." : {},
     "Steady progress" : {},
-    "Step %lld of %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Step %1$lld of %2$lld"
-          }
-        }
-      }
-    },
     "Still remembered 30 days after you met them" : {},
     "Stop" : {},
     "Strength" : {},
@@ -893,7 +873,6 @@
     "Talk with your companion" : {},
     "Tap a word" : {},
     "Tap for live voice" : {},
-    "Tap the word that’s wrong" : {},
     "Tap the words in order" : {},
     "Tap to fix it" : {},
     "Tap to see English" : {},
@@ -926,7 +905,6 @@
     "The last noun decides" : {},
     "The limits of growth" : {},
     "The limits of tolerance" : {},
-    "The missing word" : {},
     "The news" : {},
     "The next one comes back in ^[%lld day](inflect: true)." : {},
     "The next one comes back later today." : {},
@@ -966,7 +944,6 @@
     "To hear and answer you, Alltag sends your voice to OpenAI while you talk. You can turn this off in Settings." : {},
     "Today" : {},
     "Today's focus" : {},
-    "Tomorrow" : {},
     "Tone" : {},
     "Tourism" : {},
     "Town and country" : {},
@@ -1001,7 +978,6 @@
     "Type instead" : {},
     "Type or paste text" : {},
     "Type what you wanted to say" : {},
-    "Type what’s missing" : {},
     "Ukrainian" : {},
     "Understand a word" : {},
     "Universal basic income" : {},
@@ -1020,12 +996,10 @@
     "What I care about" : {},
     "What I like about my work" : {},
     "What I'm good at" : {},
-    "What should it be?" : {},
     "What surprised me in Germany" : {},
     "When this is off, the companion can't talk, and 60 seconds is checked on your iPhone. Recordings never leave your iPhone." : {},
     "Where to leave it" : {},
     "Where you can manage" : {},
-    "Which sounds natural?" : {},
     "Why" : {},
     "Why I'm learning" : {},
     "Widgets" : {},

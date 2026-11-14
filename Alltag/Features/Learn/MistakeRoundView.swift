@@ -93,61 +93,20 @@ struct MistakeRoundView: View {
     }
 }
 
-/// One mistake: the task, the way to fix it, and the explanation after the answer.
+/// One mistake as a flashcard, and the explanation after the answer.
 private struct MistakeQuestionView: View {
     let model: MistakeRoundModel
     @Environment(\.modelContext) private var context
-    // TEMPORARY (#251): the way the mistake is fixed.
-    @AppStorage(MistakeDesign.question.key) private var stored = 1
-
-    /// The chosen way, where this mistake allows it: a missing word can't be
-    /// tapped, a long sentence makes too many tiles, a rewording has no gap.
-    /// Then it is the two choices.
-    private var design: Int {
-        let question = model.question
-        return switch MistakeDesign.question.clamped(stored) {
-        case 2 where question.canSpot: 2
-        case 3 where question.canBuild: 3
-        case 4 where question.canFill: 4
-        case 5 where question.canType: 5
-        case 6: 6
-        default: 1
-        }
-    }
-
-    private var title: LocalizedStringResource {
-        switch design {
-        case 2: "Tap the word that’s wrong"
-        case 3: "Put it right"
-        case 4: "Fill the gap"
-        case 5: "Type what’s missing"
-        case 6: "Do you know the fix?"
-        default: "Which sounds natural?"
-        }
-    }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Eyebrow(title: "FIX YOUR MISTAKES", tone: .mistake)
-                    Text(title)
+                    Text("Do you know the fix?")
                         .textRole(.title2)
                         .accessibilityAddTraits(.isHeader)
                 }
-                // Not once answered: the answer belongs to the design it was given in.
-                if !model.hasAnswered { MistakeDesignSwitcher(.question) }
-                Group {
-                    switch design {
-                    case 2: MistakeSpot(question: model.question, onAnswer: answer)
-                    case 3: MistakeBuild(question: model.question, onAnswer: answer)
-                    case 4: MistakeFill(question: model.question, onAnswer: answer)
-                    case 5: MistakeType(question: model.question, onAnswer: answer)
-                    case 6: MistakeFlash(question: model.question, onAnswer: answer)
-                    default: MistakeChoice(question: model.question, onAnswer: answer)
-                    }
-                }
-                .id(design)
+                MistakeFlash(question: model.question, onAnswer: answer)
                 if let outcome = model.outcome {
                     MistakeAnswerCard(outcome: outcome)
                         .transition(.opacity)
@@ -176,7 +135,8 @@ private struct MistakeQuestionView: View {
     }
 }
 
-/// After the answer: whether it was fixed, the correction, why, and when it comes back.
+/// After the answer: whether it was fixed, why it is said that way, and when it comes back.
+/// The correction itself is on the card above.
 struct MistakeAnswerCard: View {
     let outcome: MistakeRoundModel.Outcome
 
@@ -189,9 +149,6 @@ struct MistakeAnswerCard: View {
                     .foregroundStyle(outcome.wasRight ? AnyShapeStyle(.success) : AnyShapeStyle(.mistake))
             }
             .font(.headline)
-            Text(verbatim: outcome.question.correction)
-                .font(.title3.weight(.semibold))
-                .environment(\.locale, Locale(identifier: "de"))
             if !outcome.question.explanation.isEmpty {
                 Text(verbatim: outcome.question.explanation)
                     .font(.subheadline)

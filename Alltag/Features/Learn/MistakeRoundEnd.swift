@@ -7,21 +7,14 @@
 
 import SwiftUI
 
-/// The end of a round: what was fixed, what comes back, and when.
-///
-/// TEMPORARY (#251): six designs to choose from.
-/// 1 the numbers, large; 2 two lists, "Fixed" and "Comes back"; 3 every
-/// mistake with its steps towards learned; 4 a ring; 5 before and after;
-/// 6 a timeline of when each comes back (4–6 are in `MistakeRoundEndMore.swift`).
+/// The end of a round, before and after: every mistake as a card with what
+/// was said, the correction under it, and when it comes back.
 struct MistakeRoundEnd: View {
     let model: MistakeRoundModel
     /// More mistakes are due: offer another round.
     let hasMore: Bool
     let onAgain: () -> Void
     let onDone: () -> Void
-    @AppStorage(MistakeDesign.end.key) private var stored = 1
-
-    private var design: Int { MistakeDesign.end.clamped(stored) }
 
     var body: some View {
         ScrollView {
@@ -42,14 +35,8 @@ struct MistakeRoundEnd: View {
                 }
                 .padding(.horizontal, 4)
                 .padding(.top, 24)
-                MistakeDesignSwitcher(.end)
-                switch design {
-                case 2: lists
-                case 3: steps
-                case 4: MistakeEndRing(model: model)
-                case 5: MistakeEndPairs(model: model)
-                case 6: MistakeEndTimeline(model: model)
-                default: numbers
+                VStack(spacing: Spacing.grid) {
+                    ForEach(model.outcomes) { card(for: $0) }
                 }
             }
             .padding(.bottom, 16)
@@ -74,127 +61,33 @@ struct MistakeRoundEnd: View {
         .sensoryFeedback(.success, trigger: true)
     }
 
-    // MARK: 1 · Numbers
-
-    private var numbers: some View {
-        VStack(spacing: 18) {
-            ScenarioArtwork(systemImage: model.comingBack.isEmpty ? "checkmark.seal.fill" : "arrow.triangle.2.circlepath")
-                .frame(width: 120, height: 120)
-                .padding(.top, 8)
-            HStack(spacing: Spacing.grid) {
-                figure(model.fixed.count, "Fixed", systemImage: "checkmark.circle.fill", style: AnyShapeStyle(.success))
-                figure(model.comingBack.count, "Come back", systemImage: "arrow.uturn.backward.circle.fill",
-                       style: AnyShapeStyle(.mistake))
-                figure(model.outcomes.filter(\.step.isLearned).count, "Learned", systemImage: "star.circle.fill",
-                       style: AnyShapeStyle(.accent))
-            }
-            if let next = model.fixed.filter({ !$0.step.isLearned }).map(\.step.nextReview).min() {
-                Label { MistakeWhen.nextReturn(next) } icon: { Image(systemName: "calendar") }
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private func figure(_ count: Int, _ title: LocalizedStringResource, systemImage: String, style: AnyShapeStyle) -> some View {
-        VStack(spacing: 6) {
-            Image(systemName: systemImage)
-                .font(.title2)
-                .foregroundStyle(style)
-                .accessibilityHidden(true)
-            Text(verbatim: "\(count)")
-                .font(.title.weight(.bold))
-                .monospacedDigit()
-            Text(title)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26, style: .continuous))
-        .accessibilityElement(children: .combine)
-    }
-
-    // MARK: 2 · Two lists
-
-    @ViewBuilder
-    private var lists: some View {
-        if !model.fixed.isEmpty {
-            list("Fixed", systemImage: "checkmark.circle.fill", style: AnyShapeStyle(.success), outcomes: model.fixed)
-        }
-        if !model.comingBack.isEmpty {
-            list("Comes back", systemImage: "arrow.uturn.backward.circle.fill", style: AnyShapeStyle(.mistake),
-                 outcomes: model.comingBack)
-        }
-    }
-
-    private func list(_ title: LocalizedStringResource, systemImage: String, style: AnyShapeStyle,
-                      outcomes: [MistakeRoundModel.Outcome]) -> some View {
+    private func card(for outcome: MistakeRoundModel.Outcome) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label { Text(title) } icon: { Image(systemName: systemImage).foregroundStyle(style) }
-                .textRole(.sectionHeader)
-                .padding(.horizontal, 4)
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(Array(outcomes.enumerated()), id: \.element.id) { index, outcome in
-                    if index > 0 { Divider() }
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(verbatim: outcome.question.correction)
-                            .font(.headline)
-                            .environment(\.locale, Locale(identifier: "de"))
-                        MistakeWhen.outcome(outcome)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 12)
-                    .accessibilityElement(children: .combine)
-                }
+            MistakePractice.quote(said: outcome.question.said, correction: outcome.question.correction)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Label {
+                Text(verbatim: outcome.question.correction)
+            } icon: {
+                Image(systemName: "arrow.turn.down.right").foregroundStyle(.accent)
             }
-            .padding(.horizontal, Spacing.cardLarge)
-            .padding(.vertical, 6)
-            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-        }
-    }
-
-    // MARK: 3 · Steps to learned
-
-    private var steps: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(model.outcomes.enumerated()), id: \.element.id) { index, outcome in
-                if index > 0 { Divider() }
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(verbatim: outcome.question.correction)
-                        .font(.headline)
-                        .environment(\.locale, Locale(identifier: "de"))
-                    HStack(spacing: 10) {
-                        HStack(spacing: 5) {
-                            ForEach(0..<MemoryItem.maxStrength, id: \.self) { step in
-                                Capsule()
-                                    .fill(step < outcome.step.strength ? AnyShapeStyle(.accentFill) : AnyShapeStyle(.surfaceTertiary))
-                                    .frame(width: 22, height: 6)
-                            }
-                        }
-                        .accessibilityElement()
-                        .accessibilityLabel(Text("Step \(outcome.step.strength) of \(MemoryItem.maxStrength)"))
-                        Spacer(minLength: 0)
-                        Label {
-                            MistakeWhen.outcome(outcome)
-                        } icon: {
-                            Image(systemName: outcome.wasRight ? "checkmark.circle.fill" : "arrow.uturn.backward.circle.fill")
-                                .foregroundStyle(outcome.wasRight ? AnyShapeStyle(.success) : AnyShapeStyle(.mistake))
-                        }
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 14)
-                .accessibilityElement(children: .combine)
+            .font(.title3.weight(.semibold))
+            Label {
+                MistakeWhen.outcome(outcome)
+            } icon: {
+                Image(systemName: outcome.wasRight ? "checkmark.circle.fill" : "arrow.uturn.backward.circle.fill")
+                    .foregroundStyle(outcome.wasRight ? AnyShapeStyle(.success) : AnyShapeStyle(.mistake))
             }
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 12)
+            .frame(minHeight: 32)
+            .background(.controlFill, in: .capsule)
         }
-        .padding(.horizontal, Spacing.cardLarge)
-        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.cardLarge)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+        .environment(\.locale, Locale(identifier: "de"))
+        .accessibilityElement(children: .combine)
     }
 }
