@@ -155,4 +155,27 @@ struct MistakeLoopTests {
         let long = MistakeQuestion(item: mistake("a b c d e f g h i j x", "a b c d e f g h i j k"))
         #expect(!long.canBuild)
     }
+
+    @Test("The gap is where the fix belongs: it can be filled from choices or typed")
+    func gaps() {
+        let dative = MistakeQuestion(item: mistake("Ich komme mit mein Freund.", "Ich komme mit meinem Freund.")) { $0 }
+        #expect(dative.fixWords == [3])
+        #expect(dative.fix == "meinem")
+        #expect(dative.canFill)
+        #expect(dative.canType)
+        #expect(dative.isFix(" Meinem "))
+        #expect(!dative.isFix("mein"))
+
+        // A missing word has nothing to choose against, and can still be typed.
+        let missing = MistakeQuestion(item: mistake("Ich gehe Kino.", "Ich gehe ins Kino.")) { $0 }
+        #expect(missing.fixWords == [2])
+        #expect(!missing.canFill)
+        #expect(missing.canType)
+        #expect(missing.isFix("ins"))
+
+        // Reworded altogether: no gap to fill or type.
+        let reworded = MistakeQuestion(item: mistake("Ich will das machen jetzt sofort.", "Das mache ich gleich.")) { $0 }
+        #expect(!reworded.canFill)
+        #expect(!reworded.canType)
+    }
 }

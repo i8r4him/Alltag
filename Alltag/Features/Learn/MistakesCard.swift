@@ -20,8 +20,6 @@ struct MistakesCard: View {
     /// The practice zooms out of the card and back into it.
     @Environment(\.mistakesZoom) private var zoom
     @State private var taps = 0
-    // TEMPORARY (#251): the card's design.
-    @AppStorage(MistakeDesign.card.key) private var design = 1
 
     /// The id the card and the practice share for the zoom.
     static let zoomID = "mistakes"
@@ -30,10 +28,12 @@ struct MistakesCard: View {
         let due = MistakePractice.due(mistakes)
         Group {
             if let first = due.first {
-                VStack(spacing: 12) {
-                    MistakeDesignSwitcher(.card)
-                    source(card(first, count: due.count))
-                }
+                source(
+                    Button(action: start) { stack(first, count: due.count) }
+                        .buttonStyle(.card)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityHint("Starts a one-minute exercise on your mistakes.")
+                )
             } else if mistakes.isEmpty {
                 empty
             } else {
@@ -59,31 +59,12 @@ struct MistakesCard: View {
         }
     }
 
-    @ViewBuilder
-    private func card(_ mistake: MemoryItem, count: Int) -> some View {
-        switch design {
-        case 2:
-            hero(mistake, count: count)
-        case 3:
-            tappable { row(mistake, count: count) }
-        default:
-            tappable { stack(mistake, count: count) }
-        }
-    }
-
-    private func tappable(@ViewBuilder label: () -> some View) -> some View {
-        Button(action: start, label: label)
-            .buttonStyle(.card)
-            .accessibilityElement(children: .combine)
-            .accessibilityHint("Starts a one-minute exercise on your mistakes.")
-    }
-
     private func quote(_ mistake: MemoryItem) -> some View {
         MistakePractice.quote(said: mistake.mistakeOriginal, correction: mistake.context.isEmpty ? mistake.word : mistake.context)
             .environment(\.locale, Locale(identifier: "de"))
     }
 
-    // MARK: 1 · The stack, with the quote
+    // MARK: The stack, with the quote
 
     private func stack(_ mistake: MemoryItem, count: Int) -> some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -134,65 +115,6 @@ struct MistakesCard: View {
             }
         }
         .padding(.bottom, count > 2 ? 20 : count > 1 ? 10 : 0)
-    }
-
-    // MARK: 2 · The Focus card's layout, with the big button
-
-    private func hero(_ mistake: MemoryItem, count: Int) -> some View {
-        VStack(spacing: 18) {
-            HStack(alignment: .center, spacing: 16) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("^[\(count) mistake](inflect: true) to fix")
-                        .font(.title3.weight(.semibold))
-                    quote(mistake)
-                        .font(.title3)
-                        .lineLimit(3)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .accessibilityElement(children: .combine)
-                ScenarioArtwork(systemImage: "pencil.and.scribble")
-                    .frame(width: 88, height: 88)
-            }
-            Button(action: start) {
-                Label("Fix them", systemImage: "wand.and.stars")
-            }
-            .buttonStyle(.primary)
-        }
-        .padding(Spacing.cardLarge)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-    }
-
-    // MARK: 3 · A compact row
-
-    private func row(_ mistake: MemoryItem, count: Int) -> some View {
-        HStack(spacing: 14) {
-            Text(verbatim: "\(count)")
-                .font(.title3.weight(.bold))
-                .monospacedDigit()
-                .foregroundStyle(.mistake)
-                .frame(width: 48, height: 48)
-                .background(.mistake.opacity(0.16), in: .circle)
-                .accessibilityLabel(Text("^[\(count) mistake](inflect: true)"))
-            VStack(alignment: .leading, spacing: 3) {
-                quote(mistake)
-                    .font(.headline)
-                    .lineLimit(1)
-                Text("Tap to fix it")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 0)
-            Image(systemName: "chevron.right")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.tertiary)
-                .accessibilityHidden(true)
-        }
-        .multilineTextAlignment(.leading)
-        .padding(Spacing.cardLarge)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-        .contentShape(.rect(cornerRadius: Radius.hero, style: .continuous))
     }
 
     // MARK: No mistakes at all

@@ -11,14 +11,13 @@ import SwiftUI
 /// open. The maintainer picks one of each with the switcher next to the part;
 /// then the others and this file are removed.
 enum MistakeDesign: String {
-    case card, question, end
+    case question, end
 
     var key: String { "mistakes.design.\(rawValue)" }
 
     /// Not localised: it never ships.
     var name: String {
         switch self {
-        case .card: "Card"
         case .question: "Question"
         case .end: "End of the round"
         }
@@ -26,9 +25,9 @@ enum MistakeDesign: String {
 
     var options: [String] {
         switch self {
-        case .card: ["Stack with the quote", "Hero with the big button", "Compact row"]
-        case .question: ["Which sounds natural?", "Tap the wrong word", "Build it from tiles"]
-        case .end: ["Numbers", "Two lists", "Steps to learned"]
+        case .question: ["Which sounds natural?", "Tap the wrong word", "Build it from tiles",
+                            "Fill the gap", "Type what’s missing", "Flashcard: do you know it?"]
+        case .end: ["Numbers", "Two lists", "Steps to learned", "Ring", "Before and after", "Timeline"]
         }
     }
 

@@ -9,9 +9,10 @@ import SwiftUI
 
 /// The end of a round: what was fixed, what comes back, and when.
 ///
-/// TEMPORARY (#251): three designs to choose from.
+/// TEMPORARY (#251): six designs to choose from.
 /// 1 the numbers, large; 2 two lists, "Fixed" and "Comes back"; 3 every
-/// mistake with its steps towards learned.
+/// mistake with its steps towards learned; 4 a ring; 5 before and after;
+/// 6 a timeline of when each comes back (4–6 are in `MistakeRoundEndMore.swift`).
 struct MistakeRoundEnd: View {
     let model: MistakeRoundModel
     /// More mistakes are due: offer another round.
@@ -45,6 +46,9 @@ struct MistakeRoundEnd: View {
                 switch design {
                 case 2: lists
                 case 3: steps
+                case 4: MistakeEndRing(model: model)
+                case 5: MistakeEndPairs(model: model)
+                case 6: MistakeEndTimeline(model: model)
                 default: numbers
                 }
             }

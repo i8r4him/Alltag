@@ -222,8 +222,10 @@ Alltag/                                   ← repo root
 │  │  │  ├─ MistakeRoundModel.swift       one answer per mistake, each moving it in Memory at once
 │  │  │  ├─ MistakeRoundView.swift        the practice, full screen, zooming out of the card; the explanation after each answer
 │  │  │  ├─ MistakeQuestionViews.swift    the ways to fix one: pick, tap the wrong word, build from tiles
+│  │  │  ├─ MistakeQuestionMore.swift     more ways: fill the gap, type what's missing, a flashcard
 │  │  │  ├─ MistakeRoundEnd.swift         what was fixed, what comes back and when
-│  │  │  └─ MistakeDesign.swift           TEMPORARY (#251): the "‹ n / N ›" switcher for the card, the question and the round's end
+│  │  │  ├─ MistakeRoundEndMore.swift     more ends: a ring, before and after, a timeline
+│  │  │  └─ MistakeDesign.swift           TEMPORARY (#251): the "‹ n / N ›" switcher for the question and the round's end
 │  │  ├─ Articles/                        (#252)
 │  │  │  ├─ ArticlesView.swift            Learn › Articles: the round to start, "Look up a word", the clues
 │  │  │  ├─ ArticleRoundView.swift        a round full screen: the noun, der · die · das, the answer, the summary

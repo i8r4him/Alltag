@@ -31,12 +31,24 @@ struct MistakeQuestion: Identifiable, Equatable {
     let fixOptions: [String]
     let fixIndex: Int
 
+    // Fill the gap, or type what's missing.
+    /// The places in `correctionWords` that what was said doesn't have: the gaps.
+    let fixWords: Set<Int>
+    /// The words that belong in the gaps.
+    let fix: String
+
     // Build the corrected sentence from tiles.
     let correctionWords: [String]
     /// The correction's words and the wrong ones, mixed.
     let tiles: [String]
 
     var canSpot: Bool { !wrongWords.isEmpty }
+    /// A gap with choices needs something to choose between.
+    var canFill: Bool { !fixOptions.isEmpty }
+    /// One or two words to type; more is a rewording, not a gap.
+    var canType: Bool { (1...2).contains(fixWords.count) }
+
+    func isFix(_ typed: String) -> Bool { Self.plain(typed) == Self.plain(fix) }
     /// Two to nine words: one tile is no puzzle, and more don't fit a phone.
     var canBuild: Bool { (2...9).contains(correctionWords.count) }
 
@@ -64,7 +76,10 @@ struct MistakeQuestion: Identifiable, Equatable {
         wrongWords = marked
 
         let wrong = marked.sorted().map { spoken[$0].trimmingCharacters(in: Self.sentenceEnd) }
-        let fix = Self.fix(said: said, correction: correction)
+        let missing = Self.missing(in: spoken, from: target)
+        let fix = missing.map { target[$0] }.joined(separator: " ")
+        fixWords = Set(missing)
+        self.fix = fix
         let wrongText = wrong.joined(separator: " ")
         // Nothing to pick when the word doesn't belong at all, or only stands in the wrong place.
         if wrong.isEmpty || fix.isEmpty || Self.plain(fix) == Self.plain(wrongText) {
@@ -99,13 +114,12 @@ struct MistakeQuestion: Identifiable, Equatable {
         text.split(whereSeparator: \.isWhitespace).map(String.init)
     }
 
-    /// The words of the correction that what was said doesn't have: what should stand in the wrong words' place.
-    private static func fix(said: String, correction: String) -> String {
-        let target = words(correction)
-        let difference = words(said).map { plain($0) }.difference(from: target.map { plain($0) })
-        let missing = difference.removals.compactMap { change in
+    /// The places in the correction's words that what was said doesn't have: what should stand in the wrong words' place.
+    private static func missing(in spoken: [String], from target: [String]) -> [Int] {
+        let difference = spoken.map { plain($0) }.difference(from: target.map { plain($0) })
+        return difference.removals.compactMap { change in
             if case .remove(let offset, _, _) = change { offset } else { nil }
         }
-        return missing.sorted().map { target[$0].trimmingCharacters(in: sentenceEnd) }.joined(separator: " ")
+        .sorted()
     }
 }

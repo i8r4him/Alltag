@@ -101,11 +101,16 @@ private struct MistakeQuestionView: View {
     @AppStorage(MistakeDesign.question.key) private var stored = 1
 
     /// The chosen way, where this mistake allows it: a missing word can't be
-    /// tapped, and a long sentence makes too many tiles. Then it is the two choices.
+    /// tapped, a long sentence makes too many tiles, a rewording has no gap.
+    /// Then it is the two choices.
     private var design: Int {
-        switch MistakeDesign.question.clamped(stored) {
-        case 2 where model.question.canSpot: 2
-        case 3 where model.question.canBuild: 3
+        let question = model.question
+        return switch MistakeDesign.question.clamped(stored) {
+        case 2 where question.canSpot: 2
+        case 3 where question.canBuild: 3
+        case 4 where question.canFill: 4
+        case 5 where question.canType: 5
+        case 6: 6
         default: 1
         }
     }
@@ -114,6 +119,9 @@ private struct MistakeQuestionView: View {
         switch design {
         case 2: "Tap the word that’s wrong"
         case 3: "Put it right"
+        case 4: "Fill the gap"
+        case 5: "Type what’s missing"
+        case 6: "Do you know the fix?"
         default: "Which sounds natural?"
         }
     }
@@ -133,6 +141,9 @@ private struct MistakeQuestionView: View {
                     switch design {
                     case 2: MistakeSpot(question: model.question, onAnswer: answer)
                     case 3: MistakeBuild(question: model.question, onAnswer: answer)
+                    case 4: MistakeFill(question: model.question, onAnswer: answer)
+                    case 5: MistakeType(question: model.question, onAnswer: answer)
+                    case 6: MistakeFlash(question: model.question, onAnswer: answer)
                     default: MistakeChoice(question: model.question, onAnswer: answer)
                     }
                 }
