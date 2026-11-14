@@ -20,6 +20,7 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
 - **A warning to ignore:** `RealtimeConversationTests.swift: main actor-isolated static property 'dentist'` is old. Any other new warning must be fixed.
 - **Lint limits that bite:** a file may have 500 lines (`ConversationModel.swift` is at the limit: put new code in an extension file like `ConversationModel+History.swift`), a line 140 characters, a function body 60 lines.
 - **The simulator can't do the real thing:** it has no microphone behind speech recognition, no Apple Intelligence and no live voice. `AppServices.live()` swaps in simulated services there. Anything that listens, records, checks with the on-device model or talks must be tried on the maintainer's iPhone; say so under "Not verified" in the PR.
+- **Checks on request** (Claude Code skills in `.claude/skills/`, loaded only when asked): `/alltag-performance` reviews one screen's speed, `/alltag-preflight` checks App Store rejection reasons, `/alltag-accessibility` checks one screen for VoiceOver, large text, contrast, touch and motion. They report; the maintainer measures and tries things on the iPhone.
 
 ## Code rules
 
@@ -60,6 +61,7 @@ iCloud sync (SwiftData + CloudKit, #54) is switched on at the end of `3 · Memor
 ## Design language
 
 - **The look comes from Today** (`Features/Home/`): the `.skyBackground()`, Liquid Glass (`glassEffect`, `.glass` / `.glassProminent` buttons), `.fontDesign(.rounded)`, and `ScenarioArtwork` for illustrations.
+- **Glass side by side:** glass elements that sit next to each other (a row of glass circles, a group of chips) go in one `GlassEffectContainer`, so they blend and cost less. `.interactive()` only on what can be tapped.
 - **Cards:** Today's and the profile's cards are clear Liquid Glass (`.glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))`). Learn still uses the dark Focus surface (`.learnSurface()`: dark with a faint white stroke) until they're moved over.
 - **The big button** is `.buttonStyle(.primary)` (`DesignSystem/Components/Buttons.swift`): the glass capsule with the theme's two lights, as on "Start talking". Every large call to action uses it; don't style a big button by hand. `.primaryCompact` is the small filled capsule inside cards.
 - **Everything follows the theme colour** (`AppTheme.shared.palette`, `.accent`, `.accentFill`). No fixed colours except meaning (coral for mistakes).
