@@ -27,7 +27,8 @@ struct WritingResultView: View {
             }
             if let check = model.check {
                 if design != 2 { CorrectedTextCard(text: model.correctedText) }
-                WritingPointsCard(task: model.task, points: check.points)
+                // The learner's own topic has no points to cover.
+                if !model.task.points.isEmpty { WritingPointsCard(task: model.task, points: check.points) }
             }
         }
         .animation(.easeOut(duration: 0.3), value: model.sentences.count)
@@ -35,11 +36,17 @@ struct WritingResultView: View {
     }
 }
 
-/// Temporary: "‹ n / 3 ›" to compare the three designs of the correction on the iPhone.
-/// Removed with the two designs that aren't chosen.
+/// Temporary: "‹ n / 3 ›" to compare three designs on the iPhone: of the correction, and
+/// (with `optionsKey`) of choosing the length and the kind on the Write screen.
+/// Removed with the designs that aren't chosen.
 struct WritingDesignSwitcher: View {
     static let key = "write.resultDesign"
-    @AppStorage(key) private var design = 0
+    static let optionsKey = "write.optionsDesign"
+    @AppStorage private var design: Int
+
+    init(key: String = WritingDesignSwitcher.key) {
+        _design = AppStorage(wrappedValue: 0, key)
+    }
 
     var body: some View {
         HStack(spacing: 4) {

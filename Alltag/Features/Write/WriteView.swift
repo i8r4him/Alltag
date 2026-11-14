@@ -8,133 +8,83 @@
 import SwiftData
 import SwiftUI
 
-/// Learn › Write: today's task for the learner's level, a new one on request,
-/// and the written set for that level. A task opens the writing screen, which
+/// Learn › Write: the learner says how much time they have and what they want to
+/// write; the task of the day follows, with a new one on request, the written set
+/// for the level, and their own topic. A task opens the writing screen, which
 /// zooms out of the card or row it was tapped on.
 struct WriteView: View {
     var level: Level = .a1
     @Environment(\.services) private var services
+    @AppStorage(WritingLength.key) private var lengthRaw = WritingLength.standard.rawValue
+    @AppStorage(WritingKind.key) private var kindRaw = ""
+    @AppStorage(WritingDesignSwitcher.optionsKey) private var design = 0
     @State private var open: WritingTask?
     /// A task the server wrote for this visit; it takes the hero card's place.
     @State private var newTask: WritingTask?
     @Namespace private var transition
 
-    private var picked: WritingTask { newTask ?? WritingTasks.picked(for: level) }
-    private var others: [WritingTask] { WritingTasks.tasks(for: level).filter { $0.id != picked.id } }
+    private var length: WritingLength { WritingLength(rawValue: lengthRaw) ?? .standard }
+    /// Nil for every kind.
+    private var kind: WritingKind? { WritingKind.ofTasks.first { $0.rawValue == kindRaw } }
+    private var picked: WritingTask { newTask ?? WritingTasks.picked(for: level, kind: kind).sized(length) }
+    private var others: [WritingTask] {
+        WritingTasks.tasks(for: level, kind: kind).filter { $0.id != picked.id }.map { $0.sized(length) }
+    }
+    private var own: WritingTask { .own(level: level, length: length) }
 
     var body: some View {
         LearnScreen(title: "Write") {
-            WriteHeroCard(task: picked, service: services.writing, onStart: { open = picked }, onNewTask: { newTask = $0 })
+            WriteOptions(design: design, level: level,
+                         length: Binding { length } set: { lengthRaw = $0.rawValue },
+                         kind: Binding { kind } set: { kindRaw = $0?.rawValue ?? "" },
+                         ownSource: transition, onOwn: { open = own })
+
+            WriteHeroCard(task: picked, length: length, kind: kind, service: services.writing,
+                          onStart: { open = picked }, onNewTask: { newTask = $0 })
                 .matchedTransitionSource(id: picked.id, in: transition)
 
-            LearnSection(title: "From daily life", note: Text("Tasks for \(level.title). Each one says who it is to and what to say.")) {
+            // The tiles (design 3) have their own "My own topic".
+            if design != 2 {
                 LearnList {
-                    ForEach(others) { task in
-                        LearnRow(systemImage: task.systemImage, title: Text(verbatim: task.title),
-                                 detail: Text("\(Text(verbatim: task.recipient)) · \(task.minutes) min"), action: { open = task },
-                                 trailing: { RegisterBadge(register: task.register) })
-                        .matchedTransitionSource(id: task.id, in: transition)
+                    LearnRow(systemImage: own.systemImage, title: Text(WritingKind.own.title),
+                             detail: Text("Write what you like and get it corrected"), action: { open = own })
+                }
+                .matchedTransitionSource(id: own.id, in: transition)
+            }
+
+            if !others.isEmpty {
+                LearnSection(title: "From daily life", note: Text("Tasks for \(level.title)")) {
+                    LearnList {
+                        ForEach(others) { task in
+                            LearnRow(systemImage: task.systemImage, title: Text(verbatim: task.title),
+                                     detail: WriteView.detail(of: task), action: { open = task },
+                                     trailing: { if task.kind != .day { RegisterBadge(register: task.register) } })
+                            .matchedTransitionSource(id: task.id, in: transition)
+                        }
                     }
                 }
             }
+        }
+        .toolbar {
+            // TEMPORARY (#263): the designs for choosing the length and the kind.
+            ToolbarItem(placement: .topBarTrailing) { WritingDesignSwitcher(key: WritingDesignSwitcher.optionsKey) }
         }
         .fullScreenCover(item: $open) { task in
             WritingSessionView(task: task, service: services.writing)
                 .navigationTransition(.zoom(sourceID: task.id, in: transition))
         }
+        // A task the server wrote was for the old choice.
+        .onChange(of: lengthRaw) { _, _ in newTask = nil }
+        .onChange(of: kindRaw) { _, _ in newTask = nil }
+        .animation(.snappy, value: lengthRaw)
+        .animation(.snappy, value: kindRaw)
         .sensoryFeedback(.impact(weight: .medium), trigger: open) { _, task in task != nil }
     }
-}
 
-/// The task to write now: what it is, who it is to, and the big button. "New task"
-/// asks the server for another one at the learner's level.
-private struct WriteHeroCard: View {
-    let task: WritingTask
-    let service: any WritingService
-    let onStart: () -> Void
-    let onNewTask: (WritingTask) -> Void
-
-    @State private var isLoading = false
-    @State private var failure: CloudFailure?
-    @State private var taps = 0
-    @ScaledMetric(relativeTo: .title3) private var artworkSize: CGFloat = 80
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack(alignment: .top, spacing: 16) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Label(task.isGenerated ? "New for you" : "Picked for today",
-                          systemImage: task.isGenerated ? "sparkles" : "calendar")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.accent)
-                    Text(verbatim: task.title)
-                        .font(.title3.weight(.semibold))
-                    Text(verbatim: task.situation)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .accessibilityElement(children: .combine)
-                ScenarioArtwork(systemImage: task.systemImage, symbolSize: 34)
-                    .frame(width: artworkSize, height: artworkSize)
-            }
-            HStack(spacing: 8) {
-                RegisterBadge(register: task.register)
-                Text("\(task.minWords)–\(task.maxWords) words · \(task.minutes) min")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            if let failure {
-                Text(failure.message)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .transition(.opacity)
-            }
-            GlassEffectContainer(spacing: 12) {
-                HStack(spacing: 12) {
-                    Button(action: onStart) {
-                        Label("Start writing", systemImage: "pencil")
-                    }
-                    .buttonStyle(.primary)
-                    Button(action: askForNewTask) {
-                        Group {
-                            if isLoading {
-                                ProgressView()
-                            } else {
-                                Image(systemName: "sparkles")
-                            }
-                        }
-                        .font(.title3.weight(.semibold))
-                        .frame(width: 56, height: 56)
-                    }
-                    .buttonStyle(.glass)
-                    .buttonBorderShape(.circle)
-                    .disabled(isLoading)
-                    .accessibilityLabel(Text("New task"))
-                    .accessibilityHint(Text("Writes a new task for your level."))
-                }
-            }
-        }
-        .padding(Spacing.cardLarge)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-        .animation(.snappy, value: failure)
-        .sensoryFeedback(.impact(weight: .medium), trigger: taps)
-    }
-
-    private func askForNewTask() {
-        taps += 1
-        isLoading = true
-        failure = nil
-        Task {
-            defer { isLoading = false }
-            do {
-                let new = try await service.task(for: task.level, excluding: RecentWritingTasks.titles)
-                RecentWritingTasks.add(new.title)
-                onNewTask(new)
-            } catch {
-                failure = CloudFailure(error)
-            }
-        }
+    /// Who it is to (or that it is the learner's own), and how long it takes.
+    static func detail(of task: WritingTask) -> Text {
+        let who = task.recipient.isEmpty ? Text(task.kind.title) : Text(verbatim: task.recipient)
+        return Text("\(who) · \(task.minutes) min")
     }
 }
 

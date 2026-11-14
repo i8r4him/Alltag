@@ -143,29 +143,18 @@ private struct WritingTaskCard: View {
             Text(verbatim: task.situation)
                 .font(.title3)
                 .fixedSize(horizontal: false, vertical: true)
-            HStack(spacing: 8) {
-                Label { Text(verbatim: task.recipient) } icon: { Image(systemName: "person.crop.circle") }
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondary)
-                Spacer(minLength: 0)
-                RegisterBadge(register: task.register)
-            }
-            Divider()
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Your text should")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                ForEach(Array(task.points.enumerated()), id: \.offset) { index, point in
-                    HStack(alignment: .firstTextBaseline, spacing: 10) {
-                        Text(verbatim: "\(index + 1)")
-                            .font(.subheadline.weight(.bold))
-                            .foregroundStyle(.accent)
-                            .frame(width: 24, height: 24)
-                            .background(.accent.opacity(0.14), in: .circle)
-                        Text(verbatim: point)
-                    }
-                    .accessibilityElement(children: .combine)
+            if !task.recipient.isEmpty {
+                HStack(spacing: 8) {
+                    Label { Text(verbatim: task.recipient) } icon: { Image(systemName: "person.crop.circle") }
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    Spacer(minLength: 0)
+                    RegisterBadge(register: task.register)
                 }
+            }
+            if !task.points.isEmpty {
+                Divider()
+                points
             }
             if !task.phrases.isEmpty {
                 Divider()
@@ -202,6 +191,25 @@ private struct WritingTaskCard: View {
         }
         .padding(Spacing.cardLarge)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+    }
+
+    private var points: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Your text should")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+            ForEach(Array(task.points.enumerated()), id: \.offset) { index, point in
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text(verbatim: "\(index + 1)")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(.accent)
+                        .frame(width: 24, height: 24)
+                        .background(.accent.opacity(0.14), in: .circle)
+                    Text(verbatim: point)
+                }
+                .accessibilityElement(children: .combine)
+            }
+        }
     }
 }
 

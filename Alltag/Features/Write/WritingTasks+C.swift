@@ -10,7 +10,7 @@ import Foundation
 extension WritingTasks {
     /// C1: nuanced formal correspondence that objects, negotiates and weighs up, 180 to 250 words.
     static let c1: [WritingTask] = [
-        WritingTask(.c1, 1, "building.columns.fill", .formal,
+        WritingTask(.c1, 1, "building.columns.fill", .formal, .complaint,
                     title: String(localized: "Object to a rejected application"),
                     situation: String(localized:
                         "The Familienkasse has rejected your Kindergeld application because a document is missing, although you sent it."),
@@ -18,6 +18,7 @@ extension WritingTasks {
                     points: [String(localized: "Refer to the decision"),
                              String(localized: "Explain why it is wrong and what you sent"),
                              String(localized: "Ask for it to be reviewed")],
+                    quick: [1, 2],
                     phrases: [.init("Hiermit lege ich fristgerecht Widerspruch gegen Ihren Bescheid vom 4. November ein.",
                                     String(localized: "I hereby object, within the deadline, to your decision of 4 November.")),
                               .init("Entgegen Ihrer Darstellung habe ich die Unterlagen bereits eingereicht.",
@@ -26,7 +27,7 @@ extension WritingTasks {
                                     String(localized: "I ask you to review the case again.")),
                               .init("Eine Kopie des Einlieferungsbelegs füge ich bei.",
                                     String(localized: "I enclose a copy of the postage receipt."))]),
-        WritingTask(.c1, 2, "briefcase.fill", .formal,
+        WritingTask(.c1, 2, "briefcase.fill", .formal, .email,
                     title: String(localized: "Ask to work from home two days a week"),
                     situation: String(localized: "You would like to work from home on two days a week."),
                     recipient: String(localized: "Your manager, Dr Hoffmann"),
@@ -40,7 +41,7 @@ extension WritingTasks {
                               .init("Davon würde auch das Team profitieren, da …", String(localized: "The team would also benefit, as …")),
                               .init("Ich schlage vor, das Modell zunächst drei Monate lang zu erproben.",
                                     String(localized: "I suggest trying the arrangement for three months first."))]),
-        WritingTask(.c1, 3, "house.fill", .formal,
+        WritingTask(.c1, 3, "house.fill", .formal, .complaint,
                     title: String(localized: "Object to the courtyard works"),
                     situation: String(localized:
                         "Your Hausverwaltung plans to cut down two old trees in the courtyard to build a bike shelter."),
@@ -56,7 +57,7 @@ extension WritingTasks {
                                     String(localized: "Would it be conceivable to build the shelter on the north side?")),
                               .init("Für eine schriftliche Rückmeldung wäre ich Ihnen dankbar.",
                                     String(localized: "I would be grateful for a reply in writing."))]),
-        WritingTask(.c1, 4, "person.2.fill", .formal,
+        WritingTask(.c1, 4, "person.2.fill", .formal, .email,
                     title: String(localized: "Recommend a colleague for a project"),
                     situation: String(localized:
                         "Your colleague Aylin wants to lead a new project, and your manager has asked for your opinion."),
@@ -72,7 +73,7 @@ extension WritingTasks {
                                     String(localized: "One example is last spring's project.")),
                               .init("Ich kann sie daher uneingeschränkt empfehlen.",
                                     String(localized: "I can therefore recommend her without reservation."))]),
-        WritingTask(.c1, 5, "wrench.and.screwdriver.fill", .formal,
+        WritingTask(.c1, 5, "wrench.and.screwdriver.fill", .formal, .complaint,
                     title: String(localized: "Complain about a faulty repair"),
                     situation: String(localized:
                         "A repair shop fixed your washing machine for €230. Two weeks later the same fault came back."),
@@ -88,7 +89,7 @@ extension WritingTasks {
                                     String(localized: "I assume this is covered by the warranty.")),
                               .init("Ich erwarte eine kostenlose Nachbesserung bis zum 30. November.",
                                     String(localized: "I expect the repair to be redone free of charge by 30 November."))]),
-        WritingTask(.c1, 6, "envelope.fill", .formal,
+        WritingTask(.c1, 6, "envelope.fill", .formal, .email,
                     title: String(localized: "Propose a shared garden to your neighbours"),
                     situation: String(localized: "You would like to turn the unused yard of your building into a shared garden."),
                     recipient: String(localized: "All the residents of your building"),
