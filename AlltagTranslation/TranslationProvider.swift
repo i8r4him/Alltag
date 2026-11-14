@@ -20,23 +20,39 @@ final class AlltagTranslationExtension: TranslationUIProviderExtension {
     }
 }
 
+/// The panel other apps show for "Translate": the selected text, its
+/// translation, and word by word, tone and in context, in the look of the
+/// app's Translate screen.
 struct TranslationPanel: View {
     let context: any TranslationUIProviderContext
-    @State private var saved = Set<String>()
+    /// What was saved from this panel, and the inbox entry it went into, so it can be taken out again.
+    @State private var saved: [String: UUID] = [:]
     @State private var saveFailed = false
     @State private var retryAttempt = 0
     @State private var model = TranslationPanelModel()
+    /// Counts the taps that save, copy, replace or start something, for the medium haptic.
+    @State private var taps = 0
+    @State private var showsWholeSource = false
+    @State private var copied = false
     @AppStorage("extensionCloudConsent") private var cloudAllowed = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    // TEMPORARY (#297): the designs still to choose between.
+    @AppStorage(PanelDesign.headers.key) private var headerDesign = 1
+    @AppStorage(PanelDesign.longText.key) private var longTextDesign = 1
 
     private var source: String {
         (context.inputText.map { String($0.characters) } ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    private var canTranslate: Bool { cloudAllowed && !source.isEmpty && source.utf16.count <= 600 }
+    private var translation: String? { canTranslate ? model.translation : nil }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                sourceCard
+                PanelSwitcher(.headers)
+                top
                 if source.isEmpty {
                     ContentUnavailableView("No text selected", systemImage: "text.cursor",
                                            description: Text("Select a word or sentence, then choose Translate."))
@@ -46,7 +62,8 @@ struct TranslationPanel: View {
                 } else if !cloudAllowed {
                     consent
                 } else {
-                    answer
+                    states
+                    details
                     Button("Turn off cloud translation") { cloudAllowed = false }
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -65,27 +82,100 @@ struct TranslationPanel: View {
         .task(id: source + String(cloudAllowed) + String(retryAttempt)) {
             if let raw = UserDefaults(suiteName: TranslationInbox.group)?.string(forKey: CompanionLook.Key.palette),
                let palette = CompanionPalette(rawValue: raw) { AppTheme.shared.palette = palette }
-            guard cloudAllowed, !source.isEmpty, source.utf16.count <= 600 else { return }
+            guard canTranslate else { return }
             context.expandSheet()
-            saved = []
+            saved = [:]
             saveFailed = false
             await model.translate(source)
         }
         .animation(reduceMotion ? nil : .easeOut(duration: 0.25), value: model.result)
+        .sensoryFeedback(.impact(weight: .medium), trigger: taps)
+    }
+}
+
+// MARK: - The selected text and its translation
+
+extension TranslationPanel {
+    /// The selected text and the translation: on one card with a line between
+    /// them when the headers are chips (as in the app), otherwise a card each.
+    @ViewBuilder
+    private var top: some View {
+        if headerDesign == 2 {
+            VStack(alignment: .leading, spacing: 18) {
+                PanelHeader(kind: .source, design: 2)
+                sourceText
+                if let translation {
+                    Divider()
+                    PanelHeader(kind: .translation, design: 2)
+                    translated(translation)
+                }
+            }
+            .panelCard()
+        } else {
+            PanelSection(kind: .source, design: headerDesign) { sourceText }
+            if let translation {
+                PanelSection(kind: .translation, design: headerDesign) { translated(translation) }
+            }
+        }
     }
 
-    private var sourceCard: some View {
+    /// The selected text; a long one shows its first lines until it is opened.
+    private var sourceText: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("Selected text", systemImage: "text.quote")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
             Text(verbatim: source)
                 .font(.body)
+                .lineLimit(showsWholeSource ? nil : 4)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
+            if source.count > 200 {
+                Button(showsWholeSource ? "Show less" : "Show all") {
+                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { showsWholeSource.toggle() }
+                }
+                .font(.subheadline.weight(.semibold))
+            }
         }
-        .padding(Spacing.card)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.card))
+    }
+
+    private func translated(_ translation: String) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            PanelTranslationText(text: translation, design: longTextDesign)
+            if TranslationLayout(translation).isLong { PanelSwitcher(.longText) }
+            HStack(spacing: 10) {
+                Button {
+                    UIPasteboard.general.string = translation
+                    copied = true
+                    taps += 1
+                } label: {
+                    Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                        .contentTransition(.symbolEffect(.replace))
+                        .frame(width: 44, height: 44)
+                }
+                .buttonStyle(.plain)
+                .glassEffect(.regular.interactive(), in: .circle)
+                .accessibilityLabel(copied ? Text("Copied") : Text("Copy"))
+                if context.allowsReplacement && !model.isLoading && !model.failed {
+                    Button("Replace selection", systemImage: "arrow.triangle.2.circlepath") {
+                        taps += 1
+                        context.finish(translation: AttributedString(translation))
+                    }
+                    .buttonStyle(.glass)
+                }
+                Spacer(minLength: 0)
+                PanelBookmark(isSaved: saved[translation] != nil) {
+                    if let result = model.result { toggleSave(german: result.german, meaning: result.english, key: translation) }
+                }
+                .disabled(model.isLoading || model.failed)
+            }
+            if !saved.isEmpty {
+                Text("Open Alltag to find it in Memory.").font(.caption).foregroundStyle(.secondary)
+            }
+            if saveFailed {
+                Text("Couldn’t save. Try again.").font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .onChange(of: translation) { _, _ in copied = false }
     }
 
     private var consent: some View {
@@ -97,102 +187,401 @@ struct TranslationPanel: View {
             Button("Allow cloud translation", systemImage: "translate") { cloudAllowed = true }
                 .buttonStyle(.primary)
         }
+        .panelCard()
+    }
+}
+
+// MARK: - Waiting, failing, and the details
+
+extension TranslationPanel {
+    @ViewBuilder
+    private var states: some View {
+        if model.isLoading {
+            if model.result == nil {
+                // A blank line in the shape of the answer, as in the app.
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(verbatim: "Können wir uns eine halbe Stunde später treffen?")
+                        .font(.title2.weight(.semibold))
+                        .redacted(reason: .placeholder)
+                        .accessibilityHidden(true)
+                    Label { Text("Translating…") } icon: { ProgressView().controlSize(.small) }
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+                .panelCard()
+            } else {
+                Label("Adding word by word, tone and examples…", systemImage: "sparkles")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 4)
+            }
+        }
+        if model.failed {
+            VStack(alignment: .leading, spacing: 12) {
+                Label("Couldn’t translate it", systemImage: "exclamationmark.triangle")
+                    .font(.title3.weight(.semibold))
+                Text("Translation couldn’t finish. Check your connection and try again.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Button {
+                    taps += 1
+                    retryAttempt += 1
+                } label: {
+                    Label("Try again", systemImage: "arrow.clockwise")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, minHeight: 34)
+                }
+                .buttonStyle(.glass)
+            }
+            .panelCard()
+        }
     }
 
     @ViewBuilder
-    private var answer: some View {
-        if let translation = model.translation {
-            VStack(alignment: .leading, spacing: 16) {
-                Label("Translation", systemImage: "translate")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.accent)
-                Text(verbatim: translation)
-                    .font(.title2.weight(.semibold))
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Button(saved.contains(translation) ? "Saved for Memory" : "Save to Memory", systemImage: "bookmark") {
-                    if let result = model.result { save(german: result.german, meaning: result.english, key: translation) }
-                }
-                .buttonStyle(.primary)
-                .disabled(model.isLoading || model.failed || saved.contains(translation))
-                if saved.contains(translation) {
-                    Text("Open Alltag to find it in Memory.").font(.caption).foregroundStyle(.secondary)
-                }
-                if saveFailed {
-                    Text("Couldn’t save. Try again.").foregroundStyle(.secondary)
-                }
-                if context.allowsReplacement && !model.isLoading && !model.failed {
-                    Button("Replace selection", systemImage: "arrow.triangle.2.circlepath") {
-                        context.finish(translation: AttributedString(translation))
-                    }.buttonStyle(.glass)
-                }
-            }
-            .padding(Spacing.cardLarge)
-            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero))
-        }
-        if model.isLoading { ProgressView(model.result == nil ? "Translating…" : "Adding explanations…") }
-        if model.failed {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Translation couldn’t finish. Check your connection and try again.")
-                    .foregroundStyle(.secondary)
-                Button("Try again", systemImage: "arrow.clockwise") {
-                    retryAttempt += 1
-                }.buttonStyle(.glass)
-            }
-        }
+    private var details: some View {
         if let result = model.result {
             if !result.words.isEmpty {
-                details("Word by word") {
-                    ForEach(Array(result.words.enumerated()), id: \.offset) { _, word in
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(verbatim: word.word).font(.headline).foregroundStyle(.accent)
-                            Text(verbatim: word.meaning)
-                            Text(verbatim: word.grammar).font(.subheadline).foregroundStyle(.secondary)
-                            Button(saved.contains(word.word) ? "Saved" : "Save word", systemImage: "bookmark") {
-                                save(german: word.word, meaning: word.meaning, key: word.word)
-                            }.buttonStyle(.glass).disabled(saved.contains(word.word))
+                PanelSection(kind: .words, design: headerDesign) {
+                    PanelRows(items: result.words) { word in
+                        HStack(alignment: .center, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(verbatim: word.word).font(.headline).foregroundStyle(.accent)
+                                Text(verbatim: word.meaning)
+                                Text(verbatim: word.grammar).font(.subheadline).foregroundStyle(.secondary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .accessibilityElement(children: .combine)
+                            PanelBookmark(isSaved: saved[word.word] != nil) {
+                                toggleSave(german: word.word, meaning: word.meaning, key: word.word)
+                            }
                         }
                     }
                 }
             }
             if !result.tones.isEmpty {
-                details("Tone") {
-                    ForEach(Array(result.tones.enumerated()), id: \.offset) { _, tone in
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(tone.tone.rawValue).font(.subheadline.weight(.semibold)).foregroundStyle(.accent)
-                            Text(verbatim: tone.german)
+                PanelSection(kind: .tone, design: headerDesign) {
+                    PanelRows(items: result.tones) { tone in
+                        HStack(alignment: .firstTextBaseline, spacing: 12) {
+                            Label { Text(tone.tone.panelTitle) } icon: { Image(systemName: tone.tone.panelSymbol) }
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.accent)
+                                .frame(width: 104, alignment: .leading)
+                            Text(verbatim: tone.german).frame(maxWidth: .infinity, alignment: .leading)
                         }
+                        .accessibilityElement(children: .combine)
                     }
                 }
             }
             if !result.examples.isEmpty {
-                details("In context") {
-                    ForEach(Array(result.examples.enumerated()), id: \.offset) { _, example in
+                PanelSection(kind: .context, design: headerDesign) {
+                    PanelRows(items: result.examples) { example in
                         VStack(alignment: .leading, spacing: 4) {
                             Text(verbatim: example.german)
-                            Text(verbatim: example.english).foregroundStyle(.secondary)
+                            Text(verbatim: example.english).font(.subheadline).foregroundStyle(.secondary)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityElement(children: .combine)
                     }
                 }
             }
         }
     }
 
-    private func save(german: String, meaning: String, key: String) {
+    /// Saves to the inbox the app reads, or takes it out again if it is still there.
+    private func toggleSave(german: String, meaning: String, key: String) {
+        taps += 1
         do {
-            try TranslationInbox.save(.init(german: german, meaning: meaning))
-            saved.insert(key)
+            if let id = saved[key] {
+                try TranslationInbox.remove(id)
+                saved[key] = nil
+            } else {
+                let entry = TranslationInbox.Entry(german: german, meaning: meaning)
+                try TranslationInbox.save(entry)
+                saved[key] = entry.id
+            }
             saveFailed = false
         } catch { saveFailed = true }
     }
+}
 
-    private func details(_ title: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(title).font(.headline)
-            content()
+// MARK: - Parts
+
+/// The cards of the panel, each with its symbol.
+enum PanelKind {
+    case source, translation, words, tone, context
+
+    var title: LocalizedStringResource {
+        switch self {
+        case .source: "Selected text"
+        case .translation: "Translation"
+        case .words: "Word by word"
+        case .tone: "Tone"
+        case .context: "In context"
         }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .source: "text.quote"
+        case .translation: "translate"
+        case .words: "text.word.spacing"
+        case .tone: "theatermasks.fill"
+        case .context: "text.bubble.fill"
+        }
+    }
+}
+
+/// A card's header.
+///
+/// TEMPORARY (#297): three designs to choose from.
+/// 1 above the card, large, with the symbol in the accent colour (the app's detail headers);
+/// 2 a chip for the selected text and the translation (the app's pair card), a symbol and a headline for the details;
+/// 3 the symbol on a small tinted tile beside a headline, inside the card.
+struct PanelHeader: View {
+    let kind: PanelKind
+    let design: Int
+
+    var body: some View {
+        switch design {
+        case 2 where kind == .source || kind == .translation:
+            Text(kind.title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(kind == .translation ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.primary))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background(kind == .translation ? AnyShapeStyle(.accentFill) : AnyShapeStyle(.controlFill), in: .capsule)
+        case 2:
+            Label { Text(kind.title) } icon: { Image(systemName: kind.systemImage).foregroundStyle(.accent) }
+                .font(.headline)
+        case 3:
+            HStack(spacing: 10) {
+                Image(systemName: kind.systemImage)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.accent)
+                    .frame(width: 32, height: 32)
+                    .background(.accentFill.opacity(0.16), in: .rect(cornerRadius: 10, style: .continuous))
+                    .accessibilityHidden(true)
+                Text(kind.title).font(.headline)
+            }
+        default:
+            Label { Text(kind.title) } icon: { Image(systemName: kind.systemImage).foregroundStyle(.accent) }
+                .textRole(.sectionHeader)
+                .padding(.horizontal, 4)
+        }
+    }
+}
+
+/// A header and its glass card: the header above the card in design 1, inside it otherwise.
+struct PanelSection<Content: View>: View {
+    let kind: PanelKind
+    let design: Int
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        if design == 1 {
+            VStack(alignment: .leading, spacing: 10) {
+                PanelHeader(kind: kind, design: design)
+                content.panelCard()
+            }
+        } else {
+            VStack(alignment: .leading, spacing: 14) {
+                PanelHeader(kind: kind, design: design)
+                content
+            }
+            .panelCard()
+        }
+    }
+}
+
+/// Rows with a line between them, as in the app's detail cards.
+struct PanelRows<Item, Row: View>: View {
+    let items: [Item]
+    @ViewBuilder let row: (Item) -> Row
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                if index > 0 { Divider() }
+                row(item).padding(.vertical, 12)
+            }
+        }
+    }
+}
+
+/// The bookmark on a glass circle: saves, and takes out again.
+struct PanelBookmark: View {
+    let isSaved: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.accent)
+                .contentTransition(.symbolEffect(.replace))
+                .frame(width: 44, height: 44)
+        }
+        .buttonStyle(.plain)
+        .glassEffect(.regular.interactive(), in: .circle)
+        .accessibilityLabel(isSaved ? Text("Remove from Memory") : Text("Save to Memory"))
+    }
+}
+
+/// The translation: a short phrase large, a long text arranged for reading.
+///
+/// TEMPORARY (#297): three designs for long text to choose from.
+/// 1 a heading and plain paragraphs; 2 a heading, the facts as a list with
+/// symbols, then paragraphs; 3 a heading, the facts on one line, the first
+/// paragraph larger as a lead.
+struct PanelTranslationText: View {
+    let text: String
+    let design: Int
+
+    var body: some View {
+        let layout = TranslationLayout(text)
+        Group {
+            if layout.isLong {
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(Array(layout.blocks.enumerated()), id: \.offset) { index, block in
+                        switch block {
+                        case .heading(let heading):
+                            Text(verbatim: heading).font(.title3.weight(.semibold))
+                        case .facts(let facts):
+                            self.facts(facts)
+                        case .paragraph(let paragraph):
+                            Text(verbatim: paragraph)
+                                .font(design == 3 && index == layout.leadIndex ? .title3 : .body)
+                                .lineSpacing(3)
+                        }
+                    }
+                }
+            } else {
+                Text(verbatim: text).font(.title2.weight(.semibold))
+            }
+        }
+        .textSelection(.enabled)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.cardLarge)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero))
+    }
+
+    @ViewBuilder
+    private func facts(_ facts: [String]) -> some View {
+        switch design {
+        case 2:
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(Array(facts.enumerated()), id: \.offset) { _, fact in
+                    Label {
+                        Text(verbatim: fact)
+                    } icon: {
+                        Image(systemName: TranslationLayout.symbol(for: fact)).foregroundStyle(.accent)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
+            .background(.controlFill, in: .rect(cornerRadius: 18, style: .continuous))
+        case 3:
+            Text(verbatim: facts.joined(separator: " · "))
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
+        default:
+            VStack(alignment: .leading, spacing: 4) {
+                ForEach(Array(facts.enumerated()), id: \.offset) { _, fact in
+                    Text(verbatim: fact).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+}
+
+extension TranslationResult.ToneVariant.Tone {
+    fileprivate var panelTitle: LocalizedStringResource {
+        switch self {
+        case .formal: "Formal"
+        case .neutral: "Neutral"
+        case .casual: "Casual"
+        }
+    }
+
+    fileprivate var panelSymbol: String {
+        switch self {
+        case .formal: "briefcase.fill"
+        case .neutral: "person.fill"
+        case .casual: "face.smiling"
+        }
+    }
+}
+
+extension View {
+    /// The clear glass card every part of the panel sits on.
+    fileprivate func panelCard() -> some View {
+        frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Spacing.cardLarge)
+            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+    }
+}
+
+// MARK: - Temporary design switcher
+
+/// TEMPORARY (#297): the parts of the panel whose design is still open. The
+/// maintainer picks with the switcher; then the others and this are removed.
+enum PanelDesign: String {
+    case headers, longText
+
+    var key: String { "panel.design.\(rawValue)" }
+
+    /// Not localised: it never ships.
+    var name: String { self == .headers ? "Headers" : "Long text" }
+
+    var options: [String] {
+        switch self {
+        case .headers: ["Above the card", "Chips, one pair card", "Symbol tiles"]
+        case .longText: ["Heading and paragraphs", "Facts as a list", "Facts on a line, lead paragraph"]
+        }
+    }
+}
+
+/// The temporary "‹ n / N ›" glass switcher for one part.
+struct PanelSwitcher: View {
+    let part: PanelDesign
+    @AppStorage private var stored: Int
+
+    init(_ part: PanelDesign) {
+        self.part = part
+        _stored = AppStorage(wrappedValue: 1, part.key)
+    }
+
+    private var count: Int { part.options.count }
+    private var selection: Int { min(max(stored, 1), count) }
+
+    var body: some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(verbatim: part.name).font(.caption.weight(.semibold))
+                Text(verbatim: part.options[selection - 1]).font(.caption2).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 8)
+            HStack(spacing: 2) {
+                step("chevron.left", by: -1)
+                Text(verbatim: "\(selection) / \(count)").font(.caption.weight(.semibold)).monospacedDigit()
+                step("chevron.right", by: 1)
+            }
+            .padding(.horizontal, 4)
+            .glassEffect(.regular.interactive(), in: .capsule)
+        }
+        .sensoryFeedback(.selection, trigger: stored)
+    }
+
+    private func step(_ systemImage: String, by offset: Int) -> some View {
+        Button {
+            stored = (selection - 1 + offset + count) % count + 1
+        } label: {
+            Image(systemName: systemImage)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.primary)
+                .frame(width: 32, height: 32)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(verbatim: offset < 0 ? "Previous \(part.name) design" : "Next \(part.name) design"))
     }
 }

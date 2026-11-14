@@ -8,6 +8,10 @@ The ExtensionKit provider receives selected text and presents a scrollable panel
 - The source can arrive after the sheet opens; the view observes it and restarts its task when it changes.
 - The translation appears first, followed by words, tones and examples as generated.
 - Replacement is offered only when allowed by the source app and after a successful complete response.
+- The look follows the app's Translate screen: clear glass cards, a symbol in the accent colour on every header, rows with a line between them, a bookmark on a glass circle, medium haptics.
+- A long translation is arranged for reading by `TranslationLayout` (in `TranslationPanelModel.swift`, from line breaks and length alone, no server change): a short first line as a heading, the short lines after it as facts, the rest as paragraphs in body size. A short phrase keeps the large style. A long selection shows its first four lines until "Show all".
+- **While #297 is open**, the headers and the long text each have three designs behind a temporary "‹ n / N ›" switcher, stored in the extension's own defaults.
+- The bookmark saves and takes out again: taking out removes the entry from the inbox as long as the app hasn't imported it.
 - Save the whole translation or an individual word into the shared App Group inbox. The host imports it into its existing SwiftData Memory store when it opens or becomes active. Existing app data is not moved and the schema is unchanged.
 - Import is duplicate-safe. A shared file is removed only after the database save succeeds.
 - Selected text is limited to the server's 600 UTF-16 code-unit limit; longer selections receive an explanation rather than being silently truncated.
