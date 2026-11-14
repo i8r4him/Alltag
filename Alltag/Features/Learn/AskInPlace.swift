@@ -10,12 +10,9 @@ import SwiftUI
 
 /// "How do I say …?" on Learn: type the question in the field and get the
 /// German answer there, without leaving the page. The server is asked when
-/// the learner sends (Return or the arrow), never while they type.
-///
-/// TEMPORARY (#304): three designs to choose from.
-/// 1 the answer card grows under the field and pushes Learn down;
-/// 2 the field opens a spotlight over Learn, which blurs behind it;
-/// 3 the field stays where it is and the answer rises in a sheet.
+/// the learner sends (Return or the arrow), never while they type. The
+/// answer card grows under the field and pushes Learn down; the details
+/// open under it, in place.
 struct AskInPlace: View {
     @Environment(\.services) private var services
     @State private var model: AskModel?
@@ -37,28 +34,17 @@ struct AskInPlace: View {
 
 private struct AskContent: View {
     let model: AskModel
-    @AppStorage(AskDesign.key) private var stored = 1
     @FocusState private var isFocused: Bool
     @State private var showsDetails = false
-    @State private var isShowingSpotlight = false
-    @State private var isShowingSheet = false
     /// Counts the taps that open or start something, for the medium haptic.
     @State private var taps = 0
-    @Namespace private var zoom
 
-    private var design: Int { AskDesign.clamped(stored) }
     private var text: Binding<String> { Binding { model.text } set: { model.text = $0 } }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.grid) {
-            if design == 2 {
-                spotlightButton
-            } else {
-                AskField(text: text, isFocused: $isFocused, canSend: model.canSend, onSend: send, onClear: clear)
-                    .matchedTransitionSource(id: Self.zoomID, in: zoom)
-            }
-            AskDesignSwitcher()
-            if design == 1, model.hasAnswer {
+            AskField(text: text, isFocused: $isFocused, canSend: model.canSend, onSend: send, onClear: clear)
+            if model.hasAnswer {
                 AskAnswer(model: model, showsDetails: showsDetails)
                     .transition(.opacity)
                 if model.translate.result != nil {
@@ -82,65 +68,18 @@ private struct AskContent: View {
             showsDetails = false
         }
         .onChange(of: isFocused) { _, focused in if focused { taps += 1 } }
-        // The answer in a sheet that rises out of the field; Learn stays where it is.
-        .sheet(isPresented: $isShowingSheet) {
-            ScrollView {
-                AskAnswer(model: model, showsDetails: true)
-                    .padding(.horizontal, Spacing.screen)
-                    .padding(.top, 28)
-                    .padding(.bottom, 24)
-            }
-            .fontDesign(.rounded)
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
-            .navigationTransition(.zoom(sourceID: Self.zoomID, in: zoom))
-        }
-        // The spotlight: the field and its answer on top, Learn blurred behind.
-        .fullScreenCover(isPresented: $isShowingSpotlight) {
-            AskSpotlight(model: model, text: text, onSend: send, onClear: model.clear)
-                .presentationBackground(.ultraThinMaterial)
-                .navigationTransition(.zoom(sourceID: Self.zoomID, in: zoom))
-        }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
         .sensoryFeedback(.impact(weight: .medium), trigger: model.sent)
     }
 
-    private static let zoomID = "ask"
-
     private func send() {
         guard model.send() != nil else { return }
         isFocused = false
-        if design == 3 { isShowingSheet = true }
     }
 
     private func clear() {
         model.clear()
         isFocused = true
-    }
-
-    /// The field as a button: it opens the spotlight, where the typing happens.
-    private var spotlightButton: some View {
-        Button {
-            taps += 1
-            isShowingSpotlight = true
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: LearnTool.howToSay.systemImage)
-                    .font(.title3)
-                    .foregroundStyle(.accent)
-                (model.text.isEmpty ? Text("How do I say …?") : Text(verbatim: model.text))
-                    .font(.title3)
-                    .foregroundStyle(model.text.isEmpty ? .secondary : .primary)
-                    .lineLimit(1)
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .frame(height: 60)
-            .glassEffect(.regular.interactive(), in: .capsule)
-        }
-        .buttonStyle(.plain)
-        .matchedTransitionSource(id: Self.zoomID, in: zoom)
-        .accessibilityLabel(Text(LearnTool.howToSay.title))
     }
 }
 
@@ -244,46 +183,5 @@ struct AskAnswer: View {
         } toggleSave: {
             translate.toggleSave(in: context)
         }
-    }
-}
-
-/// The spotlight: the field at the top, ready to type in, and the answer
-/// with its details under it, over a blurred Learn.
-private struct AskSpotlight: View {
-    let model: AskModel
-    @Binding var text: String
-    let onSend: () -> Void
-    let onClear: () -> Void
-    @Environment(\.dismiss) private var dismiss
-    @FocusState private var isFocused: Bool
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Spacing.grid) {
-                HStack(spacing: 10) {
-                    AskField(text: $text, isFocused: $isFocused, canSend: model.canSend,
-                             onSend: {
-                                 onSend()
-                                 isFocused = false
-                             },
-                             onClear: {
-                                 onClear()
-                                 isFocused = true
-                             })
-                    GlassButton(systemImage: "xmark", accessibilityLabel: "Close", diameter: 44) { dismiss() }
-                }
-                if model.hasAnswer {
-                    AskAnswer(model: model, showsDetails: true)
-                        .transition(.opacity)
-                }
-            }
-            .padding(.horizontal, Spacing.screen)
-            .padding(.top, 12)
-            .padding(.bottom, 24)
-            .animation(.easeOut(duration: 0.25), value: model.hasAnswer)
-        }
-        .scrollDismissesKeyboard(.interactively)
-        .fontDesign(.rounded)
-        .onAppear { isFocused = true }
     }
 }

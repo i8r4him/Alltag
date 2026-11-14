@@ -215,7 +215,6 @@ Alltag/                                   ← repo root
 │  │  │  ├─ LearnTools.swift              the "How do I say …?" field (answers in place), Translate and Articles
 │  │  │  ├─ AskInPlace.swift              the field you type in on Learn and the German answer there, with Translate's parts (#304)
 │  │  │  ├─ AskModel.swift                Translate's model, asked only when the learner sends (tested)
-│  │  │  ├─ AskDesign.swift               TEMPORARY (#304): the "‹ n / N ›" switcher for how the answer appears
 │  │  │  ├─ MistakesCard.swift            the mistakes due now and their count; "All fixed for now" with when the next returns; empty state (#248, #251)
 │  │  │  ├─ LearnComponents.swift         LearnScreen, LearnHeroCard, LearnSection, LearnList, LearnRow
 │  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour
