@@ -214,8 +214,12 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ArticleRoundView.swift        a round full screen: the noun, der · die · das, the answer, the summary
 │  │  │  ├─ ArticleRoundModel.swift       asks the server for the nouns, keeps wrong answers for Fix your mistakes
 │  │  │  ├─ ArticleTrainer.swift          the round's queue: a missed noun comes back, and first next time
-│  │  │  ├─ ArticleLookupCard.swift       the field and the result cards, "Save to Memory"
-│  │  │  ├─ ArticleRules.swift            the clues (feminine endings, -chen, compounds, the plural)
+│  │  │  ├─ ArticleLookupCard.swift       the field; searching, not found, offline and other failure cards
+│  │  │  ├─ ArticleLookupModel.swift      the look-up, why it failed, what is saved, the history (UserDefaults)
+│  │  │  ├─ ArticleLookupHistory.swift    the toolbar's sheet of looked-up words
+│  │  │  ├─ ArticleWordCard.swift         a found noun like a dictionary entry, with the bookmark to save or unsave
+│  │  │  ├─ ArticleRules.swift            the clues as a grid of glass tiles (endings, -chen, compounds, the plural)
+│  │  │  ├─ ArticleRuleSheet.swift        a clue zoomed out of its tile: examples, "Next clue"
 │  │  │  ├─ ArticleMemory.swift           wrong picks → Memory › Mistakes; looked-up nouns → Memory › Saved
 │  │  │  └─ Noun.swift                    Article, Noun
 │  │  ├─ Write/
@@ -445,7 +449,7 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 `userName, nativeLanguage, goal, level, dailyTime, nudgeTime, interests: Set, permissions, isPro, settings toggles, memoryItems, phrasebook, solvedRules: Set, savedTranslations`, plus per-feature view models: `ConversationModel(phase, messages, step, mode, showHint)`, `ActivityModel(index, picked, score, done)`, `RuleModel(picked: [Int], result)`.
 
 ## Articles
-Learn › Articles, in Today's look. A glass hero card starts **a round**: ten nouns for the learner's level, asked for from OpenAI through the `articles` function (`ArticleService`; no noun list ships in the app), shown full screen like an activity with der · die · das as three glass answers. A wrong answer is kept at once in Memory › Mistakes (`ArticleMemory`), so it comes up in Fix your mistakes, and comes back in the round and first in the next one (`ArticleTrainer`). **Look up a word** asks the same function for a noun's article, plural, meaning and an example, one card per meaning, with "Save to Memory". **A few useful clues** are written in the app. Generated facts still need a linguistic eye: the JSON schema checks the shape, not the German.
+Learn › Articles, in Today's look. A glass hero card starts **a round**: ten nouns for the learner's level, asked for from OpenAI through the `articles` function (`ArticleService`; no noun list ships in the app), shown full screen like an activity with der · die · das as three glass answers. A wrong answer is kept at once in Memory › Mistakes (`ArticleMemory`), so it comes up in Fix your mistakes, and comes back in the round and first in the next one (`ArticleTrainer`). **Look up a word** asks the same function for a noun's article, plural, meaning and an example, one card per meaning, laid out like a dictionary entry with a bookmark that saves it to Memory and takes it out again. Searching, "no noun", offline, the cloud switched off and the daily limit each have their own card. The words looked up are kept on the device (the last 30, in `UserDefaults`, not the database) and open again from the toolbar without asking the server. **A few useful clues** are written in the app: a grid of glass tiles, each opening in a sheet that zooms out of it. The search field, the history and the tiles answer with a medium haptic tap. Generated facts still need a linguistic eye: the JSON schema checks the shape, not the German.
 
 ## Simulated vs real
 - **Real in native build (phase 1):** navigation, all UI states, AVSpeechSynthesizer pronunciation, haptics, local mock data, SwiftData persistence.

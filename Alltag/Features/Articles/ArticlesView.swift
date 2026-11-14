@@ -14,19 +14,38 @@ import SwiftUI
 struct ArticlesView: View {
     var level: Level = .a1
     @Environment(AppState.self) private var appState
+    @State private var lookup = ArticleLookupModel()
+    @State private var isShowingHistory = false
+    @Namespace private var transition
 
     var body: some View {
         LearnScreen(title: "Articles") {
             ArticlesHeroCard(level: level) { appState.present(.articles) }
             LearnSection(title: "Look up a word") {
-                ArticleLookupCard(level: level)
+                ArticleLookupCard(level: level, model: lookup)
             }
             LearnSection(title: "A few useful clues") {
                 ArticleRules()
             }
         }
         .scrollDismissesKeyboard(.interactively)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Looked up", systemImage: "clock.arrow.circlepath") { isShowingHistory = true }
+            }
+            .matchedTransitionSource(id: Self.historyTransition, in: transition)
+        }
+        // The history grows out of its button and shrinks back into it.
+        .sheet(isPresented: $isShowingHistory) {
+            ArticleLookupHistory(model: lookup)
+                .navigationTransition(.zoom(sourceID: Self.historyTransition, in: transition))
+        }
+        .sensoryFeedback(.impact(weight: .medium), trigger: isShowingHistory) { _, isShowing in isShowing }
+        // On the screen, not the card, so it sits at the bottom above the tab bar.
+        .toast($lookup.notice)
     }
+
+    private static let historyTransition = "history"
 }
 
 /// The Focus card's layout: what a round is, its artwork, and the big button.
@@ -49,8 +68,7 @@ private struct ArticlesHeroCard: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .combine)
-                // "Abc" is wider than the other symbols; at the default size it runs off the tile.
-                ScenarioArtwork(systemImage: "textformat.abc", symbolSize: 38)
+                ScenarioArtwork(systemImage: LearnTool.articles.systemImage)
                     .frame(width: artworkSize, height: artworkSize)
             }
             GlassEffectContainer {
