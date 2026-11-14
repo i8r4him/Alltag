@@ -243,9 +243,12 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ArticleMemory.swift           wrong picks → Memory › Mistakes; looked-up nouns → Memory › Saved
 │  │  │  └─ Noun.swift                    Article, Noun
 │  │  ├─ Write/                           (#263)
-│  │  │  ├─ WriteView.swift               today's task for the level, "New task" from the server, the written set
-│  │  │  ├─ WritingTask.swift             a task (situation, recipient, Sie / du, three points, phrases), the set's day pick
-│  │  │  ├─ WritingTasks+A/B/C.swift      the written set: six tasks per level, A1 to C1
+│  │  │  ├─ WriteView.swift               the choice of length and kind, today's task, My own topic, the written set
+│  │  │  ├─ WriteHeroCard.swift           the task to write now, "Start writing" and "New task" from the server
+│  │  │  ├─ WriteOptions.swift            TEMPORARY (#263): three designs for choosing the length and the kind
+│  │  │  ├─ WritingOptions.swift          WritingLength (Quick, Standard, Exam: word ranges per level) and WritingKind (tested)
+│  │  │  ├─ WritingTask.swift             a task (situation, recipient, Sie / du, points, phrases), sized to a length; the day's pick
+│  │  │  ├─ WritingTasks+A/B/C/More.swift the written set: messages, emails, complaints and texts about the learner's day, A1 to C1
 │  │  │  ├─ WriteModel.swift              writing, the check, saving to Your sessions and Fix your mistakes (tested)
 │  │  │  ├─ WritingSessionView.swift      the task card, phrases, the growing text field and word count, Check
 │  │  │  └─ WritingResultView.swift       the summary, the sentences (three designs on trial), corrected text, points
@@ -482,7 +485,7 @@ Learn › Articles, in Today's look. A glass hero card starts **a round**: ten n
 - **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. On-device conversations keep their scripted replies so each scenario reaches its goal.
 - **Live voice on iPhone:** OpenAI Realtime through the existing Supabase credential broker, with both speakers' captions. Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange.
 - **Translate:** OpenAI through Supabase when cloud use is allowed. The translation, words, tone and examples appear as they arrive. If cloud use is unavailable, the screen reports the error rather than showing an on-device translation.
-- **Write:** the written set (six tasks per level) works offline. "New task" and the correction ask OpenAI through the `write` function when cloud use is allowed; the sentences arrive one by one, and the fixes go to Fix your mistakes. The on-device model isn't used: it can't mark a whole text well enough.
+- **Write:** the written set (at least eight tasks per level, at three lengths) works offline. "My own topic" is free writing with the same correction. "New task" and the correction ask OpenAI through the `write` function when cloud use is allowed; the sentences arrive one by one, and the fixes go to Fix your mistakes. The on-device model isn't used: it can't mark a whole text well enough.
 - **Simulated:** scripted companion replies & feedback, placement.
 - **Later:** see the framework table below.
 

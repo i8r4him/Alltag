@@ -29,10 +29,12 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+// Chosen by measuring (14 Nov 2026, see supabase/README.md): Luna at low effort writes a good task in
+// about 4 s; Terra at low effort found every planted mistake and shows the first sentence after 3 s.
 const TASK_MODEL = Deno.env.get("WRITE_TASK_MODEL") ?? "gpt-6-luna";
-const TASK_EFFORT = Deno.env.get("WRITE_TASK_EFFORT") ?? "medium";
-const CHECK_MODEL = Deno.env.get("WRITE_CHECK_MODEL") ?? "gpt-6-luna";
-const CHECK_EFFORT = Deno.env.get("WRITE_CHECK_EFFORT") ?? "high";
+const TASK_EFFORT = Deno.env.get("WRITE_TASK_EFFORT") ?? "low";
+const CHECK_MODEL = Deno.env.get("WRITE_CHECK_MODEL") ?? "gpt-6.1-terra";
+const CHECK_EFFORT = Deno.env.get("WRITE_CHECK_EFFORT") ?? "low";
 const TASKS_PER_USER = Number(Deno.env.get("TRANSLATE_PER_USER_DAILY") ?? "200");
 const TASKS_GLOBAL = Number(Deno.env.get("TRANSLATE_GLOBAL_DAILY") ?? "20000");
 const CHECKS_PER_USER = Number(Deno.env.get("CHECK_PER_USER_DAILY") ?? "300");

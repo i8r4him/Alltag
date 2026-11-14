@@ -114,8 +114,36 @@ Authenticated OpenAI noun lookup (`action: lookup`, `text`) and random practice 
 
 Learn › Write. Two actions, both with strict JSON and `store: false`; nothing the learner wrote is stored.
 
-- `{"action": "task", "level": "B1", "exclude": "<recent titles>"}` writes a new everyday task for the level: title, situation, recipient, register, three points, the word range, an SF Symbol and three or four phrases. It counts against the translation quota (`translations`).
-- `{"action": "check", "level": "B1", "task": "<the task>", "text": "<the learner's text>", "stream": "true"}` marks the text sentence by sentence (fix, note or good, with the correction), plus the corrected text, whether each point was covered and a short summary. It counts against the sentence-check quota (`german_checks`). With `stream`, OpenAI's events are forwarded so the app shows each sentence as it is done.
-- Models: `WRITE_TASK_MODEL` / `WRITE_TASK_EFFORT` (default `gpt-6-luna`, medium) and `WRITE_CHECK_MODEL` / `WRITE_CHECK_EFFORT` (default `gpt-6-luna`, high). Accounts in `realtime_developers` may pass `model` (`gpt-6-luna`, `gpt-6.1-terra`, `gpt-6.1-sol`) and `effort` to compare; the OpenAI project must allow that model.
+- `{"action": "task", "level": "B1", "length": "quick", "kind": "email", "exclude": "<recent titles>"}` writes a new everyday task for the level: title, situation, recipient, register, kind, the points, the word range, an SF Symbol and three or four phrases. `length` is `quick`, `standard` (the default) or `exam`; the function sets the word range from its own table (the same as the app's `WritingLength`) and the number of points (two for quick, three otherwise). `kind` is `message`, `email`, `complaint` or `day` (a personal text with no recipient); without it the model chooses. It counts against the translation quota (`translations`).
+- `{"action": "check", "level": "B1", "task": "<the task>", "text": "<the learner's text>", "stream": "true"}` marks the text sentence by sentence (fix, note or good, with the correction), plus the corrected text, whether each point was covered and a short summary. Without `task` it is free writing (the learner's own topic): the German alone is marked and `points` is empty. It counts against the sentence-check quota (`german_checks`). With `stream`, OpenAI's events are forwarded so the app shows each sentence as it is done.
+- Models: `WRITE_TASK_MODEL` / `WRITE_TASK_EFFORT` (default `gpt-6-luna`, low) and `WRITE_CHECK_MODEL` / `WRITE_CHECK_EFFORT` (default `gpt-6.1-terra`, low), chosen by the measurement below. Accounts in `realtime_developers` may pass `model` (`gpt-6-luna`, `gpt-6.1-terra`, `gpt-6.1-sol`) and `effort` to compare; the OpenAI project must allow that model.
 - Every non-streamed answer carries `usage` (model, effort, input, output and reasoning tokens), to compare cost.
 - No migration.
+
+### Which model (measured 14 Nov 2026)
+
+Prices from OpenAI's pricing page: Luna $0.10 in / $0.50 out per million tokens, Terra $1 / $5; thinking is billed as output. Checks: four learner texts with planted mistakes (A2 with 5, B1 with 4, C1 with 5 subtle ones, and a B2 text with none, to count false fixes), each checked twice per setting, streamed. Tasks: one each for A1, B1 and C1 per setting.
+
+| Check (per call, 4 texts × 2 runs) | Mistakes found (of 28) | False fixes | First sentence | Total | Output tokens | Price | 1,000 checks |
+|---|---|---|---|---|---|---|---|
+| Luna, low | 26 | 3 | 5.4 s | 12 s | 1,350 | $0.0008 | $0.76 |
+| Luna, medium | 27 | 4 | 17 s | 25 s | 2,386 | $0.0013 | $1.28 |
+| Luna, high | 28 | 2 | 24 s | 31 s | 3,402 | $0.0018 | $1.79 |
+| Terra, none | 26 | 1 | 2.1 s | 12 s | 925 | $0.0055 | $5.52 |
+| **Terra, low** | **28** | **1** | **3.1 s** | **13 s** | 1,016 | **$0.0060** | **$5.97** |
+| Terra, medium | 28 | 1 | 5.7 s | 15 s | 1,252 | $0.0072 | $7.15 |
+
+| Task (per call, A1 · B1 · C1) | Time | Output tokens | Price |
+|---|---|---|---|
+| **Luna, low** | **4.4 s** | 268 | **$0.0002** |
+| Luna, medium | 10 s | 579 | $0.0004 |
+| Luna, high | 10 s | 779 | $0.0005 |
+| Terra, none | 4.4 s | 221 | $0.0022 |
+| Terra, low | 4.5 s | 248 | $0.0023 |
+| Terra, medium | 5.5 s | 356 | $0.0029 |
+
+- **Checks: Terra at low effort.** It found every planted mistake, like Luna at high, but shows the first sentence after 3 s instead of 24 s and marks the fewest correct sentences as wrong. It costs 3.3 times Luna at high. Luna at low missed the misspelt word both times.
+- **Luna's false fixes** were about facts, not German: it "corrected" „mehr als 120 Minuten" because the task said two hours. Terra's one false fix was a defensible word choice („den Rest des Treffens erreichen").
+- **Tasks: Luna at low effort.** Every task was at the level, concrete and in correct German with all six settings; Luna at low is the fastest and a tenth of Terra's price.
+- **Per learner:** someone who checks 30 texts and asks for 15 new tasks a month costs about $0.18 (Luna at high: $0.06).
+- Luna sometimes changes the line breaks in `corrected`; the app lays the corrections over the learner's own text, so it isn't affected.
