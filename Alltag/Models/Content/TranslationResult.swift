@@ -8,9 +8,9 @@
 import Foundation
 
 /// A translation with the explanations shown in Translate.
-struct TranslationResult: Hashable, Sendable {
+struct TranslationResult: Hashable, Sendable, Codable {
     /// A word or phrase from the translation, explained.
-    struct WordBreakdown: Hashable, Sendable {
+    struct WordBreakdown: Hashable, Sendable, Codable {
         let word: String
         /// Grammar note, e.g. "noun · pl. Termine".
         let grammar: String
@@ -18,8 +18,8 @@ struct TranslationResult: Hashable, Sendable {
     }
 
     /// The same sentence in another register.
-    struct ToneVariant: Hashable, Sendable {
-        enum Tone: String, CaseIterable, Sendable {
+    struct ToneVariant: Hashable, Sendable, Codable {
+        enum Tone: String, CaseIterable, Sendable, Codable {
             case formal = "Formal"
             case neutral = "Neutral"
             case casual = "Casual"
@@ -30,7 +30,7 @@ struct TranslationResult: Hashable, Sendable {
     }
 
     /// An example sentence using the same words.
-    struct Example: Hashable, Sendable {
+    struct Example: Hashable, Sendable, Codable {
         let german: String
         let english: String
     }

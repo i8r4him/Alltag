@@ -7,111 +7,160 @@
 
 import SwiftUI
 
-/// "Word by word": each word or phrase with its grammar and meaning.
-struct WordByWordSection: View {
-    let words: [TranslationResult.WordBreakdown]
+/// The three parts that explain a translation: word by word, tone, in context.
+enum TranslateSection: String, CaseIterable, Identifiable {
+    case words, tone, context
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionHeader("Word by word").padding(.horizontal, 4)
-            VStack(spacing: 0) {
-                ForEach(Array(words.enumerated()), id: \.offset) { index, word in
-                    if index > 0 { Divider().padding(.leading, 18) }
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(verbatim: word.word)
-                            .font(.headline)
-                            .foregroundStyle(.accent)
-                        Text(verbatim: word.meaning)
-                            .font(.body)
-                        Text(verbatim: word.grammar)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(Spacing.card)
-                    .accessibilityElement(children: .combine)
-                }
-            }
-            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+    var id: Self { self }
+
+    var title: LocalizedStringResource {
+        switch self {
+        case .words: "Word by word"
+        case .tone: "Tone"
+        case .context: "In context"
         }
-        .fontDesign(.rounded)
+    }
+
+    var systemImage: String {
+        switch self {
+        case .words: "text.word.spacing"
+        case .tone: "theatermasks.fill"
+        case .context: "text.bubble.fill"
+        }
+    }
+
+    func isEmpty(in result: TranslationResult) -> Bool {
+        switch self {
+        case .words: result.words.isEmpty
+        case .tone: result.tones.isEmpty
+        case .context: result.examples.isEmpty
+        }
     }
 }
 
-/// "Tone": a note on register, and the sentence formal, neutral and casual.
-struct ToneSection: View {
-    let note: String
-    let tones: [TranslationResult.ToneVariant]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionHeader("Tone").padding(.horizontal, 4)
-            if !note.isEmpty { Text(verbatim: note)
-                .textRole(.bodySmall)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 4)
-            }
-            VStack(spacing: 0) {
-                ForEach(Array(tones.enumerated()), id: \.offset) { index, tone in
-                    if index > 0 { Divider().padding(.leading, 18) }
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(label(for: tone.tone))
-                            .textRole(.meta)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.accent)
-                        Text(verbatim: tone.german)
-                            .textRole(.body)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(Spacing.card)
-                    .accessibilityElement(children: .combine)
-                }
-            }
-            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-        }
-        .fontDesign(.rounded)
-    }
-
-    private func label(for tone: TranslationResult.ToneVariant.Tone) -> LocalizedStringResource {
-        switch tone {
+extension TranslationResult.ToneVariant.Tone {
+    var title: LocalizedStringResource {
+        switch self {
         case .formal: "Formal"
         case .neutral: "Neutral"
         case .casual: "Casual"
         }
     }
+
+    var systemImage: String {
+        switch self {
+        case .formal: "briefcase.fill"
+        case .neutral: "person.fill"
+        case .casual: "face.smiling"
+        }
+    }
 }
 
-/// "In context": example sentences; tap one to hear it.
-struct InContextSection: View {
-    let examples: [TranslationResult.Example]
+/// The rows of one section, without a card around them.
+struct TranslateSectionRows: View {
+    let section: TranslateSection
+    let result: TranslationResult
     let onListen: (String) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionHeader("In context").padding(.horizontal, 4)
-            ForEach(Array(examples.enumerated()), id: \.offset) { _, example in
-                Button { onListen(example.german) } label: {
-                    HStack(alignment: .top, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(verbatim: example.german).textRole(.body).foregroundStyle(.primary)
-                            Text(verbatim: example.english).textRole(.bodySmall).foregroundStyle(.secondary)
-                        }
-                        .multilineTextAlignment(.leading)
-                        Spacer(minLength: 8)
-                        Image(systemName: "speaker.wave.2")
-                            .foregroundStyle(.tertiary)
-                            .accessibilityHidden(true)
+        VStack(alignment: .leading, spacing: 0) {
+            switch section {
+            case .words:
+                ForEach(Array(result.words.enumerated()), id: \.offset) { index, word in
+                    if index > 0 { Divider() }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(verbatim: word.word)
+                            .font(.headline)
+                            .foregroundStyle(.accent)
+                        Text(verbatim: word.meaning)
+                        Text(verbatim: word.grammar)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 14)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-                    .contentShape(.rect(cornerRadius: Radius.innerCard, style: .continuous))
+                    .padding(.vertical, 12)
+                    .accessibilityElement(children: .combine)
                 }
-                .buttonStyle(.card)
-                .accessibilityElement(children: .combine)
-                .accessibilityHint("Plays the sentence.")
+            case .tone:
+                // The note gets its own row, with room above and below, not squeezed into the card's edge.
+                if !result.note.isEmpty {
+                    Label {
+                        Text(verbatim: result.note)
+                    } icon: {
+                        Image(systemName: "info.circle.fill").foregroundStyle(.accent)
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 12)
+                }
+                ForEach(Array(result.tones.enumerated()), id: \.offset) { index, tone in
+                    if index > 0 || !result.note.isEmpty { Divider() }
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        Label { Text(tone.tone.title) } icon: { Image(systemName: tone.tone.systemImage) }
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.accent)
+                            .frame(width: 104, alignment: .leading)
+                        Text(verbatim: tone.german)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.vertical, 12)
+                    .accessibilityElement(children: .combine)
+                }
+            case .context:
+                ForEach(Array(result.examples.enumerated()), id: \.offset) { index, example in
+                    if index > 0 { Divider() }
+                    Button { onListen(example.german) } label: {
+                        HStack(alignment: .top, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(verbatim: example.german).foregroundStyle(.primary)
+                                Text(verbatim: example.english)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            Image(systemName: "speaker.wave.2.fill")
+                                .foregroundStyle(.accent)
+                                .accessibilityHidden(true)
+                        }
+                        .padding(.vertical, 12)
+                        .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityHint(Text("Plays the sentence."))
+                }
             }
         }
+    }
+}
+
+/// Word by word, tone and in context: each part on its own glass card, its
+/// symbol in the header. A part slides in when it arrives.
+struct TranslateDetails: View {
+    let result: TranslationResult
+    let onListen: (String) -> Void
+
+    private var sections: [TranslateSection] { TranslateSection.allCases.filter { !$0.isEmpty(in: result) } }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            ForEach(sections) { section in
+                VStack(alignment: .leading, spacing: 10) {
+                    Label { Text(section.title) } icon: {
+                        Image(systemName: section.systemImage).foregroundStyle(.accent)
+                    }
+                    .textRole(.sectionHeader)
+                    .padding(.horizontal, 4)
+                    TranslateSectionRows(section: section, result: result, onListen: onListen)
+                        .padding(.horizontal, Spacing.cardLarge)
+                        .padding(.vertical, 6)
+                        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.easeOut(duration: 0.3), value: sections)
     }
 }

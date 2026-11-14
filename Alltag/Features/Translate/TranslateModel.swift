@@ -19,16 +19,24 @@ final class TranslateModel {
     private(set) var hasAttempted = false
     /// Word-by-word, tones and examples are being added.
     private(set) var isExplaining = false
+    /// Why the last translation failed, until the text changes or it is tried again.
+    private(set) var failure: CloudFailure?
     /// Languages to download before this text can be translated on device.
     private(set) var missingLanguages: (source: Locale.Language, target: Locale.Language)?
     /// Direction chosen with the swap button when the text isn't recognised.
     private var prefersGermanSource = false
+    /// The text put in the field from the history, with its translation: changing
+    /// the field to it must not clear what was just shown.
+    private(set) var restoredInput: String?
+    /// The recent translations, for the toolbar's history.
+    let history: TranslationHistory
 
     private let translation: any TranslationService
     private let voice: any VoiceService
 
     /// Starts empty unless another screen supplied text.
-    init(text: String?, services: AppServices) {
+    init(text: String?, services: AppServices, defaults: UserDefaults = .standard) {
+        history = TranslationHistory(defaults: defaults)
         let trimmed = text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         input = trimmed
         translation = services.translation
@@ -73,6 +81,7 @@ final class TranslateModel {
         defer { isTranslating = false }
         hasAttempted = true
         missingLanguages = nil
+        failure = nil
         do {
             let translated = try await translation.translate(text) { partial in
                 guard !Task.isCancelled, self.input.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
@@ -87,20 +96,40 @@ final class TranslateModel {
         } catch {
             guard !Task.isCancelled, input.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
             result = nil
+            failure = CloudFailure(error)
         }
 
-        guard let plain = result, !plain.isExplained else { return }
-        isExplaining = true
-        let explained = await translation.explain(plain)
-        // Only if the learner hasn't typed something else meanwhile.
-        if !Task.isCancelled, input.trimmingCharacters(in: .whitespacesAndNewlines) == text, result == plain { result = explained }
+        if let plain = result, !plain.isExplained {
+            isExplaining = true
+            let explained = await translation.explain(plain)
+            // Only if the learner hasn't typed something else meanwhile.
+            if !Task.isCancelled, input.trimmingCharacters(in: .whitespacesAndNewlines) == text, result == plain { result = explained }
+            isExplaining = false
+        }
+        if !Task.isCancelled, let result, input.trimmingCharacters(in: .whitespacesAndNewlines) == text {
+            history.remember(text, result: result)
+        }
+    }
+
+    /// Shows a translation from the history again, as it was, without asking the server.
+    func show(_ lookup: TranslationLookup) {
+        restoredInput = lookup.input
+        input = lookup.input
+        result = lookup.result
+        missingLanguages = nil
+        failure = nil
+        isTranslating = false
         isExplaining = false
+        hasAttempted = true
+        history.remember(lookup.input, result: lookup.result)
     }
 
     func clearResult() {
         result = nil
         missingLanguages = nil
+        failure = nil
         hasAttempted = false
+        restoredInput = nil
     }
 
     /// The languages finished downloading: try again.

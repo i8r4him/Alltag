@@ -21,34 +21,6 @@ struct ArticleLookup: Codable, Identifiable, Hashable {
     var id: String { query.lowercased() }
 }
 
-/// Why a word couldn't be looked up.
-enum ArticleLookupFailure: Equatable {
-    /// No internet: no Wi‑Fi and no mobile data, or the connection dropped.
-    case offline
-    /// The learner hasn't allowed Alltag to use the cloud.
-    case cloudOff
-    /// The day's quota is used up.
-    case dailyLimit
-    case other
-
-    init(_ error: any Error) {
-        let offline: Set<URLError.Code> = [.notConnectedToInternet, .networkConnectionLost, .timedOut,
-                                           .cannotFindHost, .cannotConnectToHost, .dataNotAllowed,
-                                           .internationalRoamingOff]
-        if let error = error as? URLError, offline.contains(error.code) {
-            self = .offline
-        } else if let error = error as? RealtimeServiceError {
-            switch error {
-            case .unavailable, .notConfigured: self = .cloudOff
-            case .dailyLimit: self = .dailyLimit
-            default: self = .other
-            }
-        } else {
-            self = .other
-        }
-    }
-}
-
 /// "Look up a word": the field, what came back, what was saved, and the
 /// words looked up before. Owned by the Articles screen, so the toolbar's
 /// history and the toast at the bottom of the screen share it.
@@ -65,7 +37,7 @@ final class ArticleLookupModel {
     private(set) var answer: ArticleAnswer?
     private(set) var isLookingUp = false
     /// Why the last look-up failed, until the field changes or it is tried again.
-    private(set) var failure: ArticleLookupFailure?
+    private(set) var failure: CloudFailure?
     private(set) var saved = Set<String>()
     private(set) var history: [ArticleLookup]
 
@@ -109,7 +81,7 @@ final class ArticleLookupModel {
                 }
             } catch {
                 guard let self, !Task.isCancelled else { return }
-                failure = ArticleLookupFailure(error)
+                failure = CloudFailure(error)
             }
             self?.isLookingUp = false
         }

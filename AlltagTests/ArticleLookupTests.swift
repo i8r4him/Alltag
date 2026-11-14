@@ -75,11 +75,11 @@ struct ArticleLookupTests {
     }
 
     @Test("Each failure gets its own reason, and changing the word clears it",
-          arguments: [(URLError(.notConnectedToInternet) as any Error, ArticleLookupFailure.offline),
+          arguments: [(URLError(.notConnectedToInternet) as any Error, CloudFailure.offline),
                       (RealtimeServiceError.unavailable, .cloudOff),
                       (RealtimeServiceError.dailyLimit, .dailyLimit),
                       (RealtimeServiceError.upstream, .other)])
-    func failure(error: any Error, expected: ArticleLookupFailure) async throws {
+    func failure(error: any Error, expected: CloudFailure) async throws {
         let model = ArticleLookupModel(defaults: try defaults())
         await lookUp("Wohnung", in: model, with: LookupStub(error: error))
         #expect(model.failure == expected)

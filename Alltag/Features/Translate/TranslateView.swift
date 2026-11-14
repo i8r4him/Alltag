@@ -45,57 +45,56 @@ private struct TranslateContent: View {
     /// Set to ask the system to download the translation languages.
     @State private var download: TranslationSession.Configuration?
     @State private var translationTask: Task<Void, Never>?
+    /// Counts Translate, swap, prompt, clear, paste and copy taps, for the medium haptic.
+    @State private var taps = 0
+    /// Set by swap: translate the new text once changing it has cleared the old result.
+    @State private var translatesAfterSwap = false
+    @State private var isShowingHistory = false
+    /// The screen has appeared before: text another screen supplied is translated only the first time.
+    @State private var hasOpened = false
+    @Namespace private var transition
+
+    private var isEmpty: Bool { model.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    private var prompt: LocalizedStringResource { isAsking ? "How do I say …?" : "Type or paste text" }
+    /// Nothing has been asked yet: the welcome, or whatever takes its place.
+    private var isStart: Bool { !isAsking && !model.hasAttempted && model.result == nil }
+    private var isLoadingResult: Bool { model.isTranslating && model.result == nil }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                if !isAsking, !model.hasAttempted, model.result == nil {
-                    TranslateWelcome { model.input = $0 }
-                        .padding(.vertical, Spacing.card)
-                }
-                sourceCard
-                Button(isAsking ? "Say it in German" : "Translate", systemImage: isAsking ? "quote.bubble.fill" : "translate") {
-                    translate()
-                }
-                .buttonStyle(.primary)
-                .disabled(model.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.isTranslating)
-                if model.hasAttempted || model.result != nil { resultCard }
-                if let result = model.result {
-                    VStack(alignment: .leading, spacing: 24) {
-                        if !result.words.isEmpty { WordByWordSection(words: result.words) }
-                        if !result.tones.isEmpty { ToneSection(note: result.note, tones: result.tones) }
-                        if !result.examples.isEmpty {
-                            InContextSection(examples: result.examples) { german in
-                                Task { await model.listen(to: german) }
-                            }
-                        }
-                        if model.isExplaining || model.isTranslating {
-                            Label("Adding word by word, tone and examples…", systemImage: "sparkles")
-                                .textRole(.meta)
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal, 4)
-                        }
-                    }
-                    .padding(.top, 14)
-                }
+            VStack(alignment: .leading, spacing: Spacing.grid) {
+                input
+                states
+                details
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 32)
             .animation(.easeOut(duration: 0.25), value: model.result)
         }
         .scrollDismissesKeyboard(.interactively)
+        .safeAreaInset(edge: .bottom) {
+            // Like a message composer: the button stays above the keyboard.
+            translateButton
+                .padding(.horizontal, Spacing.screen)
+                .padding(.vertical, 8)
+        }
         .skyBackground()
         .fontDesign(.rounded)
-        .navigationBarTitleDisplayMode(.inline)
+        // A title like Learn's other screens; the languages and the swap are in the card.
+        .navigationTitle(isAsking ? Text("How do I say …?") : Text("Translate"))
+        .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                if isAsking {
-                    Text("How do I say …?").font(.headline)
-                } else {
-                    languageCapsule
-                }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("History", systemImage: "clock.arrow.circlepath") { isShowingHistory = true }
             }
+            .matchedTransitionSource(id: Self.historyTransition, in: transition)
         }
+        // The history grows out of its button and shrinks back into it.
+        .sheet(isPresented: $isShowingHistory) {
+            TranslateHistorySheet(history: model.history, onChoose: show)
+                .navigationTransition(.zoom(sourceID: Self.historyTransition, in: transition))
+        }
+        .sensoryFeedback(.impact(weight: .medium), trigger: isShowingHistory) { _, isShowing in isShowing }
         .onAppear { if isAsking { isFieldFocused = true } }
         .translationTask(download) { session in
             do {
@@ -108,137 +107,146 @@ private struct TranslateContent: View {
             download = nil
         }
         .task {
-            if !model.input.isEmpty { await model.translate() }
+            // Once, for text another screen supplied. Not again when the tab comes back:
+            // that would ask the server a second time and write the details afresh.
+            // Not awaited here either: leaving the tab cancels this task, not the translation.
+            guard !hasOpened else { return }
+            hasOpened = true
+            if !model.input.isEmpty { translationTask = Task { await model.translate() } }
         }
-        .onChange(of: model.input) { _, input in
-            translationTask?.cancel()
-            model.clearResult()
-            // When asking, Return sends the question: the field grows with the text,
-            // so Return would otherwise only start a new line.
-            if isAsking, input.hasSuffix("\n") {
-                model.input = input.trimmingCharacters(in: .newlines)
-                isFieldFocused = false
-                translate()
-            }
-        }
+        .onChange(of: model.input) { _, input in inputChanged(to: input) }
+        .sensoryFeedback(.impact(weight: .medium), trigger: taps)
         .toast($toast)
     }
 
+    private static let historyTransition = "history"
+}
+
+// MARK: - Input and result
+
+extension TranslateContent {
+    /// The languages, the field and the swap, with the translation in the lower half.
+    private var input: some View {
+        TranslateInputCard(text: $model.input, sourceLabel: model.sourceLabel, prompt: prompt,
+                           isFocused: $isFieldFocused, onSwap: swap, onEdit: { taps += 1 }, lower: { lower })
+    }
+
+    /// Under the field: the translation, the wait for it, or what stands there before.
+    @ViewBuilder
+    private var lower: some View {
+        if isLoadingResult {
+            TranslateLoadingResult(label: model.resultLabel)
+        } else if let text = model.resultText {
+            TranslateResultBlock(label: model.resultLabel, text: text,
+                                 isSaved: model.isSaved(in: savedTranslations), handlers: handlers)
+        } else if isStart {
+            TranslateWelcomeContent(onChoose: use)
+        } else {
+            TranslateEmptyResult(label: model.resultLabel)
+        }
+    }
+
+    private var translateButton: some View {
+        Button(isAsking ? "Say it in German" : "Translate", systemImage: isAsking ? "quote.bubble.fill" : "translate") {
+            translate()
+        }
+        .buttonStyle(.primary)
+        .disabled(isEmpty || model.isTranslating)
+    }
+
+    private var handlers: TranslateResultHandlers {
+        TranslateResultHandlers { slowly in
+            Task { await model.listen(slowly: slowly) }
+        } copy: {
+            UIPasteboard.general.string = model.resultText
+            toast = ToastMessage(text: "Copied", systemImage: "doc.on.doc.fill")
+        } toggleSave: {
+            let saved = model.toggleSave(in: modelContext)
+            toast = saved ? ToastMessage(text: "Saved to Memory", systemImage: "bookmark.fill")
+                : ToastMessage(text: "Removed from Memory", systemImage: "bookmark.slash.fill")
+        }
+    }
+
+    /// The languages to download, or why it didn't work.
+    @ViewBuilder
+    private var states: some View {
+        if let languages = model.missingLanguages {
+            StateCard(systemImage: "arrow.down.circle", title: Text("Download the languages"),
+                      explanation: Text("Download English and German once to translate privately on your iPhone."),
+                      action: StateCard.Action(title: "Download languages", systemImage: "arrow.down.circle") {
+                          download = TranslationSession.Configuration(source: languages.source, target: languages.target)
+                      })
+        } else if let failure = model.failure {
+            CloudFailureCard(failure: failure, failedTitle: Text("Couldn’t translate it"), onRetry: translate)
+                .transition(.opacity)
+        }
+    }
+
+    /// Word by word, tone and in context, and what is still on its way.
+    @ViewBuilder
+    private var details: some View {
+        if let result = model.result {
+            VStack(alignment: .leading, spacing: Spacing.grid) {
+                TranslateDetails(result: result) { german in
+                    Task { await model.listen(to: german) }
+                }
+                if model.isExplaining || model.isTranslating {
+                    TranslateLoadingDetails(pending: TranslateSection.allCases.filter { $0.isEmpty(in: result) })
+                }
+            }
+            .padding(.top, 14)
+        }
+    }
+}
+
+// MARK: - Actions
+
+extension TranslateContent {
+    private func inputChanged(to input: String) {
+        // Put there from the history, with its translation: nothing to clear.
+        if input == model.restoredInput { return }
+        translationTask?.cancel()
+        model.clearResult()
+        if translatesAfterSwap {
+            translatesAfterSwap = false
+            translate()
+            return
+        }
+        // When asking, Return sends the question: the field grows with the text,
+        // so Return would otherwise only start a new line.
+        if isAsking, input.hasSuffix("\n") {
+            model.input = input.trimmingCharacters(in: .newlines)
+            isFieldFocused = false
+            translate()
+        }
+    }
+
     private func translate() {
+        guard !isEmpty else { return }
+        taps += 1
+        isFieldFocused = false
         translationTask?.cancel()
         translationTask = Task { await model.translate() }
     }
 
-    // MARK: Header
-
-    private var languageCapsule: some View {
-        HStack(spacing: 4) {
-            Text(model.sourceLabel)
-                .padding(.horizontal, 10)
-            Button("Swap languages", systemImage: "arrow.left.arrow.right") {
-                model.swap()
-            }
-                .labelStyle(.iconOnly)
-                .font(.footnote.weight(.semibold))
-                .frame(width: 32, height: 32)
-                .background(.controlFill, in: .circle)
-            Text(model.resultLabel)
-                .padding(.horizontal, 10)
-        }
-        .textRole(.bodySmall)
-        .fontWeight(.medium)
-        .accessibilityElement(children: .contain)
+    /// Swaps the languages and, when there was a translation, translates the other way at once.
+    private func swap() {
+        taps += 1
+        translatesAfterSwap = model.result != nil
+        model.swap()
     }
 
-    // MARK: Cards
-
-    private var sourceCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            if !isAsking {
-                Text(model.sourceLabel)
-                    .textRole(.meta)
-                    .foregroundStyle(.secondary)
-            }
-            TextField(isAsking ? "How do I say …?" : "Type or paste text", text: $model.input, axis: .vertical)
-                .font(.title3)
-                .lineLimit(2...6)
-                .focused($isFieldFocused)
-                .submitLabel(isAsking ? .go : .return)
-                .accessibilityLabel(isAsking ? Text("What do you want to say?") : Text(model.sourceLabel))
-        }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+    /// A prompt was tapped: its text goes in the field.
+    private func use(_ text: String) {
+        taps += 1
+        model.input = text
     }
 
-    private var resultCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text(model.resultLabel)
-                .textRole(.meta)
-                .foregroundStyle(.accent)
-            if let text = model.resultText {
-                Text(verbatim: text)
-                    .font(.system(.title2, weight: .semibold))
-                    .textSelection(.enabled)
-                resultActions
-            } else if model.isTranslating {
-                ProgressView()
-            } else {
-                unknownNote
-            }
-        }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-    }
-
-    private var resultActions: some View {
-        let isSaved = model.isSaved(in: savedTranslations)
-        return HStack(spacing: 8) {
-            Button("Listen", systemImage: "speaker.wave.2") { Task { await model.listen() } }
-                .buttonStyle(.chip(isSelected: false))
-            Button("Slowly", systemImage: "tortoise") { Task { await model.listen(slowly: true) } }
-                .buttonStyle(.chip(isSelected: false))
-            Spacer()
-            Button {
-                if model.toggleSave(in: modelContext) {
-                    toast = ToastMessage(text: "Saved to Memory", systemImage: "bookmark.fill")
-                }
-            } label: {
-                Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
-                    .font(.system(size: 17))
-                    .foregroundStyle(isSaved ? AnyShapeStyle(.accent) : AnyShapeStyle(.primary))
-                    .frame(width: 40, height: 40)
-                    .background(.controlFill, in: .circle)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(isSaved ? Text("Remove from Memory") : Text("Save to Memory"))
-            .sensoryFeedback(.selection, trigger: isSaved)
-        }
-    }
-
-    /// Shown when there's no translation: download the languages, or try a sample.
-    @ViewBuilder
-    private var unknownNote: some View {
-        if let languages = model.missingLanguages {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Download English and German once to translate privately on your iPhone.")
-                    .textRole(.bodySmall)
-                    .foregroundStyle(.secondary)
-                Button("Download languages", systemImage: "arrow.down.circle") {
-                    download = TranslationSession.Configuration(source: languages.source, target: languages.target)
-                }
-                .buttonStyle(.primaryCompact)
-            }
-        } else if !model.hasAttempted {
-            Text("Type or paste text to translate.")
-                .foregroundStyle(.secondary)
-        } else {
-            Text("Translation is unavailable. Check your connection and cloud setting, then try again.")
-                .textRole(.bodySmall)
-                .foregroundStyle(.secondary)
-        }
+    /// A translation from the history: shown again as it was.
+    private func show(_ lookup: TranslationLookup) {
+        translationTask?.cancel()
+        isFieldFocused = false
+        model.show(lookup)
     }
 }
 
