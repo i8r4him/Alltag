@@ -19,6 +19,8 @@ final class TranslateModel {
     private(set) var hasAttempted = false
     /// Word-by-word, tones and examples are being added.
     private(set) var isExplaining = false
+    /// Why the last translation failed, until the text changes or it is tried again.
+    private(set) var failure: CloudFailure?
     /// Languages to download before this text can be translated on device.
     private(set) var missingLanguages: (source: Locale.Language, target: Locale.Language)?
     /// Direction chosen with the swap button when the text isn't recognised.
@@ -73,6 +75,7 @@ final class TranslateModel {
         defer { isTranslating = false }
         hasAttempted = true
         missingLanguages = nil
+        failure = nil
         do {
             let translated = try await translation.translate(text) { partial in
                 guard !Task.isCancelled, self.input.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
@@ -87,6 +90,7 @@ final class TranslateModel {
         } catch {
             guard !Task.isCancelled, input.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
             result = nil
+            failure = CloudFailure(error)
         }
 
         guard let plain = result, !plain.isExplained else { return }
@@ -100,6 +104,7 @@ final class TranslateModel {
     func clearResult() {
         result = nil
         missingLanguages = nil
+        failure = nil
         hasAttempted = false
     }
 

@@ -99,7 +99,7 @@ iCloud sync (SwiftData + CloudKit, #54) is switched on at the end of `3 · Memor
 - **Real or hidden:** at the end of each week, anything on that tab that doesn't work for real is hidden (App Review guideline 2.1). No mock content ships.
 - Outdated issues are **closed as "not planned"**, never deleted.
 
-## Current state (14 Nov 2026)
+## Current state (15 Nov 2026)
 
 Rewrite this section when it goes stale; it is a snapshot, not a rule.
 
@@ -108,12 +108,15 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 - **#185** A new title for "From your day", and **#194** what the two rows under the 60 seconds become: the maintainer's decisions.
 - **#171** Save the transcript and the mistakes: done by session history, except "new words reach Memory". Ask whether to close it or move it to the Memory week.
 
+**TestFlight:** the `asc` CLI on the maintainer's Mac is signed in with an API key and can upload and manage builds, but Alltag has no App Store Connect record yet; creating it needs the maintainer's Apple ID (`asc web apps create` or the website). Archive from a clean `main`, not a branch with uncommitted work.
+
 **Learn is the focus now** (`2 · Learn`, due 22 Nov). The idea that ties it together: everything the learner does in Learn feeds one loop. What they get wrong is saved to Fix your mistakes and comes back until they know it; every session is kept in Your sessions.
 
 Done on Learn: "How do I say …?", Translate with OpenAI (streamed), Alltag as the default translation app (extension `AlltagTranslation/`), Fix your mistakes with the learner's own mistakes, Your sessions.
 
-The six Learn features, **in this order**:
-1. **#252** Articles, in PR #292: a round of der, die, das (full screen, like an activity), "Look up a word", and a few clues. Per the maintainer, the round's nouns and the lookup come from OpenAI through `articles`, not from bundled vocabulary or an Apple fallback; the endpoint shares the translation quota and stores only quota metadata. A wrong article is saved at once as a practiceable mistake; a looked-up noun can be saved to Memory. The screens were redone in Today's look (the maintainer didn't like the first design); still to be tried on the iPhone.
+The Learn features, **in this order**:
+1. **#252** Articles: **done** (#292, #294). A round of der, die, das, "Look up a word" with a history, and the clues as tiles. Its parts set the standard the other Learn screens follow (state cards, bookmark that saves and unsaves, medium haptics, zoom into sheets).
+1a. **#295** Translate in the Articles standard, put before Write by the maintainer: **#296** the screen (pair card, detail cards with symbols, state cards; in its PR) and then **#297** the panel in other apps in the same look (needs the iPhone).
 2. **#263** Write: a short task, corrected sentence by sentence. A shell today.
 3. **#269** Read: real-life texts, tap a word, check understanding. A shell today.
 4. **#275** Grammar: rules for every level, linked from the learner's mistakes. Works with 6 rules today.

@@ -26,16 +26,16 @@ struct ArticleLookupCard: View {
                 ArticleSearching(query: model.query)
                     .transition(.opacity)
             } else if let failure = model.failure {
-                ArticleLookupFailed(failure: failure) {
+                CloudFailureCard(failure: failure, failedTitle: Text("Couldn’t look it up")) {
                     taps += 1
                     model.lookUp(level: level, with: services.articles)
                 }
                 .transition(.opacity)
             } else if model.foundNothing {
-                ArticleStateCard(systemImage: "questionmark",
-                                 title: Text("No noun for „\(model.query)“"),
-                                 explanation: (model.answer?.note).flatMap { $0.isEmpty ? nil : Text(verbatim: $0) }
-                                    ?? Text("Check the spelling, or type what it means in English."))
+                StateCard(systemImage: "questionmark",
+                          title: Text("No noun for „\(model.query)“"),
+                          explanation: (model.answer?.note).flatMap { $0.isEmpty ? nil : Text(verbatim: $0) }
+                              ?? Text("Check the spelling, or type what it means in English."))
                 .transition(.opacity)
             } else if let answer = model.answer {
                 if !answer.note.isEmpty {
@@ -120,70 +120,6 @@ private struct ArticleSearching: View {
             .accessibilityHidden(true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.cardLarge)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-    }
-}
-
-/// The word couldn't be looked up: why, in the same card as "No noun for …", and a way to try again.
-private struct ArticleLookupFailed: View {
-    let failure: ArticleLookupFailure
-    let onRetry: () -> Void
-
-    var body: some View {
-        switch failure {
-        case .offline:
-            ArticleStateCard(systemImage: "wifi.slash", title: Text("You’re offline"),
-                             explanation: Text("Looking up a word needs the internet. Connect to Wi‑Fi or mobile data."),
-                             onRetry: onRetry)
-        case .cloudOff:
-            ArticleStateCard(systemImage: "icloud.slash", title: Text("Online help is off"),
-                             explanation: Text("Turn on “Talk and get corrections online” in Settings to look words up."))
-        case .dailyLimit:
-            ArticleStateCard(systemImage: "hourglass", title: Text("That’s all for today"),
-                             explanation: Text("You’ve looked up as many words as you can today. Try again tomorrow."))
-        case .other:
-            ArticleStateCard(systemImage: "exclamationmark.triangle", title: Text("Couldn’t look it up"),
-                             explanation: Text("Something went wrong on the way. Try again in a moment."),
-                             onRetry: onRetry)
-        }
-    }
-}
-
-/// The Focus card's layout for a state: what happened on the left, the artwork on the right,
-/// and "Try again" under it when trying again can help.
-private struct ArticleStateCard: View {
-    let systemImage: String
-    let title: Text
-    let explanation: Text
-    var onRetry: (() -> Void)?
-
-    @ScaledMetric(relativeTo: .title3) private var artworkSize: CGFloat = 72
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .center, spacing: 16) {
-                VStack(alignment: .leading, spacing: 6) {
-                    title.font(.title3.weight(.semibold))
-                    explanation
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .accessibilityElement(children: .combine)
-                ScenarioArtwork(systemImage: systemImage, symbolSize: 34, cornerRadius: 16)
-                    .frame(width: artworkSize, height: artworkSize)
-            }
-            if let onRetry {
-                Button(action: onRetry) {
-                    Label("Try again", systemImage: "arrow.clockwise")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, minHeight: 34)
-                }
-                .buttonStyle(.glass)
-            }
-        }
         .padding(Spacing.cardLarge)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
     }

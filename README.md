@@ -61,6 +61,7 @@ Alltag/                                   ← repo root
 │  │     ├─ OptionCard.swift
 │  │     ├─ Indicators.swift              ProgressSegments, StrengthDots
 │  │     ├─ Toast.swift                   ToastView, .toast(_:)
+│  │     ├─ StateCard.swift               StateCard (a state in the Focus card's layout), CloudFailureCard
 │  │     ├─ FlowLayout.swift              wrapping layout for chips
 │  │     └─ ComponentGallery.swift        previews of every component
 │  │
@@ -113,6 +114,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Realtime/
 │  │  │  ├─ RealtimeConversationService.swift         session protocol, context (role-play or free talk), mock and simulated free talk
 │  │  │  ├─ SupabaseRealtimeClient.swift             anonymous auth, Keychain and session credentials
+│  │  │  ├─ CloudFailure.swift                       why a server request failed: offline, cloud off, daily limit, other
 │  │  │  ├─ OpenAIRealtimeConversationService.swift  Realtime WebSocket, audio events and transcripts
 │  │  │  └─ RealtimeAudio.swift                      PCM capture, playback and interruption
 │  │  ├─ Translation/
@@ -191,9 +193,10 @@ Alltag/                                   ← repo root
 │  │  │  ├─ FeedbackCard.swift
 │  │  │  └─ SummarySheet.swift            (#30)
 │  │  ├─ Translate/
-│  │  │  ├─ TranslateView.swift           language capsule in the toolbar, source and result cards
-│  │  │  ├─ TranslateModel.swift          direction, swap, translating, saving
-│  │  │  └─ TranslateSections.swift       Word by word, Tone, In context
+│  │  │  ├─ TranslateView.swift           the title, the welcome, the pair card, the big button, the state cards
+│  │  │  ├─ TranslateInput.swift          the pair card (both languages, swap between), Listen / Slowly / bookmark, the welcome
+│  │  │  ├─ TranslateModel.swift          direction, swap, translating, why it failed, saving
+│  │  │  └─ TranslateSections.swift       Word by word, Tone, In context: a card each, with symbols
 │  │  ├─ Memory/
 │  │  │  ├─ MemoryView.swift              large title, segmented Words | Phrasebook, .searchable, review card
 │  │  │  ├─ MemoryFolders.swift           From your day · Saved · Mistakes folders (filter the list)
@@ -408,7 +411,7 @@ Native: `Speech` (`SpeechAnalyzer` + `SpeechTranscriber`, de-DE — the newer AP
 When **Pro features may use the cloud** is enabled, tapping the orb on an iPhone starts a live voice session. The app sends the scenario title, goal and learner level to the Supabase Edge Function and streams audio directly to OpenAI with the short-lived credential. The transcript stays in memory in the app. Finishing the conversation, leaving voice mode or reaching ten minutes closes the connection. With cloud use off or unavailable, the scripted conversation uses on-device speech.
 
 ### Translate
-Language capsule, editable source card, Translate button and result card with Listen / Slowly / bookmark save. The OpenAI translation appears first, followed by Word by word, Tone and In context as each section arrives.
+Title "Translate" (`.inlineLarge`). A Focus-style welcome with two prompts, then one glass card with both languages: the text on top, a swap button on the line between, and the translation below with Listen, Slowly and a bookmark that saves to Memory and takes it out again ("Saved to" / "Removed from Memory" above the tab bar). Swapping translates the other way at once. The OpenAI translation appears first, followed by Word by word, Tone and In context as each section arrives, each on its own card with a symbol (the tones too: formal, neutral, casual). Offline, the cloud switched off, the daily limit, other failures and languages to download each get a `StateCard`. Translate, swap and the prompts give a medium haptic.
 
 ### Memory
 Segmented Words | Phrasebook.
