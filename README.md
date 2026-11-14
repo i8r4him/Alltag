@@ -79,6 +79,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ AlltagStore.swift            schema V1 → V2, migration plan, container, sample-data seeding (every model CloudKit-ready)
 │  │  │  ├─ UserProfile.swift
 │  │  │  ├─ MemoryItem.swift
+│  │  │  ├─ ReviewSchedule.swift          when an item comes back: right → stronger and later (1, 3, 7, 14 days), wrong → back at once (pure, tested)
 │  │  │  ├─ Phrase.swift
 │  │  │  ├─ SolvedRule.swift
 │  │  │  ├─ SavedTranslation.swift
@@ -211,12 +212,17 @@ Alltag/                                   ← repo root
 │  │  ├─ Learn/
 │  │  │  ├─ LearnView.swift               tools, Fix your mistakes, then Practise (everything apart from speaking)
 │  │  │  ├─ LearnTools.swift              "How do I say …?" field, Translate and Articles
-│  │  │  ├─ MistakesCard.swift            your own mistakes as a glass deck, the wrong words underlined; empty state (#248)
+│  │  │  ├─ MistakesCard.swift            the mistakes due now and their count; "All fixed for now" with when the next returns; empty state (#248, #251)
 │  │  │  ├─ LearnComponents.swift         LearnScreen, LearnHeroCard, LearnSection, LearnList, LearnRow
 │  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour
-│  │  │  ├─ ActivityView.swift            native toolbar (close, segments), options, audio, done; sky and glass
+│  │  │  ├─ ActivityView.swift            the sample activities (recall, listen): toolbar, options, audio, done; sky and glass
 │  │  │  ├─ ActivityModel.swift           one pick per question, scoring, audio
-│  │  │  └─ MistakePractice.swift         conversation fixes → Memory › Mistakes → practice questions
+│  │  │  ├─ MistakePractice.swift         conversation fixes → Memory › Mistakes; which are due, when the next returns
+│  │  │  ├─ MistakeQuestion.swift         one mistake ready to ask: what was said, the correction, why
+│  │  │  ├─ MistakeRoundModel.swift       one answer per mistake, each moving it in Memory at once (tested)
+│  │  │  ├─ MistakeRoundView.swift        the practice, full screen, zooming out of the card; the explanation after each answer
+│  │  │  ├─ MistakeQuestionViews.swift    the flashcard: what was said, "Show the fix", then "Not yet" or "I knew it"
+│  │  │  └─ MistakeRoundEnd.swift         before and after: what was said, the correction, when it comes back
 │  │  ├─ Articles/                        (#252)
 │  │  │  ├─ ArticlesView.swift            Learn › Articles: the round to start, "Look up a word", the clues
 │  │  │  ├─ ArticleRoundView.swift        a round full screen: the noun, der · die · das, the answer, the summary
@@ -408,7 +414,7 @@ Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's init
 Today's sky background and rounded type. Header: close · title/meta (scenario) · voice/keyboard segmented glass. Goal in a glass capsule below.
 Transcript: AI lines 23pt semibold left ("COMPANION" caption, tap toggles English); user lines 18pt right ("YOU") with feedback card (green check "good", coral edit "fix", grey info "note").
 Bottom: keyboard button · **the companion** (`CompanionOrb`, 150pt, tap to speak) · hint (lightbulb) button; state label below. The "Try saying" hint is on the Focus card's surface.
-**State machine:** idle → (tap) listening (words appear one at a time, 230ms, amber caret) → thinking (the silk swirls faster) → AI reply appended → speaking (livelier silk) → idle. After last line → summary sheet (2 turns · 1 fix · 2 phrases saved; CTA "Practise your fixes · 1 min", "Done"). Every fix (what you said, the correction, the rule) is saved to Memory › Mistakes, and "Practise your fixes" asks about your saved mistakes (the samples only when there are none). Live voice conversations are checked on device with Apple Intelligence when they end, so they get feedback cards and the same summary.
+**State machine:** idle → (tap) listening (words appear one at a time, 230ms, amber caret) → thinking (the silk swirls faster) → AI reply appended → speaking (livelier silk) → idle. After last line → summary sheet (2 turns · 1 fix · 2 phrases saved; CTA "Practise your fixes · 1 min", "Done"). Every fix (what you said, the correction, the rule) is saved to Memory › Mistakes, and "Practise your fixes" asks about the saved mistakes that are due (never samples: with none due it says so). **The loop:** a right answer makes a mistake stronger and sends it 1, 3, 7, then 14 days away, after which it is learned and leaves the stack (it stays in Memory); a wrong answer takes it a step back and it is due again next time (`ReviewSchedule`). Live voice conversations are checked on device with Apple Intelligence when they end, so they get feedback cards and the same summary.
 Companion: `OrbDynamics` sets its speed and energy per state; it grows slightly while listening, always drifts in a conversation, and stands still with Reduce Motion.
 Text mode: field "Antworte auf Deutsch…" + accent send. Scenarios: dentist, post office, train (see MockData in HTML `SCEN`).
 Native: `Speech` (`SpeechAnalyzer` + `SpeechTranscriber`, de-DE — the newer API that replaces `SFSpeechRecognizer`), `AVSpeechSynthesizer`, haptics on state changes.

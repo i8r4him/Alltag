@@ -8,43 +8,65 @@
 import SwiftData
 import SwiftUI
 
-/// "Fix your mistakes": the learner's own mistakes as a stack of cards. The
-/// one to fix next is on top, with what they said and the wrong words
-/// underlined in coral. With nothing to fix, it says so.
+/// "Fix your mistakes" on Learn: the learner's own mistakes that are due now,
+/// the one to fix first on top with the wrong words underlined in coral, and
+/// how many there are. When none are due it says when the next one comes
+/// back; with no mistakes at all, where they come from.
 struct MistakesCard: View {
     let action: () -> Void
 
-    /// The mistakes that can be practised (saved with what was said), the one due first on top.
-    @Query private var mistakes: [MemoryItem]
+    /// Every mistake that can be practised, the one due first on top. Which are due is worked out when drawing.
+    @Query(MistakePractice.practisable) private var mistakes: [MemoryItem]
+    /// The practice zooms out of the card and back into it.
+    @Environment(\.mistakesZoom) private var zoom
     @State private var taps = 0
 
-    init(action: @escaping () -> Void) {
-        self.action = action
-        let mistake = MemoryKind.mistake.rawValue
-        let filter = #Predicate<MemoryItem> { $0.kindRaw == mistake && $0.mistakeOriginal != "" }
-        let order = [SortDescriptor(\MemoryItem.nextReview), SortDescriptor(\MemoryItem.createdAt, order: .reverse)]
-        _mistakes = Query(filter: filter, sort: order)
-    }
+    /// The id the card and the practice share for the zoom.
+    static let zoomID = "mistakes"
 
     var body: some View {
-        if let first = mistakes.first {
-            Button {
-                taps += 1
-                action()
-            } label: {
-                card(first)
+        let due = MistakePractice.due(mistakes)
+        Group {
+            if let first = due.first {
+                source(
+                    Button(action: start) { stack(first, count: due.count) }
+                        .buttonStyle(.card)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityHint("Starts a one-minute exercise on your mistakes.")
+                )
+            } else if mistakes.isEmpty {
+                empty
+            } else {
+                StateCard(systemImage: "checkmark.seal", title: Text("All fixed for now"),
+                          explanation: MistakeWhen.nextReturn(MistakePractice.nextReturn(mistakes)))
             }
-            .buttonStyle(.card)
-            .fontDesign(.rounded)
-            .sensoryFeedback(.impact(weight: .light), trigger: taps)
-            .accessibilityElement(children: .combine)
-            .accessibilityHint("Starts a one-minute exercise on your mistakes.")
+        }
+        .fontDesign(.rounded)
+        .sensoryFeedback(.impact(weight: .medium), trigger: taps)
+    }
+
+    private func start() {
+        taps += 1
+        action()
+    }
+
+    @ViewBuilder
+    private func source(_ card: some View) -> some View {
+        if let zoom {
+            card.matchedTransitionSource(id: Self.zoomID, in: zoom)
         } else {
-            empty
+            card
         }
     }
 
-    private func card(_ mistake: MemoryItem) -> some View {
+    private func quote(_ mistake: MemoryItem) -> some View {
+        MistakePractice.quote(said: mistake.mistakeOriginal, correction: mistake.context.isEmpty ? mistake.word : mistake.context)
+            .environment(\.locale, Locale(identifier: "de"))
+    }
+
+    // MARK: The stack, with the quote
+
+    private func stack(_ mistake: MemoryItem, count: Int) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .firstTextBaseline) {
                 Label {
@@ -56,14 +78,12 @@ struct MistakesCard: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.accent)
                 Spacer(minLength: 8)
-                Text("^[\(mistakes.count) mistake](inflect: true)")
+                Text("^[\(count) mistake](inflect: true)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize()
             }
-            MistakePractice.quote(said: mistake.mistakeOriginal, correction: mistake.context.isEmpty ? mistake.word : mistake.context)
-                .font(.title2.weight(.semibold))
-                .environment(\.locale, Locale(identifier: "de"))
+            quote(mistake).font(.title2.weight(.semibold))
             HStack {
                 Text("Tap to fix it")
                 Spacer()
@@ -79,9 +99,9 @@ struct MistakesCard: View {
         .contentShape(.rect(cornerRadius: Radius.hero, style: .continuous))
         // The cards waiting underneath.
         .background(alignment: .bottom) {
-            if mistakes.count > 1 {
+            if count > 1 {
                 ZStack(alignment: .bottom) {
-                    if mistakes.count > 2 {
+                    if count > 2 {
                         RoundedRectangle(cornerRadius: Radius.hero, style: .continuous)
                             .fill(.primary.opacity(0.05))
                             .padding(.horizontal, 28)
@@ -94,8 +114,10 @@ struct MistakesCard: View {
                 }
             }
         }
-        .padding(.bottom, mistakes.count > 2 ? 20 : mistakes.count > 1 ? 10 : 0)
+        .padding(.bottom, count > 2 ? 20 : count > 1 ? 10 : 0)
     }
+
+    // MARK: No mistakes at all
 
     private var empty: some View {
         HStack(spacing: Spacing.grid) {
@@ -115,8 +137,36 @@ struct MistakesCard: View {
         .padding(Spacing.cardLarge)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-        .fontDesign(.rounded)
         .accessibilityElement(children: .combine)
+    }
+}
+
+extension EnvironmentValues {
+    /// The namespace the mistakes card and the practice share, so the practice can zoom out of the card.
+    @Entry var mistakesZoom: Namespace.ID?
+}
+
+/// When a mistake comes back, in words.
+enum MistakeWhen {
+    /// For the card when nothing is due: when the next one returns, or that all are learned.
+    static func nextReturn(_ date: Date?, from now: Date = .now) -> Text {
+        guard let date else { return Text("You know them all. New mistakes land here.") }
+        return switch ReviewSchedule.days(until: date, from: now) {
+        case 0: Text("The next one comes back later today.")
+        case 1: Text("The next one comes back tomorrow.")
+        case let days: Text("The next one comes back in ^[\(days) day](inflect: true).")
+        }
+    }
+
+    /// For one answer: where it left the mistake.
+    static func outcome(_ outcome: MistakeRoundModel.Outcome, from now: Date = .now) -> Text {
+        if !outcome.wasRight { return Text("Comes back next time") }
+        if outcome.step.isLearned { return Text("Learned") }
+        return switch ReviewSchedule.days(until: outcome.step.nextReview, from: now) {
+        case 0: Text("Back later today")
+        case 1: Text("Back tomorrow")
+        case let days: Text("Back in ^[\(days) day](inflect: true)")
+        }
     }
 }
 

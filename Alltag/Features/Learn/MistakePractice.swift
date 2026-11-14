@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 import SwiftUI
 
-/// Turns the learner's own mistakes into Memory items and practice.
+/// Turns the learner's own mistakes into Memory items, and finds the ones to fix now.
 enum MistakePractice {
     /// Questions per practice session.
     static let limit = 3
@@ -44,41 +44,27 @@ enum MistakePractice {
         return added
     }
 
-    /// A practice session from the learner's saved mistakes, most overdue first,
-    /// or `nil` when none have been saved with what was originally said.
-    static func activity(in context: ModelContext) -> Activity? {
+    /// The mistakes that can be practised (saved with what was said), the one due first on top.
+    static var practisable: FetchDescriptor<MemoryItem> {
         let mistake = MemoryKind.mistake.rawValue
-        var descriptor = FetchDescriptor<MemoryItem>(
+        return FetchDescriptor<MemoryItem>(
             predicate: #Predicate { $0.kindRaw == mistake && $0.mistakeOriginal != "" },
             sortBy: [SortDescriptor(\.nextReview), SortDescriptor(\.createdAt, order: .reverse)])
-        descriptor.fetchLimit = limit
-        let items = (try? context.fetch(descriptor)) ?? []
-        return activity(from: items)
     }
 
-    /// One "which sounds natural?" question per mistake: the correction against what was said.
-    static func activity(from items: [MemoryItem]) -> Activity? {
-        guard !items.isEmpty else { return nil }
-        let questions = items.map { item in
-            // Whole sentence against whole sentence, so the length doesn't give it away.
-            let correct = item.context.isEmpty ? item.word : item.context
-            // Alternate the position of the right answer so it can't be guessed.
-            let correctFirst = correct.count.isMultiple(of: 2)
-            return Activity.Question(
-                context: item.source == .conversation
-                    ? String(localized: "You said in a conversation · \(item.sourceDetail)")
-                    : String(localized: "You wrote:"),
-                quote: "„\(item.mistakeOriginal)“",
-                question: String(localized: "Which sounds natural?"),
-                options: correctFirst ? [correct, item.mistakeOriginal] : [item.mistakeOriginal, correct],
-                correctIndex: correctFirst ? 0 : 1,
-                explanation: "\(item.meaning). \(item.contextNote)"
-            )
-        }
-        return Activity(id: .mistakes, label: String(localized: "FIX YOUR MISTAKES"), tone: .mistake,
-                        title: items.count == 1 ? String(localized: "One small fix")
-                                                : String(localized: "\(items.count) small fixes"),
-                        questions: questions)
+    /// The mistakes to fix now: due, and not learned yet.
+    static func due(_ items: [MemoryItem], at date: Date = .now) -> [MemoryItem] {
+        items.filter { !$0.isLearned && $0.isDue(at: date) }
+    }
+
+    /// When the next mistake comes back, if any is still on its way to being learned.
+    static func nextReturn(_ items: [MemoryItem], at date: Date = .now) -> Date? {
+        items.filter { !$0.isLearned && !$0.isDue(at: date) }.map(\.nextReview).min()
+    }
+
+    /// The questions of one round: the mistakes due now, most overdue first.
+    static func round(in context: ModelContext, at date: Date = .now) -> [MemoryItem] {
+        Array(due((try? context.fetch(practisable)) ?? [], at: date).prefix(limit))
     }
 
     /// Which words of `said` are the mistake: the ones that aren't in `correction`

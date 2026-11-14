@@ -16,6 +16,8 @@ struct RootView: View {
     @Environment(\.services) private var services
     @Query private var profiles: [UserProfile]
     @Environment(\.modelContext) private var modelContext
+    /// Shared by the mistakes card on Learn and the practice, which zooms out of it.
+    @Namespace private var mistakesZoom
 
     var body: some View {
         Group {
@@ -43,6 +45,7 @@ struct RootView: View {
             Tab("Learn", systemImage: "bolt", value: AppTab.learn) { stack(.learn) }
             Tab("Memory", systemImage: "book", value: AppTab.memory) { stack(.memory) }
         }
+        .environment(\.mistakesZoom, mistakesZoom)
         .fullScreenCover(item: $appState.fullScreen, content: fullScreen)
     }
 
@@ -128,9 +131,13 @@ struct RootView: View {
         case .articles:
             ArticleRoundView(level: profiles.first?.level ?? .a1)
         case .activity(let id):
-            ActivityView(activity: id == .mistakes
-                         ? MistakePractice.activity(in: modelContext) ?? MockActivities.mistakes
-                         : MockActivities.activity(id))
+            if id == .mistakes {
+                // The learner's own mistakes only; with none due the screen says so.
+                MistakeRoundView()
+                    .navigationTransition(.zoom(sourceID: MistakesCard.zoomID, in: mistakesZoom))
+            } else {
+                ActivityView(activity: MockActivities.activity(id))
+            }
         case .onboarding:
             OnboardingFlow(model: profiles.first.map { OnboardingModel(profile: $0) } ?? OnboardingModel())
         }

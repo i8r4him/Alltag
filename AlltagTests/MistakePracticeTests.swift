@@ -75,7 +75,7 @@ struct MistakePracticeTests {
         #expect(model.saveMistakes(in: context) == 1)
     }
 
-    @Test("Practice asks about your saved mistakes, most overdue first")
+    @Test("A round asks about your saved mistakes, most overdue first")
     func practice() throws {
         let store = try container()
         let context = store.mainContext
@@ -90,28 +90,16 @@ struct MistakePracticeTests {
                                                        scenario: MockScenarios.station, at: now.addingTimeInterval(-60)))
         MistakePractice.save([later, sooner], in: context)
 
-        let activity = try #require(MistakePractice.activity(in: context))
-        #expect(activity.questions.count == 2)
-        #expect(activity.questions[0].quote == "„Wann der Zug fährt ab?“")
-        #expect(activity.questions[0].correctAnswer == "Wann fährt der Zug ab?")
-        #expect(activity.questions[1].correctAnswer == "Ich habe es auf meinem Handy.")
-        #expect(activity.questions.allSatisfy { $0.options.count == 2 })
+        let round = MistakeRoundModel(items: MistakePractice.round(in: context, at: now))
+        #expect(round.questions.map(\.said) == ["Wann der Zug fährt ab?", "Ich habe es auf mein Handy."])
+        #expect(round.questions.map(\.correction) == ["Wann fährt der Zug ab?", "Ich habe es auf meinem Handy."])
+        #expect(round.questions[1].explanation == "Dative after „auf“. Where? → dative.")
     }
 
-    @Test("The sample mistakes can be practised")
-    func sampleMistakes() throws {
-        let store = try container()
-        try AlltagStore.seedSampleDataIfEmpty(store.mainContext)
-        let activity = try #require(MistakePractice.activity(in: store.mainContext))
-        #expect(activity.questions.count == 2)
-        // Whole sentences on both sides.
-        #expect(activity.questions.allSatisfy { $0.options.allSatisfy { $0.hasSuffix(".") } })
-    }
-
-    @Test("Without saved mistakes there's no personal practice")
+    @Test("Without saved mistakes there's nothing to ask")
     func noPractice() throws {
         let store = try container()
-        #expect(MistakePractice.activity(in: store.mainContext) == nil)
+        #expect(MistakePractice.round(in: store.mainContext).isEmpty)
         #expect(MistakePractice.item(said: "Hallo", feedback: Feedback(kind: .good, title: "", note: ""),
                                      scenario: MockScenarios.dentist) == nil)
     }
