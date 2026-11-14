@@ -52,7 +52,8 @@ struct AppServices {
         #if targetEnvironment(simulator)
         SimulatedRealtimeConversationService()
         #else
-        OpenAIRealtimeConversationService()
+        // TEMPORARY (#309): OpenAI or Gemini, as chosen in Settings › Developer.
+        SwitchingRealtimeConversationService()
         #endif
     }
 

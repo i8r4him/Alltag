@@ -110,6 +110,8 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 - **#185** A new title for "From your day", and **#194** what the two rows under the 60 seconds become: the maintainer's decisions.
 - **#171** Save the transcript and the mistakes: done by session history, except "new words reach Memory". Ask whether to close it or move it to the Memory week.
 
+**Live voice, two providers (#309, in its PR):** the voice costs too much on `gpt-realtime` for a subscription to carry (an estimated $0.60–1.00 for ten minutes), so Google's Gemini 3.8 Live (about a fifth) is built next to it behind `RealtimeConversationService`: `GeminiLiveConversationService`, with tokens from the `gemini-live-session` function. Debug builds choose under Settings › Developer › Live voice (`VoiceProvider`); release builds use OpenAI. The maintainer compares them on the iPhone; the one that loses and the switch are removed.
+
 **TestFlight:** the `asc` CLI on the maintainer's Mac is signed in with an API key and can upload and manage builds, but Alltag has no App Store Connect record yet; creating it needs the maintainer's Apple ID (`asc web apps create` or the website). Archive from a clean `main`, not a branch with uncommitted work.
 
 **Learn is the focus now** (`2 · Learn`, due 22 Nov). The idea that ties it together: everything the learner does in Learn feeds one loop. What they get wrong is saved to Fix your mistakes and comes back until they know it; every session is kept in Your sessions.
@@ -155,4 +157,4 @@ The Learn features, **in this order**:
 - `Alltag/Services/<Area>/`: service protocols, mocks and live implementations.
 - `Alltag/DesignSystem/`: tokens and shared components. Use them rather than raw values.
 - `Alltag/Intents/`: App Intents (Siri, Shortcuts, Spotlight).
-- `supabase/`: the Edge Functions (`realtime-session` for the voice, `check-german` for the mistake check, `translate` for translating) and migrations, owned by the maintainer. See `supabase/README.md`.
+- `supabase/`: the Edge Functions (`realtime-session` for the voice, `gemini-live-session` for the same with Google, `check-german` for the mistake check, `translate` for translating) and migrations, owned by the maintainer. See `supabase/README.md`.

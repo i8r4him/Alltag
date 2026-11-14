@@ -18,6 +18,8 @@ struct SettingsView: View {
     @Query private var profiles: [UserProfile]
     @State private var model: SettingsModel
     @State private var toast: ToastMessage?
+    /// TEMPORARY (#309): the live voice's provider, chosen under Developer.
+    @AppStorage(VoiceProvider.key) private var voiceProvider = VoiceProvider.openAI.rawValue
     private let aiStatus: OnDeviceAIStatus
 
     init(services: AppServices = .mock(), aiStatus: OnDeviceAIStatus = .current) {
@@ -38,6 +40,10 @@ struct SettingsView: View {
                 #if DEBUG
                 Section(header: Text(verbatim: "Developer")) {
                     NavigationLink { CompanionEditor() } label: { Text(verbatim: "Companion") }
+                    // TEMPORARY (#309): which provider the next live conversation uses.
+                    Picker(selection: $voiceProvider) {
+                        ForEach(VoiceProvider.allCases) { Text(verbatim: $0.name).tag($0.rawValue) }
+                    } label: { Text(verbatim: "Live voice") }
                     // Quick data for the streak and the minutes, without talking.
                     Button { addSession(daysAgo: 0) } label: { Text(verbatim: "Add practice today (2 min)") }
                     Button { addSession(daysAgo: 1) } label: { Text(verbatim: "Add practice yesterday (2 min)") }

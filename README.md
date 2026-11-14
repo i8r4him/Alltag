@@ -118,6 +118,9 @@ Alltag/                                   ← repo root
 │  │  │  ├─ SupabaseRealtimeClient.swift             anonymous auth, Keychain and session credentials
 │  │  │  ├─ CloudFailure.swift                       why a server request failed: offline, cloud off, daily limit, other
 │  │  │  ├─ OpenAIRealtimeConversationService.swift  Realtime WebSocket, audio events and transcripts
+│  │  │  ├─ GeminiLiveConversationService.swift      TEMPORARY comparison (#309): the same over Google's Gemini Live (tested)
+│  │  │  ├─ GeminiLiveMessage.swift                  one Gemini Live message, reduced to voice, words and turn (tested)
+│  │  │  ├─ VoiceProvider.swift                      TEMPORARY (#309): OpenAI or Gemini for the next conversation
 │  │  │  └─ RealtimeAudio.swift                      PCM capture, playback and interruption
 │  │  ├─ Translation/
 │  │  │  ├─ TranslationService.swift      TranslationService, TranslationServiceError, MockTranslationService (3 samples)
@@ -298,7 +301,7 @@ Alltag/                                   ← repo root
 │  ├─ RuleModelTests.swift
 │  └─ OnboardingModelTests.swift
 │
-├─ supabase/                             backend: realtime-session Edge Function, migrations (see supabase/README.md)
+├─ supabase/                             backend: the Edge Functions (voice, checks, translation), migrations (see supabase/README.md)
 ├─ AGENTS.md                              rules for every coding agent: build, code, data, design, workflow, plan
 ├─ CLAUDE.md                              imports AGENTS.md for Claude Code
 │
@@ -472,7 +475,7 @@ Learn › Articles, in Today's look. A glass hero card starts **a round**: ten n
 - **Real in native build (phase 1):** navigation, all UI states, AVSpeechSynthesizer pronunciation, haptics, local mock data, SwiftData persistence.
 - **Real on iPhone:** German speech recognition with `SpeechAnalyzer` (on device; the simulator keeps the simulated listening). Saying roughly the scripted line continues the script; anything else is your own sentence and gets feedback.
 - **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. On-device conversations keep their scripted replies so each scenario reaches its goal.
-- **Live voice on iPhone:** OpenAI Realtime through the existing Supabase credential broker, with both speakers' captions. Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange.
+- **Live voice on iPhone:** OpenAI Realtime through the existing Supabase credential broker, with both speakers' captions. In debug builds, Settings › Developer › Live voice switches to Google's Gemini Live (`gemini-live-session`), to compare the two (#309). Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange.
 - **Translate:** OpenAI through Supabase when cloud use is allowed. The translation, words, tone and examples appear as they arrive. If cloud use is unavailable, the screen reports the error rather than showing an on-device translation.
 - **Simulated:** scripted companion replies & feedback, placement.
 - **Later:** see the framework table below.

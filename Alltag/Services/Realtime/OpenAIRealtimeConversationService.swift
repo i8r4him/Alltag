@@ -22,7 +22,8 @@ protocol RealtimeSocket: AnyObject {
     func close()
 }
 
-private final class URLSessionRealtimeSocket: RealtimeSocket {
+/// A WebSocket over `URLSession`, for both providers of the live voice.
+final class URLSessionRealtimeSocket: RealtimeSocket {
     private let task: URLSessionWebSocketTask
 
     init(request: URLRequest) {
