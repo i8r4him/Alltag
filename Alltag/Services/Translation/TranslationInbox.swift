@@ -32,4 +32,11 @@ enum TranslationInbox {
         let file = directory.appending(path: entry.id.uuidString + ".json")
         try JSONEncoder().encode(entry).write(to: file, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
     }
+
+    /// Takes an entry out again, as long as the app hasn't imported it yet.
+    static func remove(_ id: UUID, from directory: URL? = nil) throws {
+        let directory = try directory ?? self.directory()
+        let file = directory.appending(path: id.uuidString + ".json")
+        if FileManager.default.fileExists(atPath: file.path) { try FileManager.default.removeItem(at: file) }
+    }
 }

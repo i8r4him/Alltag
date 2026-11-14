@@ -59,4 +59,59 @@ struct TranslationExtensionTests {
         #expect(items.first?.source == .translate)
         #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path).isEmpty)
     }
+
+    @Test("A short phrase stays one block in the big style")
+    func shortLayout() {
+        let layout = TranslationLayout("Wo bist du?")
+        #expect(!layout.isLong)
+        #expect(layout.blocks == [.paragraph("Wo bist du?")])
+    }
+
+    @Test("A job advert becomes a heading, its facts and paragraphs")
+    func advertLayout() {
+        let advert = """
+        Pflegefachkraft (m/w/d)
+        Klinikum Nord · Hamburg
+        ab 3.400 € brutto
+        38,5 Stunden pro Woche
+
+        Wir suchen eine erfahrene Pflegefachkraft für unsere Station. Sie arbeiten in einem freundlichen Team.
+        - Unbefristeter Vertrag
+        """
+        let layout = TranslationLayout(advert)
+        #expect(layout.isLong)
+        #expect(layout.blocks == [
+            .heading("Pflegefachkraft (m/w/d)"),
+            .facts(["Klinikum Nord", "Hamburg", "ab 3.400 € brutto", "38,5 Stunden pro Woche"]),
+            .paragraph("Wir suchen eine erfahrene Pflegefachkraft für unsere Station. Sie arbeiten in einem freundlichen Team."),
+            .facts(["Unbefristeter Vertrag"])
+        ])
+    }
+
+    @Test("A long block without line breaks is broken into paragraphs, losing nothing")
+    func blockLayout() {
+        let sentence = "Wir suchen eine erfahrene Pflegefachkraft für unsere Station in Hamburg."
+        let text = Array(repeating: sentence, count: 6).joined(separator: " ")
+        let layout = TranslationLayout(text)
+        #expect(layout.isLong)
+        #expect(layout.blocks.count > 1)
+        let joined = layout.blocks.map { block -> String in
+            if case .paragraph(let paragraph) = block { paragraph } else { "" }
+        }.joined(separator: " ")
+        #expect(joined == text)
+    }
+
+    @Test("A saved entry can be taken out of the inbox again")
+    func removeFromInbox() throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let entry = TranslationInbox.Entry(german: "die Kündigungsfrist", meaning: "notice period")
+        try TranslationInbox.save(entry, to: directory)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path).count == 1)
+        try TranslationInbox.remove(entry.id, from: directory)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path).isEmpty)
+        // Already imported by the app: nothing to remove, and no error.
+        try TranslationInbox.remove(entry.id, from: directory)
+    }
 }
