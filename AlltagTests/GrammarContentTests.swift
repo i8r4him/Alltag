@@ -42,11 +42,13 @@ struct GrammarContentTests {
         #expect(RealLifeSentence.sentence(for: "unknown") == nil)
     }
 
-    @Test("Each level has three cheat sheets of its own", arguments: Level.selectable)
-    func cheatSheetsPerLevel(level: Level) {
-        let sheets = CheatSheet.sheets(for: level)
-        #expect(sheets.count == 3)
-        #expect(sheets.allSatisfy { !$0.parts.isEmpty && $0.parts.allSatisfy { !$0.rows.isEmpty } })
+    @Test("Each level has three cheat sheets of its own")
+    func cheatSheetsPerLevel() {
+        for level in Level.selectable {
+            let sheets = CheatSheet.sheets(for: level)
+            #expect(sheets.count == 3, "\(level)")
+            #expect(sheets.allSatisfy { !$0.parts.isEmpty && $0.parts.allSatisfy { !$0.rows.isEmpty } }, "\(level)")
+        }
     }
 
     @Test("Cheat sheets have unique IDs and leave der, die, das to Articles")
