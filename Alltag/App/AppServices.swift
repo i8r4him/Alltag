@@ -52,7 +52,7 @@ struct AppServices {
         #if targetEnvironment(simulator)
         SimulatedRealtimeConversationService()
         #else
-        OpenAIRealtimeConversationService()
+        GeminiLiveConversationService()
         #endif
     }
 

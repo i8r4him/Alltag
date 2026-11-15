@@ -95,7 +95,7 @@ iCloud sync (SwiftData + CloudKit, #54) is switched on in `v1.1`, after launch. 
 ## Plan to launch
 
 - **Deadline: v1 is live in the App Store on 1 Dec 2026, so it is submitted on 27 Nov.** v1 is free; Pro comes in v1.1.
-- **Milestones**, one tab per week: `1 · Today` (17 Nov), `2 · Learn` (21 Nov), `3 · Memory` (24 Nov), `4 · Testing` (26 Nov), `5 · Launch` (27 Nov, the submission). `v1.1` is the first update after launch (Listen, Pro, the cheaper live voice, iCloud sync). `Later` has no date.
+- **Milestones**, one tab per week: `1 · Today` (17 Nov), `2 · Learn` (21 Nov), `3 · Memory` (24 Nov), `4 · Testing` (26 Nov), `5 · Launch` (27 Nov, the submission). `v1.1` is the first update after launch (Listen, Pro, iCloud sync). `Later` has no date.
 - **Issues:** each milestone has a few **main features** (label `epic`), each split into **sub-issues** (GitHub sub-issues). One branch and PR per sub-issue. An issue says what, why, and when it is done.
 - **Labels**, one of each group per issue:
   - **Type:** `feature`, `bug`, `design`, `content`, `chore`.
@@ -123,6 +123,8 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 - **#212** The live voice stops hearing after three or four turns. Needs the Xcode console lines filtered by `Realtime` from the maintainer's iPhone.
 - **#185** A new title for "From your day", and **#194** what the two rows under the 60 seconds become: the maintainer's decisions.
 - **#171** Save the transcript and the mistakes: done by session history, except "new words reach Memory". Ask whether to close it or move it to the Memory week.
+
+**Live voice is Gemini (#309):** `gpt-realtime` cost too much for a subscription to carry (an estimated $0.60–1.00 for ten minutes), so the live voice is Google's Gemini 3.8 Live (about a fifth): `GeminiLiveConversationService`, with tokens from the `gemini-live-session` function. The maintainer compared both on the iPhone and chose Gemini; the OpenAI voice and the switch are gone from the app. The `realtime-session` function is still deployed and unused; retiring it is a change under `supabase/`, so ask first.
 
 **TestFlight:** the `asc` CLI on the maintainer's Mac is signed in with an API key and can upload and manage builds, but Alltag has no App Store Connect record yet; creating it needs the maintainer's Apple ID (`asc web apps create` or the website). Archive from a clean `main`, not a branch with uncommitted work.
 
@@ -169,4 +171,4 @@ The Learn features, **in this order**:
 - `Alltag/Services/<Area>/`: service protocols, mocks and live implementations.
 - `Alltag/DesignSystem/`: tokens and shared components. Use them rather than raw values.
 - `Alltag/Intents/`: App Intents (Siri, Shortcuts, Spotlight).
-- `supabase/`: the Edge Functions (`realtime-session` for the voice, `check-german` for the mistake check, `translate` for translating) and migrations, owned by the maintainer. See `supabase/README.md`.
+- `supabase/`: the Edge Functions (`gemini-live-session` for the voice, `realtime-session` the old OpenAI voice and unused, `check-german` for the mistake check, `translate` for translating) and migrations, owned by the maintainer. See `supabase/README.md`.

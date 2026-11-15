@@ -177,8 +177,8 @@ private struct DeviceSections: View {
             }
             ToggleRow(title: "Talk and get corrections online",
                       subtitle: """
-                          Your voice goes to OpenAI while you talk with the companion; \
-                          your sentences go there as text to be checked.
+                          Your voice goes to Google while you talk with the companion; \
+                          your sentences go to OpenAI as text to be checked.
                           """,
                       systemImage: "cloud.fill", symbolTint: .accent.opacity(AccentTint.selected * 1.6), symbolForeground: .accent,
                       isOn: $settings.usesCloudForPro)

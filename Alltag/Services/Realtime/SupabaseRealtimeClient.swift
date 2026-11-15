@@ -18,19 +18,6 @@ enum SupabaseConfiguration {
     static let publishableKey = "sb_publishable_b26lEqjEmiwWbQYZ-EO4QQ_d5OB-mUV"
 }
 
-struct RealtimeCredentials: Decodable {
-    let clientSecret: String
-    let expiresAt: TimeInterval
-    let model: String
-    let voice: String
-
-    enum CodingKeys: String, CodingKey {
-        case clientSecret = "client_secret"
-        case expiresAt = "expires_at"
-        case model, voice
-    }
-}
-
 enum RealtimeServiceError: Error, Equatable {
     case unauthorised, dailyLimit, busy, upstream, notConfigured, unavailable, unexpectedResponse
     /// The learner hasn't allowed the microphone.

@@ -296,7 +296,7 @@ private struct CircleGlassButton: View {
 
 /// "TRY SAYING" with the expected German line.
 /// Free talk needs the live voice: asks once, in the conversation, before the
-/// learner's voice goes to OpenAI.
+/// learner's voice goes to Google.
 private struct CloudConsentCard: View {
     let onAllow: () -> Void
 
@@ -305,7 +305,7 @@ private struct CloudConsentCard: View {
             Label { Text("Talk with the live voice") } icon: { Image(systemName: "waveform") }
                 .font(.headline)
                 .foregroundStyle(.accent)
-            Text("To hear and answer you, Alltag sends your voice to OpenAI while you talk. You can turn this off in Settings.")
+            Text("To hear and answer you, Alltag sends your voice to Google while you talk. You can turn this off in Settings.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             Button(action: onAllow) {

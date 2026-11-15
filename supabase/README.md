@@ -98,6 +98,7 @@ Translate and "How do I say …?" in the app. Text only.
 ## Files
 
 - `functions/realtime-session/index.ts`: the voice function. Deploy it with JWT verification on.
+- `functions/gemini-live-session/index.ts`: the same for Google's Gemini Live, the second provider being compared (#309). Deploy it with JWT verification on.
 - `functions/check-german/index.ts`: the sentence check. Deploy it with JWT verification on.
 - `functions/translate/index.ts`: translating. Deploy it with JWT verification on.
 - `migrations/20261107200000_realtime_sessions.sql`: the session log used for the limits.
@@ -108,3 +109,13 @@ Translate and "How do I say …?" in the app. Text only.
 ## Articles (`articles`)
 
 Authenticated OpenAI noun lookup (`action: lookup`, `text`) and random practice batches (`action: practice`, `level`, optional recent `exclude` words). Uses `ARTICLES_MODEL` (default `gpt-6-luna`) with low effort and strict noun JSON, no stored model responses. Shares the existing translation daily quotas and metadata table; no migration. No corpus, transcript or user text is stored by this function. App cloud consent is required. A new round generates ten records once; article taps use those records locally.
+
+## Live voice with Gemini (`gemini-live-session`)
+
+The second provider of the live voice, to compare with OpenAI's (#309). The app chooses per conversation (debug builds: Settings › Developer › Live voice); release builds use OpenAI.
+
+- `{"scenario": "dentist", "instructions": "<context>", "thinking_pause": "2400", "slower": "true"}` answers `{"token", "expires_at", "model", "voice"}`. The token comes from Google's `v1beta/auth_tokens`: it starts one session within a minute, runs for at most 15 minutes, and is locked (`bidiGenerateContentSetup`) to the model, the voice, the tutor instructions, both transcriptions and the silence before an answer. The app connects to `…BidiGenerateContentConstrained?access_token=<token>` and only names the model.
+- Secrets: `GEMINI_API_KEY` (required; from Google AI Studio, on a project with billing, so nothing is used to improve Google's products), `GEMINI_LIVE_MODEL` (default `gemini-3.8-live`), `GEMINI_LIVE_VOICE` (default `Kore`).
+- Limits: the same table and the same numbers as `realtime-session` (`REALTIME_PER_USER_DAILY`, `REALTIME_GLOBAL_DAILY`), so a learner has one allowance for the live voice. No migration.
+- Price (Google's pricing page, 14 Nov 2026): $0.005 a minute listened to and $0.018 a minute spoken; OpenAI's `gpt-realtime` is $32 / $64 per million audio tokens.
+- Checked from a Mac with the function's own token: a German role-play answered in about two seconds, 24 kHz speech was heard and transcribed, the thinking pause was kept, and talking over the answer was signalled.

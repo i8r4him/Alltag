@@ -20,16 +20,16 @@ struct SupabaseRealtimeClientTests {
         let transport = StubHTTP([auth(), ticket(), ticket()])
         let first = SupabaseRealtimeClient(store: store, send: transport.send)
 
-        let credentials = try await first.credentials(for: context)
-        #expect(credentials.clientSecret == "ek_test")
+        let credentials = try await first.geminiCredentials(for: context)
+        #expect(credentials.token == "auth_tokens/test")
         #expect(credentials.model == "server-selected-model")
-        #expect(credentials.voice == "marin")
+        #expect(credentials.voice == "Kore")
         #expect(store.saved == 1)
 
         let second = SupabaseRealtimeClient(store: store, send: transport.send)
-        _ = try await second.credentials(for: context)
+        _ = try await second.geminiCredentials(for: context)
         #expect(transport.requests.compactMap(\.url?.path) == [
-            "/auth/v1/signup", "/functions/v1/realtime-session", "/functions/v1/realtime-session"
+            "/auth/v1/signup", "/functions/v1/gemini-live-session", "/functions/v1/gemini-live-session"
         ])
         let signup = try #require(transport.requests.first)
         #expect(signup.httpMethod == "POST")
@@ -48,11 +48,11 @@ struct SupabaseRealtimeClientTests {
     func expired() async throws {
         let store = MemoryTokenStore()
         let transport = StubHTTP([auth(expiresIn: 0), ticket(), auth(access: "new", refresh: "rotated"), ticket()])
-        _ = try await SupabaseRealtimeClient(store: store, send: transport.send).credentials(for: context)
-        _ = try await SupabaseRealtimeClient(store: store, send: transport.send).credentials(for: context)
+        _ = try await SupabaseRealtimeClient(store: store, send: transport.send).geminiCredentials(for: context)
+        _ = try await SupabaseRealtimeClient(store: store, send: transport.send).geminiCredentials(for: context)
 
         #expect(transport.requests.compactMap(\.url?.path) == [
-            "/auth/v1/signup", "/functions/v1/realtime-session", "/auth/v1/token", "/functions/v1/realtime-session"
+            "/auth/v1/signup", "/functions/v1/gemini-live-session", "/auth/v1/token", "/functions/v1/gemini-live-session"
         ])
         #expect(store.saved == 2)
     }
@@ -66,9 +66,9 @@ struct SupabaseRealtimeClientTests {
         let client = SupabaseRealtimeClient(store: store, send: transport.send)
 
         if retrySucceeds {
-            _ = try await client.credentials(for: context)
+            _ = try await client.geminiCredentials(for: context)
         } else {
-            await #expect(throws: RealtimeServiceError.unauthorised) { try await client.credentials(for: context) }
+            await #expect(throws: RealtimeServiceError.unauthorised) { try await client.geminiCredentials(for: context) }
         }
         #expect(transport.requests.count == 4)
         let refresh = try #require(transport.requests.first { $0.url?.path == "/auth/v1/token" })
@@ -90,7 +90,7 @@ struct SupabaseRealtimeClientTests {
         let transport = StubHTTP([auth(), (status, #"{"error":"\#(code)"}"#)])
         let client = SupabaseRealtimeClient(store: MemoryTokenStore(), send: transport.send)
 
-        await #expect(throws: expected) { try await client.credentials(for: context) }
+        await #expect(throws: expected) { try await client.geminiCredentials(for: context) }
         #expect(transport.requests.count == 2)
     }
 
@@ -99,7 +99,7 @@ struct SupabaseRealtimeClientTests {
     }
 
     private func ticket() -> (Int, String) {
-        (200, #"{"client_secret":"ek_test","expires_at":4000000000,"model":"server-selected-model","voice":"marin"}"#)
+        (200, #"{"token":"auth_tokens/test","expires_at":4000000000,"model":"server-selected-model","voice":"Kore"}"#)
     }
 
     private func body(of request: URLRequest) throws -> [String: String] {
