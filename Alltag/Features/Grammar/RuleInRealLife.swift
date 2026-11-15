@@ -41,58 +41,19 @@ struct RealLifeSentence: Identifiable {
     }
 }
 
-/// "The rule in real life": today's sentence for the learner's next rule, on
-/// glass. Three shorter designs to choose from, behind a temporary switcher.
+/// "The rule in real life": today's sentence for the learner's next rule, as
+/// a glass row with the place's artwork on the left.
 struct RuleInRealLifeSection: View {
     let sentence: RealLifeSentence
 
-    @State private var design = 0
-
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline) {
-                Text("The rule in real life")
-                    .textRole(.sectionHeader)
-                Spacer()
-                DesignSwitcher(selection: $design, count: 3)
-            }
-            .padding(.horizontal, 4)
-            Group {
-                switch design {
-                case 0: RealLifeCompactCard(sentence: sentence)
-                case 1: RealLifeRowCard(sentence: sentence)
-                default: RealLifeRevealCard(sentence: sentence)
-                }
-            }
-            .transition(.opacity)
+        LearnSection(title: "The rule in real life") {
+            RealLifeRowCard(sentence: sentence)
         }
-        .animation(.easeOut(duration: 0.2), value: design)
     }
 }
 
-/// Design 1: the place on a small line, the sentence, and the English under it.
-private struct RealLifeCompactCard: View {
-    let sentence: RealLifeSentence
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Label { Text(sentence.place) } icon: { Image(systemName: sentence.systemImage) }
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-            RealLifeGerman(sentence: sentence, font: .headline)
-            Text(sentence.english)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(Spacing.card)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
-        .accessibilityElement(children: .combine)
-    }
-}
-
-/// Design 2: a row, with the place's artwork on the left.
+/// The row: the place's artwork, the sentence with the rule's words marked, the English.
 private struct RealLifeRowCard: View {
     let sentence: RealLifeSentence
 
@@ -112,43 +73,6 @@ private struct RealLifeRowCard: View {
         .padding(Spacing.card)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
         .accessibilityElement(children: .combine)
-    }
-}
-
-/// Design 3: only the German and the place; a tap shows the English, so the
-/// learner tries to understand it first.
-private struct RealLifeRevealCard: View {
-    let sentence: RealLifeSentence
-
-    @State private var showsEnglish = false
-
-    var body: some View {
-        Button { showsEnglish.toggle() } label: {
-            VStack(alignment: .leading, spacing: 6) {
-                RealLifeGerman(sentence: sentence, font: .headline)
-                if showsEnglish {
-                    Text(sentence.english)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .transition(.opacity)
-                } else {
-                    Label { Text(sentence.place) } icon: { Image(systemName: sentence.systemImage) }
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .transition(.opacity)
-                }
-            }
-            .multilineTextAlignment(.leading)
-            .padding(Spacing.card)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(.rect(cornerRadius: Radius.card, style: .continuous))
-            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: Radius.card, style: .continuous))
-        }
-        .buttonStyle(.plain)
-        .animation(.easeOut(duration: 0.2), value: showsEnglish)
-        .sensoryFeedback(.impact(weight: .medium), trigger: showsEnglish)
-        .accessibilityHint(Text("Shows the English"))
     }
 }
 
