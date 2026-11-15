@@ -7,7 +7,7 @@ Closes #
 <!-- Notable decisions, trade-offs, anything a reviewer should look at first. -->
 
 ## Screenshots
-<!-- Light and dark. iPhone first; iPad if the layout changes. -->
+<!-- Light and dark. iPhone, and the foldable iPhone if the layout changes. -->
 | Light | Dark |
 |---|---|
 |  |  |

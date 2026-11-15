@@ -48,7 +48,7 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
 
 ## Data (SwiftData, iCloud-ready)
 
-iCloud sync (SwiftData + CloudKit, #54) is switched on in `v1.1`, after launch. Every model must already follow CloudKit's rules, so switching it on changes no model:
+iCloud sync (SwiftData + CloudKit, #54) is switched on in `v1` (decided 15 Nov; its fallback is to ship without sync if it isn't safe on two iPhones by the Testing week). Every model must already follow CloudKit's rules, so switching it on changes no model:
 
 - Every stored property is **optional or has a default value** (`var name: String = ""`).
 - **No `@Attribute(.unique)` and no `#Unique`.** Duplicates are repaired instead (see `AlltagStore.repairDuplicateIDs`).
@@ -94,15 +94,20 @@ iCloud sync (SwiftData + CloudKit, #54) is switched on in `v1.1`, after launch. 
 
 ## Plan to launch
 
-- **Deadline: v1 is live in the App Store on 1 Dec 2026, so it is submitted on 27 Nov.** v1 is free; Pro comes in v1.1.
-- **Milestones**, one tab per week: `1 · Today` (17 Nov), `2 · Learn` (21 Nov), `3 · Memory` (24 Nov), `4 · Testing` (26 Nov), `5 · Launch` (27 Nov, the submission). `v1.1` is the first update after launch (Listen, Pro, iCloud sync). `Later` has no date.
-- **Issues:** each milestone has a few **main features** (label `epic`), each split into **sub-issues** (GitHub sub-issues). One branch and PR per sub-issue. An issue says what, why, and when it is done.
+- **Deadline: v1 is submitted to App Review on 1 Dec 2026** (decided by the maintainer on 15 Nov, with no buffer), so it is live around 3 Dec.
+- **v1 has:** Today, Learn (Write, Read, Grammar with its six rules, Translate, "How do I say …?", Fix your mistakes), Memory, **iCloud sync, Widgets and Prices (Alltag Pro with StoreKit 2)**, Settings, Profile and the translation extension. **v1.1** has Listen, more Grammar rules (#276), Siri AI and the Keyboard.
+- **Milestones say when:** `v1` (due 1 Dec, the submission), `v1.1` (the first update after launch) and `Later` (no date). The old weekly milestones (`1 · Today` … `5 · Launch`) are closed.
+- **Main issues say what.** Each part of the app is one main issue (label `epic`) with **sub-issues** (GitHub sub-issues):
+  - In `v1`: Today #324, Learn #325, Memory #311, iCloud #54, Widgets #55, App Store Connect #326, Translation extension #327, Settings #328, Profile #329, Prices #57, Testing #330, Launch #331.
+  - In `v1.1`: Siri AI #132, Keyboard #56.
+  - A new issue goes under the main issue of its part. One branch and PR per sub-issue. An issue says what, why, and when it is done.
+- **Order of the work** (a guide, not milestones): Today and Learn first, then Memory, iCloud, Widgets and Prices, then Testing (from about 26 Nov) and Launch (1 Dec).
 - **Labels**, one of each group per issue:
   - **Type:** `feature`, `bug`, `design`, `content`, `chore`.
   - **Area:** `today`, `conversation`, `learn`, `memory`, `profile`, `settings`, `onboarding`, `server`, `beyond` (Siri, widgets, nudges, extensions), `pro` (the subscription and its limits), `design-system`.
   - **Priority**, in v1 only: `must-have` (v1 can't ship without it) and `nice-to-have` (if there's time; otherwise it moves to `v1.1`).
   - **State:** `epic`, `idea`, `decision` (waits for the maintainer's decision), `needs-device` (not closed before it was tried on the iPhone), `accessibility`, `performance`. `ci` and `dependencies` belong to the automation.
-- **Real or hidden:** at the end of each week, anything on that tab that doesn't work for real is hidden (App Review guideline 2.1). No mock content ships.
+- **Real or hidden:** anything in v1 that doesn't work for real by the Testing week is hidden (App Review guideline 2.1). No mock content ships. iCloud, Widgets and Prices each have this fallback; use it instead of cutting them earlier.
 - Outdated issues are **closed as "not planned"**, never deleted.
 
 ### Keeping the scope
@@ -111,9 +116,9 @@ The launch slipped because every new idea became an issue and then work at once.
 
 1. **Ideas inbox.** A new idea is an issue of one line with the label `idea` and no milestone (template "Idea"). Nobody works on it. When the maintainer brings up an idea in a session, offer to write it down as an `idea` instead of starting on it.
 2. **Sorted once a week.** Each `idea` gets a milestone, goes to `Later`, or is closed. Between sortings, only something that blocks the launch joins the work.
-3. **v1 is frozen.** What isn't in milestones 1 to 5 doesn't enter them; adding something means taking something out.
+3. **v1 is frozen.** What isn't in the `v1` milestone doesn't enter it; adding something means taking something out.
 4. **Two open PRs at most.** Nothing new starts before an open one is merged or closed.
-5. **At the end of a milestone**, what isn't done moves to `v1.1` by name or is hidden.
+5. **Before the submission**, what isn't done moves to `v1.1` by name or is hidden.
 
 ## Current state (15 Nov 2026)
 
@@ -128,7 +133,7 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 
 **TestFlight:** the `asc` CLI on the maintainer's Mac is signed in with an API key and can upload and manage builds, but Alltag has no App Store Connect record yet; creating it needs the maintainer's Apple ID (`asc web apps create` or the website). Archive from a clean `main`, not a branch with uncommitted work.
 
-**Learn is the focus now** (`2 · Learn`, due 22 Nov). The idea that ties it together: everything the learner does in Learn feeds one loop. What they get wrong is saved to Fix your mistakes and comes back until they know it; every session is kept in Your sessions.
+**Learn is the focus now** (main issue #325). The idea that ties it together: everything the learner does in Learn feeds one loop. What they get wrong is saved to Fix your mistakes and comes back until they know it; every session is kept in Your sessions.
 
 Done on Learn: "How do I say …?" (**#304, in its PR:** it answers in place on Learn through `AskInPlace` and `AskModel`, asking the server only on send; the answer card grows under the field and its details open under it, the design the maintainer chose. The `.howToSay` route and `TranslateView(isAsking:)` are still there but Learn's field no longer opens them), Translate with OpenAI (streamed), Alltag as the default translation app (extension `AlltagTranslation/`), Fix your mistakes with the learner's own mistakes, Your sessions.
 
@@ -139,7 +144,7 @@ The Learn features, **in this order**:
 1a. **#295** Translate in the Articles standard, put before Write by the maintainer: **#296** the screen (pair card with the welcome in its lower half, the big button above the keyboard, placeholders while loading, detail cards with symbols, a history; in its PR) and then **#297** the panel in other apps in the same look (in its PR; the designs are chosen). `AlltagTranslation/` is a plain group in the project, not a synchronized folder: a new file there needs a project change, so ask first.
 2. **#263** Write: a short task, corrected sentence by sentence. A shell today.
 3. **#269** Read: real-life texts, tap a word, check understanding. A shell today.
-4. **#275** Grammar: rules for every level, linked from the learner's mistakes. Works with 6 rules today.
+4. **#275** Grammar: linked from the learner's mistakes. Ships with its 6 rules; more rules (#276) are in `v1.1`.
 5. **#280** Listen: short spoken texts with questions, and dictation. A shell today: **moved to `v1.1`** and hidden in v1.
 6. **#285** Polish: every state, light mode, one pass on the iPhone.
 
@@ -149,7 +154,7 @@ The Learn features, **in this order**:
 
 **Never tried on a real device:** the situation role-plays, the 60-second recording and "Listen to yourself", the thinking-time values (merged untested), the translation panel in other apps, "How do I say …?" with a real answer.
 
-**Planned on 15 Nov (#322):** every open issue has a milestone. `3 · Memory` is #311 with its sub-issues (#312–#314, and #118), `4 · Testing` is #258 and #315–#317, `5 · Launch` is #162, #163, #300 and #318–#321. Eight issues in v1 wait for the maintainer (`decision`, `needs-device`).
+**Planned on 15 Nov:** every open issue is in `v1`, `v1.1` or `Later`, and every v1 issue sits under one of the main issues above. Memory is #311 (#312–#314, #118), Testing #330 (#258, #315, #317), Launch #331 (#162, #163, #300, #320, #321), App Store Connect #326 (#316, #318, #319, #341). New on 15 Nov: iCloud #332–#334, Widgets #335–#337, Prices #338–#340 (#338, what is free and what is Pro, waits for the maintainer), Translation extension #342–#343, Settings #344–#345, Profile #346.
 
 **Decisions the maintainer has made**
 - Text features use `gpt-6-luna` (their choice, for cost). `CHECK_MODEL` and `TRANSLATE_MODEL` in Supabase's secrets switch it without a new build.
