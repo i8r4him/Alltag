@@ -9,7 +9,7 @@ import SwiftUI
 
 /// The tapped word: its dictionary form with the article in the theme colour,
 /// the meaning, a grammar note and an example, with buttons to hear it and to
-/// save it. Without a background, so each way of showing it adds its own.
+/// save it. Without a background: the reader puts it on a glass card.
 struct ReaderWordCard: View {
     let word: ReadingWord
     let lookup: ReaderModel.Lookup
@@ -18,7 +18,7 @@ struct ReaderWordCard: View {
     var onToggleSave: () -> Void = {}
     var onRetry: () -> Void = {}
     var onDownload: () -> Void = {}
-    /// Shows a close button when the card has no other way to close.
+    /// Shows a close button; the previews leave it out.
     var onClose: (() -> Void)?
 
     static let german = Locale(identifier: "de")

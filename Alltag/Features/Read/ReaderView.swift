@@ -16,8 +16,6 @@ struct ReaderView: View {
     @State private var model: ReaderModel
     @Environment(\.services) private var services
     @Environment(\.modelContext) private var context
-    /// Which way of showing the tapped word is being tried. Temporary, until one is chosen.
-    @AppStorage("read.wordDesign") private var design = ReaderWordDesign.bottom
     @State private var download: TranslationSession.Configuration?
     /// Counts the speaker's taps, for the medium haptic tap.
     @State private var listenTaps = 0
@@ -30,8 +28,6 @@ struct ReaderView: View {
         @Bindable var model = model
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
-                ReaderDesignSwitcher(design: $design)
-                    .frame(maxWidth: .infinity)
                 ReaderHeader(text: model.text)
                 page
             }
@@ -60,8 +56,7 @@ struct ReaderView: View {
                 .contentTransition(.symbolEffect(.replace))
             }
         }
-        .safeAreaInset(edge: .bottom) { bottomCard }
-        .sheet(isPresented: isShowingSheet) { sheetCard }
+        .safeAreaInset(edge: .bottom) { wordCard }
         .animation(.easeOut(duration: 0.25), value: model.selected)
         .sensoryFeedback(.selection, trigger: model.selected)
         .sensoryFeedback(.impact(weight: .medium), trigger: listenTaps)
@@ -80,8 +75,7 @@ struct ReaderView: View {
         .toast($model.notice)
     }
 
-    /// The text on a clear glass card, a paragraph at a time; with the word
-    /// card under its paragraph when that is the design being tried.
+    /// The text on a clear glass card, a paragraph at a time.
     private var page: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(model.paragraphs) { paragraph in
@@ -89,14 +83,6 @@ struct ReaderView: View {
                     if let word = model.word(id: id) { model.select(word, with: services.translation) }
                 }
                 .padding(.top, paragraph.id == 0 ? 0 : paragraph.startsBlock ? 18 : 4)
-                if design == .underParagraph, let word = model.selected, let lookup = model.lookup,
-                   paragraph.words.contains(word) {
-                    card(for: word, lookup: lookup, closes: true)
-                        .padding(Spacing.card)
-                        .background(.accent.opacity(0.1), in: .rect(cornerRadius: Radius.option, style: .continuous))
-                        .padding(.vertical, 12)
-                        .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
-                }
             }
         }
         .padding(Spacing.cardLarge)
@@ -104,11 +90,16 @@ struct ReaderView: View {
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
     }
 
-    /// The word card above the tab bar, when that is the design being tried.
+    /// The tapped word on a glass card above the tab bar; the text scrolls behind it.
     @ViewBuilder
-    private var bottomCard: some View {
-        if design == .bottom, let word = model.selected, let lookup = model.lookup {
-            card(for: word, lookup: lookup, closes: true)
+    private var wordCard: some View {
+        if let word = model.selected, let lookup = model.lookup {
+            ReaderWordCard(word: word, lookup: lookup, isSaved: model.meaning.map(model.isSaved) ?? false,
+                           onListen: { german in Task { await model.listen(to: german, with: services.voice) } },
+                           onToggleSave: { model.toggleSave(in: context) },
+                           onRetry: { model.retry(with: services.translation) },
+                           onDownload: { download = downloadConfiguration(for: lookup) },
+                           onClose: { model.close() })
                 .padding(Spacing.cardLarge)
                 .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
                 .padding(.horizontal, Spacing.screen)
@@ -118,44 +109,9 @@ struct ReaderView: View {
         }
     }
 
-    /// The word card in a small sheet, when that is the design being tried.
-    @ViewBuilder
-    private var sheetCard: some View {
-        if let word = model.selected, let lookup = model.lookup {
-            ScrollView {
-                card(for: word, lookup: lookup, closes: false)
-                    .padding(Spacing.cardLarge)
-            }
-            .fontDesign(.rounded)
-            .presentationDetents([.height(300), .large])
-            .presentationBackgroundInteraction(.enabled(upThrough: .height(300)))
-            .presentationDragIndicator(.visible)
-        }
-    }
-
-    private func card(for word: ReadingWord, lookup: ReaderModel.Lookup, closes: Bool) -> some View {
-        let close: (() -> Void)? = closes ? { model.close() } : nil
-        return ReaderWordCard(word: word, lookup: lookup, isSaved: model.meaning.map(model.isSaved) ?? false,
-                              onListen: { german in Task { await model.listen(to: german, with: services.voice) } },
-                              onToggleSave: { model.toggleSave(in: context) },
-                              onRetry: { model.retry(with: services.translation) },
-                              onDownload: { download = downloadConfiguration(for: lookup) },
-                              onClose: close)
-    }
-
     private func downloadConfiguration(for lookup: ReaderModel.Lookup) -> TranslationSession.Configuration? {
         guard case let .needsDownload(source, target) = lookup else { return nil }
         return TranslationSession.Configuration(source: source, target: target)
-    }
-
-    /// The word card as a small sheet, when that is the design being tried.
-    /// The text stays tappable behind it.
-    private var isShowingSheet: Binding<Bool> {
-        Binding {
-            design == .sheet && model.selected != nil
-        } set: { isShown in
-            if !isShown { model.close() }
-        }
     }
 }
 

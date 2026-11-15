@@ -247,10 +247,9 @@ Alltag/                                   ← repo root
 │  │  │  └─ ListenView.swift              picked clip, speed, real situations
 │  │  ├─ Read/
 │  │  │  ├─ ReadView.swift                scan a letter, your reading list (from Safari), picked for you, from daily life
-│  │  │  ├─ ReaderView.swift              one text in large type; tap a word to translate and save it; Listen reads it aloud
+│  │  │  ├─ ReaderView.swift              one text in large type; a tapped word on a glass card at the bottom; Listen reads it aloud
 │  │  │  ├─ ReaderModel.swift             the tapped word, its look-up (once per word), saving, listening (tested)
 │  │  │  ├─ ReaderWordCard.swift          the word with its article, meaning, grammar and example; its states
-│  │  │  ├─ ReaderDesignSwitcher.swift    temporary: the three ways of showing the word, until one is chosen
 │  │  │  ├─ ReadingWords.swift            a text split into lines and words, each with its sentence (pure, tested)
 │  │  │  └─ ReadingMemory.swift           a tapped word to Memory with the sentence it was read in
 │  │  ├─ Grammar/
