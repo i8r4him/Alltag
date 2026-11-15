@@ -8,17 +8,21 @@
 import SwiftUI
 
 /// Learn › Read: the letter scan, your reading list from Safari, a text picked
-/// for you and more texts from daily life. UI only for now, with mock content.
+/// for you and more texts from daily life. A text opens in the reader, zooming
+/// out of its card; the scan and the reading list are still UI only, with mock content.
 struct ReadView: View {
     @State private var taps = 0
+    /// The text open in the reader, by its id.
+    @State private var opened: String?
+    @Namespace private var zoom
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
                 ScanLetterCard(action: tapped)
                 ReadingListSection(articles: MockReading.articles, onOpen: { _ in tapped() })
-                PickedTextCard(text: MockReading.picked, action: tapped)
-                MoreTextsSection(texts: MockReading.more, onOpen: { _ in tapped() })
+                PickedTextCard(text: MockReading.picked, zoom: zoom) { open(MockReading.picked) }
+                MoreTextsSection(texts: MockReading.more, zoom: zoom, onOpen: open)
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.top, 8)
@@ -30,10 +34,21 @@ struct ReadView: View {
         .navigationTitle("Read")
         .toolbarTitleDisplayMode(.inlineLarge)
         .scrollEdgeEffectStyle(.soft, for: .all)
-        .sensoryFeedback(.impact(weight: .light), trigger: taps)
+        .sensoryFeedback(.impact(weight: .medium), trigger: taps)
+        .navigationDestination(item: $opened) { id in
+            if let text = MockReading.text(id: id) {
+                ReaderView(text: text)
+                    .navigationTransition(.zoom(sourceID: id, in: zoom))
+            }
+        }
     }
 
-    /// The reader and the scan come next; for now a tap only gives feedback.
+    private func open(_ text: ReadingText) {
+        taps += 1
+        opened = text.id
+    }
+
+    /// The scan and the reading list come later; for now a tap only gives feedback.
     private func tapped() {
         taps += 1
     }
@@ -128,6 +143,7 @@ private struct ReadingListSection: View {
 /// One text picked for you, in the Focus card's layout.
 private struct PickedTextCard: View {
     let text: ReadingText
+    let zoom: Namespace.ID
     let action: () -> Void
 
     var body: some View {
@@ -160,6 +176,7 @@ private struct PickedTextCard: View {
             }
             .padding(Spacing.cardLarge)
             .learnSurface()
+            .matchedTransitionSource(id: text.id, in: zoom)
         }
     }
 }
@@ -167,6 +184,7 @@ private struct PickedTextCard: View {
 /// "From daily life": more letters, notices and forms.
 private struct MoreTextsSection: View {
     let texts: [ReadingText]
+    let zoom: Namespace.ID
     let onOpen: (ReadingText) -> Void
 
     var body: some View {
@@ -200,6 +218,7 @@ private struct MoreTextsSection: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityElement(children: .combine)
+                    .matchedTransitionSource(id: text.id, in: zoom)
                 }
             }
             .learnSurface(radius: Radius.card)
@@ -209,4 +228,5 @@ private struct MoreTextsSection: View {
 
 #Preview {
     NavigationStack { ReadView() }
+        .modelContainer(AlltagStore.preview)
 }

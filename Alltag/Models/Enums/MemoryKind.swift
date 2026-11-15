@@ -26,6 +26,8 @@ enum MemorySource: String, Codable, CaseIterable, Sendable {
     case podcast
     case camera
     case debrief
+    /// A word tapped in Learn › Read.
+    case read
 
     /// Name shown with the source, e.g. "Safari · Spiegel, today".
     var title: LocalizedStringResource {
@@ -37,6 +39,7 @@ enum MemorySource: String, Codable, CaseIterable, Sendable {
         case .podcast: "Podcast"
         case .camera: "Camera"
         case .debrief: "Debrief"
+        case .read: "Read"
         }
     }
 
@@ -50,6 +53,7 @@ enum MemorySource: String, Codable, CaseIterable, Sendable {
         case .podcast: "headphones"
         case .camera: "camera"
         case .debrief: "text.bubble"
+        case .read: "doc.text"
         }
     }
 }
