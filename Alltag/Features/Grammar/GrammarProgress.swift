@@ -38,7 +38,10 @@ struct GrammarProgress {
 
     /// The rules with a lesson at `level`, in the order the level lists them.
     static func rules(at level: Level) -> [GrammarRule] {
-        MockLevels.topics(for: level).compactMap { $0.ruleID.flatMap(MockRules.rule(id:)) }
+        MockLevels.topics(for: level).compactMap { topic in
+            guard let id = topic.ruleID else { return nil }
+            return MockRules.rule(id: id)
+        }
     }
 
     /// What "Your next rule" shows: the first unsolved rule at the learner's
