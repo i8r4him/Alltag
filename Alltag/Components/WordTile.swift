@@ -56,10 +56,11 @@ struct WordTile: View {
 
     private var background: AnyShapeStyle {
         switch style {
-        case .plain: AnyShapeStyle(.surfaceSecondary)
-        case .key: AnyShapeStyle(.surfaceSecondary)
+        // System fills see through the glass card in both modes.
+        case .plain: AnyShapeStyle(.fill.tertiary)
+        case .key: AnyShapeStyle(.fill.tertiary)
         case .highlighted: AnyShapeStyle(.accentFill.opacity(0.18))
-        case .placed: AnyShapeStyle(.surfaceTertiary)
+        case .placed: AnyShapeStyle(.fill.secondary)
         }
     }
 }

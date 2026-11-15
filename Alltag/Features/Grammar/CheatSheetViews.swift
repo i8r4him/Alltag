@@ -18,12 +18,13 @@ struct CheatSheetsSection: View {
 
     var body: some View {
         LearnSection(title: "Cheat sheets") {
-            GlassEffectContainer(spacing: Spacing.grid) {
-                HStack(alignment: .top, spacing: Spacing.grid) {
-                    ForEach(CheatSheet.sheets(for: level)) { sheet in
-                        CheatSheetTile(sheet: sheet) { open = sheet.id }
-                            .matchedTransitionSource(id: sheet.id, in: transition)
-                    }
+            // No GlassEffectContainer here: it merges the tiles into one glass
+            // layer, and the sheet then has no single tile to zoom out of
+            // (the same as Articles' clue tiles).
+            HStack(alignment: .top, spacing: Spacing.grid) {
+                ForEach(CheatSheet.sheets(for: level)) { sheet in
+                    CheatSheetTile(sheet: sheet) { open = sheet.id }
+                        .matchedTransitionSource(id: sheet.id, in: transition)
                 }
             }
         }

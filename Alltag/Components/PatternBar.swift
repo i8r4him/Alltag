@@ -17,7 +17,7 @@ struct PatternBar: View {
             ForEach(Array(slots.enumerated()), id: \.offset) { _, slot in
                 VStack(spacing: 6) {
                     Capsule()
-                        .fill(slot.emphasis == .none ? AnyShapeStyle(.surfaceTertiary) : AnyShapeStyle(.accentFill))
+                        .fill(slot.emphasis == .none ? AnyShapeStyle(.fill.secondary) : AnyShapeStyle(.accentFill))
                         .frame(height: 6)
                     Text(verbatim: slot.label)
                         .textRole(.caption)
