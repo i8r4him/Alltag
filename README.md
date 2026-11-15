@@ -246,7 +246,12 @@ Alltag/                                   ← repo root
 │  │  ├─ Listen/
 │  │  │  └─ ListenView.swift              picked clip, speed, real situations
 │  │  ├─ Read/
-│  │  │  └─ ReadView.swift                scan a letter, your reading list (from Safari), picked for you, from daily life
+│  │  │  ├─ ReadView.swift                scan a letter, your reading list (from Safari), picked for you, from daily life
+│  │  │  ├─ ReaderView.swift              one text in large type; a tapped word on a glass card at the bottom; Listen reads it aloud
+│  │  │  ├─ ReaderModel.swift             the tapped word, its look-up (once per word), saving, listening (tested)
+│  │  │  ├─ ReaderWordCard.swift          the word with its article, meaning, grammar and example; its states
+│  │  │  ├─ ReadingWords.swift            a text split into lines and words, each with its sentence (pure, tested)
+│  │  │  └─ ReadingMemory.swift           a tapped word to Memory with the sentence it was read in
 │  │  ├─ Grammar/
 │  │  │  ├─ GrammarView.swift             worth a look, cheat sheets, all rules by level with status
 │  │  │  ├─ GrammarProgress.swift         solved status and counts (tested)
@@ -275,7 +280,7 @@ Alltag/                                   ← repo root
 │  │  ├─ MockScenarios.swift              SCEN
 │  │  ├─ MockTranslations.swift           TR
 │  │  ├─ MockMemoryItems.swift            MEM
-│  │  ├─ MockReading.swift                Read screen: saved articles, texts from daily life
+│  │  ├─ MockReading.swift                Read screen: saved articles, texts from daily life (with German to read, until #270)
 │  │  ├─ MockWriteListen.swift            Write tasks and phrases, Listen clips
 │  │  ├─ MockActivities.swift             ACTS
 │  │  ├─ MockRules.swift                  RULES
@@ -476,6 +481,7 @@ Learn › Articles, in Today's look. A glass hero card starts **a round**: ten n
 - **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. On-device conversations keep their scripted replies so each scenario reaches its goal.
 - **Live voice on iPhone:** Google's Gemini Live, with a short-lived token from the `gemini-live-session` Edge Function, and both speakers' captions (#309). Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange.
 - **Translate:** OpenAI through Supabase when cloud use is allowed. The translation, words, tone and examples appear as they arrive. If cloud use is unavailable, the screen reports the error rather than showing an on-device translation.
+- **Read:** a tapped word goes to the translation service, once per word while the text is open: OpenAI through Supabase when cloud use is allowed (the word with its article, a grammar note and an example), otherwise Apple's Translation on the iPhone (the meaning only). The texts are samples until #270 decides where they come from.
 - **Simulated:** scripted companion replies & feedback, placement.
 - **Later:** see the framework table below.
 

@@ -90,8 +90,8 @@ private struct ArticleWordRows: View {
 }
 
 /// The bookmark in the card's corner: empty when the word isn't in Memory, filled when it is.
-/// Tapping it again takes the word out of Memory.
-private struct ArticleBookmarkButton: View {
+/// Tapping it again takes the word out of Memory. The reader uses it too.
+struct ArticleBookmarkButton: View {
     let isSaved: Bool
     let action: () -> Void
 
