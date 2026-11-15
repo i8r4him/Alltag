@@ -1,4 +1,4 @@
-# Handoff: Alltag — iOS Language-Learning Companion (Prototype v0.1)
+# Alltag — iOS German-Learning Companion
 
 ## Overview
 Alltag ("everyday") is an ambient German-learning companion: *"Learn German through the life you're already living."* The app turns everyday activity (reading, writing, Calendar events, conversations) into short practice. This bundle documents the first interactive design prototype so it can be rebuilt natively in **Swift + SwiftUI** (iOS 27+ SDK, Liquid Glass where noted).
@@ -311,6 +311,7 @@ Alltag/                                   ← repo root
 │  ├─ ISSUE_TEMPLATE/
 │  │  ├─ feature.yml
 │  │  ├─ bug.yml
+│  │  ├─ idea.yml                       one-line idea for the inbox (no milestone)
 │  │  └─ config.yml
 │  ├─ pull_request_template.md
 │  ├─ labeler.yml                         folder → label rules
@@ -423,7 +424,7 @@ Companion: `OrbDynamics` sets its speed and energy per state; it grows slightly 
 Text mode: field "Antworte auf Deutsch…" + accent send. Scenarios: dentist, post office, train (see MockData in HTML `SCEN`).
 Native: `Speech` (`SpeechAnalyzer` + `SpeechTranscriber`, de-DE — the newer API that replaces `SFSpeechRecognizer`), `AVSpeechSynthesizer`, haptics on state changes.
 
-When **Pro features may use the cloud** is enabled, tapping the orb on an iPhone starts a live voice session. The app sends the scenario title, goal and learner level to the Supabase Edge Function and streams audio directly to OpenAI with the short-lived credential. The transcript stays in memory in the app. Finishing the conversation, leaving voice mode or reaching ten minutes closes the connection. With cloud use off or unavailable, the scripted conversation uses on-device speech.
+When **Pro features may use the cloud** is enabled, tapping the orb on an iPhone starts a live voice session. The app sends the scenario title, goal and learner level to the Supabase Edge Function and streams audio directly to Google's Gemini Live with the short-lived token from the `gemini-live-session` function. The transcript stays in memory in the app. Finishing the conversation, leaving voice mode or reaching ten minutes closes the connection. With cloud use off or unavailable, the scripted conversation uses on-device speech.
 
 ### Translate
 Title "Translate" (`.inlineLarge`). One glass card with both languages: the text on top, a swap button on the line between, and below it the welcome with two prompts until there is a translation, then the translation with Listen, Slowly and a bookmark that saves to Memory and takes it out again ("Saved to" / "Removed from Memory" above the tab bar). Swapping translates the other way at once. The OpenAI translation appears first, followed by Word by word, Tone and In context as each section arrives, each on its own card with a symbol (the tones too: formal, neutral, casual). Offline, the cloud switched off, the daily limit, other failures and languages to download each get a `StateCard`. Translate, swap and the prompts give a medium haptic. The field has a clear button and the system's Paste button; the translation can be copied and shared. A toolbar button opens the recent translations (kept in `UserDefaults`) in a sheet that zooms out of it; one tap shows a translation again without a request. The big button stays at the bottom of the screen, above the keyboard. While it translates, a blank line and blank cards stand in the shape of the answer.
