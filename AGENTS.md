@@ -48,7 +48,7 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
 
 ## Data (SwiftData, iCloud-ready)
 
-iCloud sync (SwiftData + CloudKit, #54) is switched on at the end of `3 · Memory`. Every model must already follow CloudKit's rules, so switching it on changes no model:
+iCloud sync (SwiftData + CloudKit, #54) is switched on in `v1.1`, after launch. Every model must already follow CloudKit's rules, so switching it on changes no model:
 
 - Every stored property is **optional or has a default value** (`var name: String = ""`).
 - **No `@Attribute(.unique)` and no `#Unique`.** Duplicates are repaired instead (see `AlltagStore.repairDuplicateIDs`).
@@ -94,12 +94,26 @@ iCloud sync (SwiftData + CloudKit, #54) is switched on at the end of `3 · Memor
 
 ## Plan to launch
 
-- **Deadline: v1 is submitted to the App Store by 30 Nov 2026.** v1 is free; Pro comes after launch.
-- **Milestones**, one tab per week: `1 · Today` (16 Nov), `2 · Learn` (22 Nov), `3 · Memory` (25 Nov, ends with iCloud sync), `4 · Testing` (27 Nov), `5 · Launch` (30 Nov). `After launch` is the backlog.
-- **Issues:** each milestone has a few **main features**, each split into **sub-issues** (GitHub sub-issues). One branch and PR per sub-issue.
-- **Labels:** `must-have` (the tab isn't done without it) and `nice-to-have` (if there's time; otherwise it moves to `After launch`).
+- **Deadline: v1 is live in the App Store on 1 Dec 2026, so it is submitted on 27 Nov.** v1 is free; Pro comes in v1.1.
+- **Milestones**, one tab per week: `1 · Today` (17 Nov), `2 · Learn` (21 Nov), `3 · Memory` (24 Nov), `4 · Testing` (26 Nov), `5 · Launch` (27 Nov, the submission). `v1.1` is the first update after launch (Listen, Pro, the cheaper live voice, iCloud sync). `Later` has no date.
+- **Issues:** each milestone has a few **main features** (label `epic`), each split into **sub-issues** (GitHub sub-issues). One branch and PR per sub-issue. An issue says what, why, and when it is done.
+- **Labels**, one of each group per issue:
+  - **Type:** `feature`, `bug`, `design`, `content`, `chore`.
+  - **Area:** `today`, `conversation`, `learn`, `memory`, `profile`, `settings`, `onboarding`, `server`, `beyond` (Siri, widgets, nudges, extensions), `pro` (the subscription and its limits), `design-system`.
+  - **Priority**, in v1 only: `must-have` (v1 can't ship without it) and `nice-to-have` (if there's time; otherwise it moves to `v1.1`).
+  - **State:** `epic`, `idea`, `decision` (waits for the maintainer's decision), `needs-device` (not closed before it was tried on the iPhone), `accessibility`, `performance`. `ci` and `dependencies` belong to the automation.
 - **Real or hidden:** at the end of each week, anything on that tab that doesn't work for real is hidden (App Review guideline 2.1). No mock content ships.
 - Outdated issues are **closed as "not planned"**, never deleted.
+
+### Keeping the scope
+
+The launch slipped because every new idea became an issue and then work at once. These rules stop that; agents follow them too.
+
+1. **Ideas inbox.** A new idea is an issue of one line with the label `idea` and no milestone (template "Idea"). Nobody works on it. When the maintainer brings up an idea in a session, offer to write it down as an `idea` instead of starting on it.
+2. **Sorted once a week.** Each `idea` gets a milestone, goes to `Later`, or is closed. Between sortings, only something that blocks the launch joins the work.
+3. **v1 is frozen.** What isn't in milestones 1 to 5 doesn't enter them; adding something means taking something out.
+4. **Two open PRs at most.** Nothing new starts before an open one is merged or closed.
+5. **At the end of a milestone**, what isn't done moves to `v1.1` by name or is hidden.
 
 ## Current state (15 Nov 2026)
 
@@ -126,7 +140,7 @@ The Learn features, **in this order**:
 2. **#263** Write: a short task, corrected sentence by sentence. A shell today.
 3. **#269** Read: real-life texts, tap a word, check understanding. A shell today.
 4. **#275** Grammar: rules for every level, linked from the learner's mistakes. Works with 6 rules today.
-5. **#280** Listen: short spoken texts with questions, and dictation. A shell today. The one to hide and move to After launch if the week runs short.
+5. **#280** Listen: short spoken texts with questions, and dictation. A shell today: **moved to `v1.1`** and hidden in v1.
 6. **#285** Polish: every state, light mode, one pass on the iPhone.
 
 **Open decisions (maintainer)**, with the agent's recommendation in each issue: written content, generated content or both (#264, #270); which voice for Listen (#280); Scan a letter in v1 or later (#274).
@@ -135,7 +149,7 @@ The Learn features, **in this order**:
 
 **Never tried on a real device:** the situation role-plays, the 60-second recording and "Listen to yourself", the thinking-time values (merged untested), the translation panel in other apps, "How do I say …?" with a real answer.
 
-**Not planned yet:** `3 · Memory` and `4 · Testing` have no issues (except #258, light mode). The old issues in `5 · Launch` (#51, #118, #161, #162, #163) are not sorted.
+**Planned on 15 Nov (#322):** every open issue has a milestone. `3 · Memory` is #311 with its sub-issues (#312–#314, and #118), `4 · Testing` is #258 and #315–#317, `5 · Launch` is #162, #163, #300 and #318–#321. Eight issues in v1 wait for the maintainer (`decision`, `needs-device`).
 
 **Decisions the maintainer has made**
 - Text features use `gpt-6-luna` (their choice, for cost). `CHECK_MODEL` and `TRANSLATE_MODEL` in Supabase's secrets switch it without a new build.

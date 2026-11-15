@@ -1,0 +1,11 @@
+name: Idea
+description: Something that came to mind. One line; nobody works on it until it is sorted.
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: One or two sentences. No milestone; ideas are sorted once a week.
+    validations:
+      required: true
