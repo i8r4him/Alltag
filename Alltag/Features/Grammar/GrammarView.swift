@@ -30,12 +30,10 @@ struct GrammarView: View {
             }
 
             if let next, let sentence = RealLifeSentence.sentence(for: next.rule.id) {
-                LearnSection(title: "The rule in real life") {
-                    RuleInRealLifeCard(sentence: sentence)
-                }
+                RuleInRealLifeSection(sentence: sentence)
             }
 
-            CheatSheetsSection(learnerLevel: learnerLevel)
+            CheatSheetsSection(level: learnerLevel)
 
             LearnSection(title: "All rules",
                          note: Text("\(progress.solvedCount(at: shownLevel)) of \(MockLevels.topics(for: shownLevel).count) solved")) {

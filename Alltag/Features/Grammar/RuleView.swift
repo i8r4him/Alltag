@@ -47,6 +47,7 @@ struct RuleView: View {
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 32)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .readableContentMargins()
         .background(.screenBackground)
         .navigationBarTitleDisplayMode(.inline)

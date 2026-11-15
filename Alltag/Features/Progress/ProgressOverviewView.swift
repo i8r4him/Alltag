@@ -44,6 +44,7 @@ struct ProgressOverviewView: View {
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 24)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .readableContentMargins()
         .background(.screenBackground)
         .navigationTitle("Progress")

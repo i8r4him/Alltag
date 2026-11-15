@@ -261,7 +261,8 @@ Alltag/                                   ← repo root
 │  │  │  ├─ CheatSheet.swift              a cheat sheet: label, title, parts of German forms
 │  │  │  ├─ CheatSheetsBasic.swift        the sheets for A1 and A2 (and the list of all)
 │  │  │  ├─ CheatSheetsAdvanced.swift     the sheets for B1, B2 and C1
-│  │  │  ├─ CheatSheetViews.swift         three glass tiles per level and the sheet they open
+│  │  │  ├─ DesignSwitcher.swift          temporary ‹ n / N › switcher between design options
+│  │  │  ├─ CheatSheetViews.swift         the three glass tiles of the learner's level and the sheet they open
 │  │  │  ├─ RuleView.swift                numbered steps: heard, notice, rule, your own German
 │  │  │  ├─ RuleModel.swift               word-order task, check, solved
 │  │  │  └─ WordOrderTask.swift           "Try it" with tiles, Check, Mark as solved

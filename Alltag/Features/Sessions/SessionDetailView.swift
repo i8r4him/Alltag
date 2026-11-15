@@ -80,6 +80,7 @@ struct SessionDetailView: View {
             }
             .padding(Spacing.screen)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .scrollIndicators(.hidden)
         .readableContentMargins()
         .safeAreaInset(edge: .bottom) {

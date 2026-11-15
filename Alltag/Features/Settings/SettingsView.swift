@@ -49,6 +49,7 @@ struct SettingsView: View {
             }
             .listRowBackground(Rectangle().fill(.thinMaterial))
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         // The system's inset-grouped margins already adapt to wide screens.
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)

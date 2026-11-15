@@ -45,6 +45,7 @@ struct NameStep: View {
                 }
             }
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .scrollDismissesKeyboard(.interactively)
         .onAppear {
             if model.trimmedName.isEmpty { isNameFocused = true }

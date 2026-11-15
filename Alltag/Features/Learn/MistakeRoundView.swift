@@ -116,6 +116,7 @@ private struct MistakeQuestionView: View {
             .padding(.bottom, 16)
             .animation(.easeOut(duration: 0.25), value: model.hasAnswered)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .scrollIndicators(.hidden)
         .safeAreaInset(edge: .bottom) {
             if model.hasAnswered {

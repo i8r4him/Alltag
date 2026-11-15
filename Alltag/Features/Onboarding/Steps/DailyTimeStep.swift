@@ -36,6 +36,7 @@ struct DailyTimeStep: View {
                 }
             }
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
     }
 }
 

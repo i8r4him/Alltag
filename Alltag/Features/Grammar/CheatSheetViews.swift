@@ -7,34 +7,17 @@
 
 import SwiftUI
 
-/// "Cheat sheets": the sheets of one level as glass tiles, the learner's own
-/// level first, with a menu for the others. A sheet grows out of its tile.
+/// "Cheat sheets": the three sheets of the learner's level as glass tiles.
+/// A sheet grows out of its tile.
 struct CheatSheetsSection: View {
-    /// The learner's level, shown until they pick another.
-    let learnerLevel: Level
+    /// The learner's level.
+    let level: Level
 
-    @State private var picked: Level?
     @State private var open: CheatSheet.ID?
     @Namespace private var transition
 
-    private var level: Level { picked ?? learnerLevel }
-
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Cheat sheets")
-                    .textRole(.sectionHeader)
-                Spacer()
-                Picker("Level", selection: Binding(get: { level }, set: { picked = $0 })) {
-                    ForEach(Level.selectable) { level in
-                        Text(verbatim: level.title).tag(level)
-                    }
-                }
-                .pickerStyle(.menu)
-                .fixedSize()
-            }
-            .padding(.horizontal, 4)
-
+        LearnSection(title: "Cheat sheets") {
             GlassEffectContainer(spacing: Spacing.grid) {
                 HStack(alignment: .top, spacing: Spacing.grid) {
                     ForEach(CheatSheet.sheets(for: level)) { sheet in
@@ -43,16 +26,12 @@ struct CheatSheetsSection: View {
                     }
                 }
             }
-            .id(level)
-            .transition(.opacity)
         }
-        .animation(.easeOut(duration: 0.2), value: level)
         .sheet(item: Binding(get: { CheatSheet.all.first { $0.id == open } }, set: { open = $0?.id })) { sheet in
             CheatSheetDetail(sheet: sheet)
                 .navigationTransition(.zoom(sourceID: sheet.id, in: transition))
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: open) { _, opened in opened != nil }
-        .sensoryFeedback(.selection, trigger: level)
     }
 }
 
@@ -122,6 +101,7 @@ struct CheatSheetDetail: View {
                 .padding(.top, 8)
                 .padding(.bottom, 24)
             }
+            .scrollEdgeEffectStyle(.soft, for: .all)
             .scrollIndicators(.hidden)
             .skyBackground()
             .navigationTitle(Text(verbatim: sheet.level.title))
@@ -173,7 +153,7 @@ private struct CheatSheetPartCard: View {
 
 #Preview("Section") {
     ScrollView {
-        CheatSheetsSection(learnerLevel: .a2)
+        CheatSheetsSection(level: .a2)
             .padding(Spacing.screen)
     }
     .skyBackground()

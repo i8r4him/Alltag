@@ -27,6 +27,7 @@ struct ComponentGallery: View {
             }
             .padding(Spacing.screen)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .background(.screenBackground)
         .toast($toast)
     }

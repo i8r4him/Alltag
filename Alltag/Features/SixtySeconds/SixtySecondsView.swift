@@ -236,6 +236,7 @@ private struct SixtySecondsResult: View {
             }
             .padding(Spacing.screen)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .scrollIndicators(.hidden)
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 12) {

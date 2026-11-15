@@ -33,6 +33,7 @@ struct InterestsStep: View {
                 .sensoryFeedback(.selection, trigger: model.interests)
             }
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
     }
 }
 
