@@ -472,6 +472,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Alltag/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Alltag uses the microphone when you practise speaking German. Live voice sends audio to OpenAI when you allow cloud use in Settings.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Alltag turns your spoken German into text on your iPhone to give you feedback.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -512,6 +513,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Alltag/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Alltag uses the microphone when you practise speaking German. Live voice sends audio to OpenAI when you allow cloud use in Settings.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Alltag turns your spoken German into text on your iPhone to give you feedback.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
