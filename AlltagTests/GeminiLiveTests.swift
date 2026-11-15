@@ -200,18 +200,10 @@ struct GeminiLiveTests {
         #expect(throws: RealtimeServiceError.self) { try GeminiLiveSession.request(for: old) }
     }
 
-    @Test("The server's answer is read, and the next conversation uses the provider chosen")
+    @Test("The server's answer is read")
     func provider() throws {
         let json = #"{"token":"auth_tokens/x","expires_at":1794680592,"model":"gemini-3.8-live","voice":"Kore"}"#
         let ticket = try JSONDecoder().decode(GeminiLiveCredentials.self, from: Data(json.utf8))
         #expect(ticket.token == "auth_tokens/x" && ticket.expiresAt == 1_794_680_592)
-
-        var chosen = VoiceProvider.openAI
-        let service = SwitchingRealtimeConversationService(provider: { chosen })
-        let context = RealtimeConversationContext(scenario: MockScenarios.all[0], level: .b1, slowerSpeech: true)
-        #expect(service.makeSession(for: context) is OpenAIRealtimeSession)
-        chosen = .gemini
-        #expect(service.makeSession(for: context) is GeminiLiveSession)
-        #expect(VoiceProvider(rawValue: "nonsense") == nil)
     }
 }

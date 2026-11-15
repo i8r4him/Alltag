@@ -8,8 +8,8 @@
 import Foundation
 import OSLog
 
-/// The live voice with Google's Gemini Live API (#309), the second provider next to
-/// OpenAI's. The `gemini-live-session` Edge Function hands out a short-lived token that
+/// The live voice with Google's Gemini Live API (#309), chosen over OpenAI's Realtime
+/// for its sound and its price. The `gemini-live-session` Edge Function hands out a short-lived token that
 /// is locked to the model, the voice, the instructions and the thinking pause, so this
 /// side only connects, sends the microphone and plays what comes back.
 struct GeminiLiveConversationService: RealtimeConversationService {
