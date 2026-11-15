@@ -5,6 +5,7 @@
 //  Created by Ibrahim Abdullah on 10.11.26.
 //
 
+import SwiftData
 import SwiftUI
 
 /// Learn › Read: the letter scan, your reading list from Safari, a text picked
