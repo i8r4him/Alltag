@@ -88,7 +88,7 @@ struct RuleModelTests {
         var solved = try context.fetch(FetchDescriptor<SolvedRule>())
         #expect(solved.map(\.ruleID) == ["weil"])
         #expect(model.isSolved(in: solved))
-        #expect(GrammarProgress(solved: solved).solvedCount(at: .b1) == 1)
+        #expect(GrammarProgress(solved: solved).solvedCount == 1)
 
         #expect(!model.toggleSolved(in: context))
         solved = try context.fetch(FetchDescriptor<SolvedRule>())
