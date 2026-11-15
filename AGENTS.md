@@ -144,7 +144,7 @@ The Learn features, **in this order**:
 1a. **#295** Translate in the Articles standard, put before Write by the maintainer: **#296** the screen (pair card with the welcome in its lower half, the big button above the keyboard, placeholders while loading, detail cards with symbols, a history; in its PR) and then **#297** the panel in other apps in the same look (in its PR; the designs are chosen). `AlltagTranslation/` is a plain group in the project, not a synchronized folder: a new file there needs a project change, so ask first.
 2. **#263** Write: a short task, corrected sentence by sentence. A shell today.
 3. **#269** Read: real-life texts, tap a word, check understanding. A shell today.
-4. **#275** Grammar: linked from the learner's mistakes. Ships with its 6 rules; more rules (#276) are in `v1.1`.
+4. **#275** Grammar: linked from the learner's mistakes. Ships with its 6 rules; more rules (#276) are in `v1.1`. **The page (in its PR)** follows the maintainer's own spec: "Your next rule" (the first unsolved rule at the learner's level, in order, then the level above), "The rule in real life" (a real sentence a day for that rule, chosen by the maintainer from four options), three cheat sheets per level (none for der, die, das: Articles has those) and All rules, all on Today's clear glass.
 5. **#280** Listen: short spoken texts with questions, and dictation. A shell today: **moved to `v1.1`** and hidden in v1.
 6. **#285** Polish: every state, light mode, one pass on the iPhone.
 

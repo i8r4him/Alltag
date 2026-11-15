@@ -253,8 +253,15 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ReadingWords.swift            a text split into lines and words, each with its sentence (pure, tested)
 │  │  │  └─ ReadingMemory.swift           a tapped word to Memory with the sentence it was read in
 │  │  ├─ Grammar/
-│  │  │  ├─ GrammarView.swift             worth a look, cheat sheets, all rules by level with status
-│  │  │  ├─ GrammarProgress.swift         solved status and counts (tested)
+│  │  │  ├─ GrammarView.swift             your next rule, the rule in real life, cheat sheets, all rules (glass)
+│  │  │  ├─ GrammarProgress.swift         solved status, counts and the next rule in order (tested)
+│  │  │  ├─ NextRuleCard.swift            the next rule at the learner's level, Today's glass card
+│  │  │  ├─ RuleInRealLife.swift          a real sentence of the day with the rule's words marked
+│  │  │  ├─ RealLifeSentences.swift       the sentences for each rule
+│  │  │  ├─ CheatSheet.swift              a cheat sheet: label, title, parts of German forms
+│  │  │  ├─ CheatSheetsBasic.swift        the sheets for A1 and A2 (and the list of all)
+│  │  │  ├─ CheatSheetsAdvanced.swift     the sheets for B1, B2 and C1
+│  │  │  ├─ CheatSheetViews.swift         three glass tiles per level and the sheet they open
 │  │  │  ├─ RuleView.swift                numbered steps: heard, notice, rule, your own German
 │  │  │  ├─ RuleModel.swift               word-order task, check, solved
 │  │  │  └─ WordOrderTask.swift           "Try it" with tiles, Check, Mark as solved

@@ -1,0 +1,58 @@
+//
+//  GrammarContentTests.swift
+//  AlltagTests
+//
+//  Created by Ibrahim Abdullah on 07.11.26.
+//
+
+import Foundation
+import Testing
+@testable import Alltag
+
+@Suite("Grammar content")
+@MainActor
+struct GrammarContentTests {
+    @Test("Every rule has real-life sentences, and their marked words are in them, in order")
+    func realLifeSentences() throws {
+        for rule in MockRules.all {
+            let sentences = try #require(RealLifeSentence.byRule[rule.id], "No sentences for \(rule.id)")
+            #expect(sentences.count >= 3)
+            for sentence in sentences {
+                #expect(!sentence.marked.isEmpty)
+                var rest = Substring(sentence.german)
+                for word in sentence.marked {
+                    let range = try #require(rest.range(of: word), "„\(word)“ not in „\(sentence.german)“")
+                    rest = rest[range.upperBound...]
+                }
+            }
+        }
+    }
+
+    @Test("The sentence of the day stays all day and changes the next day")
+    func sentenceOfTheDay() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "Europe/Berlin"))
+        let morning = try #require(calendar.date(from: DateComponents(year: 2026, month: 11, day: 16, hour: 8)))
+        let evening = try #require(calendar.date(byAdding: .hour, value: 12, to: morning))
+        let tomorrow = try #require(calendar.date(byAdding: .day, value: 1, to: morning))
+
+        let today = RealLifeSentence.sentence(for: "weil", on: morning, calendar: calendar)
+        #expect(today?.id == RealLifeSentence.sentence(for: "weil", on: evening, calendar: calendar)?.id)
+        #expect(today?.id != RealLifeSentence.sentence(for: "weil", on: tomorrow, calendar: calendar)?.id)
+        #expect(RealLifeSentence.sentence(for: "unknown") == nil)
+    }
+
+    @Test("Each level has three cheat sheets of its own", arguments: Level.selectable)
+    func cheatSheetsPerLevel(level: Level) {
+        let sheets = CheatSheet.sheets(for: level)
+        #expect(sheets.count == 3)
+        #expect(sheets.allSatisfy { !$0.parts.isEmpty && $0.parts.allSatisfy { !$0.rows.isEmpty } })
+    }
+
+    @Test("Cheat sheets have unique IDs and leave der, die, das to Articles")
+    func cheatSheetsUnique() {
+        let ids = CheatSheet.all.map(\.id)
+        #expect(Set(ids).count == ids.count)
+        #expect(!CheatSheet.all.contains { $0.label == "der · die · das" })
+    }
+}

@@ -8,8 +8,8 @@
 import SwiftUI
 
 /// Chooses the level whose rules are shown: small cards scrolled sideways with
-/// the level big, what it means and how many rules are solved. Opens at the
-/// chosen level.
+/// the level big, what it means and how many rules are solved, on glass.
+/// Opens at the chosen level.
 struct LevelChooser: View {
     @Binding var selection: Level
     /// Solved and total rules at a level.
@@ -18,15 +18,17 @@ struct LevelChooser: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal) {
-                HStack(spacing: Spacing.grid) {
-                    ForEach(Level.selectable) { level in
-                        LevelCard(level: level, count: counts(level), isSelected: level == selection) {
-                            withAnimation(.snappy) {
-                                selection = level
-                                proxy.scrollTo(level, anchor: .center)
+                GlassEffectContainer(spacing: Spacing.grid) {
+                    HStack(spacing: Spacing.grid) {
+                        ForEach(Level.selectable) { level in
+                            LevelCard(level: level, count: counts(level), isSelected: level == selection) {
+                                withAnimation(.snappy) {
+                                    selection = level
+                                    proxy.scrollTo(level, anchor: .center)
+                                }
                             }
+                            .id(level)
                         }
-                        .id(level)
                     }
                 }
             }
@@ -60,7 +62,8 @@ private struct LevelCard: View {
             .multilineTextAlignment(.leading)
             .padding(Spacing.card)
             .frame(width: 150, alignment: .leading)
-            .learnSurface(radius: 28)
+            .contentShape(.rect(cornerRadius: 28, style: .continuous))
+            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 28, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
                     .strokeBorder(Color.accentFill, lineWidth: isSelected ? 2 : 0)
