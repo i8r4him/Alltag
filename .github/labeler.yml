@@ -1,48 +1,43 @@
-# Maps changed paths to labels (actions/labeler v5).
+# Maps changed paths to area labels (actions/labeler v5). One label per area of the app;
+# the list of labels is in AGENTS.md, "Plan to launch".
 onboarding:
   - changed-files:
       - any-glob-to-any-file:
           - 'Alltag/Features/Onboarding/**'
-home:
+today:
   - changed-files:
       - any-glob-to-any-file:
           - 'Alltag/Features/Home/**'
+          - 'Alltag/Features/Briefing/**'
+          - 'Alltag/Features/Debrief/**'
+          - 'Alltag/Features/SixtySeconds/**'
+          - 'Alltag/Features/Situations/**'
 conversation:
   - changed-files:
       - any-glob-to-any-file:
           - 'Alltag/Features/Conversation/**'
-translate:
-  - changed-files:
-      - any-glob-to-any-file:
-          - 'Alltag/Features/Translate/**'
-memory:
-  - changed-files:
-      - any-glob-to-any-file:
-          - 'Alltag/Features/Memory/**'
+          - 'Alltag/Services/Realtime/**'
 learn:
   - changed-files:
       - any-glob-to-any-file:
           - 'Alltag/Features/Learn/**'
-grammar:
-  - changed-files:
-      - any-glob-to-any-file:
+          - 'Alltag/Features/Write/**'
+          - 'Alltag/Features/Read/**'
+          - 'Alltag/Features/Listen/**'
           - 'Alltag/Features/Grammar/**'
-debrief:
+          - 'Alltag/Features/Translate/**'
+          - 'Alltag/Features/Articles/**'
+          - 'AlltagTranslation/**'
+memory:
   - changed-files:
       - any-glob-to-any-file:
-          - 'Alltag/Features/Debrief/**'
-briefing:
-  - changed-files:
-      - any-glob-to-any-file:
-          - 'Alltag/Features/Briefing/**'
-progress:
-  - changed-files:
-      - any-glob-to-any-file:
-          - 'Alltag/Features/Progress/**'
+          - 'Alltag/Features/Memory/**'
 profile:
   - changed-files:
       - any-glob-to-any-file:
           - 'Alltag/Features/Profile/**'
+          - 'Alltag/Features/Progress/**'
+          - 'Alltag/Features/Sessions/**'
 settings:
   - changed-files:
       - any-glob-to-any-file:
@@ -51,39 +46,18 @@ beyond:
   - changed-files:
       - any-glob-to-any-file:
           - 'Alltag/Features/Beyond/**'
-navigation:
-  - changed-files:
-      - any-glob-to-any-file:
-          - 'Alltag/App/**'
+          - 'Alltag/Intents/**'
 design-system:
   - changed-files:
       - any-glob-to-any-file:
           - 'Alltag/DesignSystem/**'
           - 'Alltag/Components/**'
-services:
+server:
   - changed-files:
       - any-glob-to-any-file:
-          - 'Alltag/Services/**'
-intents:
-  - changed-files:
-      - any-glob-to-any-file:
-          - 'Alltag/Intents/**'
-data:
-  - changed-files:
-      - any-glob-to-any-file:
-          - 'Alltag/Models/**'
-          - 'Alltag/MockData/**'
-watch:
-  - changed-files:
-      - any-glob-to-any-file:
-          - 'AlltagWatch/**'
+          - 'supabase/**'
 ci:
   - changed-files:
       - any-glob-to-any-file:
           - '.github/**'
           - '.swiftlint.yml'
-docs:
-  - changed-files:
-      - any-glob-to-any-file:
-          - 'README.md'
-          - 'screenshots/**'

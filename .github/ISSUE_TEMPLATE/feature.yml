@@ -1,28 +1,28 @@
 name: Feature
-description: A screen, component or capability to build
+description: Something to build, already sorted into a milestone
 labels: [feature]
 body:
   - type: textarea
-    id: summary
+    id: what
     attributes:
-      label: Summary
-      description: What should be built, and why?
+      label: What
+      description: What should be built?
     validations:
       required: true
   - type: textarea
-    id: spec
+    id: why
     attributes:
-      label: Spec
-      description: Relevant details from the README design spec.
+      label: Why
+      description: What does the learner get from it?
+    validations:
+      required: true
   - type: textarea
-    id: criteria
+    id: done
     attributes:
-      label: Acceptance criteria
+      label: Done when
       value: |
         - [ ] 
-        - [ ] Light and dark mode
-        - [ ] Dynamic Type and VoiceOver
-        - [ ] `#Preview` for each key state
+        - [ ] Tried on the iPhone, or noted as not verified
     validations:
       required: true
   - type: textarea
@@ -30,9 +30,3 @@ body:
     attributes:
       label: Design reference
       description: Screenshot file(s) from `screenshots/`, or a link.
-  - type: dropdown
-    id: platform
-    attributes:
-      label: Platform
-      multiple: true
-      options: [iPhone, iPad / foldable, Apple Watch]

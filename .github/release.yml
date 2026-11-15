@@ -1,6 +1,6 @@
 changelog:
   exclude:
-    labels: [epic]
+    labels: [epic, idea]
   categories:
     - title: ✨ Features
       labels: [feature]
@@ -8,13 +8,13 @@ changelog:
       labels: [design]
     - title: 🐛 Fixes
       labels: [bug]
-    - title: 🧱 Architecture
-      labels: [data, services, intents, navigation, design-system]
+    - title: 📚 Content
+      labels: [content]
+    - title: 🧱 Server and design system
+      labels: [server, design-system]
     - title: ♿️ Accessibility
       labels: [accessibility]
     - title: 🧰 Chores & CI
       labels: [chore, ci, dependencies]
-    - title: 📝 Docs
-      labels: [docs]
     - title: Other
       labels: ["*"]
