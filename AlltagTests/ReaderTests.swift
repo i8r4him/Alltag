@@ -42,7 +42,8 @@ struct ReaderTests {
                       meaning: "service charge statement")],
         tones: [], note: "", examples: [.init(german: "Die Abrechnung ist falsch.", english: "The statement is wrong.")])
 
-    private func reader(_ stub: WordStub = WordStub()) -> ReaderModel {
+    /// A reader for the test text; `stub` knows „Nebenkostenabrechnung“ and is passed to each tap.
+    private func reader(_ stub: WordStub) -> ReaderModel {
         stub.results["Nebenkostenabrechnung"] = Self.abrechnung
         return ReaderModel(text: Self.text)
     }
@@ -193,7 +194,7 @@ struct ReaderTests {
     @Test("Listen reads the whole text aloud")
     func listen() async {
         let voice = MockVoiceService()
-        let model = reader()
+        let model = reader(WordStub())
         await model.toggleListening(with: voice)
         #expect(voice.spoken.map { $0.text } == [Self.text.german])
         #expect(!model.isListening)
