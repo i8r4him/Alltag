@@ -67,6 +67,7 @@
         }
       }
     },
+    "%@ · Solved" : {},
     "%@, %@" : {
       "localizations" : {
         "en" : {
@@ -973,7 +974,6 @@
     "Small words that add a tone: friendlier, surprised or more natural. They don't change the facts." : {},
     "Social media" : {},
     "Solved" : {},
-    "Solved ✓" : {},
     "Some change their form" : {},
     "Some words have two" : {},
     "Someone who matters to me" : {},
