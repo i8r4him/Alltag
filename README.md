@@ -90,7 +90,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Content/                         plain structs for lesson content
 │  │  │  ├─ Scenario.swift               Scenario, ConversationLine, Feedback
 │  │  │  ├─ Activity.swift
-│  │  │  ├─ GrammarRule.swift            GrammarRule, GrammarTopic
+│  │  │  ├─ GrammarRule.swift            GrammarRule
 │  │  │  ├─ TranslationResult.swift
 │  │  │  ├─ ProgressReport.swift          Progress data (sample until history exists)
 │  │  │  └─ Briefing.swift               Briefing, Debrief, PlacementQuestion
@@ -253,9 +253,12 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ReadingWords.swift            a text split into lines and words, each with its sentence (pure, tested)
 │  │  │  └─ ReadingMemory.swift           a tapped word to Memory with the sentence it was read in
 │  │  ├─ Grammar/
-│  │  │  ├─ GrammarView.swift             worth a look, cheat sheets, all rules by level with status
-│  │  │  ├─ GrammarProgress.swift         solved status and counts (tested)
-│  │  │  ├─ RuleView.swift                numbered steps: heard, notice, rule, your own German
+│  │  │  ├─ GrammarView.swift             your next rule, all rules from your level, cheat sheets (glass)
+│  │  │  ├─ GrammarProgress.swift         the rules in the learner's order, solved from SolvedRule (tested)
+│  │  │  ├─ GrammarCheatSheets.swift      the three cheat-sheet tiles; each zooms into its sheet
+│  │  │  ├─ CheatSheetView.swift          the Cases and Word order sheets (der/die/das opens the article clues)
+│  │  │  ├─ CheatSheetContent.swift       their parts and German examples, the case table (tested)
+│  │  │  ├─ RuleView.swift                numbered steps: heard, notice, rule
 │  │  │  ├─ RuleModel.swift               word-order task, check, solved
 │  │  │  └─ WordOrderTask.swift           "Try it" with tiles, Check, Mark as solved
 │  │  ├─ Debrief/
@@ -283,8 +286,7 @@ Alltag/                                   ← repo root
 │  │  ├─ MockReading.swift                Read screen: saved articles, texts from daily life (with German to read, until #270)
 │  │  ├─ MockWriteListen.swift            Write tasks and phrases, Listen clips
 │  │  ├─ MockActivities.swift             ACTS
-│  │  ├─ MockRules.swift                  RULES
-│  │  ├─ MockLevels.swift                 LEVELS
+│  │  ├─ MockRules.swift                  the six grammar rules of v1
 │  │  ├─ MockPhrasebook.swift             PB
 │  │  ├─ MockDebrief.swift                DB
 │  │  ├─ MockBriefing.swift               BRIEF
@@ -444,10 +446,10 @@ Learn: **For you** carousel (tall scenario cards with a glass Start, snap scroll
 Activity (full-screen): close + progress segments, eyebrow/title, optional audio player with equalizer, quote card, question, option buttons (56pt, radius 18). After pick: right = green tint/border + check, wrong = coral + cancel, others 45% opacity; explanation card; "Continue". End: green check, "{n} of {total}. Nicely done.", "More to learn" / "Back home".
 
 ### Grammar & Rule
-Grammar: "FROM YOUR MISTAKES" list, level segmented A1–C1, topic rows with status dot (green solved, amber in progress, coral mistake, grey new), "{n} of 5 solved".
+Grammar, in Today's glass look: **Your next rule** (the first unsolved rule from the learner's level, with the big button; "Every rule solved" when there is none) · **All rules** (the six rules, from the learner's level up, then down; solved from `SolvedRule`, "{n} of 6 solved") · **Cheat sheets** (der · die · das opens the article clues, Cases and Word order open their own sheets; each zooms out of its tile). Nothing is made up: no mistakes the learner didn't make, no topics without a lesson. "Worth a look" comes back when a mistake can point to its rule.
 Rule: level pill → title → numbered sections:
-1 Heard in real life (scene card, tap to hear) · 2 Notice (word tiles; verb/end tiles accent-tinted, key word outlined) · 3 The rule (sentence + pattern bar of slots) · 4 From your own German (struck-through wrong / green right) · Try it (tap word tiles to build the sentence → Check → green/coral border) → "Mark as solved".
-Six full rules: v2 (A1), perfekt & seit (A2), weil (B1), passiv (B2), nominal (C1). Other topics listed only. **Book chapter mapping pending** — user has two reference grammar books to align topics to.
+1 Heard in real life (scene card, tap to hear) · 2 Notice (word tiles; verb/end tiles accent-tinted, key word outlined) · 3 The rule (sentence + pattern bar of slots) · Try it (tap word tiles to build the sentence → Check → green/coral border) → "Mark as solved".
+Six full rules: v2 (A1), perfekt & seit (A2), weil (B1), passiv (B2), nominal (C1). More rules come with #276 (v1.1). **Book chapter mapping pending** — user has two reference grammar books to align topics to.
 
 ### Debrief
 "Lunch at the bakery · 12:40" (from Calendar). Text field "What did you want to say?" → "Find the words" → spinner → two phrase cards (tap to hear), grammar tip, "Save to phrasebook".

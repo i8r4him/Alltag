@@ -7,43 +7,54 @@
 
 import Foundation
 
-/// Combines the topic list with the rules the learner has solved.
+/// The rules with a lesson, in the order the learner sees them, and which
+/// they have solved. Solved comes only from `SolvedRule`; nothing else is
+/// assumed about the learner.
 struct GrammarProgress {
+    let rules: [GrammarRule]
     let solvedRuleIDs: Set<String>
 
-    init(solved: [SolvedRule]) {
+    init(solved: [SolvedRule], rules: [GrammarRule] = MockRules.all) {
+        self.rules = rules
         solvedRuleIDs = Set(solved.map(\.ruleID))
     }
 
-    /// A solved rule is shown as solved, whatever its listed status.
-    func status(of topic: GrammarTopic) -> GrammarTopic.Status {
-        if let id = topic.ruleID, solvedRuleIDs.contains(id) { return .solved }
-        return topic.status
+    func isSolved(_ rule: GrammarRule) -> Bool {
+        solvedRuleIDs.contains(rule.id)
     }
 
-    func solvedCount(at level: Level) -> Int {
-        MockLevels.topics(for: level).filter { status(of: $0) == .solved }.count
+    var solvedCount: Int {
+        rules.filter(isSolved).count
     }
 
-    /// The level shown first: the learner's own if it has topics, otherwise B1.
-    /// Grammar topics where the learner made a mistake, across all levels.
-    static func rulesWithMistakes() -> Int {
-        Level.selectable.flatMap { MockLevels.topics(for: $0) }.filter { $0.status == .mistake }.count
+    /// The learner's level first, then the levels above it from the nearest,
+    /// then the ones below from the nearest. Within a level, the listed order.
+    func ordered(from level: Level) -> [GrammarRule] {
+        let index = { (rule: GrammarRule) -> Int in
+            let distance = Level.allCases.distance(of: rule.level, from: level)
+            // Above (0, 1, 2 …) before below (−1, −2 …).
+            return distance >= 0 ? distance : Level.allCases.count - distance
+        }
+        return rules.enumerated()
+            .sorted { (index($0.element), $0.offset) < (index($1.element), $1.offset) }
+            .map(\.element)
     }
 
-        static func initialLevel(for profileLevel: Level?) -> Level {
-        guard let profileLevel, Level.selectable.contains(profileLevel) else { return .b1 }
-        return profileLevel
+    /// The first rule in the learner's order they haven't solved yet.
+    func nextRule(from level: Level) -> GrammarRule? {
+        ordered(from: level).first { !isSolved($0) }
+    }
+
+    /// The level Grammar starts from: the learner's own, C1 for C2, A1 without a profile.
+    static func startLevel(for profileLevel: Level?) -> Level {
+        guard let profileLevel else { return .a1 }
+        return Level.selectable.contains(profileLevel) ? profileLevel : (Level.selectable.last ?? .c1)
     }
 }
 
-extension GrammarTopic.Status {
-    var label: LocalizedStringResource {
-        switch self {
-        case .solved: "Solved"
-        case .learning: "In progress"
-        case .mistake: "From your mistakes"
-        case .new: "Not started"
-        }
+private extension Array where Element == Level {
+    /// How many levels `level` is above `start` (negative when below).
+    func distance(of level: Level, from start: Level) -> Int {
+        (firstIndex(of: level) ?? 0) - (firstIndex(of: start) ?? 0)
     }
 }

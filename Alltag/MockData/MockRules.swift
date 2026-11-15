@@ -7,11 +7,10 @@
 
 import Foundation
 
-/// The prototype's six full grammar rules (`RULES`).
+/// The six grammar rules that ship in v1, one or two per level. More come with #276.
 enum MockRules {
     typealias Tile = GrammarRule.Tile
     typealias Slot = GrammarRule.PatternSlot
-    typealias Mistake = GrammarRule.LearnerMistake
 
     static let all: [GrammarRule] = [verbSecond, perfekt, seit, weil, passiv, nominal]
 
@@ -59,8 +58,6 @@ enum MockRules {
         rule: "„seit“ + dative for something that began in the past and continues now. "
             + "„für“ for a planned, closed stretch of time.",
         pattern: [Slot(label: "seit", emphasis: .verb), Slot(label: "+ dative", emphasis: .end), Slot(label: "still true")],
-        yourMistake: Mistake(wrong: "Ich wohne hier für drei Jahren.", right: "Ich wohne hier seit drei Jahren.",
-                             source: "Messages · 3 times this week"),
         taskPrompt: "Say: \"I have been learning German for two years.\"",
         taskWords: ["seit", "lerne", "zwei Jahren", "Ich", "Deutsch"],
         taskAnswers: ["Ich lerne seit zwei Jahren Deutsch", "Ich lerne Deutsch seit zwei Jahren"]
@@ -76,8 +73,6 @@ enum MockRules {
         rule: "After weil, wenn, dass, ob and other subordinating words, the conjugated verb moves to the end of the clause.",
         pattern: [Slot(label: "weil / wenn", emphasis: .verb), Slot(label: "Subject"), Slot(label: "…"),
                   Slot(label: "Verb", emphasis: .end)],
-        yourMistake: Mistake(wrong: "Ich komme um 15 Uhr, wenn das passt mir.", right: "Ich komme um 15 Uhr, wenn mir das passt.",
-                             source: "Conversation · Monday"),
         taskPrompt: "Finish: „Ich komme heute nicht, …“",
         taskWords: ["krank", "bin", "weil", "ich"],
         taskAnswers: ["weil ich krank bin"]

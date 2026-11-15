@@ -53,19 +53,10 @@ struct MockContentTests {
         #expect(!rule.isCorrect(rule.taskWords.reversed()) || rule.taskAnswers.contains(rule.taskWords.reversed().joined(separator: " ")))
     }
 
-    @Test("Each level lists five topics, and rule links point at real rules", arguments: Level.selectable)
-    func levelTopics(level: Level) {
-        let topics = MockLevels.topics(for: level)
-        #expect(topics.count == 5)
-        for ruleID in topics.compactMap(\.ruleID) {
-            let rule = MockRules.rule(id: ruleID)
-            #expect(rule?.level == level, "\(ruleID)")
-        }
-    }
-
-    @Test("Every full rule is listed under its level", arguments: MockRules.all)
-    func rulesAreListed(rule: GrammarRule) {
-        #expect(MockLevels.topics(for: rule.level).contains { $0.ruleID == rule.id })
+    @Test("Every rule has a unique id, and there are rules at every level Grammar offers")
+    func rulesCoverLevels() {
+        #expect(Set(MockRules.all.map(\.id)).count == MockRules.all.count)
+        #expect(Set(MockRules.all.map(\.level)) == Set(Level.selectable))
     }
 
     @Test("The neutral tone of a translation is the translation itself", arguments: MockTranslations.all)

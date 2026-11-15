@@ -8,160 +8,143 @@
 import SwiftData
 import SwiftUI
 
-/// Learn › Grammar: the rules you get wrong, cheat sheets, and all rules by level.
+/// Learn › Grammar: the next rule to learn, all rules from the learner's
+/// level, and the cheat sheets. Today's look: the sky, clear glass cards,
+/// rounded type and the big button. Only real data: solved comes from
+/// `SolvedRule`, and nothing claims a mistake the learner didn't make.
 struct GrammarView: View {
     @Environment(AppState.self) private var appState
     @Query private var solved: [SolvedRule]
     @Query private var profiles: [UserProfile]
-    @State private var level: Level?
+    @State private var opened = 0
 
-    private var progress: GrammarProgress { GrammarProgress(solved: solved) }
-    private var shownLevel: Level { level ?? GrammarProgress.initialLevel(for: profiles.first?.level) }
-
-    @State private var taps = 0
-
-    private var focusRules: [(rule: GrammarRule, reason: String)] {
-        MockLevels.focus.compactMap { focus in MockRules.rule(id: focus.ruleID).map { ($0, focus.reason) } }
-    }
+    private var startLevel: Level { GrammarProgress.startLevel(for: profiles.first?.level) }
 
     var body: some View {
+        let progress = GrammarProgress(solved: solved)
         LearnScreen(title: "Grammar") {
-            if let first = focusRules.first {
-                LearnSection(title: "Worth a look") {
-                    VStack(spacing: Spacing.grid) {
-                        LearnHeroCard(title: Text(verbatim: first.rule.title),
-                                      detail: Text(verbatim: first.reason),
-                                      systemImage: "text.badge.checkmark",
-                                      buttonTitle: "Practise this rule",
-                                      buttonImage: "arrow.trianglehead.counterclockwise",
-                                      isProminent: true) { open(first.rule.id) }
-                        if focusRules.count > 1 {
-                            LearnList {
-                                ForEach(focusRules.dropFirst(), id: \.rule.id) { focus in
-                                    LearnRow(systemImage: "exclamationmark.bubble.fill",
-                                             title: Text(verbatim: focus.rule.title),
-                                             detail: Text(verbatim: focus.reason)) { open(focus.rule.id) }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            LearnSection(title: "Cheat sheets") {
-                HStack(spacing: Spacing.grid) {
-                    CheatSheetTile(german: "der · die · das", title: "Articles") { taps += 1 }
-                    CheatSheetTile(german: "Akk · Dat", title: "Cases") { taps += 1 }
-                    CheatSheetTile(german: "Verb 2", title: "Word order") { taps += 1 }
-                }
-            }
-
+            NextRuleCard(rule: progress.nextRule(from: startLevel)) { open($0) }
             LearnSection(title: "All rules",
-                         note: Text("\(progress.solvedCount(at: shownLevel)) of \(MockLevels.topics(for: shownLevel).count) solved")) {
-                VStack(alignment: .leading, spacing: Spacing.grid) {
-                    LevelChooser(selection: Binding(get: { shownLevel }, set: { level = $0 })) { level in
-                        (progress.solvedCount(at: level), MockLevels.topics(for: level).count)
-                    }
-                    VStack(spacing: 0) {
-                        ForEach(Array(MockLevels.topics(for: shownLevel).enumerated()), id: \.offset) { index, topic in
-                            if index > 0 { Divider().padding(.leading, 40) }
-                            TopicRow(topic: topic, status: progress.status(of: topic)) {
-                                if let id = topic.ruleID { open(id) }
-                            }
-                        }
-                    }
-                    .learnSurface(radius: Radius.card)
-                }
-                .animation(.easeOut(duration: 0.2), value: shownLevel)
+                         note: Text("\(progress.solvedCount) of \(progress.rules.count) solved")) {
+                RuleList(rules: progress.ordered(from: startLevel), isSolved: progress.isSolved) { open($0) }
+            }
+            LearnSection(title: "Cheat sheets") {
+                GrammarCheatSheets()
             }
         }
-        .sensoryFeedback(.impact(weight: .light), trigger: taps)
+        .sensoryFeedback(.impact(weight: .medium), trigger: opened)
     }
 
-    private func open(_ ruleID: String) {
-        taps += 1
-        appState.open(.rule(id: ruleID))
+    private func open(_ rule: GrammarRule) {
+        opened += 1
+        appState.open(.rule(id: rule.id))
     }
 }
 
-/// A small square with a German pattern and what it's about. The sheets come later.
-private struct CheatSheetTile: View {
-    let german: String
-    let title: LocalizedStringResource
+/// The Focus card's layout: the next rule, its artwork, and the big button.
+/// When every rule is solved, it says so and has no button.
+private struct NextRuleCard: View {
+    let rule: GrammarRule?
+    let onOpen: (GrammarRule) -> Void
+
+    @ScaledMetric(relativeTo: .title3) private var artworkSize: CGFloat = 96
+
+    var body: some View {
+        VStack(spacing: 18) {
+            HStack(alignment: .center, spacing: 16) {
+                VStack(alignment: .leading, spacing: 6) {
+                    if let rule {
+                        Text("Your next rule · \(rule.level.title)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.accent)
+                        Text(verbatim: rule.title)
+                            .font(.title3.weight(.semibold))
+                        Text("It starts from a real moment, then you put a sentence in order yourself.")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Every rule solved")
+                            .font(.title3.weight(.semibold))
+                        Text("More rules come in an update. Open any rule to practise it again.")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityElement(children: .combine)
+                ScenarioArtwork(systemImage: rule?.systemImage ?? "checkmark.seal.fill")
+                    .frame(width: artworkSize, height: artworkSize)
+            }
+            if let rule {
+                GlassEffectContainer {
+                    Button { onOpen(rule) } label: {
+                        Label("Start this rule", systemImage: "play.fill")
+                    }
+                    .buttonStyle(.primary)
+                }
+            }
+        }
+        .padding(Spacing.cardLarge)
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+    }
+}
+
+/// Every rule on one glass card, a row each with its level and whether it's solved.
+private struct RuleList: View {
+    let rules: [GrammarRule]
+    let isSolved: (GrammarRule) -> Bool
+    let onOpen: (GrammarRule) -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(rules.enumerated()), id: \.element.id) { index, rule in
+                if index > 0 { Divider().padding(.leading, 82) }
+                RuleRow(rule: rule, isSolved: isSolved(rule)) { onOpen(rule) }
+            }
+        }
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+    }
+}
+
+private struct RuleRow: View {
+    let rule: GrammarRule
+    let isSolved: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 4) {
-                Spacer(minLength: 0)
-                Text(verbatim: german)
-                    .font(.headline)
-                    .foregroundStyle(.accent)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                Text(title)
+            HStack(spacing: 14) {
+                ScenarioArtwork(systemImage: rule.systemImage, symbolSize: 22, cornerRadius: 12)
+                    .frame(width: 52, height: 52)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(verbatim: rule.title)
+                        .font(.headline)
+                    Group {
+                        if isSolved {
+                            Text("\(rule.level.title) · Solved")
+                        } else {
+                            Text("\(rule.level.title) · \(Text(rule.level.summary))")
+                        }
+                    }
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-            }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .aspectRatio(1, contentMode: .fit)
-            .learnSurface(radius: 26)
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-    }
-}
-
-/// A topic with its status dot. Only topics with a full rule open.
-private struct TopicRow: View {
-    let topic: GrammarTopic
-    let status: GrammarTopic.Status
-    let onOpen: () -> Void
-
-    private var hasRule: Bool { topic.ruleID != nil }
-
-    var body: some View {
-        Button(action: onOpen) {
-            HStack(spacing: 12) {
-                Circle()
-                    .fill(dotColor)
-                    .frame(width: 10, height: 10)
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(verbatim: topic.title)
-                        .font(.headline)
-                        .foregroundStyle(hasRule ? .primary : .secondary)
-                    (hasRule ? Text(status.label) : Text("\(Text(status.label)) · lesson in a later version"))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
                 }
-                .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                if hasRule {
-                    Image(systemName: "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                if isSolved {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(.success)
                         .accessibilityHidden(true)
                 }
+                LearnChevron()
             }
-            .padding(.horizontal, Spacing.card)
-            .padding(.vertical, 14)
+            .multilineTextAlignment(.leading)
+            .padding(Spacing.card)
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .allowsHitTesting(hasRule)
         .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(hasRule ? .isButton : [])
-    }
-
-    private var dotColor: Color {
-        switch status {
-        case .solved: .success
-        case .learning: .accentFill
-        case .mistake: .mistake
-        case .new: .surfaceTertiary
-        }
     }
 }
 

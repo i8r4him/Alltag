@@ -28,7 +28,7 @@ enum LearnSkill: CaseIterable, Identifiable {
         case .read: "Letters, notices and forms"
         case .write: "Messages and emails"
         case .listen: "Announcements and calls"
-        case .grammar: "Rules you get wrong"
+        case .grammar: "Rules from everyday German"
         }
     }
 

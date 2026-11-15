@@ -32,10 +32,6 @@ struct RuleView: View {
                 noticeCard
                 RuleStepHeader(number: 3, title: "The rule")
                 ruleCard
-                if let mistake = rule.yourMistake {
-                    RuleStepHeader(number: 4, title: "From your own German")
-                    MistakeCard(mistake: mistake)
-                }
                 Text("Try it")
                     .textRole(.cardTitle)
                     .accessibilityAddTraits(.isHeader)
@@ -171,38 +167,6 @@ private struct RuleStepHeader: View {
         .padding(.bottom, 10)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
-    }
-}
-
-/// The learner's own mistake, struck through, and the right version.
-private struct MistakeCard: View {
-    let mistake: GrammarRule.LearnerMistake
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Image(systemName: "xmark")
-                    .foregroundStyle(.mistake)
-                    .accessibilityLabel("Wrong")
-                Text(verbatim: mistake.wrong)
-                    .strikethrough(true, color: .mistake)
-                    .foregroundStyle(.secondary)
-            }
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Image(systemName: "checkmark")
-                    .foregroundStyle(.success)
-                    .accessibilityLabel("Right")
-                Text(verbatim: mistake.right)
-            }
-            Text(verbatim: mistake.source)
-                .textRole(.caption)
-                .foregroundStyle(.tertiary)
-        }
-        .textRole(.body)
-        .padding(.horizontal, 18)
-        .padding(.vertical, 16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
     }
 }
 
