@@ -8,7 +8,7 @@
 import SwiftData
 import SwiftUI
 
-/// "Fix your mistakes" on Learn: the learner's own mistakes that are due now,
+/// "Fix your mistakes" in Memory's Mistakes folder: the learner's own mistakes due now,
 /// the one to fix first on top with the wrong words underlined in coral, and
 /// how many there are. When none are due it says when the next one comes
 /// back; with no mistakes at all, where they come from.

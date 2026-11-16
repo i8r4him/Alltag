@@ -83,6 +83,21 @@ enum MistakePractice {
         return wrong.count * 2 > spoken.count ? [] : wrong
     }
 
+    /// Whether what the learner wrote is the correction. Punctuation, spaces and
+    /// the case of the first word don't count; every other letter does (German
+    /// nouns are capitalised).
+    static func isFixed(_ written: String, correction: String) -> Bool {
+        let words: (String) -> [String] = { text in
+            text.split(whereSeparator: \.isWhitespace)
+                .map { String($0.filter { $0.isLetter || $0.isNumber }) }
+                .filter { !$0.isEmpty }
+        }
+        let written = words(written)
+        let correct = words(correction)
+        guard let first = written.first, let correctFirst = correct.first, written.count == correct.count else { return false }
+        return first.lowercased() == correctFirst.lowercased() && written.dropFirst().elementsEqual(correct.dropFirst())
+    }
+
     /// What the learner said, in quotes, with the wrong words underlined in coral.
     static func quote(said: String, correction: String) -> Text {
         let wrong = wrongWords(said: said, correction: correction)

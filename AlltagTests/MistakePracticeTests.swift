@@ -120,4 +120,19 @@ struct MistakePracticeTests {
         // Capitals and punctuation don't count.
         #expect(MistakePractice.wrongWords(said: "ich wohne in berlin", correction: "Ich wohne in Berlin.").isEmpty)
     }
+
+    @Test("A written fix counts when its words are the correction's")
+    func writtenFix() {
+        let correction = "Morgen komme ich."
+        #expect(MistakePractice.isFixed("Morgen komme ich.", correction: correction))
+        // Punctuation, spaces and the first word's case don't count.
+        #expect(MistakePractice.isFixed("  morgen   komme ich", correction: correction))
+        // The mistake itself, a missing word or an extra one don't.
+        #expect(!MistakePractice.isFixed("Morgen ich komme.", correction: correction))
+        #expect(!MistakePractice.isFixed("Morgen komme.", correction: correction))
+        #expect(!MistakePractice.isFixed("Morgen komme ich gern.", correction: correction))
+        #expect(!MistakePractice.isFixed("", correction: correction))
+        // A noun keeps its capital after the first word.
+        #expect(!MistakePractice.isFixed("Ich habe einen hund.", correction: "Ich habe einen Hund."))
+    }
 }

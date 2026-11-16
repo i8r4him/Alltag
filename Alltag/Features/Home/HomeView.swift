@@ -8,8 +8,8 @@
 import SwiftData
 import SwiftUI
 
-/// Today: the orb and three numbers, Today's Focus, Situations, From your day
-/// and Learning beyond the app. The title is "Alltag";
+/// Today: the orb and three numbers, Today's Focus, Situations, From your day,
+/// Your sessions and Learning beyond the app. The title is "Alltag";
 /// the toolbar holds Translate and a profile menu (Profile, Progress, Settings).
 struct HomeView: View {
     @Environment(AppState.self) private var appState
@@ -36,6 +36,8 @@ struct HomeView: View {
                                     writingMistakes: FromYourDay.writingMistakes(in: memoryItems),
                                     onOpen: { appState.open($0) },
                                     onPresent: { appState.present($0) })
+                    SessionsLink { appState.open(.sessions) }
+                        .fontDesign(.rounded)
                     BeyondRow { appState.open(.beyond) }
             }
             .padding(Spacing.screen)

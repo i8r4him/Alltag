@@ -8,8 +8,8 @@
 import SwiftData
 import SwiftUI
 
-/// Fix your mistakes, full screen: the mistakes due now, one at a time, the
-/// explanation after each answer, and what was fixed at the end. With
+/// Fix your mistakes, full screen: the mistakes due now, one at a time, each
+/// written correctly, the explanation after each answer, and what was fixed at the end. With
 /// nothing due it says so, and when the next one comes back.
 struct MistakeRoundView: View {
     @Environment(\.modelContext) private var context
@@ -90,49 +90,6 @@ struct MistakeRoundView: View {
             }
         }
         .padding(.top, 24)
-    }
-}
-
-/// One mistake as a flashcard, and the explanation after the answer.
-private struct MistakeQuestionView: View {
-    let model: MistakeRoundModel
-    @Environment(\.modelContext) private var context
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Eyebrow(title: "FIX YOUR MISTAKES", tone: .mistake)
-                    Text("Do you know the fix?")
-                        .textRole(.title2)
-                        .accessibilityAddTraits(.isHeader)
-                }
-                MistakeFlash(question: model.question, onAnswer: answer)
-                if let outcome = model.outcome {
-                    MistakeAnswerCard(outcome: outcome)
-                        .transition(.opacity)
-                }
-            }
-            .padding(.top, 12)
-            .padding(.bottom, 16)
-            .animation(.easeOut(duration: 0.25), value: model.hasAnswered)
-        }
-        .scrollEdgeEffectStyle(.soft, for: .all)
-        .scrollIndicators(.hidden)
-        .safeAreaInset(edge: .bottom) {
-            if model.hasAnswered {
-                Button { model.next() } label: { Text("Continue") }
-                    .buttonStyle(.primary)
-                    .padding(.bottom, 8)
-                    .transition(.opacity)
-            }
-        }
-        .sensoryFeedback(trigger: model.wasRight) { _, right in
-            right.map { $0 ? .success : .error }
-        }
-    }
-
-    private func answer(_ right: Bool) {
-        model.answer(right, in: context)
     }
 }
 
