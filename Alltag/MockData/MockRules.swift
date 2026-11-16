@@ -7,13 +7,25 @@
 
 import Foundation
 
-/// The prototype's six full grammar rules (`RULES`).
+/// The grammar rules. The twenty A1 rules have the new shape (one line of
+/// rule, a picture with a tiny table, an exam): they are in the
+/// `MockRules+A1….swift` files and `MockRules+Accusative.swift`, in the order
+/// `a1` lists them. The five rules above A1 are still the prototype's (`RULES`).
 enum MockRules {
     typealias Tile = GrammarRule.Tile
     typealias Slot = GrammarRule.PatternSlot
     typealias Mistake = GrammarRule.LearnerMistake
+    typealias Part = RuleVisual.Part
+    typealias Row = RuleVisual.Row
 
-    static let all: [GrammarRule] = [verbSecond, perfekt, seit, weil, passiv, nominal]
+    /// The A1 rules in the order they are learnt and open.
+    static let a1: [GrammarRule] = [
+        pronouns, seinHaben, presentTense, verbSecond, yesNoQuestions, wQuestions, articles, plural, negation,
+        accusative, vowelChange, modalVerbs, separableVerbs, imperative, possessives, dative, whereDative,
+        fixedPrepositions, timePrepositions, whichThis
+    ]
+
+    static let all: [GrammarRule] = a1 + [perfekt, seit, weil, passiv, nominal]
 
     static func rule(id: String) -> GrammarRule? {
         all.first { $0.id == id }
@@ -30,7 +42,9 @@ enum MockRules {
         pattern: [Slot(label: "Position 1"), Slot(label: "Verb", emphasis: .verb), Slot(label: "Subject"), Slot(label: "Rest")],
         taskPrompt: "Start with „Morgen“:",
         taskWords: ["ich", "Morgen", "nach Berlin", "fahre"],
-        taskAnswers: ["Morgen fahre ich nach Berlin"]
+        taskAnswers: ["Morgen fahre ich nach Berlin"],
+        visual: verbSecondVisual,
+        exam: verbSecondExam
     )
 
     static let perfekt = GrammarRule(

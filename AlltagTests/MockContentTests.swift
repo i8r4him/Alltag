@@ -46,17 +46,17 @@ struct MockContentTests {
     @Test("Every grammar task can be solved with exactly its tiles", arguments: MockRules.all)
     func ruleTasksAreSolvable(rule: GrammarRule) {
         for answer in rule.taskAnswers {
-            let solution = Self.permutations(of: rule.taskWords).first { $0.joined(separator: " ") == answer }
+            let solution = Self.arrangement(of: rule.taskWords, reading: answer)
             #expect(solution != nil, "\(rule.id): \(answer)")
             if let solution { #expect(rule.isCorrect(solution)) }
         }
         #expect(!rule.isCorrect(rule.taskWords.reversed()) || rule.taskAnswers.contains(rule.taskWords.reversed().joined(separator: " ")))
     }
 
-    @Test("Each level lists five topics, and rule links point at real rules", arguments: Level.selectable)
+    @Test("Each level lists at least five topics, and rule links point at real rules", arguments: Level.selectable)
     func levelTopics(level: Level) {
         let topics = MockLevels.topics(for: level)
-        #expect(topics.count == 5)
+        #expect(topics.count >= 5)
         for ruleID in topics.compactMap(\.ruleID) {
             let rule = MockRules.rule(id: ruleID)
             #expect(rule?.level == level, "\(ruleID)")
@@ -119,12 +119,18 @@ struct MockContentTests {
         #expect(fetched.interestsRaw == ["housing", "travel"])
     }
 
-    private static func permutations(of words: [String]) -> [[String]] {
-        guard words.count > 1 else { return [words] }
-        return words.indices.flatMap { index in
+    /// The tiles in an order that reads `answer`, each used once. It follows the
+    /// answer word by word, so a task with many tiles costs no more than a short one.
+    private static func arrangement(of words: [String], reading answer: String) -> [String]? {
+        guard !words.isEmpty else { return answer.isEmpty ? [] : nil }
+        for index in words.indices {
+            let word = words[index]
+            guard answer == word || answer.hasPrefix(word + " ") else { continue }
             var rest = words
-            let word = rest.remove(at: index)
-            return permutations(of: rest).map { [word] + $0 }
+            rest.remove(at: index)
+            let remainder = answer == word ? "" : String(answer.dropFirst(word.count + 1))
+            if let tail = arrangement(of: rest, reading: remainder) { return [word] + tail }
         }
+        return nil
     }
 }

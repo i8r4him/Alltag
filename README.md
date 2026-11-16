@@ -254,7 +254,7 @@ Alltag/                                   ← repo root
 │  │  │  └─ ReadingMemory.swift           a tapped word to Memory with the sentence it was read in
 │  │  ├─ Grammar/
 │  │  │  ├─ GrammarView.swift             your next rule, the rule in real life, cheat sheets, all rules (glass)
-│  │  │  ├─ GrammarProgress.swift         solved status, counts and the next rule in order (tested)
+│  │  │  ├─ GrammarProgress.swift         solved status, counts, the next rule in order, which rules are still locked (tested)
 │  │  │  ├─ NextRuleCard.swift            the next rule at the learner's level, Today's glass card
 │  │  │  ├─ RuleInRealLife.swift          a real sentence of the day with the rule's words marked, as a glass row
 │  │  │  ├─ RealLifeSentences.swift       the sentences for each rule
@@ -262,9 +262,14 @@ Alltag/                                   ← repo root
 │  │  │  ├─ CheatSheetsBasic.swift        the sheets for A1 and A2 (and the list of all)
 │  │  │  ├─ CheatSheetsAdvanced.swift     the sheets for B1, B2 and C1
 │  │  │  ├─ CheatSheetViews.swift         the three glass tiles of the learner's level and the sheet they open
-│  │  │  ├─ RuleView.swift                numbered steps: heard, notice, rule, your own German
+│  │  │  ├─ RuleView.swift                numbered steps: heard, notice, rule, your own German; then the exam, or "Try it"
+│  │  │  ├─ RuleVisualView.swift          the picture of a rule (who does what to what, in symbols) and its tiny table
+│  │  │  ├─ ExamCard.swift                what the exam is and the big button it zooms out of; the card of a locked rule
+│  │  │  ├─ ExamView.swift                the exam, full screen: three questions, then the result
+│  │  │  ├─ ExamAnswerViews.swift         the options of a choice, the tiles of a sentence, the feedback
+│  │  │  ├─ ExamModel.swift               one question at a time, checked once; all three right solves the rule (tested)
 │  │  │  ├─ RuleModel.swift               word-order task, check, solved
-│  │  │  └─ WordOrderTask.swift           "Try it" with tiles, Check, Mark as solved
+│  │  │  └─ WordOrderTask.swift           "Try it" with tiles, Check, Mark as solved (rules without an exam)
 │  │  ├─ Debrief/
 │  │  │  ├─ DebriefView.swift             input, Find the words, Next time say, Save to phrasebook
 │  │  │  └─ DebriefModel.swift            phases, companion, saving to the Phrasebook
@@ -290,7 +295,12 @@ Alltag/                                   ← repo root
 │  │  ├─ MockReading.swift                Read screen: saved articles, texts from daily life (with German to read, until #270)
 │  │  ├─ MockWriteListen.swift            Write tasks and phrases, Listen clips
 │  │  ├─ MockActivities.swift             ACTS
-│  │  ├─ MockRules.swift                  RULES
+│  │  ├─ MockRules.swift                  the rules in order (`a1`, `all`); the five prototype rules above A1 (RULES)
+│  │  ├─ MockRules+Accusative.swift       the accusative (A1): the first rule with a picture and an exam
+│  │  ├─ MockRules+A1Start.swift          A1: pronouns, sein/haben/möchte, present tense, verb second, questions
+│  │  ├─ MockRules+A1Nouns.swift          A1: articles, plural, nicht/kein, possessives, welcher/dieser
+│  │  ├─ MockRules+A1Verbs.swift          A1: vowel change, modal verbs, separable verbs, imperative
+│  │  ├─ MockRules+A1Cases.swift          A1: dative, Wo? with the dative, prepositions, time
 │  │  ├─ MockLevels.swift                 LEVELS
 │  │  ├─ MockPhrasebook.swift             PB
 │  │  ├─ MockDebrief.swift                DB
@@ -454,7 +464,8 @@ Activity (full-screen): close + progress segments, eyebrow/title, optional audio
 Grammar: "FROM YOUR MISTAKES" list, level segmented A1–C1, topic rows with status dot (green solved, amber in progress, coral mistake, grey new), "{n} of 5 solved".
 Rule: level pill → title → numbered sections:
 1 Heard in real life (scene card, tap to hear) · 2 Notice (word tiles; verb/end tiles accent-tinted, key word outlined) · 3 The rule (sentence + pattern bar of slots) · 4 From your own German (struck-through wrong / green right) · Try it (tap word tiles to build the sentence → Check → green/coral border) → "Mark as solved".
-Six full rules: v2 (A1), perfekt & seit (A2), weil (B1), passiv (B2), nominal (C1). Other topics listed only. **Book chapter mapping pending** — user has two reference grammar books to align topics to.
+**A1 is written in full: twenty rules in the new shape**, in the order they open (`MockRules.a1`): pronouns, sein/haben/möchte, present tense, the verb in position 2, yes/no questions, W-questions, articles, plural, nicht/kein, the accusative, vowel-change verbs, modal verbs, separable verbs, the imperative, possessives, the dative, Wo? with the dative, prepositions with a fixed case, time (um, am, im), welcher/dieser. Each rule has one line of rule, a picture of what it means (`RuleVisual`: two plain symbols, with an arrow and a word between them when one leads to the other, and a tiny table), three short real-life sentences, and instead of "Try it" an **Exam** of three questions: an easy gap, a medium gap with a trap, and a hard sentence to build from tiles with one or two tiles too many. All three right solves the rule. The rules of a level open in order: a rule shows a lock until the ones before it are solved. The rules are written for the app, not taken from a textbook, and work offline.
+Above A1 there are still the prototype's five rules with "Try it": perfekt & seit (A2), weil (B1), passiv (B2), nominal (C1); other topics there are listed only.
 
 ### Debrief
 "Lunch at the bakery · 12:40" (from Calendar). Text field "What did you want to say?" → "Find the words" → spinner → two phrase cards (tap to hear), grammar tip, "Save to phrasebook".

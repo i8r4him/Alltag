@@ -10,7 +10,7 @@ import SwiftUI
 
 /// Learn › Grammar, on Today's clear glass: the learner's next rule at their
 /// level, that rule in a real sentence of the day, the cheat sheets of their
-/// level, and all rules by level.
+/// level, and all rules by level. The rules of a level open in order.
 struct GrammarView: View {
     @Environment(AppState.self) private var appState
     @Query private var solved: [SolvedRule]
@@ -44,7 +44,8 @@ struct GrammarView: View {
                     VStack(spacing: 0) {
                         ForEach(Array(MockLevels.topics(for: shownLevel).enumerated()), id: \.offset) { index, topic in
                             if index > 0 { Divider().padding(.leading, 40) }
-                            TopicRow(topic: topic, status: progress.status(of: topic)) {
+                            TopicRow(topic: topic, status: progress.status(of: topic),
+                                     blocker: topic.ruleID.flatMap { progress.blocker(of: $0) }) {
                                 if let id = topic.ruleID { open(id) }
                             }
                         }
@@ -64,32 +65,45 @@ struct GrammarView: View {
     }
 }
 
-/// A topic with its status dot. Only topics with a full rule open.
+/// A topic with its status dot. Only topics with a full rule open, and a
+/// rule only once the rules before it at its level are solved: until then it
+/// shows a lock and the rule to solve first.
 private struct TopicRow: View {
     let topic: GrammarTopic
     let status: GrammarTopic.Status
+    /// The rule to solve before this one opens, if it is locked.
+    let blocker: GrammarRule?
     let onOpen: () -> Void
 
     private var hasRule: Bool { topic.ruleID != nil }
+    private var opens: Bool { hasRule && blocker == nil }
 
     var body: some View {
         Button(action: onOpen) {
             HStack(spacing: 12) {
-                Circle()
-                    .fill(dotColor)
-                    .frame(width: 10, height: 10)
-                    .accessibilityHidden(true)
+                if blocker == nil {
+                    Circle()
+                        .fill(dotColor)
+                        .frame(width: 10, height: 10)
+                        .accessibilityHidden(true)
+                } else {
+                    Image(systemName: "lock.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 10)
+                        .accessibilityHidden(true)
+                }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: topic.title)
                         .font(.headline)
-                        .foregroundStyle(hasRule ? .primary : .secondary)
-                    (hasRule ? Text(status.label) : Text("\(Text(status.label)) · lesson in a later version"))
+                        .foregroundStyle(opens ? .primary : .secondary)
+                    detail
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                if hasRule {
+                if opens {
                     Image(systemName: "chevron.right")
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(.tertiary)
@@ -101,9 +115,14 @@ private struct TopicRow: View {
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .allowsHitTesting(hasRule)
+        .allowsHitTesting(opens)
         .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(hasRule ? .isButton : [])
+        .accessibilityAddTraits(opens ? .isButton : [])
+    }
+
+    private var detail: Text {
+        if let blocker { return Text("Locked · solve “\(blocker.title)” first") }
+        return hasRule ? Text(status.label) : Text("\(Text(status.label)) · lesson in a later version")
     }
 
     private var dotColor: Color {
