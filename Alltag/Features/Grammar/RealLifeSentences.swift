@@ -11,10 +11,10 @@ extension RealLifeSentence {
     /// Sentences for each rule, by rule ID. The marked words appear in the
     /// sentence in this order.
     static let byRule: [String: [RealLifeSentence]] = a1ByRule.merging(a2ByRule) { _, later in later }
-        .merging(b1ByRule) { _, later in later }.merging(b2ByRule) { _, later in later }.merging([
+        .merging(b1ByRule) { _, later in later }.merging(b2ByRule) { _, later in later }
+        .merging(c1ByRule) { _, later in later }.merging([
         "v2": verbSecond,
-        "akkusativ": accusative,
-        "nominal": nominal
+        "akkusativ": accusative
     ]) { _, later in later }
 
     private static let verbSecond: [RealLifeSentence] = [
@@ -45,22 +45,5 @@ extension RealLifeSentence {
         RealLifeSentence(place: "At the station", systemImage: "tram",
                          german: "Entschuldigung, ich suche den Ausgang.",
                          english: "Excuse me, I'm looking for the exit.", marked: ["den"])
-    ]
-
-    private static let nominal: [RealLifeSentence] = [
-        RealLifeSentence(place: "News headline", systemImage: "newspaper",
-                         german: "Wegen des Streiks fallen viele Flüge aus.",
-                         english: "Because of the strike, many flights are cancelled.", marked: ["Wegen des Streiks"]),
-        RealLifeSentence(place: "Your tenancy agreement", systemImage: "doc.text",
-                         german: "Nach Ablauf der Frist ist keine Kündigung mehr möglich.",
-                         english: "Once the deadline has passed, notice can no longer be given.",
-                         marked: ["Nach Ablauf der Frist"]),
-        RealLifeSentence(place: "Railway app", systemImage: "iphone",
-                         german: "Bei Verspätungen informieren wir Sie per Push-Nachricht.",
-                         english: "If there are delays, we'll let you know with a notification.", marked: ["Bei Verspätungen"]),
-        RealLifeSentence(place: "Letter from an office", systemImage: "envelope",
-                         german: "Zur Prüfung Ihres Antrags benötigen wir weitere Unterlagen.",
-                         english: "To check your application, we need further documents.",
-                         marked: ["Zur Prüfung Ihres Antrags"])
     ]
 }

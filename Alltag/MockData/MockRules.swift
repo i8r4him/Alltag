@@ -26,7 +26,7 @@ enum MockRules {
         fixedPrepositions, timePrepositions, whichThis
     ]
 
-    static let all: [GrammarRule] = a1 + a2 + b1 + b2 + [nominal]
+    static let all: [GrammarRule] = a1 + a2 + b1 + b2 + c1
 
     static func rule(id: String) -> GrammarRule? {
         all.first { $0.id == id }
@@ -63,19 +63,5 @@ enum MockRules {
         taskPrompt: "Say: \"I have been learning German for two years.\"",
         taskWords: ["seit", "lerne", "zwei Jahren", "Ich", "Deutsch"],
         taskAnswers: ["Ich lerne seit zwei Jahren Deutsch", "Ich lerne Deutsch seit zwei Jahren"]
-    )
-
-    static let nominal = GrammarRule(
-        id: "nominal", level: .c1, title: "Formal style: verbs become nouns",
-        place: "News headline in Safari", systemImage: "safari",
-        german: "Nach der Erhöhung der Mieten protestierten Tausende.", english: "After the rent increase, thousands protested.",
-        tiles: [Tile(text: "Nach", role: .key), Tile(text: "der Erhöhung", role: .verb), Tile(text: "der Mieten")],
-        notice: "Spoken: „Nachdem die Mieten erhöht wurden …“ — the news packs it into a noun.",
-        rule: "Formal German turns verbs into nouns (erhöhen → die Erhöhung) and links them with the genitive. "
-            + "Denser, typical for news, offices and contracts.",
-        pattern: [Slot(label: "Preposition"), Slot(label: "Noun from verb", emphasis: .verb), Slot(label: "Genitive", emphasis: .end)],
-        taskPrompt: "Build the formal version of „nachdem der Vertrag gekündigt wurde“:",
-        taskWords: ["des Vertrags", "Nach", "der Kündigung"],
-        taskAnswers: ["Nach der Kündigung des Vertrags"]
     )
 }

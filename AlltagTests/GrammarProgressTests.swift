@@ -119,6 +119,6 @@ struct GrammarProgressTests {
                       "praepositionen", "zeit", "welcher-dieser"]
         #expect(GrammarProgress.rules(at: .a1).map(\.id) == first + second)
         #expect(GrammarProgress.rules(at: .a2).map(\.id) == MockRules.a2.map(\.id))
-        #expect(GrammarProgress.rules(at: .c1).map(\.id) == ["nominal"])
+        #expect(GrammarProgress.rules(at: .c1).map(\.id) == MockRules.c1.map(\.id))
     }
 }
