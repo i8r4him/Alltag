@@ -10,7 +10,7 @@ import Foundation
 extension RealLifeSentence {
     /// Sentences for each rule, by rule ID. The marked words appear in the
     /// sentence in this order.
-    static let byRule: [String: [RealLifeSentence]] = [
+    static let byRule: [String: [RealLifeSentence]] = a1ByRule.merging([
         "v2": verbSecond,
         "akkusativ": accusative,
         "perfekt": perfekt,
@@ -18,7 +18,7 @@ extension RealLifeSentence {
         "weil": weil,
         "passiv": passiv,
         "nominal": nominal
-    ]
+    ]) { _, later in later }
 
     private static let verbSecond: [RealLifeSentence] = [
         RealLifeSentence(place: "Sign at the bakery", systemImage: "storefront",

@@ -57,14 +57,15 @@ struct GrammarRule: Identifiable, Hashable, Sendable {
     let tiles: [Tile]
     let notice: String
     let rule: String
-    let pattern: [PatternSlot]
+    /// The pattern bar, for a rule without a picture.
+    var pattern: [PatternSlot] = []
     var yourMistake: LearnerMistake?
-    /// Instruction for the word-order task.
-    let taskPrompt: String
+    /// Instruction for the word-order task. A rule with an exam has no task.
+    var taskPrompt = ""
     /// Tiles to arrange, in shuffled order.
-    let taskWords: [String]
+    var taskWords: [String] = []
     /// Accepted answers (words joined by single spaces).
-    let taskAnswers: [String]
+    var taskAnswers: [String] = []
     /// A picture of what the rule means, in "The rule".
     var visual: RuleVisual?
     /// The exam: an easy, a medium and a hard question. Empty for rules that

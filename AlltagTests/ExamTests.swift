@@ -84,20 +84,43 @@ struct ExamTests {
                     }
                     #expect(model.words == words)
                     try build(sentence, in: model)
+                    // The question says how many tiles stay in the bank.
+                    let leftOver = words.count - model.placed.count
+                    #expect(question.prompt.contains(leftOver == 1 ? "One tile is left over" : "Two tiles are left over"),
+                            "\(rule.id): \(leftOver) left over")
                     #expect(model.check(in: container.mainContext) == true, "\(rule.id): \(sentence)")
                 }
             }
         }
     }
 
-    @Test("The accusative is the first rule with an exam and a picture")
-    func accusative() throws {
-        let rule = MockRules.accusative
-        #expect(rule.hasExam)
-        let visual = try #require(rule.visual)
-        #expect(visual.target.german.contains(try #require(visual.target.marked)))
-        #expect(visual.rows.allSatisfy { $0.cells.count == visual.columns.count })
-        #expect(visual.rows.contains { !$0.marked.isEmpty })
+    @Test("A1 has twenty rules, each with a picture, an exam and its own ID")
+    func allOfA1() {
+        #expect(MockRules.a1.count == 20)
+        #expect(Set(MockRules.a1.map { $0.id }).count == 20)
+        for rule in MockRules.a1 {
+            #expect(rule.level == .a1, "\(rule.id)")
+            #expect(rule.hasExam, "\(rule.id)")
+            #expect(rule.visual != nil, "\(rule.id)")
+        }
+    }
+
+    @Test("A picture marks words that are in it, and its table fits its columns")
+    func pictures() {
+        for rule in MockRules.all {
+            guard let visual = rule.visual else { continue }
+            for part in [visual.source, visual.target] {
+                #expect(!part.german.isEmpty && !part.systemImage.isEmpty, "\(rule.id)")
+                if let marked = part.marked { #expect(part.german.contains(marked), "\(rule.id): \(marked)") }
+            }
+            #expect(!visual.sentence.isEmpty, "\(rule.id)")
+            // The table's rows are told apart by their labels.
+            #expect(Set(visual.rows.map { $0.label }).count == visual.rows.count, "\(rule.id)")
+            for row in visual.rows {
+                #expect(row.cells.count == visual.columns.count, "\(rule.id): \(row.label)")
+                #expect(row.marked.allSatisfy { row.cells.indices.contains($0) }, "\(rule.id): \(row.label)")
+            }
+        }
     }
 
     // MARK: Taking the exam

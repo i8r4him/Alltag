@@ -35,6 +35,20 @@ struct ExamQuestion: Identifiable, Hashable, Sendable {
     let explanation: String
 
     var id: Difficulty { difficulty }
+
+    /// A question with a gap, or several, and options to pick from.
+    static func gap(_ difficulty: Difficulty, _ sentence: String? = nil, prompt: String = "Fill the gap.",
+                    hint: String? = nil, options: [String], answer: Int, why: String) -> ExamQuestion {
+        ExamQuestion(difficulty: difficulty, prompt: prompt, sentence: sentence, hint: hint,
+                     kind: .choice(options: options, answer: answer), explanation: why)
+    }
+
+    /// The hard question: say `english` in German with tiles, with one or two tiles too many.
+    static func build(_ english: String, prompt: String = "Build the sentence. One tile is left over.",
+                      words: [String], answers: [String], why: String) -> ExamQuestion {
+        ExamQuestion(difficulty: .hard, prompt: prompt, sentence: english,
+                     kind: .build(words: words, answers: answers), explanation: why)
+    }
 }
 
 extension GrammarRule {

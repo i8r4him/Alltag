@@ -7,10 +7,11 @@
 
 import Foundation
 
-/// The prototype's grammar topics per level (`LEVELS`). Topics with a
-/// `ruleID` have a full rule in `MockRules`; the others are listed only.
-/// A topic with a rule is never listed as solved: only the learner solves it,
-/// and the rules of a level open in order.
+/// The grammar topics per level. Every A1 topic is a full rule, in the order
+/// the rules open. Above A1 the list is still the prototype's (`LEVELS`):
+/// topics with a `ruleID` have a full rule in `MockRules`, the others are
+/// listed only. A topic with a rule is never listed as solved: only the
+/// learner solves it, and the rules of a level open in order.
 enum MockLevels {
     static func topics(for level: Level) -> [GrammarTopic] {
         topicsByLevel[level] ?? []
@@ -23,14 +24,7 @@ enum MockLevels {
     ]
 
     static let topicsByLevel: [Level: [GrammarTopic]] = [
-        .a1: [
-            GrammarTopic(title: "The verb is always second", ruleID: "v2", status: .new),
-            GrammarTopic(title: "Articles and gender", status: .solved),
-            GrammarTopic(title: "The accusative: der becomes den", ruleID: "akkusativ", status: .new),
-            GrammarTopic(title: "Present tense", status: .solved),
-            GrammarTopic(title: "nicht or kein", status: .solved),
-            GrammarTopic(title: "Modal verbs", status: .solved)
-        ],
+        .a1: MockRules.a1.map { GrammarTopic(title: $0.title, ruleID: $0.id, status: .new) },
         .a2: [
             GrammarTopic(title: "Talking about the past", ruleID: "perfekt", status: .new),
             GrammarTopic(title: "„seit“ or „für“?", ruleID: "seit", status: .mistake),

@@ -7,9 +7,9 @@
 
 import Foundation
 
-/// The first rule in the new shape: one line of rule, a picture of what it
-/// means with a tiny table, and an exam of three questions. Written for the
-/// app; the other rules follow once this one is approved.
+/// The first rule that was written in the new shape: one line of rule, a
+/// picture of what it means with a tiny table, and an exam of three
+/// questions. The maintainer approved it, and the other A1 rules follow it.
 extension MockRules {
     static let accusative = GrammarRule(
         id: "akkusativ", level: .a1, title: "The accusative: der becomes den",

@@ -17,9 +17,14 @@ struct RuleViewTests {
         #expect(WordTile.style(for: role) == expected)
     }
 
-    @Test("Every rule highlights something in its tiles and its pattern", arguments: MockRules.all)
+    @Test("Every rule highlights something in its tiles, and in its picture or its pattern", arguments: MockRules.all)
     func highlights(rule: GrammarRule) {
         #expect(rule.tiles.contains { $0.role != .plain })
-        #expect(rule.pattern.contains { $0.emphasis != .none })
+        if let visual = rule.visual {
+            let marksPart = visual.source.marked != nil || visual.target.marked != nil
+            #expect(marksPart || visual.rows.contains { !$0.marked.isEmpty })
+        } else {
+            #expect(rule.pattern.contains { $0.emphasis != .none })
+        }
     }
 }

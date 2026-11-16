@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-/// The picture of a rule: who does something to what, as two plain symbols
-/// with the verb on an arrow between them. The word the rule changes is in
-/// the theme colour.
+/// The picture of a rule: two plain symbols, with an arrow and a word between
+/// them when one leads to the other. The word the rule changes is in the
+/// theme colour.
 struct RuleScene: View {
     let visual: RuleVisual
     @ScaledMetric(relativeTo: .title3) private var symbolSize: CGFloat = 46
@@ -18,21 +18,25 @@ struct RuleScene: View {
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
             part(visual.source)
-            VStack(spacing: 2) {
-                Text(verbatim: visual.verb)
-                    .font(.subheadline.weight(.semibold))
-                Image(systemName: "arrow.right")
-                    .font(.title2.weight(.semibold))
+            if visual.isLinked {
+                VStack(spacing: 2) {
+                    if !visual.verb.isEmpty {
+                        Text(verbatim: visual.verb)
+                            .font(.subheadline.weight(.semibold))
+                    }
+                    Image(systemName: "arrow.right")
+                        .font(.title2.weight(.semibold))
+                }
+                .foregroundStyle(.accent)
+                .frame(height: rowHeight)
             }
-            .foregroundStyle(.accent)
-            .frame(height: rowHeight)
             part(visual.target)
         }
         .frame(maxWidth: .infinity)
         .environment(\.locale, Locale(identifier: "de"))
         .accessibilityElement()
         .accessibilityLabel(Text(verbatim: visual.sentence))
-        .accessibilityValue(Text(verbatim: "\(visual.source.name), \(visual.target.name)"))
+        .accessibilityValue(Text(verbatim: Self.names(of: visual)))
     }
 
     private func part(_ part: RuleVisual.Part) -> some View {
@@ -44,21 +48,31 @@ struct RuleScene: View {
                 .accessibilityHidden(true)
             Text(Self.highlighted(part))
                 .font(.headline)
-            Text(verbatim: part.role)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            Text(verbatim: part.name)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.tertiary)
+            if !part.role.isEmpty {
+                Text(verbatim: part.role)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            if !part.name.isEmpty {
+                Text(verbatim: part.name)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
         }
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
     }
 
+    /// The grammar names of the two sides, for VoiceOver. Empty when they have none.
+    static func names(of visual: RuleVisual) -> String {
+        [visual.source.name, visual.target.name].filter { !$0.isEmpty }.joined(separator: ", ")
+    }
+
     /// The part's German with the word the rule changes in the theme colour.
+    /// The last match is marked, so an ending can be marked by itself.
     static func highlighted(_ part: RuleVisual.Part) -> AttributedString {
         var text = AttributedString(part.german)
-        if let marked = part.marked, let range = text.range(of: marked) {
+        if let marked = part.marked, let range = text.range(of: marked, options: .backwards) {
             text[range].foregroundColor = AppTheme.shared.palette.accent
             text[range].inlinePresentationIntent = .stronglyEmphasized
         }
