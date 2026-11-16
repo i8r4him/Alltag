@@ -10,7 +10,8 @@ import Foundation
 /// The grammar rules. The twenty A1 rules have the new shape (one line of
 /// rule, a picture with a tiny table, an exam): they are in the
 /// `MockRules+A1….swift` files and `MockRules+Accusative.swift`, in the order
-/// `a1` lists them. The five rules above A1 are still the prototype's (`RULES`).
+/// `a1` lists them. B2 is in the `MockRules+B2….swift` files, in the order `b2`
+/// lists them. The other rules above A1 are still the prototype's (`RULES`).
 enum MockRules {
     typealias Tile = GrammarRule.Tile
     typealias Slot = GrammarRule.PatternSlot
@@ -25,7 +26,7 @@ enum MockRules {
         fixedPrepositions, timePrepositions, whichThis
     ]
 
-    static let all: [GrammarRule] = a1 + [perfekt, seit, weil, passiv, nominal]
+    static let all: [GrammarRule] = a1 + [perfekt, seit, weil] + b2 + [nominal]
 
     static func rule(id: String) -> GrammarRule? {
         all.first { $0.id == id }
@@ -95,20 +96,6 @@ enum MockRules {
         taskPrompt: "Finish: „Ich komme heute nicht, …“",
         taskWords: ["krank", "bin", "weil", "ich"],
         taskAnswers: ["weil ich krank bin"]
-    )
-
-    static let passiv = GrammarRule(
-        id: "passiv", level: .b2, title: "When the action matters more than who",
-        place: "Letter from your landlord", systemImage: "envelope",
-        german: "Die Heizung wird am Montag repariert.", english: "The heating will be repaired on Monday.",
-        tiles: [Tile(text: "Die Heizung"), Tile(text: "wird", role: .verb), Tile(text: "am Montag"), Tile(text: "repariert", role: .end)],
-        notice: "Nobody says who repairs it — and nobody needs to know.",
-        rule: "Passive: werden in position 2, participle at the end. Add „von“ + dative only if the doer matters.",
-        pattern: [Slot(label: "Thing"), Slot(label: "werden", emphasis: .verb), Slot(label: "…"),
-                  Slot(label: "Participle", emphasis: .end)],
-        taskPrompt: "Say: \"The package will be delivered tomorrow.\"",
-        taskWords: ["geliefert", "Das Paket", "morgen", "wird"],
-        taskAnswers: ["Das Paket wird morgen geliefert"]
     )
 
     static let nominal = GrammarRule(

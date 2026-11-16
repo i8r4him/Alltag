@@ -7,8 +7,8 @@
 
 import Foundation
 
-/// The grammar topics per level. Every A1 topic is a full rule, in the order
-/// the rules open. Above A1 the list is still the prototype's (`LEVELS`):
+/// The grammar topics per level. Every A1 and B2 topic is a full rule, in the
+/// order the rules open. A2, B1 and C1 are still the prototype's (`LEVELS`):
 /// topics with a `ruleID` have a full rule in `MockRules`, the others are
 /// listed only. A topic with a rule is never listed as solved: only the
 /// learner solves it, and the rules of a level open in order.
@@ -39,13 +39,7 @@ enum MockLevels {
             GrammarTopic(title: "The simple past in stories", status: .new),
             GrammarTopic(title: "The genitive", status: .new)
         ],
-        .b2: [
-            GrammarTopic(title: "When the action matters more than who", ruleID: "passiv", status: .new),
-            GrammarTopic(title: "Reported speech", status: .new),
-            GrammarTopic(title: "Verbs with fixed prepositions", status: .new),
-            GrammarTopic(title: "Two-part connectors", status: .new),
-            GrammarTopic(title: "Participles as adjectives", status: .new)
-        ],
+        .b2: MockRules.b2.map { GrammarTopic(title: $0.title, ruleID: $0.id, status: .new) },
         .c1: [
             GrammarTopic(title: "Formal style: verbs become nouns", ruleID: "nominal", status: .new),
             GrammarTopic(title: "Extended participle phrases", status: .new),
