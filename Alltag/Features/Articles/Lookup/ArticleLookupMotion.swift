@@ -30,11 +30,3 @@ enum ArticleLookupMotion {
     /// Between one card and the next.
     static let stagger: TimeInterval = 0.07
 }
-
-extension View {
-    /// A tap here lowers the keyboard. Simultaneous, so buttons inside still work.
-    func lowersKeyboard(_ isFocused: FocusState<Bool>.Binding) -> some View {
-        contentShape(.rect)
-            .simultaneousGesture(TapGesture().onEnded { isFocused.wrappedValue = false })
-    }
-}

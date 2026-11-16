@@ -23,16 +23,19 @@ struct ArticlesView: View {
     var body: some View {
         LearnScreen(title: "Articles") {
             ArticlesHeroCard(level: level) { appState.present(.articles) }
-                .lowersKeyboard($isSearchFocused)
+                .fieldFocusBackdrop(isActive: isSearchFocused) { isSearchFocused = false }
+            // TEMPORARY (#397): the opening effects to choose from, the same as on Learn.
+            FieldFocusEffectSwitcher()
+                .frame(maxWidth: .infinity)
             LearnSection(title: "Look up a word") {
                 ArticleLookupCard(level: level, model: lookup, isFieldFocused: $isSearchFocused)
             }
             LearnSection(title: "A few useful clues") {
                 ArticleRules()
             }
-            .lowersKeyboard($isSearchFocused)
+            .fieldFocusBackdrop(isActive: isSearchFocused) { isSearchFocused = false }
         }
-        // Any scroll lowers the keyboard, as does a tap outside the field (lowersKeyboard).
+        // Any scroll lowers the keyboard, as does a tap on the page behind the field (fieldFocusBackdrop).
         .scrollDismissesKeyboard(.immediately)
         // On the whole screen, so the clues below move with the cards instead of jumping.
         .animation(ArticleLookupMotion.change(reduceMotion: reduceMotion), value: lookup.phase)

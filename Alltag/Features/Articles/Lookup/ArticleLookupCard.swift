@@ -25,7 +25,7 @@ struct ArticleLookupCard: View {
         VStack(alignment: .leading, spacing: Spacing.grid) {
             field
             results
-                .lowersKeyboard(isFieldFocused)
+                .fieldFocusBackdrop(isActive: isFieldFocused.wrappedValue) { isFieldFocused.wrappedValue = false }
         }
         // The screen animates the change (ArticlesView), so the clues below move with the cards.
         .onChange(of: model.text) { _, _ in model.textChanged() }
@@ -97,6 +97,8 @@ struct ArticleLookupCard: View {
         .frame(height: 60)
         .glassEffect(.regular.interactive(), in: .capsule)
         .animation(.smooth(duration: 0.25), value: model.text.isEmpty)
+        // The same opening effect as "How do I say …?" on Learn.
+        .fieldFocusEffect(isActive: isFieldFocused.wrappedValue)
     }
 
     private func lookUp() {

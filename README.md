@@ -63,6 +63,7 @@ Alltag/                                   ← repo root
 │  │     ├─ Toast.swift                   ToastView, .toast(_:)
 │  │     ├─ StateCard.swift               StateCard (a state in the Focus card's layout), CloudFailureCard
 │  │     ├─ HistorySheet.swift            things looked up before as glass cards on the sky (Translate, Articles)
+│  │     ├─ FieldFocusEffect.swift        a top field comes forward and the page behind steps back while typing (Learn, Articles)
 │  │     ├─ FlowLayout.swift              wrapping layout for chips
 │  │     └─ ComponentGallery.swift        previews of every component
 │  │
