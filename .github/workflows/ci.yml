@@ -82,7 +82,7 @@ jobs:
             dir=$(dirname "$file")
             name=$(basename "$file" .stringsdata)
             if [ -e "$dir/$name.o" ] && compgen -G "$dir/*.SwiftFileList" > /dev/null \
-              && ! cat "$dir"/*.SwiftFileList | grep -qF "/$name.swift"; then
+              && ! grep -qF "/$name.swift" "$dir"/*.SwiftFileList; then
               echo "Skipping $name.stringsdata: $name.swift is no longer built"
               continue
             fi
