@@ -10,7 +10,8 @@ import Foundation
 /// The grammar rules. The twenty A1 rules have the new shape (one line of
 /// rule, a picture with a tiny table, an exam): they are in the
 /// `MockRules+A1….swift` files and `MockRules+Accusative.swift`, in the order
-/// `a1` lists them. The five rules above A1 are still the prototype's (`RULES`).
+/// `a1` lists them. The C1 rules have the same shape, in the `MockRules+C1….swift`
+/// files. The rules of A2 to B2 are still the prototype's (`RULES`).
 enum MockRules {
     typealias Tile = GrammarRule.Tile
     typealias Slot = GrammarRule.PatternSlot
@@ -25,7 +26,7 @@ enum MockRules {
         fixedPrepositions, timePrepositions, whichThis
     ]
 
-    static let all: [GrammarRule] = a1 + [perfekt, seit, weil, passiv, nominal]
+    static let all: [GrammarRule] = a1 + [perfekt, seit, weil, passiv] + c1
 
     static func rule(id: String) -> GrammarRule? {
         all.first { $0.id == id }
@@ -109,19 +110,5 @@ enum MockRules {
         taskPrompt: "Say: \"The package will be delivered tomorrow.\"",
         taskWords: ["geliefert", "Das Paket", "morgen", "wird"],
         taskAnswers: ["Das Paket wird morgen geliefert"]
-    )
-
-    static let nominal = GrammarRule(
-        id: "nominal", level: .c1, title: "Formal style: verbs become nouns",
-        place: "News headline in Safari", systemImage: "safari",
-        german: "Nach der Erhöhung der Mieten protestierten Tausende.", english: "After the rent increase, thousands protested.",
-        tiles: [Tile(text: "Nach", role: .key), Tile(text: "der Erhöhung", role: .verb), Tile(text: "der Mieten")],
-        notice: "Spoken: „Nachdem die Mieten erhöht wurden …“ — the news packs it into a noun.",
-        rule: "Formal German turns verbs into nouns (erhöhen → die Erhöhung) and links them with the genitive. "
-            + "Denser, typical for news, offices and contracts.",
-        pattern: [Slot(label: "Preposition"), Slot(label: "Noun from verb", emphasis: .verb), Slot(label: "Genitive", emphasis: .end)],
-        taskPrompt: "Build the formal version of „nachdem der Vertrag gekündigt wurde“:",
-        taskWords: ["des Vertrags", "Nach", "der Kündigung"],
-        taskAnswers: ["Nach der Kündigung des Vertrags"]
     )
 }
