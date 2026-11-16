@@ -19,7 +19,7 @@ struct WordTiles: View {
     var body: some View {
         LazyVGrid(columns: columns, spacing: Spacing.grid) {
             ForEach(words) { word in
-                WordTile(word: word, isTurned: turned.contains(word.id))
+                CollectionWordTile(word: word, isTurned: turned.contains(word.id))
                     .onTapGesture {
                         withAnimation(.smooth(duration: 0.35)) {
                             turned.formSymmetricDifference([word.id])
@@ -31,7 +31,7 @@ struct WordTiles: View {
     }
 }
 
-private struct WordTile: View {
+private struct CollectionWordTile: View {
     let word: CollectionWord
     let isTurned: Bool
 
