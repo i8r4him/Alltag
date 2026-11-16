@@ -61,7 +61,7 @@ private struct ArticlesHeroCard: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(verbatim: "der, die, das?")
                         .font(.title3.weight(.semibold))
-                    Text("Ten nouns for your level. The ones you get wrong come back until you know them.")
+                    Text("Nouns fall, a little faster each time. Tap der, die or das before they land.")
                         .font(.title3)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)

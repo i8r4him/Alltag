@@ -251,8 +251,9 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ArticleMemory.swift           wrong picks → Memory › Mistakes; looked-up nouns → Memory › Saved
 │  │  │  ├─ Noun.swift                    Article, Noun
 │  │  │  ├─ Round/
-│  │  │  │  ├─ ArticleRoundView.swift     a round full screen: the noun, der · die · das, the answer, the summary
-│  │  │  │  ├─ ArticleRoundModel.swift    asks the server for the nouns, keeps wrong answers for Fix your mistakes
+│  │  │  │  ├─ ArticleRoundView.swift     a round full screen: loading, the game, the score and the missed nouns
+│  │  │  │  ├─ ArticleDropGame.swift      the game: a noun falls, tap der · die · das before it lands
+│  │  │  │  ├─ ArticleRoundModel.swift    the nouns from the server, the fall (faster each noun), score, best, pause
 │  │  │  │  └─ ArticleTrainer.swift       the round's queue: a missed noun comes back, and first next time
 │  │  │  ├─ Lookup/
 │  │  │  │  ├─ ArticleLookupCard.swift    the field; searching, not found, offline and other failure cards
