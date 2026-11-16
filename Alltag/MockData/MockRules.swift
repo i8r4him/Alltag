@@ -7,11 +7,11 @@
 
 import Foundation
 
-/// The grammar rules. The twenty A1 rules have the new shape (one line of
-/// rule, a picture with a tiny table, an exam): they are in the
+/// The grammar rules. The A1 and B1 rules have the new shape (one line of
+/// rule, a picture with a tiny table, an exam): the twenty A1 rules are in the
 /// `MockRules+A1….swift` files and `MockRules+Accusative.swift`, in the order
-/// `a1` lists them. The C1 rules have the same shape, in the `MockRules+C1….swift`
-/// files. The rules of A2 to B2 are still the prototype's (`RULES`).
+/// `a1` lists them. The twenty A2 rules have the same shape and are listed in
+/// `MockRules+A2.swift`. The rules above A2 are still the prototype's (`RULES`).
 enum MockRules {
     typealias Tile = GrammarRule.Tile
     typealias Slot = GrammarRule.PatternSlot
@@ -26,7 +26,7 @@ enum MockRules {
         fixedPrepositions, timePrepositions, whichThis
     ]
 
-    static let all: [GrammarRule] = a1 + [perfekt, seit, weil, passiv] + c1
+    static let all: [GrammarRule] = a1 + a2 + b1 + b2 + c1
 
     static func rule(id: String) -> GrammarRule? {
         all.first { $0.id == id }
@@ -48,22 +48,6 @@ enum MockRules {
         exam: verbSecondExam
     )
 
-    static let perfekt = GrammarRule(
-        id: "perfekt", level: .a2, title: "Talking about the past",
-        place: "Monday at work", systemImage: "briefcase",
-        german: "Ich bin am Wochenende nach Potsdam gefahren.", english: "I went to Potsdam at the weekend.",
-        tiles: [Tile(text: "Ich"), Tile(text: "bin", role: .verb), Tile(text: "am Wochenende"),
-                Tile(text: "nach Potsdam"), Tile(text: "gefahren", role: .end)],
-        notice: "Two verb parts form a bracket around everything else.",
-        rule: "In conversation, the past uses haben or sein in position 2 and the participle at the very end. "
-            + "Movement or change → sein.",
-        pattern: [Slot(label: "Subject"), Slot(label: "haben / sein", emphasis: .verb), Slot(label: "…"),
-                  Slot(label: "Participle", emphasis: .end)],
-        taskPrompt: "Say: \"I cooked yesterday.\"",
-        taskWords: ["gekocht", "Ich", "gestern", "habe"],
-        taskAnswers: ["Ich habe gestern gekocht"]
-    )
-
     static let seit = GrammarRule(
         id: "seit", level: .a2, title: "„seit“ or „für“?",
         place: "Meeting a neighbour", systemImage: "house",
@@ -79,36 +63,5 @@ enum MockRules {
         taskPrompt: "Say: \"I have been learning German for two years.\"",
         taskWords: ["seit", "lerne", "zwei Jahren", "Ich", "Deutsch"],
         taskAnswers: ["Ich lerne seit zwei Jahren Deutsch", "Ich lerne Deutsch seit zwei Jahren"]
-    )
-
-    static let weil = GrammarRule(
-        id: "weil", level: .b1, title: "Verb at the end after weil, wenn, dass",
-        place: "Station announcement", systemImage: "tram",
-        german: "Der Zug hat Verspätung, weil ein Baum auf den Gleisen liegt.",
-        english: "The train is delayed because a tree is lying on the tracks.",
-        tiles: [Tile(text: "weil", role: .key), Tile(text: "ein Baum"), Tile(text: "auf den Gleisen"), Tile(text: "liegt", role: .end)],
-        notice: "After „weil“, the verb waits until the very end.",
-        rule: "After weil, wenn, dass, ob and other subordinating words, the conjugated verb moves to the end of the clause.",
-        pattern: [Slot(label: "weil / wenn", emphasis: .verb), Slot(label: "Subject"), Slot(label: "…"),
-                  Slot(label: "Verb", emphasis: .end)],
-        yourMistake: Mistake(wrong: "Ich komme um 15 Uhr, wenn das passt mir.", right: "Ich komme um 15 Uhr, wenn mir das passt.",
-                             source: "Conversation · Monday"),
-        taskPrompt: "Finish: „Ich komme heute nicht, …“",
-        taskWords: ["krank", "bin", "weil", "ich"],
-        taskAnswers: ["weil ich krank bin"]
-    )
-
-    static let passiv = GrammarRule(
-        id: "passiv", level: .b2, title: "When the action matters more than who",
-        place: "Letter from your landlord", systemImage: "envelope",
-        german: "Die Heizung wird am Montag repariert.", english: "The heating will be repaired on Monday.",
-        tiles: [Tile(text: "Die Heizung"), Tile(text: "wird", role: .verb), Tile(text: "am Montag"), Tile(text: "repariert", role: .end)],
-        notice: "Nobody says who repairs it — and nobody needs to know.",
-        rule: "Passive: werden in position 2, participle at the end. Add „von“ + dative only if the doer matters.",
-        pattern: [Slot(label: "Thing"), Slot(label: "werden", emphasis: .verb), Slot(label: "…"),
-                  Slot(label: "Participle", emphasis: .end)],
-        taskPrompt: "Say: \"The package will be delivered tomorrow.\"",
-        taskWords: ["geliefert", "Das Paket", "morgen", "wird"],
-        taskAnswers: ["Das Paket wird morgen geliefert"]
     )
 }

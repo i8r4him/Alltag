@@ -60,8 +60,8 @@ struct AppIntentsTests {
         let scenarios = try await ScenarioEntityQuery().allEntities()
         #expect(scenarios.map(\.id) == MockScenarios.all.map(\.id.rawValue))
 
-        let rules = try await GrammarRuleEntityQuery().entities(for: ["weil", "missing"])
-        #expect(rules.map(\.title) == ["Verb at the end after weil, wenn, dass"])
+        let rules = try await GrammarRuleEntityQuery().entities(for: ["v2", "missing"])
+        #expect(rules.map(\.title) == ["The verb is always second"])
     }
 
     @Test("Showing a screen from Siri closes flows and selects its tab")
