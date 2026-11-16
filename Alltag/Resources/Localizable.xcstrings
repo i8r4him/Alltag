@@ -110,16 +110,6 @@
         }
       }
     },
-    "%lld of %lld in Memory" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld of %2$lld in Memory"
-          }
-        }
-      }
-    },
     "%lld of %lld right" : {
       "localizations" : {
         "en" : {
@@ -215,7 +205,6 @@
     "^[%lld session](inflect: true) to reread" : {},
     "^[%lld word](inflect: true)" : {},
     "^[%lld word](inflect: true) saved" : {},
-    "^[%lld word](inflect: true) to learn" : {},
     "^[%lld writing mistake](inflect: true) to review" : {},
     "A book or a series" : {},
     "A book that impressed me" : {},
@@ -292,7 +281,6 @@
     "All fixed for now" : {},
     "All fresh baked goods half price from 6 pm." : {},
     "All rules" : {},
-    "All words" : {},
     "Allow" : {},
     "Allow %@" : {},
     "Allow and start" : {},
@@ -742,7 +730,6 @@
     "I haven't seen him for a long time." : {},
     "I hope everything went well." : {},
     "I hope you're well again soon." : {},
-    "I know it" : {},
     "I learn" : {},
     "I learn words by writing them down." : {},
     "I look forward to hearing from you." : {},
@@ -828,7 +815,6 @@
     "In a shop" : {},
     "In a thunderstorm, leave the pool at once." : {},
     "In context" : {},
-    "In Memory" : {},
     "In my opinion that's too expensive." : {},
     "In my opinion we should postpone the meeting." : {},
     "In progress" : {},
@@ -875,7 +861,6 @@
     "Learn" : {},
     "Learn from your day" : {},
     "Learn German through the life you already live." : {},
-    "Learn it" : {},
     "Learn these by heart" : {},
     "Learned" : {},
     "Learning" : {},
@@ -1043,10 +1028,8 @@
     "News on the radio" : {},
     "Newspaper article" : {},
     "Next clue" : {},
-    "Next design" : {},
     "Next question" : {},
     "Next time, say" : {},
-    "Next word" : {},
     "Next year" : {},
     "nicht" : {},
     "nicht near the end of the sentence" : {},
@@ -1203,8 +1186,6 @@
     "Present" : {},
     "Present tense" : {},
     "Presents" : {},
-    "Previous design" : {},
-    "Previous word" : {},
     "Privacy" : {},
     "Privacy & AI" : {},
     "Profile" : {},
@@ -1263,7 +1244,6 @@
     "Road sign" : {},
     "Role models in public life" : {},
     "Rose gold" : {},
-    "Round %lld" : {},
     "Rule" : {},
     "Rule not found" : {},
     "RULES" : {},
@@ -1274,8 +1254,6 @@
     "Salaries in professional sport" : {},
     "Save electricity by switching devices off completely." : {},
     "Save for practice" : {},
-    "Save them to Memory" : {},
-    "Save these words" : {},
     "Save to Memory" : {},
     "Save to phrasebook" : {},
     "Saved" : {},
@@ -1392,7 +1370,6 @@
     "Start 60 seconds of talking" : {},
     "Start a Conversation" : {},
     "Start a round" : {},
-    "Start again" : {},
     "Start learning" : {},
     "Start practising without opening the app." : {},
     "Start reading · %lld min" : {},
@@ -1418,7 +1395,6 @@
     "Supermarket leaflet" : {},
     "Sustainability" : {},
     "Swap languages" : {},
-    "Swipe right if you know it, left to learn it." : {},
     "Take one tablet in the evening." : {},
     "Take the exam again" : {},
     "Take the infinitive, drop -en and add the ending for the person." : {},
@@ -1443,7 +1419,6 @@
     "Tap to fix it" : {},
     "Tap to see English" : {},
     "Tap to speak" : {},
-    "Tap to turn over" : {},
     "Television and streaming" : {},
     "Tell work you're sick" : {},
     "Tell your boss you can't come in" : {},
@@ -1831,7 +1806,6 @@
     "You don't need to bring any documents." : {},
     "You have 60 seconds. Say whatever comes to mind." : {},
     "You have to take the tablets in the morning." : {},
-    "You know them all." : {},
     "You know them all. New mistakes land here." : {},
     "you learn (a group)" : {},
     "you learn (friends, family)" : {},

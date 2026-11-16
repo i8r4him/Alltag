@@ -61,7 +61,4 @@ extension CollectionWord {
         }
         return text
     }
-
-    /// Nouns have an article; verbs and other words don't.
-    var isNoun: Bool { !article.isEmpty }
 }

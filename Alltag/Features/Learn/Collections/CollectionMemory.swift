@@ -16,7 +16,7 @@ enum CollectionMemory {
         try add(collection.words, of: collection, in: context)
     }
 
-    /// Adds only some of a collection's words, e.g. the ones the learner sorted into "Learn it".
+    /// Adds some of a collection's words, skipping the ones already in Memory.
     static func add(_ words: [CollectionWord], of collection: WordCollection, in context: ModelContext) throws {
         let existing = try Set(context.fetch(FetchDescriptor<MemoryItem>()).map(\.displayWord))
         for word in words where !existing.contains(word.displayWord) {

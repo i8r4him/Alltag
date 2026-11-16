@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// Page design 2, "A scene": the words as things you'd hear and say at the
+/// A collection's page as a scene: the words as things you'd hear and say at the
 /// place, as chat bubbles taking turns. Tap a bubble for the English and the
 /// word it teaches. The button to save stays at the bottom.
 struct ScenePage: View {

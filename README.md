@@ -237,9 +237,10 @@ Alltag/                                   ← repo root
 │  │  │  │  ├─ WordCollectionsSection.swift the section on Learn: its title opens all collections, then a row of stacked cards
 │  │  │  │  ├─ AllCollectionsView.swift   every collection by level chip and topic; topics without words say "Coming soon"
 │  │  │  │  ├─ FannedRowStack.swift       the row: square glass cards with two cards fanned out behind each
-│  │  │  │  ├─ WordCollectionSheet.swift  one collection's page; five page designs behind a temporary switcher
-│  │  │  │  ├─ Pages/                     the five designs: cover, a scene, path, dictionary, sort
-│  │  │  │  ├─ Words/                     the flashcards, the speaker button and the word with its article
+│  │  │  │  ├─ Page/                      one collection's page: a scene of chat bubbles (tap one for the English), save all to Memory
+│  │  │  │  │  ├─ WordCollectionSheet.swift the sheet and what the page knows (saved words, the + action)
+│  │  │  │  │  ├─ ScenePage.swift         the bubbles, alternating sides, with the word, its meaning and a speaker
+│  │  │  │  │  └─ WordParts.swift         the speaker button, the word with its article, the highlighted example
 │  │  │  │  ├─ CollectionMemory.swift     adds a collection's words (or some) to Memory and takes them out (tested)
 │  │  │  │  ├─ CollectionCardParts.swift  the + button, level badge, artwork and stack layers
 │  │  │  │  └─ Content/                   the words: A2 (doctor's, flat, shopping), B1 (work, offices, transport); planned topics by name
