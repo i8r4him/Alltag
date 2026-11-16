@@ -28,7 +28,6 @@ struct LevelMapView: View {
     @State private var shownLevel: Level?
     /// Which way the town slides when the level changes: a higher level comes down from above.
     @State private var goingUp = true
-    @AppStorage(PlaceLook.storageKey) private var placeLook = 0
     @Environment(\.reducesMotion) private var reducesMotion
     @Namespace private var placeZoom
 
@@ -63,9 +62,6 @@ struct LevelMapView: View {
                     LevelHeader(map: map, townName: TownLayout.of(map.level).townName)
                 }
                 .accessibilityHint(Text("Shows the map of another level"))
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                PlaceLookSwitcher(look: $placeLook)
             }
         }
         .navigationTitle(Text("Your level"))
@@ -107,7 +103,6 @@ struct LevelMapView: View {
         .padding(.bottom, 8)
         .frame(maxWidth: Spacing.readableWidth)
         .frame(maxWidth: .infinity)
-        .id(placeLook)
         .background { TownGround(layout: layout).ignoresSafeArea() }
     }
 
@@ -268,28 +263,6 @@ private struct NextStopCard: View {
         .padding(Spacing.cardLarge)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
-    }
-}
-
-/// The temporary ‹ n / 4 › switcher for the café's and the library's looks.
-private struct PlaceLookSwitcher: View {
-    @Binding var look: Int
-
-    var body: some View {
-        let count = PlaceLook.allCases.count
-        HStack(spacing: 10) {
-            Button("Previous design", systemImage: "chevron.left") {
-                look = (look + count - 1) % count
-            }
-            Text(verbatim: "\(look + 1) / \(count)")
-                .font(.subheadline.weight(.semibold).monospacedDigit())
-            Button("Next design", systemImage: "chevron.right") {
-                look = (look + 1) % count
-            }
-        }
-        .labelStyle(.iconOnly)
-        .padding(.horizontal, 6)
-        .sensoryFeedback(.selection, trigger: look)
     }
 }
 

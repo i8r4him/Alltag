@@ -129,18 +129,6 @@ struct LevelMapTests {
         #expect(b1.nextLevel == .b2)
     }
 
-    @Test("Every look of the café and the library has its own symbols, and leaves the other places alone")
-    func looks() {
-        for look in PlaceLook.allCases where look != .cup {
-            #expect(look.systemImage(of: .cafe) != nil)
-            #expect(look.systemImage(of: .library) != nil)
-            #expect(look.systemImage(of: .cafe) != look.systemImage(of: .library))
-            #expect(look.systemImage(of: .school) == nil)
-            #expect(look.name(of: .cafe) == nil)
-        }
-        #expect(PlaceLook.cup.systemImage(of: .cafe) == nil)
-    }
-
     @Test("Part of the route lies exactly on the whole route")
     func partialRoute() {
         let layout = TownLayout.of(.a2)
