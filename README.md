@@ -303,6 +303,15 @@ Alltag/                                   ← repo root
 │  │  │     ├─ RealLifeSentences+A2.swift the three sentences of each A2 rule
 │  │  │     ├─ RealLifeSentences+B1.swift the B1 sentences by rule, first half (second half in +B1More)
 │  │  │     └─ RealLifeSentences+B2….swift the B2 rules' sentences, in three parts
+│  │  ├─ LevelMap/                        (#389) the way to the next level, as a town at night
+│  │  │  ├─ LevelMapView.swift            the map: places with rings, "You are here", the next stop; zooms out of Learn's ring
+│  │  │  ├─ LevelMap.swift                what fills each place (rules solved, situations talked through, collections added), the % and the next stop (tested)
+│  │  │  ├─ TownPlace.swift               School · Café · Market · Library · Station: name and symbol
+│  │  │  ├─ TownLayout.swift              each level's own town (Das Dorf … Die Hauptstadt): where the places, river and park are
+│  │  │  ├─ TownMap.swift                 the town drawn in a Canvas (blocks, streets, park, river) and the path through it
+│  │  │  ├─ PlacePin.swift                a place's sign with its ring and glass label
+│  │  │  ├─ PlaceSheet.swift              a tapped place: what's done, what's left, each row opening its exercise
+│  │  │  └─ LevelRing.swift               the ring, and the ring button in Learn's toolbar
 │  │  ├─ Debrief/
 │  │  │  ├─ DebriefView.swift             input, Find the words, Next time say, Save to phrasebook
 │  │  │  └─ DebriefModel.swift            phases, companion, saving to the Phrasebook
@@ -378,6 +387,7 @@ Alltag/                                   ← repo root
 │  ├─ Learn/                              activities, "How do I say …?", the reader, word collections
 │  │  ├─ Articles/                        der, die, das and "Look up a word"
 │  │  ├─ Grammar/                         the rules of every level, the exam, progress
+│  │  ├─ LevelMap/                        the level map: what fills each place, the %, the next stop
 │  │  └─ Translate/                       the Translate screen, streaming, the translation extension
 │  ├─ Memory/                             Memory's filters, phrasebook, the mistakes loop
 │  ├─ Profile/                            profile, progress, streak, settings

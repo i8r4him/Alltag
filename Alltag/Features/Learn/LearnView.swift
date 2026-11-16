@@ -15,6 +15,9 @@ struct LearnView: View {
     @Query private var profiles: [UserProfile]
     @State private var toolTaps = 0
     @State private var notice: ToastMessage?
+    @Environment(\.levelMapZoom) private var levelMapZoom
+    /// Used only when no screen above shares a namespace (previews).
+    @Namespace private var ownZoom
 
     private var level: Level { profiles.first?.level ?? .a1 }
 
@@ -51,6 +54,13 @@ struct LearnView: View {
         .skyBackground()
         .navigationTitle("Learn")
         .toolbarTitleDisplayMode(.inlineLarge)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                LevelRingButton()
+            }
+            .sharedBackgroundVisibility(.hidden)
+            .matchedTransitionSource(id: LevelRingButton.zoomID, in: levelMapZoom ?? ownZoom)
+        }
         .scrollEdgeEffectStyle(.soft, for: .all)
         .sensoryFeedback(.impact(weight: .light), trigger: toolTaps)
         // On the screen, not a card, so it sits at the bottom above the tab bar.
