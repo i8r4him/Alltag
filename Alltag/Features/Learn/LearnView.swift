@@ -12,7 +12,11 @@ import SwiftUI
 /// reviewing (your mistakes too) is in Memory.
 struct LearnView: View {
     @Environment(AppState.self) private var appState
+    @Query private var profiles: [UserProfile]
     @State private var toolTaps = 0
+    @State private var notice: ToastMessage?
+
+    private var level: Level { profiles.first?.level ?? .a1 }
 
     private func open(_ tool: LearnTool) {
         switch tool {
@@ -35,7 +39,8 @@ struct LearnView: View {
         ScrollView {
             VStack(spacing: Spacing.section) {
                 ToolsSection(onOpen: open)
-                SkillsSection(onOpen: open)
+                WordCollectionsSection(level: level, notice: $notice)
+                SkillsSection(level: level, onOpen: open)
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.top, 8)
@@ -48,6 +53,8 @@ struct LearnView: View {
         .toolbarTitleDisplayMode(.inlineLarge)
         .scrollEdgeEffectStyle(.soft, for: .all)
         .sensoryFeedback(.impact(weight: .light), trigger: toolTaps)
+        // On the screen, not a card, so it sits at the bottom above the tab bar.
+        .toast($notice)
     }
 }
 
