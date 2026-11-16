@@ -99,6 +99,25 @@ struct LevelMapTests {
         #expect(map(.c2).progress(of: .school)?.isOpen == false)
     }
 
+    @Test("Another level's map holds that level's rules")
+    func otherLevel() {
+        let b1 = map(.b1)
+        #expect(b1.progress(of: .school)?.totalCount == GrammarProgress.rules(at: .b1).count)
+        #expect(b1.nextLevel == .b2)
+    }
+
+    @Test("Every look of the café and the library has its own symbols, and leaves the other places alone")
+    func looks() {
+        for look in PlaceLook.allCases where look != .cup {
+            #expect(look.systemImage(of: .cafe) != nil)
+            #expect(look.systemImage(of: .library) != nil)
+            #expect(look.systemImage(of: .cafe) != look.systemImage(of: .library))
+            #expect(look.systemImage(of: .school) == nil)
+            #expect(look.name(of: .cafe) == nil)
+        }
+        #expect(PlaceLook.cup.systemImage(of: .cafe) == nil)
+    }
+
     @Test("Part of the route lies exactly on the whole route")
     func partialRoute() {
         let points = TownPlace.route.map { CGPoint(x: $0.spot.x * 400, y: $0.spot.y * 800) }

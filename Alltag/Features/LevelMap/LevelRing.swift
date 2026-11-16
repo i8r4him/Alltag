@@ -46,7 +46,7 @@ struct LevelRing: View {
 }
 
 /// The ring in Learn's toolbar, on its own like an Apple Watch ring (no glass
-/// behind it): how close the learner is to the next level. Tapping it opens
+/// behind it), with the percentage inside: how close the learner is to the next level. Tapping it opens
 /// the level map, which zooms out of it.
 ///
 /// It reads its own data, so a new solved rule redraws the ring, not Learn.
@@ -65,8 +65,16 @@ struct LevelRingButton: View {
             taps += 1
             appState.open(.levelMap)
         } label: {
-            LevelRing(fraction: map.fraction, lineWidth: 6)
-                .frame(width: 32, height: 32)
+            ZStack {
+                LevelRing(fraction: map.fraction, lineWidth: 5)
+                Text("\(map.percent)%")
+                    .font(.system(size: 10, weight: .heavy, design: .rounded))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .padding(6)
+            }
+            .frame(width: 36, height: 36)
                 .frame(width: Spacing.minTouchTarget, height: Spacing.minTouchTarget)
                 .contentShape(.rect)
         }

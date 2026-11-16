@@ -21,17 +21,23 @@ struct LevelMapView: View {
     @State private var openPlace: TownPlace?
     /// What to open once the place's sheet has gone.
     @State private var pendingStop: MapStop?
+    /// Another level's map the learner is looking at; `nil` shows their own.
+    @State private var shownLevel: Level?
+    @AppStorage(PlaceLook.storageKey) private var placeLook = 0
     @Namespace private var placeZoom
 
+    private var ownLevel: Level { profiles.first?.level ?? .a1 }
+
     var body: some View {
-        let map = LevelMap(level: profiles.first?.level ?? .a1, solved: solved, sessions: sessions)
+        let map = LevelMap(level: shownLevel ?? ownLevel, solved: solved, sessions: sessions)
+        let isOwn = map.level == ownLevel
         GeometryReader { proxy in
             ZStack {
-                TownRoute(walkedTo: TownPlace.route.firstIndex(of: map.here) ?? 0)
+                TownRoute(walkedTo: isOwn ? TownPlace.route.firstIndex(of: map.here) ?? 0 : 0)
                 GlassEffectContainer {
                     ZStack {
                         ForEach(TownPlace.route) { place in
-                            pin(place, in: map)
+                            pin(place, in: map, isOwn: isOwn)
                                 .position(x: place.spot.x * proxy.size.width, y: place.spot.y * proxy.size.height)
                         }
                     }
@@ -43,16 +49,29 @@ struct LevelMapView: View {
         .padding(.bottom, 8)
         .frame(maxWidth: Spacing.readableWidth)
         .frame(maxWidth: .infinity)
+        .id(placeLook)
         .background { TownGround().ignoresSafeArea() }
         .safeAreaInset(edge: .bottom) {
-            NextStopCard(map: map, onGo: open)
+            NextStopCard(map: map, ownLevel: isOwn ? nil : ownLevel, onGo: open) { shownLevel = nil }
                 .frame(maxWidth: Spacing.readableWidth)
                 .padding(.horizontal, Spacing.screen)
                 .padding(.bottom, 8)
         }
         .toolbar {
             ToolbarItem(placement: .principal) {
-                LevelHeader(map: map)
+                Menu {
+                    Picker("Level", selection: levelChoice) {
+                        ForEach(Level.selectable) { level in
+                            Text(verbatim: level.title).tag(level)
+                        }
+                    }
+                } label: {
+                    LevelHeader(map: map)
+                }
+                .accessibilityHint(Text("Shows the map of another level"))
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                PlaceLookSwitcher(look: $placeLook)
             }
         }
         .navigationTitle(Text("Your level"))
@@ -67,12 +86,19 @@ struct LevelMapView: View {
         .sensoryFeedback(.impact(weight: .medium), trigger: openPlace) { _, place in place != nil }
     }
 
-    private func pin(_ place: TownPlace, in map: LevelMap) -> some View {
+    /// The level picked in the header; picking their own level goes back to it.
+    private var levelChoice: Binding<Level> {
+        Binding { shownLevel ?? ownLevel } set: { level in
+            shownLevel = level == ownLevel ? nil : level
+        }
+    }
+
+    private func pin(_ place: TownPlace, in map: LevelMap, isOwn: Bool) -> some View {
         let progress = map.progress(of: place)
         return Button {
             openPlace = place
         } label: {
-            PlacePin(place: place, progress: progress, isHere: map.here == place, nextLevel: map.nextLevel)
+            PlacePin(place: place, progress: progress, isHere: isOwn && map.here == place, nextLevel: map.nextLevel)
         }
         .buttonStyle(.plain)
         .matchedTransitionSource(id: place, in: placeZoom)
@@ -127,12 +153,27 @@ private struct LevelHeader: View {
 /// The card at the bottom: the next stop and a button to go there.
 private struct NextStopCard: View {
     let map: LevelMap
+    /// The learner's own level while they look at another one, else `nil`.
+    let ownLevel: Level?
     let onGo: (MapStop) -> Void
+    let onBack: () -> Void
     @State private var taps = 0
 
     var body: some View {
         HStack(spacing: 14) {
-            if let place = map.nextPlace, let stop = place.nextStop {
+            if let ownLevel {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("What \(map.level.title) holds")
+                        .font(.headline)
+                    Text("Tap a place to see what's in it. You're at \(ownLevel.title).")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityElement(children: .combine)
+                Button("Back to \(ownLevel.title)", action: onBack)
+                    .buttonStyle(.primaryCompact)
+            } else if let place = map.nextPlace, let stop = place.nextStop {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Next stop · \(Text(place.place.name))")
                         .font(.caption.weight(.heavy))
@@ -164,6 +205,28 @@ private struct NextStopCard: View {
         .padding(Spacing.cardLarge)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
+    }
+}
+
+/// The temporary ‹ n / 4 › switcher for the café's and the library's looks.
+private struct PlaceLookSwitcher: View {
+    @Binding var look: Int
+
+    var body: some View {
+        let count = PlaceLook.allCases.count
+        HStack(spacing: 10) {
+            Button("Previous design", systemImage: "chevron.left") {
+                look = (look + count - 1) % count
+            }
+            Text(verbatim: "\(look + 1) / \(count)")
+                .font(.subheadline.weight(.semibold).monospacedDigit())
+            Button("Next design", systemImage: "chevron.right") {
+                look = (look + 1) % count
+            }
+        }
+        .labelStyle(.iconOnly)
+        .padding(.horizontal, 6)
+        .sensoryFeedback(.selection, trigger: look)
     }
 }
 
