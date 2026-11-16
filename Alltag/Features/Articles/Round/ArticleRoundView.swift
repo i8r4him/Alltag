@@ -8,8 +8,9 @@
 import SwiftData
 import SwiftUI
 
-/// A round of der, die, das, full screen like an activity: a noun, three
-/// answers, the right article with its plural, and a summary at the end.
+/// A round of der, die, das, full screen like an activity: nouns fall and
+/// the learner taps their article before they land (`ArticleDropGame`), with
+/// the score and the nouns that went wrong at the end.
 struct ArticleRoundView: View {
     var level: Level = .a1
     @Environment(\.services) private var services
@@ -37,8 +38,18 @@ struct ArticleRoundView: View {
                 }
                 ToolbarItem(placement: .principal) {
                     if let model, model.phase == .playing {
-                        ProgressSegments(total: model.total, completed: model.index + (model.hasPicked ? 1 : 0), height: 4)
-                            .frame(width: 220)
+                        ProgressSegments(total: model.total, completed: model.index + (model.hasAnswered ? 1 : 0), height: 4)
+                            .frame(width: 200)
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    if let model, model.phase == .playing {
+                        Text(model.score, format: .number)
+                            .font(.headline.monospacedDigit())
+                            .contentTransition(.numericText(value: Double(model.score)))
+                            .padding(.horizontal, 6)
+                            .accessibilityLabel(Text("Score"))
+                            .accessibilityValue(Text(model.score, format: .number))
                     }
                 }
             }
@@ -63,12 +74,7 @@ private struct ArticleRoundContent: View {
             switch model.phase {
             case .loading: loading
             case .failed: failed
-            case .playing:
-                if model.current != nil {
-                    ArticleQuestion(model: model)
-                        .id(model.index)
-                        .transition(.opacity)
-                }
+            case .ready, .playing: ArticleDropGame(model: model)
             case .done: ArticleRoundDone(model: model, onDone: onDone)
             }
         }
@@ -112,192 +118,9 @@ private struct ArticleRoundContent: View {
     }
 }
 
-/// The noun, the three articles, and what the right one is once picked.
-private struct ArticleQuestion: View {
-    let model: ArticleRoundModel
-    @Environment(\.modelContext) private var context
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    /// Large, and larger still with the learner's text size.
-    @ScaledMetric(relativeTo: .largeTitle) private var nounSize: CGFloat = 44
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 28) {
-                if let noun = model.current {
-                    header(for: noun)
-                    answers(for: noun)
-                    if model.hasPicked {
-                        ArticleAnswerCard(noun: noun, isRight: model.isRight == true)
-                            .transition(.opacity)
-                        if model.saveFailed {
-                            Button { model.retrySave(in: context) } label: {
-                                Label("Couldn’t keep this mistake. Try again", systemImage: "arrow.clockwise")
-                                    .font(.subheadline.weight(.semibold))
-                            }
-                            .buttonStyle(.glass)
-                            .tint(.mistake)
-                        }
-                    }
-                }
-            }
-            .padding(.bottom, 16)
-            .animation(.easeOut(duration: 0.25), value: model.hasPicked)
-        }
-        .scrollEdgeEffectStyle(.soft, for: .all)
-        .scrollIndicators(.hidden)
-        .safeAreaInset(edge: .bottom) {
-            if model.hasPicked {
-                Button { model.next(in: context) } label: { Text("Continue") }
-                    .buttonStyle(.primary)
-                    .padding(.bottom, 8)
-                    .transition(.opacity)
-            }
-        }
-        .sensoryFeedback(trigger: model.picked) { _, picked in
-            guard picked != nil else { return nil }
-            return model.isRight == true ? .success : .error
-        }
-    }
-
-    /// The noun, large, with what it means.
-    private func header(for noun: Noun) -> some View {
-        VStack(spacing: 8) {
-            Eyebrow(title: "DER, DIE OR DAS?")
-            Text(verbatim: noun.word)
-                .font(.system(size: nounSize, weight: .bold, design: .rounded))
-                .minimumScaleFactor(0.6)
-                .lineLimit(1)
-                .environment(\.locale, Locale(identifier: "de"))
-                .accessibilityAddTraits(.isHeader)
-            Text(verbatim: noun.meaning)
-                .font(.title3)
-                .foregroundStyle(.secondary)
-        }
-        .multilineTextAlignment(.center)
-        .padding(.top, 36)
-    }
-
-    /// The three articles side by side, or one under the other at the accessibility text sizes.
-    private func answers(for noun: Noun) -> some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 12))
-        return GlassEffectContainer(spacing: 12) {
-            layout {
-                ForEach(Article.allCases) { article in
-                    ArticleOption(article: article, state: state(of: article, for: noun)) {
-                        model.pick(article, in: context)
-                    }
-                }
-            }
-        }
-    }
-
-    private func state(of article: Article, for noun: Noun) -> ArticleOption.Status {
-        guard let picked = model.picked else { return .open }
-        if article == noun.article { return .right }
-        return article == picked ? .wrong : .dimmed
-    }
-}
-
-/// One of the three answers: a glass square with the article. Green when it
-/// is the right one, coral when picked and wrong, faded when neither.
-private struct ArticleOption: View {
-    enum Status { case open, right, wrong, dimmed }
-
-    let article: Article
-    let state: Status
-    let action: () -> Void
-
-    @ScaledMetric(relativeTo: .title) private var articleSize: CGFloat = 30
-    @ScaledMetric(relativeTo: .title) private var minHeight: CGFloat = 104
-
-    var body: some View {
-        Button(action: action) {
-            // The article alone decides the centre; the mark sits in the corner.
-            Text(verbatim: article.rawValue)
-                .font(.system(size: articleSize, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, minHeight: minHeight)
-                .overlay(alignment: .topTrailing) {
-                    Group {
-                        switch state {
-                        case .right: Image(systemName: "checkmark.circle.fill").foregroundStyle(.success)
-                        case .wrong: Image(systemName: "xmark.circle.fill").foregroundStyle(.mistake)
-                        case .open, .dimmed: EmptyView()
-                        }
-                    }
-                    .font(.title3)
-                    .padding(10)
-                    .transition(.scale.combined(with: .opacity))
-                }
-            .background(background, in: shape)
-            .overlay { shape.strokeBorder(border, lineWidth: 1.5) }
-            // Interactive glass answers the touch itself, like the app's buttons.
-            .glassEffect(state == .open ? .regular.interactive() : .regular, in: shape)
-            .opacity(state == .dimmed ? 0.45 : 1)
-            .contentShape(shape)
-        }
-        .buttonStyle(.plain)
-        // Not `.disabled`, which would dim the right and wrong answers too.
-        .allowsHitTesting(state == .open)
-        .accessibilityLabel(Text(verbatim: article.rawValue))
-        .accessibilityValue(accessibilityValue)
-        .animation(.easeOut(duration: 0.25), value: state)
-    }
-
-    private var shape: RoundedRectangle { RoundedRectangle(cornerRadius: 26, style: .continuous) }
-
-    private var background: AnyShapeStyle {
-        switch state {
-        case .right: AnyShapeStyle(.success.opacity(0.22))
-        case .wrong: AnyShapeStyle(.mistake.opacity(0.22))
-        case .open, .dimmed: AnyShapeStyle(.clear)
-        }
-    }
-
-    private var border: AnyShapeStyle {
-        switch state {
-        case .right: AnyShapeStyle(.success.opacity(0.6))
-        case .wrong: AnyShapeStyle(.mistake.opacity(0.6))
-        case .open, .dimmed: AnyShapeStyle(.clear)
-        }
-    }
-
-    private var accessibilityValue: Text {
-        switch state {
-        case .right: Text("Correct")
-        case .wrong: Text("Wrong")
-        case .open, .dimmed: Text(verbatim: "")
-        }
-    }
-}
-
-/// After the answer: the noun with its article, the plural, an example, and
-/// whether it was kept for Fix your mistakes.
-private struct ArticleAnswerCard: View {
-    let noun: Noun
-    let isRight: Bool
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Label {
-                if isRight { Text("Right") } else { Text("Added to Fix your mistakes") }
-            } icon: {
-                Image(systemName: isRight ? "checkmark.circle.fill" : "bookmark.fill")
-            }
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(isRight ? Color.success : Color.mistake)
-            ArticleNounDetail(noun: noun)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.cardLarge)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-    }
-}
-
-/// The end of the round, laid out like the end of 60 seconds: what happened
-/// at the top, the nouns that went wrong on one glass card, and the big
-/// button for what comes next.
+/// The end of the round, laid out like the end of 60 seconds: the score and
+/// what happened at the top, the nouns that went wrong on one glass card, and
+/// the big button for what comes next.
 private struct ArticleRoundDone: View {
     let model: ArticleRoundModel
     let onDone: () -> Void
@@ -307,14 +130,17 @@ private struct ArticleRoundDone: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 4) {
+                    score
                     Text("\(model.rightFirstTime) of \(model.asked) right first time")
                         .font(.title2.weight(.bold))
                         .accessibilityAddTraits(.isHeader)
                     Group {
                         if model.missed.isEmpty {
                             Text("Every article right. Another round brings new nouns.")
+                        } else if model.savedMistakes > 0 {
+                            Text("These come first next time. The wrong articles are saved to Fix your mistakes.")
                         } else {
-                            Text("These are saved to Fix your mistakes and come first next time.")
+                            Text("These landed before you picked. They come first next time.")
                         }
                     }
                     .font(.subheadline)
@@ -345,7 +171,7 @@ private struct ArticleRoundDone: View {
         .scrollIndicators(.hidden)
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 12) {
-                if model.missed.isEmpty {
+                if model.savedMistakes == 0 {
                     Button { model.start() } label: { Text("Another round") }
                         .buttonStyle(.primary)
                     Button(action: onDone) { secondaryLabel("Done") }
@@ -360,6 +186,22 @@ private struct ArticleRoundDone: View {
             .padding(.bottom, 12)
         }
         .sensoryFeedback(.success, trigger: true)
+    }
+
+    /// The points, and the best score: a new one is celebrated.
+    private var score: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if model.isNewBest {
+                Eyebrow(title: "New best")
+            } else if model.best > 0 {
+                Eyebrow(title: "Best \(model.best)", tone: .secondary)
+            }
+            Text("\(model.score) points")
+                .font(.largeTitle.weight(.bold))
+                .contentTransition(.numericText())
+        }
+        .padding(.bottom, 6)
+        .accessibilityElement(children: .combine)
     }
 
     /// The quieter button under the big one, as on 60 seconds.

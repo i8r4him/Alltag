@@ -10,8 +10,8 @@ import Observation
 import SwiftData
 
 /// A round of the der, die, das trainer: a noun appears, the learner picks its
-/// article. A noun answered wrongly comes back later in the same round, and
-/// first in the next rounds until it is answered right.
+/// article (or runs out of time). A noun answered wrongly comes back later in
+/// the same round, and first in the next rounds until it is answered right.
 @Observable
 final class ArticleTrainer {
     /// Nouns in a round, before the ones that come back.
@@ -23,6 +23,8 @@ final class ArticleTrainer {
     private(set) var index = 0
     /// The article picked for the noun on screen, until Next.
     private(set) var picked: Article?
+    /// Whether the noun on screen landed before an article was picked, until Next.
+    private(set) var timedOut = false
     /// Nouns answered right the first time they came up.
     private(set) var rightFirstTime = 0
     /// Nouns answered wrongly at least once this round, in order.
@@ -44,17 +46,29 @@ final class ArticleTrainer {
 
     var current: Noun? { queue.indices.contains(index) ? queue[index] : nil }
     var isDone: Bool { index >= queue.count }
-    var isRight: Bool? { picked.map { $0 == current?.article } }
+    var hasAnswered: Bool { picked != nil || timedOut }
+    var isRight: Bool? { timedOut ? false : picked.map { $0 == current?.article } }
     /// How many nouns the round asks about, without the ones that come back.
     var total: Int { asked }
     /// How far the round is, 0…1.
     var progress: Double { queue.isEmpty ? 1 : Double(index) / Double(queue.count) }
 
     func pick(_ article: Article) {
-        guard picked == nil, let noun = current else { return }
+        guard !hasAnswered, let noun = current else { return }
         picked = article
+        record(noun, isRight: article == noun.article)
+    }
+
+    /// The noun landed before the learner picked: it counts as wrong.
+    func timeOut() {
+        guard !hasAnswered, let noun = current else { return }
+        timedOut = true
+        record(noun, isRight: false)
+    }
+
+    private func record(_ noun: Noun, isRight: Bool) {
         var stored = Set(defaults.stringArray(forKey: Self.missedKey) ?? [])
-        if article == noun.article {
+        if isRight {
             if !missed.contains(noun) { rightFirstTime += 1 }
             stored.remove(noun.id)
         } else {
@@ -69,8 +83,9 @@ final class ArticleTrainer {
     }
 
     func next() {
-        guard picked != nil else { return }
+        guard hasAnswered else { return }
         picked = nil
+        timedOut = false
         index += 1
     }
 
