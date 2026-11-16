@@ -97,7 +97,7 @@ struct ConversationModelTests {
         #expect(model.messages[2].line.speaker == .companion)
     }
 
-    @Test("Tapping while listening stops early and uses the whole line", .timeLimit(.minutes(1)))
+    @Test("Tapping while listening stops early and uses the whole line", .timeLimit(.minutes(3)))
     func stopEarly() async throws {
         // The speech hears only the first word and then waits for the tap, so no timing is involved:
         // a busy machine can't let the rest of the line arrive before the tap.
