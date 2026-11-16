@@ -90,7 +90,7 @@ private struct RealLifeGerman: View {
 }
 
 #Preview {
-    if let sentence = RealLifeSentence.sentence(for: "weil") {
+    if let sentence = RealLifeSentence.sentence(for: "akkusativ") {
         RuleInRealLifeSection(sentence: sentence)
             .padding(Spacing.screen)
             .skyBackground()

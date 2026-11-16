@@ -67,7 +67,7 @@ struct WordTile: View {
 
 #Preview {
     FlowLayout(spacing: 6) {
-        ForEach(MockRules.weil.tiles, id: \.text) { WordTile($0) }
+        ForEach(MockRules.verbSecond.tiles, id: \.text) { WordTile($0) }
         WordTile("placed", style: .placed)
     }
     .padding()

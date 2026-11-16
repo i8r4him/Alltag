@@ -10,12 +10,11 @@ import Foundation
 extension RealLifeSentence {
     /// Sentences for each rule, by rule ID. The marked words appear in the
     /// sentence in this order.
-    static let byRule: [String: [RealLifeSentence]] = a1ByRule.merging([
+    static let byRule: [String: [RealLifeSentence]] = a1ByRule.merging(b1ByRule) { _, later in later }.merging([
         "v2": verbSecond,
         "akkusativ": accusative,
         "perfekt": perfekt,
         "seit": seit,
-        "weil": weil,
         "passiv": passiv,
         "nominal": nominal
     ]) { _, later in later }
@@ -78,21 +77,6 @@ extension RealLifeSentence {
         RealLifeSentence(place: "Planning a holiday", systemImage: "airplane",
                          german: "Wir fahren für zwei Wochen nach Italien.",
                          english: "We're going to Italy for two weeks.", marked: ["für"])
-    ]
-
-    private static let weil: [RealLifeSentence] = [
-        RealLifeSentence(place: "Sign on a shop door", systemImage: "storefront",
-                         german: "Wir bleiben heute geschlossen, weil wir Inventur machen.",
-                         english: "We're closed today because we're doing a stocktake.", marked: ["weil", "machen"]),
-        RealLifeSentence(place: "Letter from an office", systemImage: "envelope",
-                         german: "Bitte melden Sie sich, wenn Sie Fragen haben.",
-                         english: "Please get in touch if you have any questions.", marked: ["wenn", "haben"]),
-        RealLifeSentence(place: "Email from work", systemImage: "at",
-                         german: "Ich hoffe, dass es Ihnen gut geht.",
-                         english: "I hope you're well.", marked: ["dass", "geht"]),
-        RealLifeSentence(place: "On the train", systemImage: "tram",
-                         german: "Wir wissen noch nicht, ob der Anschluss wartet.",
-                         english: "We don't know yet whether the connection will wait.", marked: ["ob", "wartet"])
     ]
 
     private static let passiv: [RealLifeSentence] = [

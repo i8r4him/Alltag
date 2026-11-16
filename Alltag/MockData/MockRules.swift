@@ -7,10 +7,11 @@
 
 import Foundation
 
-/// The grammar rules. The twenty A1 rules have the new shape (one line of
-/// rule, a picture with a tiny table, an exam): they are in the
+/// The grammar rules. The A1 and B1 rules have the new shape (one line of
+/// rule, a picture with a tiny table, an exam): the twenty A1 rules are in the
 /// `MockRules+A1….swift` files and `MockRules+Accusative.swift`, in the order
-/// `a1` lists them. The five rules above A1 are still the prototype's (`RULES`).
+/// `a1` lists them, the B1 rules in the `MockRules+B1….swift` files, in the
+/// order `b1` lists them. The other rules are still the prototype's (`RULES`).
 enum MockRules {
     typealias Tile = GrammarRule.Tile
     typealias Slot = GrammarRule.PatternSlot
@@ -25,7 +26,7 @@ enum MockRules {
         fixedPrepositions, timePrepositions, whichThis
     ]
 
-    static let all: [GrammarRule] = a1 + [perfekt, seit, weil, passiv, nominal]
+    static let all: [GrammarRule] = a1 + b1 + [perfekt, seit, passiv, nominal]
 
     static func rule(id: String) -> GrammarRule? {
         all.first { $0.id == id }
@@ -78,23 +79,6 @@ enum MockRules {
         taskPrompt: "Say: \"I have been learning German for two years.\"",
         taskWords: ["seit", "lerne", "zwei Jahren", "Ich", "Deutsch"],
         taskAnswers: ["Ich lerne seit zwei Jahren Deutsch", "Ich lerne Deutsch seit zwei Jahren"]
-    )
-
-    static let weil = GrammarRule(
-        id: "weil", level: .b1, title: "Verb at the end after weil, wenn, dass",
-        place: "Station announcement", systemImage: "tram",
-        german: "Der Zug hat Verspätung, weil ein Baum auf den Gleisen liegt.",
-        english: "The train is delayed because a tree is lying on the tracks.",
-        tiles: [Tile(text: "weil", role: .key), Tile(text: "ein Baum"), Tile(text: "auf den Gleisen"), Tile(text: "liegt", role: .end)],
-        notice: "After „weil“, the verb waits until the very end.",
-        rule: "After weil, wenn, dass, ob and other subordinating words, the conjugated verb moves to the end of the clause.",
-        pattern: [Slot(label: "weil / wenn", emphasis: .verb), Slot(label: "Subject"), Slot(label: "…"),
-                  Slot(label: "Verb", emphasis: .end)],
-        yourMistake: Mistake(wrong: "Ich komme um 15 Uhr, wenn das passt mir.", right: "Ich komme um 15 Uhr, wenn mir das passt.",
-                             source: "Conversation · Monday"),
-        taskPrompt: "Finish: „Ich komme heute nicht, …“",
-        taskWords: ["krank", "bin", "weil", "ich"],
-        taskAnswers: ["weil ich krank bin"]
     )
 
     static let passiv = GrammarRule(

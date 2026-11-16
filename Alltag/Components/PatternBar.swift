@@ -36,7 +36,7 @@ struct PatternBar: View {
 }
 
 #Preview {
-    PatternBar(slots: MockRules.weil.pattern)
+    PatternBar(slots: MockRules.verbSecond.pattern)
         .padding()
         .background(.surface)
 }
