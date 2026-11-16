@@ -43,7 +43,8 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
 - **Text:** all UI text goes in `Alltag/Resources/Localizable.xcstrings`. German content and other non-localised strings use `Text(verbatim:)`, so they don't create catalog keys. Don't build `Text` with `+`; it's deprecated.
 - **Tests:** Swift Testing (`import Testing`, `@Test`, `#expect`).
   - Tests never touch the network, microphone or speaker; inject stubs.
-  - Tests that need real hardware or services are opt-in through an environment variable, like `ALLTAG_LIVE_MODEL` in `AlltagTests/CompanionTests.swift`.
+  - Tests that need real hardware or services are opt-in through an environment variable, like `ALLTAG_LIVE_MODEL` in `AlltagTests/Services/CompanionTests.swift`.
+  - A new test file goes in the `AlltagTests/` folder of the part of the app it tests (`Learn/Grammar/`, `Memory/`, …; see README's tree). The folder is synchronized in Xcode, so adding or moving a file there needs no project change.
 - **Which model:** use the cheapest that is good enough, in this order: on device → Apple's cloud model (`PrivateCloudLanguageModelClient`, Private Cloud Compute; free for the app, the learner has a daily quota from Apple) → OpenAI through the server. The mistake check follows this order in `CloudCompanionService`; new text features should too. **Apple's cloud model is switched off** (`PrivateCloudLanguageModelClient.isEntitled = false`) until Apple has assigned the entitlement to the maintainer's account, which needs the App Store Small Business Program; without the entitlement a request stops the app. The doc comment on `isEntitled` says how to switch it on. Then `TEST_RUNNER_ALLTAG_PCC=1` runs `AppleCloudModelTests`, which reports the cloud model's answers to German test sentences.
 - **Secrets never go in the repo or the app bundle.** The OpenAI API key lives only in Supabase secrets (see `supabase/README.md`). The Supabase URL and publishable key are public and may be in the app.
 
@@ -176,7 +177,7 @@ The Learn features, **in this order**:
 - `AlltagTranslation/`: ExtensionKit Translation UI Provider (#245–247), with cloud consent, streamed translation and optional replacement. Host and extension use `group.i8r4him.Alltag` for a file inbox; the app imports saved entries into its existing SwiftData store on activation. Do not move the database into the App Group or modify its schema for this handoff. Paid-team signing and a physical-device check are required for both targets.
 
 - `Alltag/App/`: entry point, `AppState`, `AppServices`, routing.
-- `Alltag/Features/<Screen>/`: views and their `@Observable` models.
+- `Alltag/Features/<Screen>/`: views and their `@Observable` models. In a big folder the screen and its model stay at the top and the other files go into subfolders by part of the screen (`Exam/`, `Lookup/`, `History/`, `Parts/` for a screen's pieces), with written content in `Content/` or `Topics/`. A folder of about six files or fewer stays flat. A new file goes into the subfolder of its part. The app target is a synchronized folder, so moving a file there needs no change to `project.pbxproj`.
 - `Alltag/Services/<Area>/`: service protocols, mocks and live implementations.
 - `Alltag/DesignSystem/`: tokens and shared components. Use them rather than raw values.
 - `Alltag/Intents/`: App Intents (Siri, Shortcuts, Spotlight).
