@@ -103,7 +103,9 @@ struct ConversationModelTests {
         model.orbTapped()
         // Wait for the first word rather than a fixed time, so a busy machine can't break it.
         // Under load a second word may already be in, so only the start is checked.
-        let deadline = ContinuousClock.now + .seconds(5)
+        // The limit is long: in CI the app's launch has kept the main actor busy for
+        // more than five seconds, and the first word can't arrive before that is over.
+        let deadline = ContinuousClock.now + .seconds(30)
         while model.heardText.isEmpty, ContinuousClock.now < deadline {
             try await Task.sleep(for: .milliseconds(20))
         }
