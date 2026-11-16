@@ -29,6 +29,7 @@ struct ReadView: View {
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
+        .scrollIndicators(.hidden)
         .fontDesign(.rounded)
         .readableContentMargins()
         .skyBackground()

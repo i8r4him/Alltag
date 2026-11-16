@@ -53,6 +53,7 @@ struct TokenGallery: View {
             }
             .padding(Spacing.screen)
         }
+        .scrollIndicators(.hidden)
         .scrollEdgeEffectStyle(.soft, for: .all)
         .background(.screenBackground)
     }

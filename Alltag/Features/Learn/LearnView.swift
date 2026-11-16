@@ -46,6 +46,7 @@ struct LearnView: View {
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
+        .scrollIndicators(.hidden)
         .readableContentMargins()
         .skyBackground()
         .navigationTitle("Learn")

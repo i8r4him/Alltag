@@ -41,6 +41,7 @@ struct SummaryStep: View {
                     .foregroundStyle(.secondary)
             }
         }
+        .scrollIndicators(.hidden)
         .scrollEdgeEffectStyle(.soft, for: .all)
     }
 

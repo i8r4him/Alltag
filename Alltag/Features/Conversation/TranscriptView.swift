@@ -37,6 +37,7 @@ struct TranscriptView: View {
             .padding(.vertical, 24)
             .animation(.easeOut(duration: 0.4), value: messages.map(\.id))
         }
+        .scrollIndicators(.hidden)
         .scrollEdgeEffectStyle(.soft, for: .all)
         .defaultScrollAnchor(.bottom, for: .initialOffset)
         .defaultScrollAnchor(.bottom, for: .sizeChanges)

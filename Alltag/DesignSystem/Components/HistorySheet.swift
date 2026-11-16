@@ -57,6 +57,7 @@ struct HistorySheet<Item: Identifiable & Equatable, Content: View>: View {
                 .padding(.vertical, Spacing.grid)
                 .animation(.easeOut(duration: 0.25), value: items)
             }
+            .scrollIndicators(.hidden)
             .scrollEdgeEffectStyle(.soft, for: .all)
             .skyBackground()
             .overlay {

@@ -45,6 +45,7 @@ struct NameStep: View {
                 }
             }
         }
+        .scrollIndicators(.hidden)
         .scrollEdgeEffectStyle(.soft, for: .all)
         .scrollDismissesKeyboard(.interactively)
         .onAppear {
