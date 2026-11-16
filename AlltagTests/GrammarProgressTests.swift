@@ -20,18 +20,18 @@ struct GrammarProgressTests {
 
     @Test("Solving a rule turns its topic solved, whatever it was")
     func solvingRule() throws {
-        let progress = GrammarProgress(solved: [SolvedRule(ruleID: "weil")])
-        let weil = try #require(MockLevels.topics(for: .b1).first { $0.ruleID == "weil" })
-        #expect(weil.status == .mistake)
-        #expect(progress.status(of: weil) == .solved)
+        let progress = GrammarProgress(solved: [SolvedRule(ruleID: "b1-praeteritum")])
+        let topic = try #require(MockLevels.topics(for: .b1).first { $0.ruleID == "b1-praeteritum" })
+        #expect(topic.status == .new)
+        #expect(progress.status(of: topic) == .solved)
         #expect(progress.solvedCount(at: .b1) == 1)
     }
 
     @Test("Topics without a rule keep their status")
-    func topicsWithoutRule() throws {
-        let progress = GrammarProgress(solved: [SolvedRule(ruleID: "weil")])
-        let relative = try #require(MockLevels.topics(for: .b1).first { $0.title == "Relative clauses" })
-        #expect(progress.status(of: relative) == .learning)
+    func topicsWithoutRule() {
+        let progress = GrammarProgress(solved: [SolvedRule(ruleID: "b1-praeteritum")])
+        let listedOnly = GrammarTopic(title: "Listed only", status: .learning)
+        #expect(progress.status(of: listedOnly) == .learning)
     }
 
     @Test("Grammar opens at the learner's level, or B1",
@@ -77,7 +77,7 @@ struct GrammarProgressTests {
         #expect(fresh.blocker(of: "a2-partizip")?.id == "a2-perfekt-haben")
         // The first rule of every level is open, whatever happened below it.
         #expect(!fresh.isLocked("a2-perfekt-haben"))
-        #expect(!fresh.isLocked("weil"))
+        #expect(!fresh.isLocked("b1-praeteritum"))
 
         let afterFirst = GrammarProgress(solved: [SolvedRule(ruleID: "pronomen")])
         #expect(!afterFirst.isLocked("sein-haben"))

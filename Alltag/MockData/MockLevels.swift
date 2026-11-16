@@ -20,13 +20,7 @@ enum MockLevels {
     static let topicsByLevel: [Level: [GrammarTopic]] = [
         .a1: MockRules.a1.map { GrammarTopic(title: $0.title, ruleID: $0.id, status: .new) },
         .a2: MockRules.a2.map { GrammarTopic(title: $0.title, ruleID: $0.id, status: .new) },
-        .b1: [
-            GrammarTopic(title: "Verb at the end after weil, wenn, dass", ruleID: "weil", status: .mistake),
-            GrammarTopic(title: "Relative clauses", status: .learning),
-            GrammarTopic(title: "Polite wishes with würde & hätte", status: .learning),
-            GrammarTopic(title: "The simple past in stories", status: .new),
-            GrammarTopic(title: "The genitive", status: .new)
-        ],
+        .b1: MockRules.b1.map { GrammarTopic(title: $0.title, ruleID: $0.id, status: .new) },
         .b2: [
             GrammarTopic(title: "When the action matters more than who", ruleID: "passiv", status: .new),
             GrammarTopic(title: "Reported speech", status: .new),

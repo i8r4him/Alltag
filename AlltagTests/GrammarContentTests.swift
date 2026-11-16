@@ -36,9 +36,9 @@ struct GrammarContentTests {
         let evening = try #require(calendar.date(byAdding: .hour, value: 12, to: morning))
         let tomorrow = try #require(calendar.date(byAdding: .day, value: 1, to: morning))
 
-        let today = RealLifeSentence.sentence(for: "weil", on: morning, calendar: calendar)
-        #expect(today?.id == RealLifeSentence.sentence(for: "weil", on: evening, calendar: calendar)?.id)
-        #expect(today?.id != RealLifeSentence.sentence(for: "weil", on: tomorrow, calendar: calendar)?.id)
+        let today = RealLifeSentence.sentence(for: "akkusativ", on: morning, calendar: calendar)
+        #expect(today?.id == RealLifeSentence.sentence(for: "akkusativ", on: evening, calendar: calendar)?.id)
+        #expect(today?.id != RealLifeSentence.sentence(for: "akkusativ", on: tomorrow, calendar: calendar)?.id)
         #expect(RealLifeSentence.sentence(for: "unknown") == nil)
     }
 

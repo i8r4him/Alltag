@@ -14,9 +14,9 @@ import Testing
 struct HomeTests {
     let now = Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 7, hour: 19)) ?? .now
 
-    @Test("The prototype's sample data gives 1 rule worth a look")
+    @Test("No rule is marked as a mistake in the sample data")
     func rulesWorthALook() {
-        #expect(GrammarProgress.rulesWithMistakes() == 1)
+        #expect(GrammarProgress.rulesWithMistakes() == 0)
     }
 
     @Test("New words count only today's words from reading")
