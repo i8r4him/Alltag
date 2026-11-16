@@ -33,7 +33,8 @@ struct WordCollectionsTests {
         #expect(WordCollections.ordered(for: .b1).first?.level == .b1)
         #expect(WordCollections.ordered(for: .a2).first?.level == .a2)
         #expect(WordCollections.ordered(for: .a1).count == WordCollections.ready.count)
-        #expect(WordCollections.ordered(for: .a1).allSatisfy(\.isReady))
+        let allReady = WordCollections.ordered(for: .a1).allSatisfy { $0.isReady }
+        #expect(allReady)
     }
 
     @Test("A topic lists its collections with words before the ones coming soon")
