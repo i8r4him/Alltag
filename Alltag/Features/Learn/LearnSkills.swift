@@ -5,6 +5,7 @@
 //  Created by Ibrahim Abdullah on 10.11.26.
 //
 
+import SwiftData
 import SwiftUI
 
 /// The four things to practise on Learn, apart from speaking (that's on Today).
@@ -42,11 +43,25 @@ enum LearnSkill: CaseIterable, Identifiable {
     }
 }
 
-/// "Practise": a wide clear-glass banner per skill, with a big symbol on the right.
+/// "Practise": a wide clear-glass banner per skill, with a big symbol on the
+/// right and the learner's real progress under its name.
 struct SkillsSection: View {
+    /// The learner's level, from their profile.
+    let level: Level
     let onOpen: (LearnSkill) -> Void
 
+    @Query private var solved: [SolvedRule]
+    @Query(filter: #Predicate<MemoryItem> { $0.sourceRaw == "read" }) private var readWords: [MemoryItem]
     @State private var taps = 0
+
+    private func progress(of skill: LearnSkill) -> SkillProgress {
+        switch skill {
+        case .grammar:
+            .grammar(solvedRuleIDs: Set(solved.map(\.ruleID)), level: GrammarProgress.initialLevel(for: level))
+        case .read: .reading(readWords)
+        case .write, .listen: .comingSoon
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -60,7 +75,7 @@ struct SkillsSection: View {
                             taps += 1
                             onOpen(skill)
                         } label: {
-                            SkillBanner(skill: skill)
+                            SkillBanner(skill: skill, progress: progress(of: skill))
                         }
                         .buttonStyle(.plain)
                         .accessibilityElement(children: .combine)
@@ -75,6 +90,7 @@ struct SkillsSection: View {
 
 private struct SkillBanner: View {
     let skill: LearnSkill
+    let progress: SkillProgress
 
     @ScaledMetric(relativeTo: .title2) private var height: CGFloat = 104
 
@@ -86,6 +102,8 @@ private struct SkillBanner: View {
                 Text(skill.summary)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                SkillProgressLine(progress: progress)
+                    .padding(.top, 6)
             }
             Spacer(minLength: 8)
             Image(systemName: skill.systemImage)
@@ -101,6 +119,43 @@ private struct SkillBanner: View {
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
         .clipShape(.rect(cornerRadius: Radius.card, style: .continuous))
         .contentShape(.rect(cornerRadius: Radius.card, style: .continuous))
+    }
+}
+
+/// "12 of 20 solved · A2" with a short bar, "5 words saved", or "Coming soon".
+private struct SkillProgressLine: View {
+    let progress: SkillProgress
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if let fraction = progress.fraction {
+                ProgressView(value: fraction)
+                    .tint(.accent)
+                    .frame(width: 56)
+            }
+            label
+                .font(.footnote.weight(.semibold))
+            if case let .rules(_, _, level) = progress {
+                CollectionLevelBadge(level: level)
+            }
+        }
+    }
+
+    @ViewBuilder private var label: some View {
+        switch progress {
+        case let .rules(solved, total, _):
+            Text("\(solved) of \(total) solved")
+                .foregroundStyle(.accent)
+        case let .savedWords(saved) where saved > 0:
+            Text("^[\(saved) word](inflect: true) saved")
+                .foregroundStyle(.accent)
+        case .savedWords:
+            Text("No words saved yet")
+                .foregroundStyle(.secondary)
+        case .comingSoon:
+            Text("Coming soon")
+                .foregroundStyle(.secondary)
+        }
     }
 }
 
@@ -121,7 +176,8 @@ extension View {
 }
 
 #Preview {
-    SkillsSection { _ in }
+    SkillsSection(level: .a2) { _ in }
+        .modelContainer(AlltagStore.preview)
         .padding(Spacing.screen)
         .background(.screenBackground)
 }
