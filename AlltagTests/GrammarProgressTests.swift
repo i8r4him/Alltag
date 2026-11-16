@@ -121,4 +121,24 @@ struct GrammarProgressTests {
         #expect(GrammarProgress.rules(at: .a2).map(\.id) == MockRules.a2.map(\.id))
         #expect(GrammarProgress.rules(at: .c1).map(\.id) == MockRules.c1.map(\.id))
     }
+
+    @Test("The blockers of a whole level match the blocker of each rule", arguments: Level.selectable)
+    func blockersOfLevel(level: Level) {
+        let rules = GrammarProgress.rules(at: level)
+        let someSolved = rules.enumerated().filter { $0.offset.isMultiple(of: 3) }.map { SolvedRule(ruleID: $0.element.id) }
+        for progress in [GrammarProgress(solved: []), GrammarProgress(solved: someSolved)] {
+            let blockers = progress.blockers(at: level)
+            for rule in rules {
+                #expect(blockers[rule.id]?.id == progress.blocker(of: rule.id)?.id, "\(rule.id)")
+            }
+        }
+    }
+
+    @Test("Finding a rule by its ID finds every rule")
+    func ruleByID() {
+        for rule in MockRules.all {
+            #expect(MockRules.rule(id: rule.id) == rule, "\(rule.id)")
+        }
+        #expect(MockRules.rule(id: "no-such-rule") == nil)
+    }
 }

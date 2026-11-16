@@ -38,10 +38,13 @@ struct GrammarProgress {
 
     /// The rules with a lesson at `level`, in the order the level lists them.
     static func rules(at level: Level) -> [GrammarRule] {
-        MockLevels.topics(for: level).compactMap { topic in
-            guard let id = topic.ruleID else { return nil }
-            return MockRules.rule(id: id)
-        }
+        rulesByLevel[level] ?? []
+    }
+
+    /// The rules of every level, built once: the screen asks for them for
+    /// every row, so building them each time made switching levels lag.
+    private static let rulesByLevel: [Level: [GrammarRule]] = MockLevels.topicsByLevel.mapValues { topics in
+        topics.compactMap { topic in topic.ruleID.flatMap { MockRules.rule(id: $0) } }
     }
 
     /// The rule to solve before `ruleID` opens: the first unsolved rule listed
@@ -52,6 +55,21 @@ struct GrammarProgress {
         return Self.rules(at: rule.level)
             .prefix { $0.id != ruleID }
             .first { !solvedRuleIDs.contains($0.id) }
+    }
+
+    /// The rule to solve first for every locked rule at `level`, by rule ID,
+    /// worked out in one pass for the list of all rules.
+    func blockers(at level: Level) -> [String: GrammarRule] {
+        var firstUnsolved: GrammarRule?
+        var blockers: [String: GrammarRule] = [:]
+        for rule in Self.rules(at: level) where !solvedRuleIDs.contains(rule.id) {
+            if let firstUnsolved {
+                blockers[rule.id] = firstUnsolved
+            } else {
+                firstUnsolved = rule
+            }
+        }
+        return blockers
     }
 
     func isLocked(_ ruleID: String) -> Bool {

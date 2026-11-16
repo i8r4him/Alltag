@@ -28,8 +28,12 @@ enum MockRules {
 
     static let all: [GrammarRule] = a1 + a2 + b1 + b2 + c1
 
+    /// Every rule by its ID, built once, so finding a rule doesn't walk the
+    /// whole list. The first rule wins if two ever share an ID.
+    private static let byID: [String: GrammarRule] = Dictionary(all.map { ($0.id, $0) }) { first, _ in first }
+
     static func rule(id: String) -> GrammarRule? {
-        all.first { $0.id == id }
+        byID[id]
     }
 
     static let verbSecond = GrammarRule(
