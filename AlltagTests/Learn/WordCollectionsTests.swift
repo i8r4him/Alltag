@@ -36,7 +36,9 @@ struct WordCollectionsTests {
 
     @Test("A collection's words go into Memory and come out again")
     func addAndRemove() throws {
-        let context = try AlltagStore.makeContainer(inMemory: true).mainContext
+        // Keep the container: a context whose container is gone saves nothing.
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let context = container.mainContext
         let collection = WordCollections.doctor
 
         try CollectionMemory.add(collection, in: context)
@@ -53,7 +55,9 @@ struct WordCollectionsTests {
 
     @Test("A word already in Memory isn't added twice, and stays when the collection is removed")
     func keepsOwnWords() throws {
-        let context = try AlltagStore.makeContainer(inMemory: true).mainContext
+        // Keep the container: a context whose container is gone saves nothing.
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let context = container.mainContext
         let collection = WordCollections.flat
         let first = try #require(collection.words.first)
         context.insert(MemoryItem(article: first.article, word: first.word, meaning: first.meaning,
