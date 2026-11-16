@@ -9,15 +9,22 @@ import Foundation
 import Testing
 @testable import Alltag
 
-/// Counts the requests, and answers from the sample translations.
+/// Counts the requests and the registers asked for, and answers from the sample translations.
 private final class CountingTranslation: TranslationService {
     private(set) var requests: [String] = []
+    private(set) var registers: [GermanRegister?] = []
     var error: (any Error)?
 
     func translate(_ text: String) async throws -> TranslationResult? {
         requests.append(text)
         if let error { throw error }
         return MockTranslations.match(text)
+    }
+
+    func translate(_ text: String, register: GermanRegister?,
+                   onUpdate: @escaping (TranslationResult) -> Void) async throws -> TranslationResult? {
+        registers.append(register)
+        return try await translate(text)
     }
 
     func explain(_ result: TranslationResult) async -> TranslationResult { result }
@@ -116,5 +123,31 @@ struct AskModelTests {
         await model.send()?.value
         #expect(model.foundNothing)
         #expect(model.translate.result == nil)
+    }
+
+    @Test("The German is everyday unless the learner chooses formal")
+    func everydayByDefault() async {
+        let model = makeModel()
+        #expect(model.register == .everyday)
+        model.text = "Can we move the appointment to tomorrow?"
+        await model.send()?.value
+        #expect(translation.registers == [.everyday])
+    }
+
+    @Test("Choosing formal with an answer shown asks again in formal; without one it asks nothing")
+    func choosingTheRegister() async {
+        let model = makeModel()
+        #expect(model.choose(.formal) == nil)
+        #expect(model.register == .formal)
+        #expect(translation.requests.isEmpty)
+
+        model.text = "Can we move the appointment to tomorrow?"
+        await model.send()?.value
+        #expect(model.choose(.formal) == nil)
+        await model.choose(.everyday)?.value
+        #expect(translation.registers == [.formal, .everyday])
+        #expect(model.translate.resultText == "Können wir den Termin auf morgen verschieben?")
+        // Choosing doesn't count as sending: no second haptic.
+        #expect(model.sent == 1)
     }
 }

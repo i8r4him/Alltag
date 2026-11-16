@@ -44,6 +44,12 @@ private struct AskContent: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.grid) {
             AskField(text: text, isFocused: $isFocused, canSend: model.canSend, onSend: send, onClear: clear)
+            if isFocused || !model.text.isEmpty || model.hasAnswer {
+                AskRegisterChoice(selection: model.register) { register in
+                    withAnimation(.easeOut(duration: 0.25)) { _ = model.choose(register) }
+                }
+                .transition(.opacity)
+            }
             if model.hasAnswer {
                 AskAnswer(model: model, showsDetails: showsDetails)
                     .transition(.opacity)
@@ -62,6 +68,7 @@ private struct AskContent: View {
             }
         }
         .animation(.easeOut(duration: 0.25), value: model.hasAnswer)
+        .animation(.easeOut(duration: 0.25), value: isFocused)
         .animation(.easeOut(duration: 0.25), value: model.translate.result)
         .onChange(of: model.text) { _, _ in
             model.textChanged()

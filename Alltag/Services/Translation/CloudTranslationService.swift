@@ -47,12 +47,18 @@ final class CloudTranslationService: TranslationService {
     }
 
     func translate(_ text: String, onUpdate: @escaping (TranslationResult) -> Void) async throws -> TranslationResult? {
+        try await translate(text, register: nil, onUpdate: onUpdate)
+    }
+
+    /// Streams the answer; with a register, the server makes the German everyday or formal.
+    func translate(_ text: String, register: GermanRegister?,
+                   onUpdate: @escaping (TranslationResult) -> Void) async throws -> TranslationResult? {
         guard isAllowed() else { throw RealtimeServiceError.unavailable }
         var parser = TranslationStream()
         var last: TranslationResult?
-        try await stream([
-            "text": text, "language": Self.learnerLanguage, "stream": "true"
-        ]) { line in
+        var body = ["text": text, "language": Self.learnerLanguage, "stream": "true"]
+        body["register"] = register?.rawValue
+        try await stream(body) { line in
             if let partial = try parser.receive(line), partial != last {
                 last = partial
                 onUpdate(partial)

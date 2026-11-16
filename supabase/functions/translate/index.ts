@@ -7,7 +7,9 @@
 // Request:  POST, Authorization: Bearer <Supabase access token>
 //           { "text": "How do I say I'm running late?",
 //             "language": "English",     (the learner's language; default English)
-//             "level": "A2" }            (optional)
+//             "level": "A2",             (optional)
+//             "register": "everyday" }   (optional: "everyday" | "formal", for "How do I say …?";
+//                                         without it the German is the translator's natural German)
 // Response: 200 { "german": "…", "other": "…", "source_is_german": false,
 //                 "note": "…",
 //                 "words":    [{ "word": "…", "grammar": "…", "meaning": "…" }],
@@ -26,7 +28,24 @@ const PER_USER_DAILY = Number(Deno.env.get("TRANSLATE_PER_USER_DAILY") ?? "200")
 const GLOBAL_DAILY = Number(Deno.env.get("TRANSLATE_GLOBAL_DAILY") ?? "20000");
 const MAX_TEXT = 600;
 
-const instructions = (language: string) =>
+/** How the German should sound, when "How do I say …?" chooses. Ignored when the text is German. */
+const REGISTERS: Record<string, (language: string) => string> = {
+  everyday: (language) => `
+How the German should sound: everyday spoken German (Umgangssprache), the way people in Germany
+really say it to friends, colleagues, neighbours and in shops. Use du, the short spoken forms
+(„hab“, „gibt's“, „'nen“, „ich geh“), particles like „mal“, „halt“, „eben“, „doch“ and common
+everyday words. Not rude, not dialect, not dated or youth slang; something a learner can say
+anywhere without sounding odd. If the text is plainly for an email, a letter or an office, still
+answer casually, and say in note (in ${language}) that the formal version fits better there.`,
+  formal: (language) => `
+How the German should sound: polite, written standard German with Sie, as in an email or a letter
+to an office, a landlord, a company, a doctor or a teacher. Complete sentences, no short spoken
+forms, no slang. If the text is an email or a letter, give it ready to send: a greeting
+(„Sehr geehrte Damen und Herren,“ or „Guten Tag,“), the message, and a closing („Mit freundlichen
+Grüßen“), without a name. note: one short sentence in ${language} on when this formal German fits.`,
+};
+
+const instructions = (language: string, register: string) =>
   `You are Alltag, a German tutor. The learner's own language is ${language}.
 You get a text. If it is German, translate it into ${language}. Otherwise it is what the learner
 wants to say: translate it into natural, everyday German, the way people in Germany really say it,
@@ -43,7 +62,7 @@ tones: only when the German is a whole sentence someone would say: the same sent
   "neutral" and "casual". Otherwise an empty list.
 examples: 1 or 2 short German sentences using the same words in another everyday situation, each
   with its meaning in ${language}.
-Keep every field short. Write for the learner's level: simple words for A1 and A2.`;
+Keep every field short. Write for the learner's level: simple words for A1 and A2.${REGISTERS[register]?.(language) ?? ""}`;
 
 const SCHEMA = {
   type: "object",
@@ -111,6 +130,8 @@ Deno.serve(async (req) => {
   // Only letters and spaces, so the language name can't carry instructions.
   const language = clean(body.language, 40).replace(/[^\p{L} ]/gu, "") || "English";
   const level = clean(body.level, 2).toUpperCase();
+  // Only a known register changes the instructions; anything else is ignored.
+  const register = Object.hasOwn(REGISTERS, String(body.register)) ? String(body.register) : "";
   const streaming = body.stream === "true";
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -144,7 +165,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: MODEL,
         stream: streaming,
-        instructions: instructions(language),
+        instructions: instructions(language, register),
         input,
         // A translation needs little thinking; low effort makes it several seconds quicker.
         reasoning: { effort: "low" },

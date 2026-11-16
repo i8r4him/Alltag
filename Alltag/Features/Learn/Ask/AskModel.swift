@@ -10,7 +10,8 @@ import Observation
 
 /// "How do I say …?" answered where it is asked, on Learn. It is Translate's
 /// model underneath; this adds when the server is asked: only when the
-/// learner sends, never while they type.
+/// learner sends, never while they type. The German sounds the way people
+/// really talk unless the learner chooses formal (an email, an office).
 @Observable
 final class AskModel {
     /// The translation, its states, Listen and saving.
@@ -21,7 +22,11 @@ final class AskModel {
 
     init(services: AppServices, defaults: UserDefaults = .standard) {
         translate = TranslateModel(text: nil, services: services, defaults: defaults)
+        translate.register = .everyday
     }
+
+    /// How the German sounds: everyday by default, formal on request.
+    var register: GermanRegister { translate.register ?? .everyday }
 
     var text: String {
         get { translate.input }
@@ -48,8 +53,23 @@ final class AskModel {
     @discardableResult
     func send() -> Task<Void, Never>? {
         guard canSend else { return nil }
-        task?.cancel()
         sent += 1
+        return ask()
+    }
+
+    /// Chooses how the German sounds. With an answer shown (or on its way), asks
+    /// again at once, so the answer switches. Returns that request, for tests to wait on.
+    @discardableResult
+    func choose(_ register: GermanRegister) -> Task<Void, Never>? {
+        guard register != self.register else { return nil }
+        translate.register = register
+        guard hasAnswer, !isEmpty else { return nil }
+        translate.clearResult()
+        return ask()
+    }
+
+    private func ask() -> Task<Void, Never> {
+        task?.cancel()
         let request = Task { await translate.translate() }
         task = request
         return request

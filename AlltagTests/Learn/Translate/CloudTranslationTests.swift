@@ -41,6 +41,21 @@ struct CloudTranslationTests {
         #expect(result?.words.first?.word == "der Tag")
     }
 
+    @Test("The register goes to the server only when one is chosen", arguments: [GermanRegister?.none, .everyday, .formal])
+    func sendsRegister(register: GermanRegister?) async throws {
+        var sent: [String: String] = [:]
+        let service = CloudTranslationService(isAllowed: { true }, stream: { body, receive in
+            sent = body
+            let delta = #"{"german":"Hallo","other":"Hello","source_is_german":false,"note":"","words":[],"tones":[],"examples":[]}"#
+            let data = try JSONSerialization.data(withJSONObject: ["type": "response.output_text.delta", "delta": delta])
+            try receive("data: " + (String(data: data, encoding: .utf8) ?? ""))
+            try receive(#"data: {"type":"response.completed"}"#)
+        })
+        _ = try await service.translate("Hello", register: register) { _ in }
+        #expect(sent["register"] == register?.rawValue)
+        #expect(sent["stream"] == "true")
+    }
+
     @Test("Streaming without cloud permission does not use Apple Translation")
     func streamingNeedsConsent() async {
         let service = CloudTranslationService(isAllowed: { false }, stream: { _, _ in
