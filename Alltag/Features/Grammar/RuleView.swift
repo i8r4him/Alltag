@@ -10,6 +10,8 @@ import SwiftUI
 
 /// A grammar rule, taught from a real moment in numbered steps, in Today's
 /// look: the sky, clear glass cards, rounded type and the theme's artwork.
+/// It ends with the exam, or with "Try it" for a rule that has none yet. A
+/// rule that isn't open yet says which rule to solve first.
 struct RuleView: View {
     let rule: GrammarRule
     @Environment(\.services) private var services
@@ -23,28 +25,18 @@ struct RuleView: View {
     }
 
     private var isSolved: Bool { solved.contains { $0.ruleID == rule.id } }
+    private var blocker: GrammarRule? { GrammarProgress(solved: solved).blocker(of: rule.id) }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 header
-                RuleStepHeader(number: 1, title: "Heard in real life")
-                heardCard
-                RuleStepHeader(number: 2, title: "Notice")
-                noticeCard
-                RuleStepHeader(number: 3, title: "The rule")
-                ruleCard
-                if let mistake = rule.yourMistake {
-                    RuleStepHeader(number: 4, title: "From your own German")
-                    MistakeCard(mistake: mistake)
+                if let blocker {
+                    LockedRuleCard(blocker: blocker)
+                        .padding(.top, 22)
+                } else {
+                    steps
                 }
-                Text("Try it")
-                    .textRole(.sectionHeader)
-                    .accessibilityAddTraits(.isHeader)
-                    .padding(.horizontal, 4)
-                    .padding(.top, 22)
-                    .padding(.bottom, 10)
-                WordOrderTask(model: task)
             }
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 32)
@@ -54,8 +46,40 @@ struct RuleView: View {
         .fontDesign(.rounded)
         .readableContentMargins()
         .skyBackground()
+        .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         .onscreenEntity(GrammarRuleEntity(rule), title: rule.title)
+    }
+
+    /// "A1 · Rule 2 of 2": where the rule sits in its level.
+    private var navigationTitle: Text {
+        guard let place = GrammarProgress.place(of: rule) else { return Text(verbatim: rule.level.title) }
+        return Text("\(rule.level.title) · Rule \(place.number) of \(place.count)")
+    }
+
+    @ViewBuilder
+    private var steps: some View {
+        RuleStepHeader(number: 1, title: "Heard in real life")
+        heardCard
+        RuleStepHeader(number: 2, title: "Notice")
+        noticeCard
+        RuleStepHeader(number: 3, title: "The rule")
+        ruleCard
+        if let mistake = rule.yourMistake {
+            RuleStepHeader(number: 4, title: "From your own German")
+            MistakeCard(mistake: mistake)
+        }
+        (rule.hasExam ? Text("Exam") : Text("Try it"))
+            .textRole(.sectionHeader)
+            .accessibilityAddTraits(.isHeader)
+            .padding(.horizontal, 4)
+            .padding(.top, 22)
+            .padding(.bottom, 10)
+        if rule.hasExam {
+            ExamCard(rule: rule, isSolved: isSolved)
+        } else {
+            WordOrderTask(model: task)
+        }
     }
 
     // MARK: Header
@@ -148,9 +172,18 @@ struct RuleView: View {
 
     private var ruleCard: some View {
         VStack(alignment: .leading, spacing: 16) {
+            // A rule with a picture shows what it means first, and its
+            // forms as a tiny table in place of the pattern.
+            if let visual = rule.visual {
+                RuleScene(visual: visual)
+            }
             Text(verbatim: rule.rule)
                 .textRole(.body)
-            PatternBar(slots: rule.pattern)
+            if let visual = rule.visual {
+                RuleTable(visual: visual)
+            } else {
+                PatternBar(slots: rule.pattern)
+            }
         }
         .padding(Spacing.cardLarge)
         .frame(maxWidth: .infinity, alignment: .leading)

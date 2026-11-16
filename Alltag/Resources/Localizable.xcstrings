@@ -110,6 +110,16 @@
         }
       }
     },
+    "%lld of %lld right" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld right"
+          }
+        }
+      }
+    },
     "%lld of %lld right first time" : {
       "localizations" : {
         "en" : {
@@ -443,6 +453,7 @@
     "Diminutives ending in -chen or -lein are neuter, even when they are people." : {},
     "Do it again" : {},
     "Do you know the fix?" : {},
+    "Do you need the receipt?" : {},
     "doch: a friendly push" : {},
     "Done" : {},
     "Done today" : {},
@@ -455,6 +466,7 @@
     "Each one is optional. You can change them any time in Settings." : {},
     "Each preposition decides the case of the noun after it." : {},
     "Early bird or late sleeper?" : {},
+    "Easy" : {},
     "Eating meat" : {},
     "Education" : {},
     "ein Auto becomes kein Auto" : {},
@@ -475,8 +487,10 @@
     "Everything in Learn still works, as often as you like." : {},
     "Everything you say is kept here to reread." : {},
     "Exactly right." : {},
+    "Exam" : {},
     "Example" : {},
     "Examples" : {},
+    "Excuse me, I'm looking for the exit." : {},
     "Explain that my cat isn't eating" : {},
     "Explain the problem to the plumber" : {},
     "Export my data" : {},
@@ -522,6 +536,7 @@
     "German" : {},
     "German bureaucracy" : {},
     "German · %@" : {},
+    "Get all three right to solve the rule." : {},
     "Get around anywhere without switching to English." : {},
     "Get started" : {},
     "Getting around town" : {},
@@ -544,7 +559,9 @@
     "haben, to have" : {},
     "halt: that's just how it is" : {},
     "Happiness" : {},
+    "Hard" : {},
     "Have you brought the prescription?" : {},
+    "Have you got the key?" : {},
     "he, she, it learns" : {},
     "Health" : {},
     "Heard in real life" : {},
@@ -576,6 +593,7 @@
     "I learn" : {},
     "I see the man" : {},
     "I sent you a photo yesterday." : {},
+    "I'd like a coffee to take away." : {},
     "I'd like a coffee." : {},
     "I'm done" : {},
     "I'm going by bus." : {},
@@ -645,6 +663,8 @@
     "Living here" : {},
     "Living in Germany" : {},
     "Living in two cultures" : {},
+    "Locked" : {},
+    "Locked · solve “%@” first" : {},
     "Loneliness in the big city" : {},
     "Look up a word" : {},
     "Looked up" : {},
@@ -660,6 +680,7 @@
     "Marks the rule as solved." : {},
     "Masculine, feminine, neuter, plural" : {},
     "Mastery" : {},
+    "Medium" : {},
     "Meeting a neighbour" : {},
     "Meeting friends" : {},
     "Meeting people today" : {},
@@ -759,6 +780,7 @@
     "News and fake news" : {},
     "News headline" : {},
     "Next clue" : {},
+    "Next question" : {},
     "Next time, say" : {},
     "Next year" : {},
     "nicht" : {},
@@ -774,6 +796,7 @@
     "No words yet" : {},
     "Normal" : {},
     "not only … but also" : {},
+    "Not quite" : {},
     "Not quite. Look where the highlighted word sits in step 2." : {},
     "Not started" : {},
     "Not sure? Find out in one question" : {},
@@ -815,6 +838,7 @@
     "Pairs that link two ideas in one sentence." : {},
     "Parcel notification" : {},
     "Partner & family" : {},
+    "Passed" : {},
     "Past" : {},
     "Patience" : {},
     "Pattern" : {},
@@ -870,9 +894,20 @@
     "Protecting the environment day to day" : {},
     "Public transport" : {},
     "Punctuality" : {},
+    "Question %lld of %lld · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Question %1$lld of %2$lld · %3$@"
+          }
+        }
+      }
+    },
     "Questions" : {},
     "Railway app" : {},
     "Read" : {},
+    "Read the rule again" : {},
     "Reading in the digital age" : {},
     "Ready to review" : {},
     "ready to review" : {},
@@ -926,6 +961,7 @@
     "Search your memory" : {},
     "SECONDS" : {},
     "Section" : {},
+    "See the result" : {},
     "sein + zu: can be done" : {},
     "sein + zu: must be done" : {},
     "sein, to be" : {},
@@ -973,6 +1009,7 @@
     "Small things: -chen and -lein" : {},
     "Small words that add a tone: friendlier, surprised or more natural. They don't change the facts." : {},
     "Social media" : {},
+    "Solve “%@” first." : {},
     "Solved" : {},
     "Some change their form" : {},
     "Some words have two" : {},
@@ -1001,6 +1038,7 @@
     "Start reading · %lld min" : {},
     "Start review" : {},
     "Start talking" : {},
+    "Start the exam" : {},
     "Start this rule" : {},
     "Start writing · %lld min" : {},
     "Starts a German speaking session in Alltag." : {},
@@ -1020,6 +1058,7 @@
     "Supermarket leaflet" : {},
     "Sustainability" : {},
     "Swap languages" : {},
+    "Take the exam again" : {},
     "Take the infinitive, drop -en and add the ending for the person." : {},
     "Talk about a random topic" : {},
     "Talk about yourself and your experience" : {},
@@ -1089,6 +1128,9 @@
     "The role of grandparents" : {},
     "The rule" : {},
     "The rule in real life" : {},
+    "The rule is solved." : {},
+    "The rule is solved. “%@” is open now." : {},
+    "The rules of a level open in order." : {},
     "The seasons" : {},
     "The situation to rehearse. Leave empty for today's focus." : {},
     "The subject first" : {},
@@ -1122,6 +1164,7 @@
     "This week strawberries are on offer." : {},
     "This word couldn't be translated. Try \"Translate everything\" to download German." : {},
     "Three genders" : {},
+    "Three questions: easy, medium and hard" : {},
     "through, for, against, without, around" : {},
     "Time first: the subject moves behind the verb" : {},
     "to be pleased about" : {},
@@ -1247,6 +1290,7 @@
     "würde, hätte, wäre and könnte make a request softer, or talk about what isn't real." : {},
     "Yes or no: the verb first" : {},
     "Yesterday" : {},
+    "You can take it again whenever you like." : {},
     "You have 60 seconds. Say whatever comes to mind." : {},
     "You know them all. New mistakes land here." : {},
     "you learn (a group)" : {},

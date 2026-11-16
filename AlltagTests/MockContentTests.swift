@@ -53,10 +53,10 @@ struct MockContentTests {
         #expect(!rule.isCorrect(rule.taskWords.reversed()) || rule.taskAnswers.contains(rule.taskWords.reversed().joined(separator: " ")))
     }
 
-    @Test("Each level lists five topics, and rule links point at real rules", arguments: Level.selectable)
+    @Test("Each level lists at least five topics, and rule links point at real rules", arguments: Level.selectable)
     func levelTopics(level: Level) {
         let topics = MockLevels.topics(for: level)
-        #expect(topics.count == 5)
+        #expect(topics.count >= 5)
         for ruleID in topics.compactMap(\.ruleID) {
             let rule = MockRules.rule(id: ruleID)
             #expect(rule?.level == level, "\(ruleID)")

@@ -44,6 +44,34 @@ struct GrammarProgress {
         }
     }
 
+    /// The rule to solve before `ruleID` opens: the first unsolved rule listed
+    /// before it at its level. `nil` when the rule is open. The rules of a
+    /// level open in order; a solved rule stays open.
+    func blocker(of ruleID: String) -> GrammarRule? {
+        guard !solvedRuleIDs.contains(ruleID), let rule = MockRules.rule(id: ruleID) else { return nil }
+        return Self.rules(at: rule.level)
+            .prefix { $0.id != ruleID }
+            .first { !solvedRuleIDs.contains($0.id) }
+    }
+
+    func isLocked(_ ruleID: String) -> Bool {
+        blocker(of: ruleID) != nil
+    }
+
+    /// Where a rule sits in its level, from 1, and how many rules the level has.
+    static func place(of rule: GrammarRule) -> (number: Int, count: Int)? {
+        let rules = rules(at: rule.level)
+        guard let index = rules.firstIndex(where: { $0.id == rule.id }) else { return nil }
+        return (index + 1, rules.count)
+    }
+
+    /// The rule that opens once `rule` is solved: the next one at its level.
+    static func rule(after rule: GrammarRule) -> GrammarRule? {
+        let rules = rules(at: rule.level)
+        guard let index = rules.firstIndex(where: { $0.id == rule.id }), rules.indices.contains(index + 1) else { return nil }
+        return rules[index + 1]
+    }
+
     /// What "Your next rule" shows: the first unsolved rule at the learner's
     /// level, in order. Once the level is done, the first unsolved rule of the
     /// levels above it; `nil` when every rule is done.

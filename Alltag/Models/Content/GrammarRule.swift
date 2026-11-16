@@ -65,6 +65,11 @@ struct GrammarRule: Identifiable, Hashable, Sendable {
     let taskWords: [String]
     /// Accepted answers (words joined by single spaces).
     let taskAnswers: [String]
+    /// A picture of what the rule means, in "The rule".
+    var visual: RuleVisual?
+    /// The exam: an easy, a medium and a hard question. Empty for rules that
+    /// still use the "Try it" task.
+    var exam: [ExamQuestion] = []
 
     /// Whether `words`, joined in order, is an accepted answer.
     func isCorrect(_ words: [String]) -> Bool {

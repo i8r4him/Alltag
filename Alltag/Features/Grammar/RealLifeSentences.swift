@@ -12,6 +12,7 @@ extension RealLifeSentence {
     /// sentence in this order.
     static let byRule: [String: [RealLifeSentence]] = [
         "v2": verbSecond,
+        "akkusativ": accusative,
         "perfekt": perfekt,
         "seit": seit,
         "weil": weil,
@@ -32,6 +33,21 @@ extension RealLifeSentence {
         RealLifeSentence(place: "A colleague at work", systemImage: "briefcase",
                          german: "Um zwölf essen wir in der Kantine.",
                          english: "At twelve we eat in the canteen.", marked: ["essen"])
+    ]
+
+    private static let accusative: [RealLifeSentence] = [
+        RealLifeSentence(place: "At the bakery", systemImage: "storefront",
+                         german: "Ich hätte gern einen Kaffee zum Mitnehmen.",
+                         english: "I'd like a coffee to take away.", marked: ["einen"]),
+        RealLifeSentence(place: "At the till", systemImage: "creditcard",
+                         german: "Brauchen Sie den Kassenbon?",
+                         english: "Do you need the receipt?", marked: ["den"]),
+        RealLifeSentence(place: "Message from a friend", systemImage: "message",
+                         german: "Hast du den Schlüssel?",
+                         english: "Have you got the key?", marked: ["den"]),
+        RealLifeSentence(place: "At the station", systemImage: "tram",
+                         german: "Entschuldigung, ich suche den Ausgang.",
+                         english: "Excuse me, I'm looking for the exit.", marked: ["den"])
     ]
 
     private static let perfekt: [RealLifeSentence] = [

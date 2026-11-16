@@ -13,7 +13,7 @@ import Testing
 @MainActor
 struct GrammarProgressTests {
     @Test("Without solved rules, the prototype's counts per level",
-          arguments: [(Level.a1, 5), (.a2, 3), (.b1, 0), (.b2, 0), (.c1, 0)])
+          arguments: [(Level.a1, 4), (.a2, 2), (.b1, 0), (.b2, 0), (.c1, 0)])
     func solvedCounts(level: Level, expected: Int) {
         #expect(GrammarProgress(solved: []).solvedCount(at: level) == expected)
     }
@@ -73,8 +73,49 @@ struct GrammarProgressTests {
         #expect(progress.nextRule(at: .a1) == nil)
     }
 
+    @Test("The rules of a level open in order: a rule is locked until the ones before it are solved")
+    func rulesOpenInOrder() {
+        let fresh = GrammarProgress(solved: [])
+        #expect(!fresh.isLocked("v2"))
+        #expect(fresh.blocker(of: "akkusativ")?.id == "v2")
+        #expect(fresh.blocker(of: "seit")?.id == "perfekt")
+        // The first rule of every level is open, whatever happened below it.
+        #expect(!fresh.isLocked("perfekt"))
+        #expect(!fresh.isLocked("weil"))
+
+        let afterFirst = GrammarProgress(solved: [SolvedRule(ruleID: "v2")])
+        #expect(!afterFirst.isLocked("akkusativ"))
+        #expect(afterFirst.isLocked("seit"))
+    }
+
+    @Test("A solved rule stays open, and an unknown rule is not locked")
+    func solvedStaysOpen() {
+        let progress = GrammarProgress(solved: [SolvedRule(ruleID: "akkusativ")])
+        #expect(!progress.isLocked("akkusativ"))
+        #expect(!progress.isLocked("no-such-rule"))
+    }
+
+    @Test("No topic with a rule is listed as solved: only the learner solves a rule")
+    func ruleTopicsStartUnsolved() {
+        for level in Level.selectable {
+            for topic in MockLevels.topics(for: level) where topic.ruleID != nil {
+                #expect(topic.status != .solved, "\(topic.title)")
+            }
+        }
+    }
+
+    @Test("A rule knows its place in its level and the rule that opens after it")
+    func placeInLevel() throws {
+        let place = try #require(GrammarProgress.place(of: MockRules.accusative))
+        #expect(place.number == 2)
+        #expect(place.count == 2)
+        #expect(GrammarProgress.rule(after: MockRules.verbSecond)?.id == "akkusativ")
+        #expect(GrammarProgress.rule(after: MockRules.accusative) == nil)
+    }
+
     @Test("Each level lists its rules with lessons in order")
     func rulesAtLevel() {
+        #expect(GrammarProgress.rules(at: .a1).map(\.id) == ["v2", "akkusativ"])
         #expect(GrammarProgress.rules(at: .a2).map(\.id) == ["perfekt", "seit"])
         #expect(GrammarProgress.rules(at: .c1).map(\.id) == ["nominal"])
     }

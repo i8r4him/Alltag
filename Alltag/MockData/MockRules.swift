@@ -7,13 +7,14 @@
 
 import Foundation
 
-/// The prototype's six full grammar rules (`RULES`).
+/// The prototype's six full grammar rules (`RULES`), and the accusative: the
+/// first rule in the new shape (`MockRules+Accusative.swift`).
 enum MockRules {
     typealias Tile = GrammarRule.Tile
     typealias Slot = GrammarRule.PatternSlot
     typealias Mistake = GrammarRule.LearnerMistake
 
-    static let all: [GrammarRule] = [verbSecond, perfekt, seit, weil, passiv, nominal]
+    static let all: [GrammarRule] = [verbSecond, accusative, perfekt, seit, weil, passiv, nominal]
 
     static func rule(id: String) -> GrammarRule? {
         all.first { $0.id == id }
