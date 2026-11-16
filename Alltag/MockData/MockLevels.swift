@@ -21,13 +21,7 @@ enum MockLevels {
         .a1: MockRules.a1.map { GrammarTopic(title: $0.title, ruleID: $0.id, status: .new) },
         .a2: MockRules.a2.map { GrammarTopic(title: $0.title, ruleID: $0.id, status: .new) },
         .b1: MockRules.b1.map { GrammarTopic(title: $0.title, ruleID: $0.id, status: .new) },
-        .b2: [
-            GrammarTopic(title: "When the action matters more than who", ruleID: "passiv", status: .new),
-            GrammarTopic(title: "Reported speech", status: .new),
-            GrammarTopic(title: "Verbs with fixed prepositions", status: .new),
-            GrammarTopic(title: "Two-part connectors", status: .new),
-            GrammarTopic(title: "Participles as adjectives", status: .new)
-        ],
+        .b2: MockRules.b2.map { GrammarTopic(title: $0.title, ruleID: $0.id, status: .new) },
         .c1: [
             GrammarTopic(title: "Formal style: verbs become nouns", ruleID: "nominal", status: .new),
             GrammarTopic(title: "Extended participle phrases", status: .new),

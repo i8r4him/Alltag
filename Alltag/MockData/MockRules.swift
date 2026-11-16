@@ -26,7 +26,7 @@ enum MockRules {
         fixedPrepositions, timePrepositions, whichThis
     ]
 
-    static let all: [GrammarRule] = a1 + a2 + b1 + [passiv, nominal]
+    static let all: [GrammarRule] = a1 + a2 + b1 + b2 + [nominal]
 
     static func rule(id: String) -> GrammarRule? {
         all.first { $0.id == id }
@@ -63,20 +63,6 @@ enum MockRules {
         taskPrompt: "Say: \"I have been learning German for two years.\"",
         taskWords: ["seit", "lerne", "zwei Jahren", "Ich", "Deutsch"],
         taskAnswers: ["Ich lerne seit zwei Jahren Deutsch", "Ich lerne Deutsch seit zwei Jahren"]
-    )
-
-    static let passiv = GrammarRule(
-        id: "passiv", level: .b2, title: "When the action matters more than who",
-        place: "Letter from your landlord", systemImage: "envelope",
-        german: "Die Heizung wird am Montag repariert.", english: "The heating will be repaired on Monday.",
-        tiles: [Tile(text: "Die Heizung"), Tile(text: "wird", role: .verb), Tile(text: "am Montag"), Tile(text: "repariert", role: .end)],
-        notice: "Nobody says who repairs it — and nobody needs to know.",
-        rule: "Passive: werden in position 2, participle at the end. Add „von“ + dative only if the doer matters.",
-        pattern: [Slot(label: "Thing"), Slot(label: "werden", emphasis: .verb), Slot(label: "…"),
-                  Slot(label: "Participle", emphasis: .end)],
-        taskPrompt: "Say: \"The package will be delivered tomorrow.\"",
-        taskWords: ["geliefert", "Das Paket", "morgen", "wird"],
-        taskAnswers: ["Das Paket wird morgen geliefert"]
     )
 
     static let nominal = GrammarRule(

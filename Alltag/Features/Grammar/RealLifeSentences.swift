@@ -11,10 +11,9 @@ extension RealLifeSentence {
     /// Sentences for each rule, by rule ID. The marked words appear in the
     /// sentence in this order.
     static let byRule: [String: [RealLifeSentence]] = a1ByRule.merging(a2ByRule) { _, later in later }
-        .merging(b1ByRule) { _, later in later }.merging([
+        .merging(b1ByRule) { _, later in later }.merging(b2ByRule) { _, later in later }.merging([
         "v2": verbSecond,
         "akkusativ": accusative,
-        "passiv": passiv,
         "nominal": nominal
     ]) { _, later in later }
 
@@ -46,21 +45,6 @@ extension RealLifeSentence {
         RealLifeSentence(place: "At the station", systemImage: "tram",
                          german: "Entschuldigung, ich suche den Ausgang.",
                          english: "Excuse me, I'm looking for the exit.", marked: ["den"])
-    ]
-
-    private static let passiv: [RealLifeSentence] = [
-        RealLifeSentence(place: "Notice in your building", systemImage: "building.2",
-                         german: "Am Freitag wird das Wasser abgestellt.",
-                         english: "The water will be turned off on Friday.", marked: ["wird", "abgestellt"]),
-        RealLifeSentence(place: "Letter from an office", systemImage: "envelope",
-                         german: "Ihr Antrag wurde genehmigt.",
-                         english: "Your application has been approved.", marked: ["wurde", "genehmigt"]),
-        RealLifeSentence(place: "At the till", systemImage: "creditcard",
-                         german: "Hier kann nur mit Karte bezahlt werden.",
-                         english: "Only card payments are accepted here.", marked: ["kann", "bezahlt werden"]),
-        RealLifeSentence(place: "Station announcement", systemImage: "tram",
-                         german: "Der Zug wird heute auf Gleis 5 bereitgestellt.",
-                         english: "Today the train will leave from platform 5.", marked: ["wird", "bereitgestellt"])
     ]
 
     private static let nominal: [RealLifeSentence] = [
