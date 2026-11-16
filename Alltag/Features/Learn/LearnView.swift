@@ -53,6 +53,7 @@ struct LearnView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 LevelRingButton()
             }
+            .sharedBackgroundVisibility(.hidden)
             .matchedTransitionSource(id: LevelRingButton.zoomID, in: levelMapZoom ?? ownZoom)
         }
         .scrollEdgeEffectStyle(.soft, for: .all)

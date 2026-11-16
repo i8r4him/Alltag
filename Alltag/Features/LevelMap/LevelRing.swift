@@ -8,28 +8,46 @@
 import SwiftData
 import SwiftUI
 
-/// A progress ring in the theme colour: a faint track and the part done.
+/// A progress ring like the Apple Watch's activity rings, in the theme colour:
+/// a thick round line that brightens from the theme's deep tone to its light
+/// as it goes round, over a dim track of the same colour. At zero a dot marks the start.
 struct LevelRing: View {
     /// Done, from 0 to 1.
     let fraction: Double
     var lineWidth: CGFloat = 4
 
     var body: some View {
+        let done = max(0, min(fraction, 1))
         ZStack {
             Circle()
                 .stroke(Color.accentFill.opacity(0.22), lineWidth: lineWidth)
-            Circle()
-                .trim(from: 0, to: max(0, min(fraction, 1)))
-                .stroke(Color.accentFill, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                .rotationEffect(.degrees(-90))
+            if done > 0 {
+                Circle()
+                    .trim(from: 0, to: done)
+                    .stroke(gradient(to: done), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+            } else {
+                Circle()
+                    .fill(AppTheme.shared.palette.deep)
+                    .frame(width: lineWidth, height: lineWidth)
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .offset(y: -lineWidth / 2)
+            }
         }
         .padding(lineWidth / 2)
         .accessibilityHidden(true)
     }
+
+    /// From the deep tone at the start to the full light at the end of the line.
+    private func gradient(to done: Double) -> AngularGradient {
+        AngularGradient(colors: [AppTheme.shared.palette.deep, .accentFill],
+                        center: .center, startAngle: .zero, endAngle: .degrees(360 * done))
+    }
 }
 
-/// The ring in Learn's toolbar: how close the learner is to the next level.
-/// Tapping it opens the level map, which zooms out of it.
+/// The ring in Learn's toolbar, on its own like an Apple Watch ring (no glass
+/// behind it): how close the learner is to the next level. Tapping it opens
+/// the level map, which zooms out of it.
 ///
 /// It reads its own data, so a new solved rule redraws the ring, not Learn.
 struct LevelRingButton: View {
@@ -47,14 +65,12 @@ struct LevelRingButton: View {
             taps += 1
             appState.open(.levelMap)
         } label: {
-            ZStack {
-                LevelRing(fraction: map.fraction, lineWidth: 3.5)
-                Text(verbatim: map.level.title)
-                    .font(.caption2.weight(.heavy))
-                    .fontDesign(.rounded)
-            }
-            .frame(width: 32, height: 32)
+            LevelRing(fraction: map.fraction, lineWidth: 6)
+                .frame(width: 32, height: 32)
+                .frame(width: Spacing.minTouchTarget, height: Spacing.minTouchTarget)
+                .contentShape(.rect)
         }
+        .buttonStyle(.plain)
         .accessibilityLabel(Text("Your level map"))
         .accessibilityValue(Text("\(map.level.title), \(map.percent) percent"))
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
