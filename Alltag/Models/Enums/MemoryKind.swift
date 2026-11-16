@@ -28,6 +28,8 @@ enum MemorySource: String, Codable, CaseIterable, Sendable {
     case debrief
     /// A word tapped in Learn › Read.
     case read
+    /// A word from one of Learn's word collections; `sourceDetail` holds its title.
+    case collection
 
     /// Name shown with the source, e.g. "Safari · Spiegel, today".
     var title: LocalizedStringResource {
@@ -40,6 +42,7 @@ enum MemorySource: String, Codable, CaseIterable, Sendable {
         case .camera: "Camera"
         case .debrief: "Debrief"
         case .read: "Read"
+        case .collection: "Word collection"
         }
     }
 
@@ -54,6 +57,7 @@ enum MemorySource: String, Codable, CaseIterable, Sendable {
         case .camera: "camera"
         case .debrief: "text.bubble"
         case .read: "doc.text"
+        case .collection: "square.stack.fill"
         }
     }
 }

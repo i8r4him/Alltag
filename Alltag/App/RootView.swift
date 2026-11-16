@@ -80,6 +80,8 @@ struct RootView: View {
             TranslateView(initialText: nil, isAsking: true)
         case .articles:
             ArticlesView(level: profiles.first?.level ?? .a1)
+        case .collections:
+            AllCollectionsView(level: profiles.first?.level ?? .a1)
         case let .memory(kind, search):
             MemoryView(kind: kind, search: search)
         case .learn:

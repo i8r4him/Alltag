@@ -227,10 +227,23 @@ Alltag/                                   ← repo root
 │  │  │     ├─ MistakeQuestionViews.swift one mistake to write correctly: the field starts with what was said; the fix and why after Check
 │  │  │     └─ MistakeRoundEnd.swift      before and after: what was said, the correction, when it comes back
 │  │  ├─ Learn/
-│  │  │  ├─ LearnView.swift               tools, then Practise (something new; reviewing and your mistakes are in Memory)
+│  │  │  ├─ LearnView.swift               tools, Word collections, then Practise (something new; reviewing and your mistakes are in Memory)
 │  │  │  ├─ LearnTools.swift              the "How do I say …?" field (answers in place), Translate and Articles
 │  │  │  ├─ LearnComponents.swift         LearnScreen, LearnHeroCard, LearnSection, LearnList, LearnRow
-│  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour
+│  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour, with real progress
+│  │  │  ├─ SkillProgress.swift           what each banner shows: rules solved, words saved from Read, or "Coming soon" (tested)
+│  │  │  ├─ Collections/                  (#386) ready-made words by topic and level; + adds them to Memory
+│  │  │  │  ├─ WordCollection.swift       a collection, its topic and words; the order for the learner's level
+│  │  │  │  ├─ WordCollectionsSection.swift the section on Learn: its title opens all collections, then a row of stacked cards
+│  │  │  │  ├─ AllCollectionsView.swift   every collection by level chip and topic; topics without words say "Coming soon"
+│  │  │  │  ├─ FannedRowStack.swift       the row: square glass cards with two cards fanned out behind each
+│  │  │  │  ├─ Page/                      one collection's page: a scene of chat bubbles (tap one for the English), save all to Memory
+│  │  │  │  │  ├─ WordCollectionSheet.swift the sheet and what the page knows (saved words, the + action)
+│  │  │  │  │  ├─ ScenePage.swift         the bubbles, alternating sides, with the word, its meaning and a speaker
+│  │  │  │  │  └─ WordParts.swift         the speaker button, the word with its article, the highlighted example
+│  │  │  │  ├─ CollectionMemory.swift     adds a collection's words (or some) to Memory and takes them out (tested)
+│  │  │  │  ├─ CollectionCardParts.swift  the + button, level badge, artwork and stack layers
+│  │  │  │  └─ Content/                   the words: A2 (doctor's, flat, shopping), B1 (work, offices, transport); planned topics by name
 │  │  │  ├─ Ask/
 │  │  │  │  ├─ AskInPlace.swift           the field you type in on Learn and the German answer there, with Translate's parts (#304)
 │  │  │  │  └─ AskModel.swift             Translate's model, asked only when the learner sends (tested)
@@ -371,7 +384,7 @@ Alltag/                                   ← repo root
 │  ├─ App/                                app start, state and routing, intents, layout, colours, SwiftData, sample content, onboarding
 │  ├─ Today/                              Today, briefing, debrief, situations, 60 seconds
 │  ├─ Conversation/                       the conversation models, Gemini Live, Supabase Realtime, the companion orb
-│  ├─ Learn/                              activities, "How do I say …?", the reader
+│  ├─ Learn/                              activities, "How do I say …?", the reader, word collections
 │  │  ├─ Articles/                        der, die, das and "Look up a word"
 │  │  ├─ Grammar/                         the rules of every level, the exam, progress
 │  │  ├─ LevelMap/                        the level map: what fills each place, the %, the next stop
