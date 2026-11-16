@@ -16,7 +16,7 @@ struct RuleScene: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
-            part(visual.from)
+            part(visual.source)
             VStack(spacing: 2) {
                 Text(verbatim: visual.verb)
                     .font(.subheadline.weight(.semibold))
@@ -25,13 +25,13 @@ struct RuleScene: View {
             }
             .foregroundStyle(.accent)
             .frame(height: artworkSize)
-            part(visual.to)
+            part(visual.target)
         }
         .frame(maxWidth: .infinity)
         .environment(\.locale, Locale(identifier: "de"))
         .accessibilityElement()
         .accessibilityLabel(Text(verbatim: visual.sentence))
-        .accessibilityValue(Text(verbatim: "\(visual.from.name), \(visual.to.name)"))
+        .accessibilityValue(Text(verbatim: "\(visual.source.name), \(visual.target.name)"))
     }
 
     private func part(_ part: RuleVisual.Part) -> some View {

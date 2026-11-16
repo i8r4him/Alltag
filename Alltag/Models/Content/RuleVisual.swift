@@ -31,11 +31,11 @@ struct RuleVisual: Hashable, Sendable {
         var marked: Set<Int> = []
     }
 
-    let from: Part
+    let source: Part
     /// The verb on the arrow, e.g. "trinkt".
     let verb: String
-    let to: Part
-    /// The picture as a sentence, for VoiceOver and under the picture.
+    let target: Part
+    /// The picture as a sentence, for VoiceOver.
     let sentence: String
     let columns: [String]
     let rows: [Row]

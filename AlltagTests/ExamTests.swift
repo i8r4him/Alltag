@@ -95,7 +95,7 @@ struct ExamTests {
         let rule = MockRules.accusative
         #expect(rule.hasExam)
         let visual = try #require(rule.visual)
-        #expect(visual.to.german.contains(try #require(visual.to.marked)))
+        #expect(visual.target.german.contains(try #require(visual.target.marked)))
         #expect(visual.rows.allSatisfy { $0.cells.count == visual.columns.count })
         #expect(visual.rows.contains { !$0.marked.isEmpty })
     }

@@ -5,6 +5,7 @@
 //  Created by Ibrahim Abdullah on 07.11.26.
 //
 
+import SwiftData
 import SwiftUI
 
 /// The end of a rule with an exam: what the exam is, and the big button that

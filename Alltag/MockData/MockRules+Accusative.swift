@@ -34,10 +34,10 @@ extension MockRules {
     ]
 
     private static let accusativeVisual = RuleVisual(
-        from: RuleVisual.Part(systemImage: "figure.stand", german: "der Mann",
+        source: RuleVisual.Part(systemImage: "figure.stand", german: "der Mann",
                               role: "Who does it?", name: "Nominative"),
         verb: "trinkt",
-        to: RuleVisual.Part(systemImage: "cup.and.saucer.fill", german: "den Kaffee", marked: "den",
+        target: RuleVisual.Part(systemImage: "cup.and.saucer.fill", german: "den Kaffee", marked: "den",
                             role: "What?", name: "Accusative"),
         sentence: "Der Mann trinkt den Kaffee.",
         columns: ["masc.", "fem.", "neut.", "plural"],
