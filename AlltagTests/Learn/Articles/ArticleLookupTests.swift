@@ -90,6 +90,22 @@ struct ArticleLookupTests {
         #expect(model.failure == nil)
     }
 
+    @Test("The phase the screen animates on follows the look-up, and clearing goes back to empty")
+    func phase() async throws {
+        let model = ArticleLookupModel(defaults: try defaults())
+        #expect(model.phase == .empty)
+        await lookUp("Wohnung", in: model)
+        #expect(model.phase == .found(["die|Wohnung"]))
+        await lookUp("schnell", in: model, with: LookupStub(nouns: []))
+        #expect(model.phase == .nothing)
+        await lookUp("Haus", in: model, with: LookupStub(error: URLError(.notConnectedToInternet)))
+        #expect(model.phase == .failed)
+
+        model.text = ""
+        model.textChanged()
+        #expect(model.phase == .empty)
+    }
+
     @Test("Saving a word to Memory can be undone")
     func undoSave() async throws {
         let container = try AlltagStore.makeContainer(inMemory: true)

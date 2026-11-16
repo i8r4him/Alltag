@@ -13,53 +13,59 @@ import SwiftUI
 struct ArticleLookupCard: View {
     let level: Level
     @Bindable var model: ArticleLookupModel
+    /// The screen's, so a tap or a scroll anywhere on it lowers the keyboard.
+    var isFieldFocused: FocusState<Bool>.Binding
     @Environment(\.services) private var services
     @Environment(\.modelContext) private var context
-    @FocusState private var isFieldFocused: Bool
+    @Environment(\.reducesMotion) private var reduceMotion
     /// Counts the field's taps, searches and clears, for the medium haptic tap.
     @State private var taps = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.grid) {
             field
-            if model.isLookingUp {
-                ArticleSearching(query: model.query)
-                    .transition(.opacity)
-            } else if let failure = model.failure {
-                CloudFailureCard(failure: failure, failedTitle: Text("Couldn’t look it up")) {
-                    taps += 1
-                    model.lookUp(level: level, with: services.articles)
-                }
-                .transition(.opacity)
-            } else if model.foundNothing {
-                StateCard(systemImage: "questionmark",
-                          title: Text("No noun for „\(model.query)“"),
-                          explanation: (model.answer?.note).flatMap { $0.isEmpty ? nil : Text(verbatim: $0) }
-                              ?? Text("Check the spelling, or type what it means in English."))
-                .transition(.opacity)
-            } else if let answer = model.answer {
-                if !answer.note.isEmpty {
-                    Text(verbatim: answer.note)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 4)
-                }
-                ForEach(answer.nouns) { noun in
-                    ArticleWordCard(noun: noun, isSaved: model.saved.contains(noun.id)) {
-                        model.toggleSave(noun, in: context)
-                    }
-                    .transition(.opacity)
-                }
-            }
+            results
+                .lowersKeyboard(isFieldFocused)
         }
-        .animation(.easeOut(duration: 0.25), value: model.answer?.nouns)
-        .animation(.easeOut(duration: 0.25), value: model.isLookingUp)
-        .animation(.easeOut(duration: 0.25), value: model.failure)
+        // The screen animates the change (ArticlesView), so the clues below move with the cards.
         .onChange(of: model.text) { _, _ in model.textChanged() }
         .onChange(of: model.answer?.nouns) { _, _ in model.refreshSaved(in: context) }
-        .onChange(of: isFieldFocused) { _, focused in if focused { taps += 1 } }
+        .onChange(of: isFieldFocused.wrappedValue) { _, focused in if focused { taps += 1 } }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
         .onDisappear { model.stop() }
+    }
+
+    @ViewBuilder private var results: some View {
+        if model.isLookingUp {
+            ArticleSearching(query: model.query)
+                .transition(ArticleLookupMotion.card(reduceMotion: reduceMotion))
+        } else if let failure = model.failure {
+            CloudFailureCard(failure: failure, failedTitle: Text("Couldn’t look it up")) {
+                taps += 1
+                model.lookUp(level: level, with: services.articles)
+            }
+            .transition(ArticleLookupMotion.card(reduceMotion: reduceMotion))
+        } else if model.foundNothing {
+            StateCard(systemImage: "questionmark",
+                      title: Text("No noun for „\(model.query)“"),
+                      explanation: (model.answer?.note).flatMap { $0.isEmpty ? nil : Text(verbatim: $0) }
+                          ?? Text("Check the spelling, or type what it means in English."))
+            .transition(ArticleLookupMotion.card(reduceMotion: reduceMotion))
+        } else if let answer = model.answer {
+            if !answer.note.isEmpty {
+                Text(verbatim: answer.note)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 4)
+                    .transition(ArticleLookupMotion.card(reduceMotion: reduceMotion))
+            }
+            ForEach(Array(answer.nouns.enumerated()), id: \.element.id) { index, noun in
+                ArticleWordCard(noun: noun, isSaved: model.saved.contains(noun.id)) {
+                    model.toggleSave(noun, in: context)
+                }
+                .transition(ArticleLookupMotion.card(index: index + 1, reduceMotion: reduceMotion))
+            }
+        }
     }
 
     /// The field, in the look of "How do I say …?": a glass capsule with the symbol on the left.
@@ -71,29 +77,39 @@ struct ArticleLookupCard: View {
                 .accessibilityHidden(true)
             TextField("A noun, or what it means", text: $model.text)
                 .font(.title3)
-                .focused($isFieldFocused)
+                .focused(isFieldFocused)
                 .submitLabel(.search)
                 .autocorrectionDisabled()
                 .onSubmit(lookUp)
             if !model.text.isEmpty {
-                Button("Clear", systemImage: "xmark.circle.fill") {
-                    model.text = ""
-                    taps += 1
-                }
+                Button("Clear", systemImage: "xmark.circle.fill", action: clear)
                     .labelStyle(.iconOnly)
+                    .font(.title3)
                     .foregroundStyle(.secondary)
+                    .frame(width: 32, height: 44)
+                    .contentShape(.rect)
                     .buttonStyle(.plain)
+                    .transition(reduceMotion ? .opacity : .scale(scale: 0.6).combined(with: .opacity))
             }
         }
-        .padding(.horizontal, 20)
+        .padding(.leading, 20)
+        .padding(.trailing, model.text.isEmpty ? 20 : 12)
         .frame(height: 60)
         .glassEffect(.regular.interactive(), in: .capsule)
+        .animation(.smooth(duration: 0.25), value: model.text.isEmpty)
     }
 
     private func lookUp() {
         taps += 1
-        isFieldFocused = false
+        isFieldFocused.wrappedValue = false
         model.lookUp(level: level, with: services.articles)
+    }
+
+    /// Done with the word: the field empties, the cards fold away and the keyboard goes down.
+    private func clear() {
+        taps += 1
+        isFieldFocused.wrappedValue = false
+        model.text = ""
     }
 }
 
@@ -165,8 +181,9 @@ struct ArticleNounDetail: View {
 }
 
 #Preview {
+    @Previewable @FocusState var isFocused: Bool
     ScrollView {
-        ArticleLookupCard(level: .a2, model: ArticleLookupModel())
+        ArticleLookupCard(level: .a2, model: ArticleLookupModel(), isFieldFocused: $isFocused)
             .padding(Spacing.screen)
     }
     .skyBackground()

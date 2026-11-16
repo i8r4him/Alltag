@@ -53,6 +53,21 @@ final class ArticleLookupModel {
     /// No noun came back for the word.
     var foundNothing: Bool { answer?.nouns.isEmpty == true }
 
+    /// What the card shows, as one value the screen animates on.
+    enum Phase: Equatable {
+        case empty, searching, failed, nothing
+        /// The answer, by its nouns, so another answer animates too.
+        case found([String])
+    }
+
+    var phase: Phase {
+        if isLookingUp { return .searching }
+        if failure != nil { return .failed }
+        if foundNothing { return .nothing }
+        if let answer { return .found(answer.nouns.map(\.id)) }
+        return .empty
+    }
+
     /// The field changed: what was shown belongs to another word now.
     func textChanged() {
         guard text.trimmingCharacters(in: .whitespacesAndNewlines) != query else { return }
