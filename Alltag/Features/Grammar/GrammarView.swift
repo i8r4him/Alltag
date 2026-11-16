@@ -15,15 +15,13 @@ struct GrammarView: View {
     @Environment(AppState.self) private var appState
     @Query private var solved: [SolvedRule]
     @Query private var profiles: [UserProfile]
-    @State private var level: Level?
     @State private var opened = 0
 
-    private var progress: GrammarProgress { GrammarProgress(solved: solved) }
     private var learnerLevel: Level { GrammarProgress.initialLevel(for: profiles.first?.level) }
-    private var shownLevel: Level { level ?? learnerLevel }
-    private var next: NextRule? { progress.nextRule(at: learnerLevel) }
 
     var body: some View {
+        let progress = GrammarProgress(solved: solved)
+        let next = progress.nextRule(at: learnerLevel)
         LearnScreen(title: "Grammar") {
             LearnSection(title: "Your next rule") {
                 NextRuleCard(level: learnerLevel, next: next) { open($0.id) }
@@ -35,26 +33,7 @@ struct GrammarView: View {
 
             CheatSheetsSection(level: learnerLevel)
 
-            LearnSection(title: "All rules",
-                         note: Text("\(progress.solvedCount(at: shownLevel)) of \(MockLevels.topics(for: shownLevel).count) solved")) {
-                VStack(alignment: .leading, spacing: Spacing.grid) {
-                    LevelChooser(selection: Binding(get: { shownLevel }, set: { level = $0 })) { level in
-                        (progress.solvedCount(at: level), MockLevels.topics(for: level).count)
-                    }
-                    VStack(spacing: 0) {
-                        ForEach(Array(MockLevels.topics(for: shownLevel).enumerated()), id: \.offset) { index, topic in
-                            if index > 0 { Divider().padding(.leading, 40) }
-                            TopicRow(topic: topic, status: progress.status(of: topic),
-                                     blocker: topic.ruleID.flatMap { progress.blocker(of: $0) }) {
-                                if let id = topic.ruleID { open(id) }
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
-                }
-                .animation(.easeOut(duration: 0.2), value: shownLevel)
-            }
+            AllRulesSection(progress: progress, learnerLevel: learnerLevel, onOpen: open)
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: opened)
     }
@@ -62,6 +41,42 @@ struct GrammarView: View {
     private func open(_ ruleID: String) {
         opened += 1
         appState.open(.rule(id: ruleID))
+    }
+}
+
+/// All rules, one level at a time. The chosen level lives here, so switching
+/// levels redraws only this list, not the cards above it.
+private struct AllRulesSection: View {
+    let progress: GrammarProgress
+    let learnerLevel: Level
+    let onOpen: (String) -> Void
+    @State private var level: Level?
+
+    private var shownLevel: Level { level ?? learnerLevel }
+
+    var body: some View {
+        let topics = MockLevels.topics(for: shownLevel)
+        let blockers = progress.blockers(at: shownLevel)
+        LearnSection(title: "All rules",
+                     note: Text("\(progress.solvedCount(at: shownLevel)) of \(topics.count) solved")) {
+            VStack(alignment: .leading, spacing: Spacing.grid) {
+                LevelChooser(selection: Binding(get: { shownLevel }, set: { level = $0 })) { level in
+                    (progress.solvedCount(at: level), MockLevels.topics(for: level).count)
+                }
+                VStack(spacing: 0) {
+                    ForEach(Array(topics.enumerated()), id: \.offset) { index, topic in
+                        if index > 0 { Divider().padding(.leading, 40) }
+                        TopicRow(topic: topic, status: progress.status(of: topic),
+                                 blocker: topic.ruleID.flatMap { blockers[$0] }) {
+                            if let id = topic.ruleID { onOpen(id) }
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
+            }
+            .animation(.easeOut(duration: 0.2), value: shownLevel)
+        }
     }
 }
 
