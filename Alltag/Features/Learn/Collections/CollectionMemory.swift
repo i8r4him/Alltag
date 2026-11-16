@@ -13,13 +13,33 @@ import SwiftData
 /// review picks them up. A word already in Memory isn't added twice.
 enum CollectionMemory {
     static func add(_ collection: WordCollection, in context: ModelContext) throws {
+        try add(collection.words, of: collection, in: context)
+    }
+
+    /// Adds only some of a collection's words, e.g. the ones the learner sorted into "Learn it".
+    static func add(_ words: [CollectionWord], of collection: WordCollection, in context: ModelContext) throws {
         let existing = try Set(context.fetch(FetchDescriptor<MemoryItem>()).map(\.displayWord))
-        for word in collection.words where !existing.contains(word.displayWord) {
+        for word in words where !existing.contains(word.displayWord) {
             context.insert(MemoryItem(article: word.article, word: word.word, meaning: word.meaning,
                                       context: word.example, contextNote: word.exampleMeaning,
                                       kind: .saved, source: .collection, sourceDetail: collection.title))
         }
         try context.save()
+    }
+
+    /// Saves the collection's words, or takes them out when they're in Memory,
+    /// and says what happened in a toast.
+    static func toggle(_ collection: WordCollection, in context: ModelContext) -> ToastMessage {
+        do {
+            if try isAdded(collection, in: context) {
+                try remove(collection, in: context)
+                return ToastMessage(text: "Removed from Memory", systemImage: "bookmark.slash.fill")
+            }
+            try add(collection, in: context)
+            return ToastMessage(text: "Saved to Memory")
+        } catch {
+            return ToastMessage(text: "Couldn’t save it. Try again.", systemImage: "exclamationmark.triangle")
+        }
     }
 
     /// Takes out the words this collection added; words saved some other way stay.

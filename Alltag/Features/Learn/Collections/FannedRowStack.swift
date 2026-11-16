@@ -60,8 +60,12 @@ private struct FannedCard: View {
                 .matchedTransitionSource(id: collection.id, in: deck.zoom)
             }
             .buttonStyle(.tile)
-            AddCollectionButton(isAdded: deck.isAdded(collection)) { deck.toggle(collection) }
-                .padding(10)
+            .disabled(!collection.isReady)
+            .opacity(collection.isReady ? 1 : 0.55)
+            if collection.isReady {
+                AddCollectionButton(isAdded: deck.isAdded(collection)) { deck.toggle(collection) }
+                    .padding(10)
+            }
         }
     }
 }

@@ -15,6 +15,8 @@ enum Route: Hashable {
     case howToSay
     /// Look up an article, and the der, die, das trainer.
     case articles
+    /// Every word collection, by level and topic.
+    case collections
     /// Memory, optionally filtered to one kind (e.g. words from your day)
     /// or searching for a word (e.g. from Siri).
     case memory(kind: MemoryKind? = nil, search: String? = nil)

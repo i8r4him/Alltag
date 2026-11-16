@@ -12,7 +12,7 @@ extension WordCollections {
     static let b1: [WordCollection] = [work, offices, transport]
 
     static let work = WordCollection(
-        id: "b1-arbeit", title: "Arbeit und Beruf", subtitle: "Work", level: .b1, systemImage: "briefcase.fill",
+        id: "b1-arbeit", title: "Arbeit und Beruf", subtitle: "Work", level: .b1, category: .work, systemImage: "briefcase.fill",
         words: [
             CollectionWord("die ", "Bewerbung", "job application",
                            "Ich habe meine Bewerbung gestern abgeschickt.", "I sent off my application yesterday."),
@@ -51,7 +51,7 @@ extension WordCollections {
 
     static let offices = WordCollection(
         id: "b1-behoerden", title: "Ämter und Behörden", subtitle: "Offices and paperwork", level: .b1,
-        systemImage: "building.columns.fill",
+        category: .paperwork, systemImage: "building.columns.fill",
         words: [
             CollectionWord("das ", "Bürgeramt", "citizens’ office",
                            "Für die Anmeldung muss ich zum Bürgeramt.", "I have to go to the citizens’ office to register."),
@@ -89,7 +89,7 @@ extension WordCollections {
     )
 
     static let transport = WordCollection(
-        id: "b1-unterwegs", title: "Mit Bus und Bahn", subtitle: "Getting around", level: .b1, systemImage: "tram.fill",
+        id: "b1-unterwegs", title: "Mit Bus und Bahn", subtitle: "Getting around", level: .b1, category: .travel, systemImage: "tram.fill",
         words: [
             CollectionWord("die ", "Verspätung", "delay",
                            "Der Zug hat zwanzig Minuten Verspätung.", "The train is twenty minutes late."),

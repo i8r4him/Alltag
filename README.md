@@ -233,14 +233,16 @@ Alltag/                                   ← repo root
 │  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour, with real progress
 │  │  │  ├─ SkillProgress.swift           what each banner shows: rules solved, words saved from Read, or "Coming soon" (tested)
 │  │  │  ├─ Collections/                  (#386) ready-made words by topic and level; + adds them to Memory
-│  │  │  │  ├─ WordCollection.swift       a collection and its words; the order for the learner's level
-│  │  │  │  ├─ WordCollectionsSection.swift the section on Learn: a sideways row of stacked cards
+│  │  │  │  ├─ WordCollection.swift       a collection, its topic and words; the order for the learner's level
+│  │  │  │  ├─ WordCollectionsSection.swift the section on Learn: its title opens all collections, then a row of stacked cards
+│  │  │  │  ├─ AllCollectionsView.swift   every collection by level chip and topic; topics without words say "Coming soon"
 │  │  │  │  ├─ FannedRowStack.swift       the row: square glass cards with two cards fanned out behind each
-│  │  │  │  ├─ WordCollectionSheet.swift  a collection's words, zooming out of its card
-│  │  │  │  ├─ Words/                     four ways to show the words, behind a temporary switcher: flashcards, tiles, grouped, sentences
-│  │  │  │  ├─ CollectionMemory.swift     adds a collection's words to Memory and takes them out (tested)
+│  │  │  │  ├─ WordCollectionSheet.swift  one collection's page; five page designs behind a temporary switcher
+│  │  │  │  ├─ Pages/                     the five designs: cover, a scene, path, dictionary, sort
+│  │  │  │  ├─ Words/                     the flashcards, the speaker button and the word with its article
+│  │  │  │  ├─ CollectionMemory.swift     adds a collection's words (or some) to Memory and takes them out (tested)
 │  │  │  │  ├─ CollectionCardParts.swift  the + button, level badge, artwork and stack layers
-│  │  │  │  └─ Content/                   the words: A2 (doctor's, flat, shopping) and B1 (work, offices, transport)
+│  │  │  │  └─ Content/                   the words: A2 (doctor's, flat, shopping), B1 (work, offices, transport); planned topics by name
 │  │  │  ├─ Ask/
 │  │  │  │  ├─ AskInPlace.swift           the field you type in on Learn and the German answer there, with Translate's parts (#304)
 │  │  │  │  └─ AskModel.swift             Translate's model, asked only when the learner sends (tested)

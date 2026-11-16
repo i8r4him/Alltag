@@ -57,15 +57,21 @@ struct CollectionLevelBadge: View {
     }
 }
 
-/// "15 words" and the level, the footer of every card.
+/// "15 words" (or "Coming soon") and the level, the footer of every card.
 struct CollectionMeta: View {
     let collection: WordCollection
 
     var body: some View {
         HStack(spacing: 6) {
-            Text("^[\(collection.words.count) word](inflect: true)")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            if collection.isReady {
+                Text("^[\(collection.words.count) word](inflect: true)")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("Coming soon")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
             CollectionLevelBadge(level: collection.level)
         }
     }

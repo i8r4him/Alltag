@@ -7,36 +7,6 @@
 
 import SwiftUI
 
-/// The four ways to show a collection's words, to choose from (#386). Temporary.
-enum CollectionWordsLayout: Int, CaseIterable {
-    case flashcards, tiles, grouped, sentences
-}
-
-/// The temporary ‹ n / 4 › glass switcher between the word layouts.
-struct WordsLayoutSwitcher: View {
-    @Binding var layout: CollectionWordsLayout
-
-    var body: some View {
-        let all = CollectionWordsLayout.allCases
-        GlassEffectContainer(spacing: 4) {
-            HStack(spacing: 4) {
-                Button("Previous design", systemImage: "chevron.left") {
-                    layout = all[(layout.rawValue + all.count - 1) % all.count]
-                }
-                Text(verbatim: "\(layout.rawValue + 1) / \(all.count)")
-                    .font(.subheadline.weight(.semibold).monospacedDigit())
-                    .frame(minWidth: 40)
-                Button("Next design", systemImage: "chevron.right") {
-                    layout = all[(layout.rawValue + 1) % all.count]
-                }
-            }
-            .labelStyle(.iconOnly)
-            .buttonStyle(.glass)
-        }
-        .sensoryFeedback(.selection, trigger: layout)
-    }
-}
-
 /// A small glass speaker that reads German aloud with the system voice.
 struct SpeakButton: View {
     let text: String

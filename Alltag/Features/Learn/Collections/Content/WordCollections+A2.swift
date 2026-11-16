@@ -12,7 +12,7 @@ extension WordCollections {
     static let a2: [WordCollection] = [doctor, flat, shopping]
 
     static let doctor = WordCollection(
-        id: "a2-arzt", title: "Beim Arzt", subtitle: "At the doctor’s", level: .a2, systemImage: "stethoscope",
+        id: "a2-arzt", title: "Beim Arzt", subtitle: "At the doctor’s", level: .a2, category: .health, systemImage: "stethoscope",
         words: [
             CollectionWord("der ", "Termin", "appointment",
                            "Ich brauche einen Termin beim Hausarzt.", "I need an appointment with my GP."),
@@ -48,7 +48,7 @@ extension WordCollections {
     )
 
     static let flat = WordCollection(
-        id: "a2-wohnung", title: "Die Wohnung", subtitle: "Your flat", level: .a2, systemImage: "house.fill",
+        id: "a2-wohnung", title: "Die Wohnung", subtitle: "Your flat", level: .a2, category: .home, systemImage: "house.fill",
         words: [
             CollectionWord("die ", "Miete", "rent",
                            "Die Miete kostet 750 Euro im Monat.", "The rent is 750 euros a month."),
@@ -84,7 +84,7 @@ extension WordCollections {
     )
 
     static let shopping = WordCollection(
-        id: "a2-einkaufen", title: "Einkaufen", subtitle: "Shopping", level: .a2, systemImage: "cart.fill",
+        id: "a2-einkaufen", title: "Einkaufen", subtitle: "Shopping", level: .a2, category: .food, systemImage: "cart.fill",
         words: [
             CollectionWord("der ", "Einkaufswagen", "trolley",
                            "Für den Einkaufswagen brauchst du einen Euro.", "You need a euro for the trolley."),

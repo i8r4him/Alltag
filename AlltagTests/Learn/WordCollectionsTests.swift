@@ -17,8 +17,9 @@ struct WordCollectionsTests {
         let collections = WordCollections.all
         #expect(Set(collections.map(\.id)).count == collections.count)
         #expect(Set(collections.map(\.title)).count == collections.count)
+        #expect(!WordCollections.ready.isEmpty)
         for collection in collections {
-            #expect(!collection.words.isEmpty, "\(collection.id) has no words")
+            #expect(collection.id.hasPrefix(collection.level.rawValue.lowercased() + "-"), "\(collection.id): level prefix")
             #expect(Set(collection.words.map(\.id)).count == collection.words.count, "\(collection.id) repeats a word")
             for word in collection.words {
                 #expect(["der ", "die ", "das ", ""].contains(word.article), "\(word.id): odd article")
@@ -27,11 +28,29 @@ struct WordCollectionsTests {
         }
     }
 
-    @Test("The learner's own level comes first")
+    @Test("Learn shows only collections with words, the learner's own level first")
     func ownLevelFirst() {
         #expect(WordCollections.ordered(for: .b1).first?.level == .b1)
         #expect(WordCollections.ordered(for: .a2).first?.level == .a2)
-        #expect(WordCollections.ordered(for: .a1).count == WordCollections.all.count)
+        #expect(WordCollections.ordered(for: .a1).count == WordCollections.ready.count)
+        #expect(WordCollections.ordered(for: .a1).allSatisfy(\.isReady))
+    }
+
+    @Test("A topic lists its collections with words before the ones coming soon")
+    func readyFirstInTopic() {
+        let paperwork = WordCollections.collections(at: .b1, in: .paperwork)
+        #expect(paperwork.map(\.id) == ["b1-behoerden", "b1-bank"])
+        #expect(WordCollections.collections(at: .c2, in: .health).isEmpty)
+    }
+
+    @Test("Saving only some words adds just those")
+    func saveSome() throws {
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let context = container.mainContext
+        let collection = WordCollections.transport
+        try CollectionMemory.add(Array(collection.words.prefix(2)), of: collection, in: context)
+        #expect(try context.fetchCount(FetchDescriptor<MemoryItem>()) == 2)
+        #expect(try CollectionMemory.isAdded(collection, in: context))
     }
 
     @Test("A collection's words go into Memory and come out again")
