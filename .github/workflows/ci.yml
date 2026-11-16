@@ -1,9 +1,25 @@
 name: CI
 
+# Runs once per PR. A merge doesn't run it again: the PR run already tested that code.
+# "Run workflow" on the Actions page runs it by hand (on main, for example), with a clean
+# build if asked.
 on:
   pull_request:
-  push:
-    branches: [main]
+    # A change to these alone can't break the build or the tests.
+    paths-ignore:
+      - "**/*.md"
+      - "screenshots/**"
+      - ".claude/**"
+      - "supabase/**"
+      - ".github/labeler.yml"
+      - ".github/workflows/lint.yml"
+      - ".github/workflows/labeler.yml"
+  workflow_dispatch:
+    inputs:
+      clean_build:
+        description: "Delete the kept build first and build from scratch"
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -15,30 +31,56 @@ jobs:
     runs-on: [self-hosted, macOS]
     timeout-minutes: 30
     env:
-      SIMULATOR: iPhone 18 Pro
+      # CI's own simulator, so a run never boots or clones the iPhone 18 Pro used in Xcode.
+      SIMULATOR: Alltag CI
+      DEVICE_TYPE: iPhone 18 Pro
     steps:
       - uses: actions/checkout@v7
 
       - name: Xcode version
         run: xcodebuild -version
 
+      # The checkout deletes everything git doesn't track, so a DerivedData inside the
+      # checkout was gone on every run and every run built from scratch. Next to the
+      # checkout it stays, and a run only rebuilds what changed.
+      - name: Kept build folder
+        run: |
+          derived="$RUNNER_WORKSPACE/DerivedData"
+          echo "DERIVED_DATA=$derived" >> "$GITHUB_ENV"
+          if [ "${{ inputs.clean_build }}" = "true" ]; then rm -rf "$derived"; fi
+
+      - name: CI simulator
+        run: |
+          if ! xcrun simctl list devices available | grep -q "    $SIMULATOR ("; then
+            xcrun simctl create "$SIMULATOR" "$DEVICE_TYPE"
+          fi
+
       - name: Build and test on iOS Simulator
         run: |
           set -o pipefail
+          # No simulator clone: Swift Testing already runs the tests in parallel in one process.
+          # No index: only Xcode's editor uses it.
           xcodebuild test \
             -project Alltag.xcodeproj \
             -scheme Alltag \
             -destination "platform=iOS Simulator,name=${SIMULATOR}" \
-            -derivedDataPath DerivedData \
+            -derivedDataPath "$DERIVED_DATA" \
+            -parallel-testing-enabled NO \
             CODE_SIGNING_ALLOWED=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
             | tee test.log | grep -E "error:|warning:|Test case|TEST (SUCCEEDED|FAILED)" || true
           grep -q "TEST SUCCEEDED" test.log
 
       - name: String Catalogs are up to date
         run: |
+          # The kept build still holds the strings of Swift files that were deleted or renamed,
+          # so only the strings of files that exist now count.
+          swift_files=$(git ls-files '*.swift' | sed 's|.*/||; s|\.swift$||' | sort -u)
           stringsdata=()
-          while IFS= read -r -d '' file; do stringsdata+=(--stringsdata "$file"); done \
-            < <(find DerivedData -name "*.stringsdata" \( -path "*/Debug-iphonesimulator/Alltag.build/Objects-normal/*" -o -path "*/Debug-iphonesimulator/AlltagTranslation.build/Objects-normal/*" \) -print0)
+          while IFS= read -r -d '' file; do
+            name=$(basename "$file" .stringsdata)
+            if grep -qxF "$name" <<< "$swift_files"; then stringsdata+=(--stringsdata "$file"); fi
+          done < <(find "$DERIVED_DATA" -name "*.stringsdata" \( -path "*/Debug-iphonesimulator/Alltag.build/Objects-normal/*" -o -path "*/Debug-iphonesimulator/AlltagTranslation.build/Objects-normal/*" \) -print0)
           mkdir -p "$RUNNER_TEMP/catalog"
           for name in Localizable AppShortcuts; do
             # Keep the file name: xcstringstool takes the table name from it.
@@ -47,3 +89,7 @@ jobs:
             python3 -I scripts/check_string_catalog.py \
               "Alltag/Resources/$name.xcstrings" "$RUNNER_TEMP/catalog/$name.xcstrings"
           done
+
+      - name: Shut down the CI simulator
+        if: always()
+        run: xcrun simctl shutdown "$SIMULATOR" || true
