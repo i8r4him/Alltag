@@ -22,10 +22,10 @@ struct LevelChooser: View {
                     HStack(spacing: Spacing.grid) {
                         ForEach(Level.selectable) { level in
                             LevelCard(level: level, count: counts(level), isSelected: level == selection) {
-                                withAnimation(.snappy) {
-                                    selection = level
-                                    proxy.scrollTo(level, anchor: .center)
-                                }
+                                // Only the cards animate: the rules below switch at once, so a
+                                // level of sixty rows doesn't animate every row.
+                                selection = level
+                                withAnimation(.snappy) { proxy.scrollTo(level, anchor: .center) }
                             }
                             .id(level)
                         }
@@ -68,6 +68,7 @@ private struct LevelCard: View {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
                     .strokeBorder(Color.accentFill, lineWidth: isSelected ? 2 : 0)
             }
+            .animation(.snappy, value: isSelected)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
