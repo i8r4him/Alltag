@@ -293,7 +293,8 @@ Alltag/                                   ← repo root
 │  │  ├─ LevelMap/                        (#389) the way to the next level, as a town at night
 │  │  │  ├─ LevelMapView.swift            the map: places with rings, "You are here", the next stop; zooms out of Learn's ring
 │  │  │  ├─ LevelMap.swift                what fills each place (rules solved, situations talked through), the % and the next stop (tested)
-│  │  │  ├─ TownPlace.swift               School · Café · Market · Library · Station: name, symbol, spot on the map
+│  │  │  ├─ TownPlace.swift               School · Café · Market · Library · Station: name and symbol
+│  │  │  ├─ TownLayout.swift              each level's own town (Das Dorf … Die Hauptstadt): where the places, river and park are
 │  │  │  ├─ TownMap.swift                 the town drawn in a Canvas (blocks, streets, park, river) and the path through it
 │  │  │  ├─ PlacePin.swift                a place's sign with its ring and glass label
 │  │  │  ├─ PlaceSheet.swift              a tapped place: what's done, what's left, each row opening its exercise

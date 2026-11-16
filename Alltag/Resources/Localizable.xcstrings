@@ -199,7 +199,6 @@
     "%lld points" : {},
     "%lld seconds left" : {},
     "%lld words and phrases, gathered from your days." : {},
-    "%lld%%" : {},
     "%lld%% of the way to %@" : {
       "localizations" : {
         "en" : {

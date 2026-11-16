@@ -120,11 +120,28 @@ struct LevelMapTests {
 
     @Test("Part of the route lies exactly on the whole route")
     func partialRoute() {
-        let points = TownPlace.route.map { CGPoint(x: $0.spot.x * 400, y: $0.spot.y * 800) }
+        let layout = TownLayout.of(.a2)
+        let points = TownPlace.route.map { CGPoint(x: layout.spot(of: $0).x * 400, y: layout.spot(of: $0).y * 800) }
         let whole = TownRoute.path(through: points)
         let part = TownRoute.path(through: points, segments: 2)
         #expect(part.currentPoint == points[2])
         #expect(whole.currentPoint == points.last)
         #expect(TownRoute.path(through: points, segments: 0).currentPoint == points[0])
+    }
+
+    @Test("Every level has its own town, with all the places on it and the station at the top")
+    func towns() {
+        let towns = Level.allCases.map(TownLayout.of)
+        for town in towns {
+            #expect(Set(town.spots.keys) == Set(TownPlace.allCases))
+            let station = town.spot(of: .station)
+            for place in TownPlace.allCases where place != .station {
+                #expect(town.spot(of: place).y > station.y)
+                #expect((0...1).contains(town.spot(of: place).x))
+            }
+        }
+        let selectable = Level.selectable.map(TownLayout.of)
+        #expect(Set(selectable.map(\.townName)).count == selectable.count)
+        #expect(Set(selectable.map(\.seed)).count == selectable.count)
     }
 }

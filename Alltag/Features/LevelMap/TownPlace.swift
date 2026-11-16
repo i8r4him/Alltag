@@ -47,17 +47,6 @@ enum TownPlace: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Where the place sits on the map, as a share of the map's width and height.
-    var spot: UnitPoint {
-        switch self {
-        case .station: UnitPoint(x: 0.5, y: 0.08)
-        case .school: UnitPoint(x: 0.27, y: 0.31)
-        case .market: UnitPoint(x: 0.73, y: 0.49)
-        case .library: UnitPoint(x: 0.28, y: 0.66)
-        case .cafe: UnitPoint(x: 0.72, y: 0.87)
-        }
-    }
-
     /// The walk through town, from the first place to the station.
     static let route: [TownPlace] = [.cafe, .library, .market, .school, .station]
 }

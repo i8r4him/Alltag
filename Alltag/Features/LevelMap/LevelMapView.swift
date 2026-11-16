@@ -23,7 +23,10 @@ struct LevelMapView: View {
     @State private var pendingStop: MapStop?
     /// Another level's map the learner is looking at; `nil` shows their own.
     @State private var shownLevel: Level?
+    /// Which way the town slides when the level changes: a higher level comes down from above.
+    @State private var goingUp = true
     @AppStorage(PlaceLook.storageKey) private var placeLook = 0
+    @Environment(\.reducesMotion) private var reducesMotion
     @Namespace private var placeZoom
 
     private var ownLevel: Level { profiles.first?.level ?? .a1 }
@@ -31,28 +34,15 @@ struct LevelMapView: View {
     var body: some View {
         let map = LevelMap(level: shownLevel ?? ownLevel, solved: solved, sessions: sessions)
         let isOwn = map.level == ownLevel
-        GeometryReader { proxy in
-            ZStack {
-                TownRoute(walkedTo: isOwn ? TownPlace.route.firstIndex(of: map.here) ?? 0 : 0)
-                GlassEffectContainer {
-                    ZStack {
-                        ForEach(TownPlace.route) { place in
-                            pin(place, in: map, isOwn: isOwn)
-                                .position(x: place.spot.x * proxy.size.width, y: place.spot.y * proxy.size.height)
-                        }
-                    }
-                }
-            }
+        ZStack {
+            town(map, isOwn: isOwn)
+                .id(map.level)
+                .transition(townTransition)
         }
-        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
-        .padding(.top, 12)
-        .padding(.bottom, 8)
-        .frame(maxWidth: Spacing.readableWidth)
-        .frame(maxWidth: .infinity)
-        .id(placeLook)
-        .background { TownGround().ignoresSafeArea() }
+        .animation(reducesMotion ? .easeInOut(duration: 0.25) : .smooth(duration: 0.6), value: map.level)
+        .background { Color.screenBackground.ignoresSafeArea() }
         .safeAreaInset(edge: .bottom) {
-            NextStopCard(map: map, ownLevel: isOwn ? nil : ownLevel, onGo: open) { shownLevel = nil }
+            NextStopCard(map: map, ownLevel: isOwn ? nil : ownLevel, onGo: open) { show(ownLevel) }
                 .frame(maxWidth: Spacing.readableWidth)
                 .padding(.horizontal, Spacing.screen)
                 .padding(.bottom, 8)
@@ -66,7 +56,7 @@ struct LevelMapView: View {
                         }
                     }
                 } label: {
-                    LevelHeader(map: map)
+                    LevelHeader(map: map, townName: TownLayout.of(map.level).townName)
                 }
                 .accessibilityHint(Text("Shows the map of another level"))
             }
@@ -84,13 +74,53 @@ struct LevelMapView: View {
             .navigationTransition(.zoom(sourceID: place, in: placeZoom))
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: openPlace) { _, place in place != nil }
+        .sensoryFeedback(.impact(weight: .medium), trigger: shownLevel)
+    }
+
+    /// One level's town: its streets, its route and its places.
+    private func town(_ map: LevelMap, isOwn: Bool) -> some View {
+        let layout = TownLayout.of(map.level)
+        return GeometryReader { proxy in
+            ZStack {
+                TownRoute(layout: layout, walkedTo: isOwn ? TownPlace.route.firstIndex(of: map.here) ?? 0 : 0)
+                GlassEffectContainer {
+                    ZStack {
+                        ForEach(Array(TownPlace.route.enumerated()), id: \.element) { index, place in
+                            let spot = layout.spot(of: place)
+                            pin(place, in: map, isOwn: isOwn)
+                                .modifier(PopIn(order: TownPlace.route.count - 1 - index))
+                                .position(x: spot.x * proxy.size.width, y: spot.y * proxy.size.height)
+                        }
+                    }
+                }
+            }
+        }
+        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
+        .frame(maxWidth: Spacing.readableWidth)
+        .frame(maxWidth: .infinity)
+        .id(placeLook)
+        .background { TownGround(layout: layout).ignoresSafeArea() }
+    }
+
+    /// The new town comes in from the side of the level it's heading to,
+    /// the old one leaves the other way; with Reduce Motion it fades.
+    private var townTransition: AnyTransition {
+        guard !reducesMotion else { return .opacity }
+        return .asymmetric(
+            insertion: .move(edge: goingUp ? .top : .bottom).combined(with: .opacity),
+            removal: .move(edge: goingUp ? .bottom : .top).combined(with: .opacity))
     }
 
     /// The level picked in the header; picking their own level goes back to it.
     private var levelChoice: Binding<Level> {
-        Binding { shownLevel ?? ownLevel } set: { level in
-            shownLevel = level == ownLevel ? nil : level
-        }
+        Binding { shownLevel ?? ownLevel } set: { level in show(level) }
+    }
+
+    private func show(_ level: Level) {
+        goingUp = level > (shownLevel ?? ownLevel)
+        shownLevel = level == ownLevel ? nil : level
     }
 
     private func pin(_ place: TownPlace, in map: LevelMap, isOwn: Bool) -> some View {
@@ -130,23 +160,48 @@ struct LevelMapView: View {
 /// "A2 · 45% to B1" with its ring, in the middle of the toolbar.
 private struct LevelHeader: View {
     let map: LevelMap
+    let townName: String
 
     var body: some View {
         HStack(spacing: 8) {
             LevelRing(fraction: map.fraction, lineWidth: 3.5)
                 .frame(width: 22, height: 22)
-            Group {
-                if let next = map.nextLevel {
-                    Text("\(map.level.title) · \(map.percent)% to \(next.title)")
-                } else {
-                    Text("\(map.level.title) · the top level")
+            VStack(spacing: 0) {
+                Group {
+                    if let next = map.nextLevel {
+                        Text("\(map.level.title) · \(map.percent)% to \(next.title)")
+                    } else {
+                        Text("\(map.level.title) · the top level")
+                    }
                 }
+                .font(.headline)
+                .monospacedDigit()
+                Text(verbatim: townName)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
             }
-            .font(.headline)
             .fontDesign(.rounded)
-            .monospacedDigit()
+            .contentTransition(.numericText())
         }
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// A place pops up out of the ground when its town arrives, one after the other from the station down.
+private struct PopIn: ViewModifier {
+    let order: Int
+    @State private var isShown = false
+    @Environment(\.reducesMotion) private var reducesMotion
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isShown || reducesMotion ? 1 : 0.3, anchor: .bottom)
+            .opacity(isShown || reducesMotion ? 1 : 0)
+            .onAppear {
+                withAnimation(.spring(duration: 0.45, bounce: 0.4).delay(0.25 + Double(order) * 0.08)) {
+                    isShown = true
+                }
+            }
     }
 }
 
