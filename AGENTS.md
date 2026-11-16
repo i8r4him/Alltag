@@ -174,7 +174,7 @@ The Learn features, **in this order**:
 - `AlltagTranslation/`: ExtensionKit Translation UI Provider (#245–247), with cloud consent, streamed translation and optional replacement. Host and extension use `group.i8r4him.Alltag` for a file inbox; the app imports saved entries into its existing SwiftData store on activation. Do not move the database into the App Group or modify its schema for this handoff. Paid-team signing and a physical-device check are required for both targets.
 
 - `Alltag/App/`: entry point, `AppState`, `AppServices`, routing.
-- `Alltag/Features/<Screen>/`: views and their `@Observable` models.
+- `Alltag/Features/<Screen>/`: views and their `@Observable` models. In a big folder the screen and its model stay at the top and the other files go into subfolders by part of the screen (`Exam/`, `Lookup/`, `History/`, `Parts/` for a screen's pieces), with written content in `Content/` or `Topics/`. A folder of about six files or fewer stays flat. A new file goes into the subfolder of its part. The app target is a synchronized folder, so moving a file there needs no change to `project.pbxproj`.
 - `Alltag/Services/<Area>/`: service protocols, mocks and live implementations.
 - `Alltag/DesignSystem/`: tokens and shared components. Use them rather than raw values.
 - `Alltag/Intents/`: App Intents (Siri, Shortcuts, Spotlight).
