@@ -137,16 +137,18 @@ struct TranslateSectionRows: View {
 }
 
 /// Word by word, tone and in context: each part on its own glass card, its
-/// symbol in the header. A part slides in when it arrives.
+/// symbol in the header. A part slides in when it arrives; with `unfolds`
+/// (opened by a tap, on "How do I say …?") the parts unfold one after another.
 struct TranslateDetails: View {
     let result: TranslationResult
+    var unfolds = false
     let onListen: (String) -> Void
 
     private var sections: [TranslateSection] { TranslateSection.allCases.filter { !$0.isEmpty(in: result) } }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            ForEach(sections) { section in
+            ForEach(Array(sections.enumerated()), id: \.element) { index, section in
                 VStack(alignment: .leading, spacing: 10) {
                     Label { Text(section.title) } icon: {
                         Image(systemName: section.systemImage).foregroundStyle(.accent)
@@ -158,9 +160,36 @@ struct TranslateDetails: View {
                         .padding(.vertical, 6)
                         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
                 }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .modifier(UnfoldIn(index: index, isOn: unfolds))
+                .transition(unfolds ? .opacity : .move(edge: .bottom).combined(with: .opacity))
             }
         }
         .animation(.easeOut(duration: 0.3), value: sections)
+    }
+}
+
+/// A detail card that unfolds when it first appears: it fades in and drops a
+/// few points into place, a moment after the one above it. A plain fade with
+/// Reduce Motion.
+private struct UnfoldIn: ViewModifier {
+    let index: Int
+    let isOn: Bool
+    @State private var isShown = false
+    @Environment(\.reducesMotion) private var reduceMotion
+
+    private var isHidden: Bool { isOn && !isShown }
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(isHidden ? 0 : 1)
+            .offset(y: isHidden && !reduceMotion ? -10 : 0)
+            .scaleEffect(isHidden && !reduceMotion ? 0.97 : 1, anchor: .top)
+            .onAppear {
+                guard isOn else { return }
+                let animation: Animation = reduceMotion
+                    ? .easeInOut(duration: 0.2)
+                    : Motion.easeOut(duration: 0.45).delay(0.05 + Double(index) * 0.08)
+                withAnimation(animation) { isShown = true }
+            }
     }
 }

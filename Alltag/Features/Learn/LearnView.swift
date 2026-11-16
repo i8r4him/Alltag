@@ -12,16 +12,23 @@ import SwiftUI
 /// reviewing (your mistakes too) is in Memory.
 struct LearnView: View {
     @Environment(AppState.self) private var appState
+    @Environment(\.services) private var services
+    @Environment(\.reducesMotion) private var reduceMotion
     @Query private var profiles: [UserProfile]
     @State private var toolTaps = 0
     @State private var notice: ToastMessage?
     @Environment(\.levelMapZoom) private var levelMapZoom
     /// Used only when no screen above shares a namespace (previews).
     @Namespace private var ownZoom
+    /// "How do I say …?": kept here so the whole page can step back while the
+    /// learner types and move with the answer.
+    @State private var ask: AskModel?
+    @FocusState private var isAsking: Bool
 
     private var level: Level { profiles.first?.level ?? .a1 }
 
     private func open(_ tool: LearnTool) {
+        isAsking = false
         switch tool {
         case .translate: appState.open(.translate())
         case .howToSay: appState.open(.howToSay)
@@ -40,16 +47,24 @@ struct LearnView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: Spacing.section) {
-                ToolsSection(onOpen: open)
-                WordCollectionsSection(level: level, notice: $notice)
-                SkillsSection(level: level, onOpen: open)
+            VStack(spacing: Spacing.grid) {
+                // TEMPORARY (#397): the opening effects to choose from.
+                FieldFocusEffectSwitcher()
+                AskInPlace(model: ask, isFocused: $isAsking)
+                VStack(spacing: Spacing.section) {
+                    ToolsSection(onOpen: open)
+                    WordCollectionsSection(level: level, notice: $notice)
+                    SkillsSection(level: level, onOpen: open)
+                }
+                .fieldFocusBackdrop(isActive: isAsking) { isAsking = false }
             }
+            .animation(AskMotion.answer(reduceMotion: reduceMotion), value: ask?.layout)
             .padding(.horizontal, Spacing.screen)
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
         .scrollIndicators(.hidden)
+        .scrollDismissesKeyboard(.interactively)
         .readableContentMargins()
         .skyBackground()
         .navigationTitle("Learn")
@@ -65,6 +80,11 @@ struct LearnView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: toolTaps)
         // On the screen, not a card, so it sits at the bottom above the tab bar.
         .toast($notice)
+        .onAppear {
+            if ask == nil { ask = AskModel(services: services) }
+        }
+        // Leaving Learn (another tab, a pushed screen) puts the keyboard away.
+        .onDisappear { isAsking = false }
     }
 }
 

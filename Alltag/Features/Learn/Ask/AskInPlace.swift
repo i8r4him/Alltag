@@ -13,73 +13,97 @@ import SwiftUI
 /// the learner sends (Return or the arrow), never while they type. The
 /// answer card grows under the field and pushes Learn down; the details
 /// open under it, in place.
+///
+/// Learn owns the model and the focus: while the field is focused the rest
+/// of the page steps back (`fieldFocusBackdrop`), and Learn animates the page
+/// when the answer changes size (`AskModel.layout`), so the cards below move
+/// instead of jumping.
 struct AskInPlace: View {
-    @Environment(\.services) private var services
-    @State private var model: AskModel?
+    let model: AskModel?
+    var isFocused: FocusState<Bool>.Binding
 
     var body: some View {
         Group {
             if let model {
-                AskContent(model: model)
+                AskContent(model: model, isFocused: isFocused)
             } else {
                 // The field's place, until the model is there.
                 Color.clear.frame(height: 60)
             }
         }
-        .onAppear {
-            if model == nil { model = AskModel(services: services) }
-        }
+        .fontDesign(.rounded)
     }
 }
 
 private struct AskContent: View {
     let model: AskModel
-    @FocusState private var isFocused: Bool
+    var isFocused: FocusState<Bool>.Binding
     @State private var showsDetails = false
     /// Counts the taps that open or start something, for the medium haptic.
     @State private var taps = 0
+    @Environment(\.reducesMotion) private var reduceMotion
 
     private var text: Binding<String> { Binding { model.text } set: { model.text = $0 } }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.grid) {
-            AskField(text: text, isFocused: $isFocused, canSend: model.canSend, onSend: send, onClear: clear)
+            AskField(text: text, isFocused: isFocused, canSend: model.canSend, onSend: send, onClear: clear)
+                .fieldFocusEffect(isActive: isFocused.wrappedValue)
             if model.hasAnswer {
                 AskAnswer(model: model, showsDetails: showsDetails)
-                    .transition(.opacity)
+                    .transition(AskMotion.answerTransition(reduceMotion: reduceMotion))
                 if model.translate.result != nil {
-                    Button {
+                    AskDetailsButton(showsDetails: showsDetails) {
                         taps += 1
-                        withAnimation(.easeOut(duration: 0.25)) { showsDetails.toggle() }
-                    } label: {
-                        Label(showsDetails ? "Hide the details" : "Word by word, tone and examples",
-                              systemImage: showsDetails ? "chevron.up" : "chevron.down")
-                            .font(.subheadline.weight(.semibold))
-                            .frame(maxWidth: .infinity, minHeight: 30)
+                        withAnimation(AskMotion.details(reduceMotion: reduceMotion)) { showsDetails.toggle() }
                     }
-                    .buttonStyle(.glass)
+                    .transition(.opacity)
                 }
             }
         }
-        .animation(.easeOut(duration: 0.25), value: model.hasAnswer)
-        .animation(.easeOut(duration: 0.25), value: model.translate.result)
         .onChange(of: model.text) { _, _ in
             model.textChanged()
             showsDetails = false
         }
-        .onChange(of: isFocused) { _, focused in if focused { taps += 1 } }
+        .onChange(of: isFocused.wrappedValue) { _, focused in if focused { taps += 1 } }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
         .sensoryFeedback(.impact(weight: .medium), trigger: model.sent)
     }
 
     private func send() {
         guard model.send() != nil else { return }
-        isFocused = false
+        isFocused.wrappedValue = false
     }
 
+    /// The X. With an answer on show it closes everything, keyboard too; while
+    /// still typing it only empties the field.
     private func clear() {
-        model.clear()
-        isFocused = true
+        let closes = model.hasAnswer
+        withAnimation(AskMotion.answer(reduceMotion: reduceMotion)) {
+            showsDetails = false
+            model.clear()
+        }
+        isFocused.wrappedValue = !closes
+    }
+}
+
+/// Opens and closes the details: the chevron turns instead of swapping.
+private struct AskDetailsButton: View {
+    let showsDetails: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label {
+                showsDetails ? Text("Hide the details") : Text("Word by word, tone and examples")
+            } icon: {
+                Image(systemName: "chevron.down")
+                    .rotationEffect(.degrees(showsDetails ? -180 : 0))
+            }
+            .font(.subheadline.weight(.semibold))
+            .frame(maxWidth: .infinity, minHeight: 30)
+        }
+        .buttonStyle(.glass)
     }
 }
 
@@ -153,12 +177,15 @@ struct AskAnswer: View {
                                          isSaved: translate.isSaved(in: saved), handlers: handlers)
                 }
                 if showsDetails, let result = translate.result {
-                    TranslateDetails(result: result) { german in
+                    // Each part unfolds in turn as it appears.
+                    TranslateDetails(result: result, unfolds: true) { german in
                         Task { await translate.listen(to: german) }
                     }
                     .padding(.top, 10)
+                    .transition(.opacity)
                     if translate.isExplaining || translate.isTranslating {
                         TranslateLoadingDetails(pending: TranslateSection.allCases.filter { $0.isEmpty(in: result) })
+                            .transition(.opacity)
                     }
                 }
             } else {
