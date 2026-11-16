@@ -12,11 +12,12 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
   -destination "platform=iOS Simulator,name=iPhone 18 Pro"
 ```
 
-- CI (`.github/workflows/ci.yml`, self-hosted Mac) runs the same tests and checks that the String Catalogs are in sync. SwiftLint runs in `lint.yml`.
+- CI (`.github/workflows/ci.yml`, self-hosted Mac) runs the same tests and checks that the String Catalogs are in sync. SwiftLint runs in `lint.yml` on GitHub's Linux machines (SwiftLint 0.65.1 in a container), so it never slows the tests on the Mac.
 - The build must have **no new warnings**.
 - If the test run fails with "Failed to create a bundle instance", the simulator hiccuped (it happens after adding a test file). Run it again.
 - **"The test runner crashed before establishing connection"** means the simulator holds data from a *newer* schema version (you tested a branch with a new `AlltagSchemaV<n>`, then switched back). The app can't open a newer store and crashes at launch. Uninstall the app from that simulator (`xcrun simctl uninstall <udid> i8r4him.Alltag`) and run again. The same happens on the maintainer's iPhone: delete the app there.
 - **CI runs on the maintainer's Mac**, on the same simulators. A local test run at the same time can make CI fail with "Simulator device failed to launch". Re-run the failed job (`gh run rerun <id> --failed`); don't change code for it.
+- **Tests must not depend on timing.** A test that races a real clock (words arriving every few hundred milliseconds, a sleep before a check) fails when the Mac is busy and costs a full CI re-run. Use a stub that waits for the step the test drives instead (see `FirstWordSpeech` in `ConversationModelTests`).
 - **A warning to ignore:** `RealtimeConversationTests.swift: main actor-isolated static property 'dentist'` is old. Any other new warning must be fixed.
 - **Lint limits that bite:** a file may have 500 lines (`ConversationModel.swift` is at the limit: put new code in an extension file like `ConversationModel+History.swift`), a line 140 characters, a function body 60 lines.
 - **The simulator can't do the real thing:** it has no microphone behind speech recognition, no Apple Intelligence and no live voice. `AppServices.live()` swaps in simulated services there. Anything that listens, records, checks with the on-device model or talks must be tried on the maintainer's iPhone; say so under "Not verified" in the PR.

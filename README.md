@@ -356,7 +356,7 @@ Alltag/                                   ← repo root
 ├─ .github/
 │  ├─ workflows/
 │  │  ├─ ci.yml                           build + test (self-hosted Mac)
-│  │  ├─ lint.yml                         SwiftLint (self-hosted Mac)
+│  │  ├─ lint.yml                         SwiftLint (GitHub's Linux machines)
 │  │  └─ labeler.yml                      auto-label PRs (GitHub Linux)
 │  ├─ ISSUE_TEMPLATE/
 │  │  ├─ feature.yml
