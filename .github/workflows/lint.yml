@@ -14,11 +14,13 @@ concurrency:
 jobs:
   swiftlint:
     name: SwiftLint
-    runs-on: [self-hosted, macOS]
+    # GitHub's Linux machines, so linting never competes with the tests on the self-hosted Mac.
+    # The image has SwiftLint with SourceKit, so every rule runs. Raise the version on purpose:
+    # a newer SwiftLint can bring new rules that fail --strict.
+    runs-on: ubuntu-latest
+    container: ghcr.io/realm/swiftlint:0.65.1
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - name: Lint
-        run: |
-          export PATH="/opt/homebrew/bin:$PATH"
-          swiftlint lint --strict --reporter github-actions-logging
+        run: swiftlint lint --strict --reporter github-actions-logging

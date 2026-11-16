@@ -15,9 +15,9 @@ import Testing
 struct ConversationModelTests {
     let voice = MockVoiceService()
 
-    func makeModel(_ scenario: Scenario? = nil, wordInterval: Duration = .zero) -> ConversationModel {
+    func makeModel(_ scenario: Scenario? = nil, speech: (any SpeechService)? = nil) -> ConversationModel {
         let services = AppServices(
-            speech: MockSpeechService(wordInterval: wordInterval),
+            speech: speech ?? MockSpeechService(wordInterval: .zero),
             voice: voice,
             translation: MockTranslationService(delay: .zero),
             companion: MockCompanionService(thinkingTime: .zero),
@@ -97,20 +97,17 @@ struct ConversationModelTests {
         #expect(model.messages[2].line.speaker == .companion)
     }
 
-    @Test("Tapping while listening stops early and uses the whole line")
+    @Test("Tapping while listening stops early and uses the whole line", .timeLimit(.minutes(1)))
     func stopEarly() async throws {
-        let model = makeModel(wordInterval: .milliseconds(400))
+        // The speech hears only the first word and then waits for the tap, so no timing is involved:
+        // a busy machine can't let the rest of the line arrive before the tap.
+        let model = makeModel(speech: FirstWordSpeech())
         model.orbTapped()
-        // Wait for the first word rather than a fixed time, so a busy machine can't break it.
-        // Under load a second word may already be in, so only the start is checked.
-        // The limit is long: in CI the app's launch has kept the main actor busy for
-        // more than five seconds, and the first word can't arrive before that is over.
-        let deadline = ContinuousClock.now + .seconds(30)
-        while model.heardText.isEmpty, ContinuousClock.now < deadline {
-            try await Task.sleep(for: .milliseconds(20))
+        while model.heardText.isEmpty {
+            try await Task.sleep(for: .milliseconds(10))
         }
         #expect(model.phase == .listening)
-        #expect(model.heardText.hasPrefix("Können"))
+        #expect(model.heardText == "Können")
 
         model.orbTapped()
         await model.waitForTurn()
@@ -164,5 +161,29 @@ struct ConversationModelTests {
     func savedPhrasesHaveMeanings(scenario: Scenario) {
         #expect(scenario.savedPhrases.count == 2)
         #expect(scenario.savedPhrases.allSatisfy { !$0.english.isEmpty })
+    }
+}
+
+/// Speech that hears the first word and then waits until listening is stopped,
+/// when it yields the whole line, as the simulated speech does when stopped early.
+private final class FirstWordSpeech: SpeechService {
+    var authorizationStatus: PermissionStatus { .granted }
+    private var finish: (() -> Void)?
+
+    func requestAuthorization() async -> PermissionStatus { .granted }
+
+    func listen(expected: String, recordingTo recording: URL?) -> AsyncThrowingStream<String, any Error> {
+        let (stream, continuation) = AsyncThrowingStream.makeStream(of: String.self)
+        continuation.yield(expected.split(separator: " ").first.map(String.init) ?? expected)
+        finish = {
+            continuation.yield(expected)
+            continuation.finish()
+        }
+        return stream
+    }
+
+    func stopListening() {
+        finish?()
+        finish = nil
     }
 }
