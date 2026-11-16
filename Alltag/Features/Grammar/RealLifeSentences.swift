@@ -10,12 +10,10 @@ import Foundation
 extension RealLifeSentence {
     /// Sentences for each rule, by rule ID. The marked words appear in the
     /// sentence in this order.
-    static let byRule: [String: [RealLifeSentence]] = a1ByRule.merging(b2ByRule) { _, later in later }.merging([
+    static let byRule: [String: [RealLifeSentence]] = a1ByRule.merging(a2ByRule) { _, later in later }
+        .merging(b1ByRule) { _, later in later }.merging(b2ByRule) { _, later in later }.merging([
         "v2": verbSecond,
         "akkusativ": accusative,
-        "perfekt": perfekt,
-        "seit": seit,
-        "weil": weil,
         "nominal": nominal
     ]) { _, later in later }
 
@@ -47,51 +45,6 @@ extension RealLifeSentence {
         RealLifeSentence(place: "At the station", systemImage: "tram",
                          german: "Entschuldigung, ich suche den Ausgang.",
                          english: "Excuse me, I'm looking for the exit.", marked: ["den"])
-    ]
-
-    private static let perfekt: [RealLifeSentence] = [
-        RealLifeSentence(place: "Message from a friend", systemImage: "message",
-                         german: "Ich habe dir gestern ein Foto geschickt.",
-                         english: "I sent you a photo yesterday.", marked: ["habe", "geschickt"]),
-        RealLifeSentence(place: "Monday at work", systemImage: "briefcase",
-                         german: "Wir sind am Samstag ins Kino gegangen.",
-                         english: "We went to the cinema on Saturday.", marked: ["sind", "gegangen"]),
-        RealLifeSentence(place: "At the pharmacy", systemImage: "cross.case",
-                         german: "Haben Sie das Rezept mitgebracht?",
-                         english: "Have you brought the prescription?", marked: ["Haben", "mitgebracht"]),
-        RealLifeSentence(place: "Parcel notification", systemImage: "shippingbox",
-                         german: "Ihr Paket ist heute angekommen.",
-                         english: "Your parcel arrived today.", marked: ["ist", "angekommen"])
-    ]
-
-    private static let seit: [RealLifeSentence] = [
-        RealLifeSentence(place: "At the doctor's", systemImage: "stethoscope",
-                         german: "Seit wann haben Sie die Schmerzen?",
-                         english: "How long have you had the pain?", marked: ["Seit"]),
-        RealLifeSentence(place: "Meeting a neighbour", systemImage: "house",
-                         german: "Wir wohnen seit 2020 in diesem Haus.",
-                         english: "We've lived in this house since 2020.", marked: ["seit"]),
-        RealLifeSentence(place: "Station announcement", systemImage: "tram",
-                         german: "Die Strecke ist seit Montag gesperrt.",
-                         english: "The line has been closed since Monday.", marked: ["seit"]),
-        RealLifeSentence(place: "Planning a holiday", systemImage: "airplane",
-                         german: "Wir fahren für zwei Wochen nach Italien.",
-                         english: "We're going to Italy for two weeks.", marked: ["für"])
-    ]
-
-    private static let weil: [RealLifeSentence] = [
-        RealLifeSentence(place: "Sign on a shop door", systemImage: "storefront",
-                         german: "Wir bleiben heute geschlossen, weil wir Inventur machen.",
-                         english: "We're closed today because we're doing a stocktake.", marked: ["weil", "machen"]),
-        RealLifeSentence(place: "Letter from an office", systemImage: "envelope",
-                         german: "Bitte melden Sie sich, wenn Sie Fragen haben.",
-                         english: "Please get in touch if you have any questions.", marked: ["wenn", "haben"]),
-        RealLifeSentence(place: "Email from work", systemImage: "at",
-                         german: "Ich hoffe, dass es Ihnen gut geht.",
-                         english: "I hope you're well.", marked: ["dass", "geht"]),
-        RealLifeSentence(place: "On the train", systemImage: "tram",
-                         german: "Wir wissen noch nicht, ob der Anschluss wartet.",
-                         english: "We don't know yet whether the connection will wait.", marked: ["ob", "wartet"])
     ]
 
     private static let nominal: [RealLifeSentence] = [

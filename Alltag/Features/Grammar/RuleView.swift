@@ -247,6 +247,6 @@ private struct MistakeCard: View {
 }
 
 #Preview {
-    NavigationStack { RuleView(rule: MockRules.weil) }
+    NavigationStack { RuleView(rule: MockRules.b1SimplePast) }
         .modelContainer(AlltagStore.preview)
 }
