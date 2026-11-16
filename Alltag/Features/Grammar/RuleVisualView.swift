@@ -7,12 +7,13 @@
 
 import SwiftUI
 
-/// The picture of a rule: who does something to what, as two pieces of
-/// artwork with the verb on an arrow between them. The word the rule changes
-/// is in the theme colour.
+/// The picture of a rule: who does something to what, as two plain symbols
+/// with the verb on an arrow between them. The word the rule changes is in
+/// the theme colour.
 struct RuleScene: View {
     let visual: RuleVisual
-    @ScaledMetric(relativeTo: .title3) private var artworkSize: CGFloat = 76
+    @ScaledMetric(relativeTo: .title3) private var symbolSize: CGFloat = 46
+    @ScaledMetric(relativeTo: .title3) private var rowHeight: CGFloat = 60
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
@@ -24,7 +25,7 @@ struct RuleScene: View {
                     .font(.title2.weight(.semibold))
             }
             .foregroundStyle(.accent)
-            .frame(height: artworkSize)
+            .frame(height: rowHeight)
             part(visual.target)
         }
         .frame(maxWidth: .infinity)
@@ -36,9 +37,11 @@ struct RuleScene: View {
 
     private func part(_ part: RuleVisual.Part) -> some View {
         VStack(spacing: 4) {
-            ScenarioArtwork(systemImage: part.systemImage, symbolSize: 38, cornerRadius: 22)
-                .frame(width: artworkSize, height: artworkSize)
-                .padding(.bottom, 4)
+            Image(systemName: part.systemImage)
+                .font(.system(size: symbolSize))
+                .symbolRenderingMode(.hierarchical)
+                .frame(height: rowHeight)
+                .accessibilityHidden(true)
             Text(Self.highlighted(part))
                 .font(.headline)
             Text(verbatim: part.role)
