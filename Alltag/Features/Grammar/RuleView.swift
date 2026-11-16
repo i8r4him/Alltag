@@ -8,12 +8,14 @@
 import SwiftData
 import SwiftUI
 
-/// A grammar rule, taught from a real moment in numbered steps.
+/// A grammar rule, taught from a real moment in numbered steps, in Today's
+/// look: the sky, clear glass cards, rounded type and the theme's artwork.
 struct RuleView: View {
     let rule: GrammarRule
     @Environment(\.services) private var services
     @Query private var solved: [SolvedRule]
     @State private var task: RuleModel
+    @State private var spoken = 0
 
     init(rule: GrammarRule) {
         self.rule = rule
@@ -37,7 +39,7 @@ struct RuleView: View {
                     MistakeCard(mistake: mistake)
                 }
                 Text("Try it")
-                    .textRole(.cardTitle)
+                    .textRole(.sectionHeader)
                     .accessibilityAddTraits(.isHeader)
                     .padding(.horizontal, 4)
                     .padding(.top, 22)
@@ -47,34 +49,43 @@ struct RuleView: View {
             .padding(.horizontal, Spacing.screen)
             .padding(.bottom, 32)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
+        .scrollIndicators(.hidden)
+        .fontDesign(.rounded)
         .readableContentMargins()
-        .background(.screenBackground)
+        .skyBackground()
         .navigationBarTitleDisplayMode(.inline)
         .onscreenEntity(GrammarRuleEntity(rule), title: rule.title)
     }
 
     // MARK: Header
 
+    @ScaledMetric(relativeTo: .title) private var artworkSize: CGFloat = 88
+
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Text(verbatim: rule.level.title)
-                    .textRole(.caption)
-                    .fontWeight(.bold)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    // On the screen background, so controlFill (surfaceSecondary vanishes in light mode).
-                    .background(.controlFill, in: .rect(cornerRadius: 7, style: .continuous))
+        HStack(alignment: .center, spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
                 if isSolved {
-                    Text("Solved")
-                        .textRole(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.success)
+                    Label {
+                        Text("\(rule.level.title) · Solved")
+                    } icon: {
+                        Image(systemName: "checkmark.circle.fill")
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.accent)
+                } else {
+                    Text(verbatim: rule.level.title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.accent)
                 }
+                Text(verbatim: rule.title)
+                    .font(.title.weight(.bold))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityAddTraits(.isHeader)
             }
-            Text(verbatim: rule.title)
-                .textRole(.title2)
-                .accessibilityAddTraits(.isHeader)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            ScenarioArtwork(systemImage: rule.systemImage)
+                .frame(width: artworkSize, height: artworkSize)
         }
         .padding(.top, 8)
     }
@@ -83,40 +94,37 @@ struct RuleView: View {
 
     private var heardCard: some View {
         Button {
+            spoken += 1
             Task { await services.voice.speak(rule.german, rate: .normal) }
         } label: {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
                     Label(rule.place, systemImage: rule.systemImage)
-                        .textRole(.meta)
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Image(systemName: "speaker.wave.2")
-                        .foregroundStyle(.secondary)
+                    Image(systemName: "speaker.wave.2.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(.accent)
+                        .frame(width: 36, height: 36)
+                        .glassEffect(.regular, in: .circle)
                         .accessibilityHidden(true)
                 }
                 Text(verbatim: rule.german)
-                    .font(.system(.title3, weight: .semibold))
+                    .font(.title3.weight(.semibold))
                     .foregroundStyle(.primary)
                 Text(verbatim: rule.english)
-                    .textRole(.bodySmall)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
             .multilineTextAlignment(.leading)
-            .padding(18)
+            .padding(Spacing.cardLarge)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background {
-                RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
-                    .fill(.surface)
-                    .overlay {
-                        RadialGradient(colors: [.accentFill.opacity(0.12), .clear],
-                                       center: .topTrailing, startRadius: 0, endRadius: 240)
-                            .clipShape(.rect(cornerRadius: Radius.card, style: .continuous))
-                    }
-            }
             .contentShape(.rect(cornerRadius: Radius.card, style: .continuous))
+            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: Radius.card, style: .continuous))
         }
-        .buttonStyle(.card)
+        .buttonStyle(.plain)
+        .sensoryFeedback(.impact(weight: .medium), trigger: spoken)
         .accessibilityElement(children: .combine)
         .accessibilityHint("Plays the sentence.")
     }
@@ -130,12 +138,12 @@ struct RuleView: View {
             }
             .accessibilityElement(children: .combine)
             Text(verbatim: rule.notice)
-                .textRole(.bodySmall)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
-        .padding(18)
+        .padding(Spacing.cardLarge)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
     }
 
     private var ruleCard: some View {
@@ -144,9 +152,9 @@ struct RuleView: View {
                 .textRole(.body)
             PatternBar(slots: rule.pattern)
         }
-        .padding(18)
+        .padding(Spacing.cardLarge)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
     }
 }
 
@@ -158,13 +166,13 @@ private struct RuleStepHeader: View {
     var body: some View {
         HStack(spacing: 8) {
             Text(number, format: .number)
-                .textRole(.caption)
-                .fontWeight(.bold)
-                .frame(width: 22, height: 22)
-                .background(.controlFill, in: .circle)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.accent)
+                .frame(width: 30, height: 30)
+                .glassEffect(.regular, in: .circle)
                 .accessibilityHidden(true)
             Text(title)
-                .textRole(.cardTitle)
+                .textRole(.sectionHeader)
         }
         .padding(.horizontal, 4)
         .padding(.top, 22)
@@ -199,10 +207,9 @@ private struct MistakeCard: View {
                 .foregroundStyle(.tertiary)
         }
         .textRole(.body)
-        .padding(.horizontal, 18)
-        .padding(.vertical, 16)
+        .padding(Spacing.cardLarge)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
     }
 }
 

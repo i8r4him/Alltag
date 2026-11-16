@@ -144,6 +144,7 @@ private struct QuestionView: View {
             .padding(.bottom, 16)
             .animation(.easeOut(duration: 0.25), value: model.hasPicked)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .safeAreaInset(edge: .bottom) {
             if model.hasPicked {
                 Button { model.next() } label: { Text("Continue") }

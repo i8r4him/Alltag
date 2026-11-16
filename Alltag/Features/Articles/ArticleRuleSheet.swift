@@ -56,6 +56,7 @@ private struct ArticleRuleFocusSheet: View {
                 .padding(.horizontal, Spacing.onboarding)
                 .padding(.top, 8)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .scrollIndicators(.hidden)
         .safeAreaInset(edge: .bottom) {
             Button(action: onNext) {

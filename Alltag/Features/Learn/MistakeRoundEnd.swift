@@ -41,6 +41,7 @@ struct MistakeRoundEnd: View {
             }
             .padding(.bottom, 16)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .scrollIndicators(.hidden)
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 12) {

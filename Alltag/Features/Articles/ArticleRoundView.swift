@@ -143,6 +143,7 @@ private struct ArticleQuestion: View {
             .padding(.bottom, 16)
             .animation(.easeOut(duration: 0.25), value: model.hasPicked)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .scrollIndicators(.hidden)
         .safeAreaInset(edge: .bottom) {
             if model.hasPicked {
@@ -340,6 +341,7 @@ private struct ArticleRoundDone: View {
                 }
             }
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .scrollIndicators(.hidden)
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 12) {

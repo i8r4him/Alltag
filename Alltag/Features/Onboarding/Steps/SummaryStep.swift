@@ -41,6 +41,7 @@ struct SummaryStep: View {
                     .foregroundStyle(.secondary)
             }
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
     }
 
     /// "10 min · evening"

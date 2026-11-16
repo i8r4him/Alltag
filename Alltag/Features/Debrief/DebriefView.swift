@@ -60,6 +60,7 @@ private struct DebriefContent: View {
             .padding(.bottom, 32)
             .animation(.easeOut(duration: 0.3), value: model.phase)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .scrollDismissesKeyboard(.interactively)
         .readableContentMargins()
         .background(.screenBackground)

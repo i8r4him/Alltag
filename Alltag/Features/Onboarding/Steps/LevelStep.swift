@@ -28,6 +28,7 @@ struct LevelStep: View {
             .animation(.easeOut(duration: 0.3), value: model.isPlacing)
             .animation(.easeOut(duration: 0.3), value: model.placementAnswer)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
     }
 
     private var levels: some View {

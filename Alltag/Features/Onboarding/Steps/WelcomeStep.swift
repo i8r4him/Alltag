@@ -27,6 +27,7 @@ struct WelcomeStep: View {
                 .padding(.bottom, 8)
                 .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .bottomLeading)
             }
+            .scrollEdgeEffectStyle(.soft, for: .all)
             .scrollBounceBehavior(.basedOnSize)
         }
         .background(alignment: .topTrailing) {

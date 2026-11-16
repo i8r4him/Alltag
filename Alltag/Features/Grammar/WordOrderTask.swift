@@ -21,24 +21,22 @@ struct WordOrderTask: View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 14) {
                 Text(verbatim: model.rule.taskPrompt)
-                    .textRole(.bodySmall)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                 answerArea
                 bank
                 feedback
                 HStack(spacing: 8) {
                     Button("Reset") { model.reset() }
-                        .buttonStyle(.bordered)
-                        .buttonBorderShape(.capsule)
+                        .buttonStyle(.glass)
                         .controlSize(.large)
-                        .tint(.primary)
                     Button { model.check() } label: { Text("Check").frame(maxWidth: .infinity) }
                         .buttonStyle(.primaryCompact)
                         .disabled(!model.canCheck)
                 }
             }
-            .padding(18)
-            .background(.surface, in: .rect(cornerRadius: Radius.card, style: .continuous))
+            .padding(Spacing.cardLarge)
+            .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
 
             if model.result == .right {
                 solveButton.transition(.opacity)
@@ -112,22 +110,30 @@ struct WordOrderTask: View {
         }
     }
 
+    /// The big button marks the rule solved; once solved, a glass button undoes it.
+    @ViewBuilder
     private var solveButton: some View {
-        Button {
-            if model.toggleSolved(in: modelContext) {
-                toast = ToastMessage(text: "Marked as solved")
+        if isSolved {
+            Button(action: toggleSolved) {
+                Label("Solved", systemImage: "checkmark.circle.fill")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, minHeight: 34)
             }
-        } label: {
-            Text(isSolved ? "Solved ✓" : "Mark as solved")
-                .textRole(.cardTitle)
-                // The green is light in dark mode and dark in light mode.
-                .foregroundStyle(isSolved ? AnyShapeStyle(.primary) : AnyShapeStyle(Color(uiColor: .systemBackground)))
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .background(isSolved ? AnyShapeStyle(.controlFill) : AnyShapeStyle(.success), in: .capsule)
-                .contentShape(.capsule)
+            .buttonStyle(.glass)
+            .accessibilityHint(Text("Marks the rule as not solved."))
+        } else {
+            Button(action: toggleSolved) {
+                Label("Mark as solved", systemImage: "checkmark")
+            }
+            .buttonStyle(.primary)
+            .accessibilityHint(Text("Marks the rule as solved."))
         }
-        .buttonStyle(.card)
-        .accessibilityHint(isSolved ? Text("Marks the rule as not solved.") : Text("Marks the rule as solved."))
+    }
+
+    private func toggleSolved() {
+        if model.toggleSolved(in: modelContext) {
+            toast = ToastMessage(text: "Marked as solved")
+        }
     }
 
     private var borderColor: AnyShapeStyle {

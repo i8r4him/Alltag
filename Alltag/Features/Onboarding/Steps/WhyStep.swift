@@ -26,6 +26,7 @@ struct WhyStep: View {
                 }
             }
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
     }
 }
 

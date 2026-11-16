@@ -71,6 +71,7 @@ private struct TranslateContent: View {
             .padding(.bottom, 32)
             .animation(.easeOut(duration: 0.25), value: model.result)
         }
+        .scrollEdgeEffectStyle(.soft, for: .all)
         .scrollDismissesKeyboard(.interactively)
         .safeAreaInset(edge: .bottom) {
             // Like a message composer: the button stays above the keyboard.
