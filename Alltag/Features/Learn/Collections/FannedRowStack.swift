@@ -14,6 +14,10 @@ struct FannedRowStack: View {
 
     @ScaledMetric(relativeTo: .headline) private var side: CGFloat = 172
 
+    /// Room above and below the cards, so the fanned cards behind them and
+    /// their glass aren't cut off by the row.
+    private static let fanRoom: CGFloat = 16
+
     var body: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 20) {
@@ -22,7 +26,7 @@ struct FannedRowStack: View {
                         .frame(width: side, height: side)
                 }
             }
-            .padding(.vertical, 16)
+            .padding(.vertical, Self.fanRoom)
             .scrollTargetLayout()
         }
         .scrollTargetBehavior(.viewAligned)
@@ -30,6 +34,9 @@ struct FannedRowStack: View {
         .scrollIndicators(.hidden)
         .scrollEdgeEffectStyle(.soft, for: .all)
         .padding(.horizontal, -Spacing.screen)
+        // The room is only for drawing, not a gap: the cards sit as far under
+        // the section title as every other section's content.
+        .padding(.vertical, -Self.fanRoom)
     }
 }
 
