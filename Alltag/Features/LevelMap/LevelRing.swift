@@ -56,11 +56,13 @@ struct LevelRingButton: View {
     @Environment(AppState.self) private var appState
     @Query private var solved: [SolvedRule]
     @Query private var sessions: [SessionRecord]
+    @Query(filter: #Predicate<MemoryItem> { $0.sourceRaw == "collection" }) private var collectionWords: [MemoryItem]
     @Query private var profiles: [UserProfile]
     @State private var taps = 0
 
     var body: some View {
-        let map = LevelMap(level: profiles.first?.level ?? .a1, solved: solved, sessions: sessions)
+        let map = LevelMap(level: profiles.first?.level ?? .a1, solved: solved, sessions: sessions,
+                           collectionWords: collectionWords)
         Button {
             taps += 1
             appState.open(.levelMap)

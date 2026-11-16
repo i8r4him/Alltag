@@ -13,8 +13,14 @@ import Testing
 @Suite("Level map")
 @MainActor
 struct LevelMapTests {
-    private func map(_ level: Level = .a2, solved: Set<String> = [], practised: Set<String> = []) -> LevelMap {
-        LevelMap(level: level, solvedRuleIDs: solved, practisedTitles: practised)
+    private func map(_ level: Level = .a2, solved: Set<String> = [], practised: Set<String> = [],
+                     collected: Set<String> = []) -> LevelMap {
+        LevelMap(level: level, solvedRuleIDs: solved, practisedTitles: practised, collectedTitles: collected)
+    }
+
+    /// The titles of every ready word collection at `level`.
+    private func allCollections(at level: Level = .a2) -> Set<String> {
+        Set(WordCollections.ready.filter { $0.level == level }.map(\.title))
     }
 
     @Test("School holds the level's rules in order, and counts the solved ones")
@@ -49,16 +55,31 @@ struct LevelMapTests {
         #expect(LevelMap(level: .a2, solved: [], sessions: [minute]).progress(of: .cafe)?.doneCount == 0)
     }
 
-    @Test("Library and market are soon: they show no ring and don't count")
+    @Test("The library, and the market at a level without collections, are soon: no ring, and they don't count")
     func soonPlaces() throws {
-        let fresh = map()
+        #expect(allCollections(at: .a1).isEmpty)
+        let fresh = map(.a1)
         #expect(fresh.progress(of: .library)?.isOpen == false)
         #expect(fresh.progress(of: .market)?.isOpen == false)
         #expect(fresh.progress(of: .station) == nil)
-        let rules = GrammarProgress.rules(at: .a2).map(\.id)
+        let rules = GrammarProgress.rules(at: .a1).map(\.id)
         // All rules solved, no situation: the open places are half done.
-        #expect(map(solved: Set(rules)).fraction == 0.5)
-        #expect(map(solved: Set(rules)).percent == 50)
+        #expect(map(.a1, solved: Set(rules)).fraction == 0.5)
+        #expect(map(.a1, solved: Set(rules)).percent == 50)
+    }
+
+    @Test("The market holds the level's ready word collections, and counts the ones added to Memory")
+    func market() throws {
+        let collections = WordCollections.ready.filter { $0.level == .a2 }
+        let first = try #require(collections.first)
+        let market = try #require(map(collected: [first.title]).progress(of: .market))
+        #expect(market.isOpen)
+        #expect(market.stops?.map(\.id) == collections.map(\.id))
+        #expect(market.doneCount == 1)
+        #expect(market.nextStop?.destination == .collection(id: collections[1].id))
+        // A collection of another level doesn't count here.
+        let other = try #require(WordCollections.ready.first { $0.level == .b1 })
+        #expect(map(collected: [other.title]).progress(of: .market)?.doneCount == 0)
     }
 
     @Test("The percentage rounds down, so 100 means done")
@@ -73,17 +94,19 @@ struct LevelMapTests {
     @Test("The next place is the open one furthest behind, and you are there")
     func nextPlace() throws {
         let rules = GrammarProgress.rules(at: .a2).map(\.id)
-        let behindOnGrammar = map(practised: [String(localized: try #require(SituationCatalogue.all.first).title)])
+        let behindOnGrammar = map(practised: [String(localized: try #require(SituationCatalogue.all.first).title)],
+                                  collected: allCollections())
         #expect(behindOnGrammar.nextPlace?.place == .school)
         #expect(behindOnGrammar.here == .school)
-        let behindOnTalking = map(solved: Set(rules.prefix(10)))
+        let behindOnTalking = map(solved: Set(rules.prefix(10)), collected: allCollections())
         #expect(behindOnTalking.nextPlace?.place == .cafe)
     }
 
     @Test("With every open place full, you stand at the station, but the test stays shut while places are soon")
     func everythingDone() {
         let all = map(solved: Set(GrammarProgress.rules(at: .a2).map(\.id)),
-                      practised: Set(SituationCatalogue.all.map { String(localized: $0.title) }))
+                      practised: Set(SituationCatalogue.all.map { String(localized: $0.title) }),
+                      collected: allCollections())
         #expect(all.percent == 100)
         #expect(all.nextPlace == nil)
         #expect(all.here == .station)

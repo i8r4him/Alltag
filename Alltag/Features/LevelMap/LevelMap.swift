@@ -7,15 +7,18 @@
 
 import Foundation
 
-/// One thing to do in a place: a rule to solve, a situation to talk through.
+/// One thing to do in a place: a rule to solve, a situation to talk through,
+/// a word collection to add to Memory.
 struct MapStop: Identifiable, Hashable {
     enum Destination: Hashable {
         case rule(id: String)
         case situation(id: String)
+        case collection(id: String)
     }
 
     let id: String
-    /// Already in the learner's language (a rule's or a situation's title).
+    /// A rule's or a situation's title in the learner's language, or a
+    /// collection's German name ("Beim Arzt").
     let title: String
     let isDone: Bool
     let destination: Destination
@@ -48,14 +51,15 @@ struct PlaceProgress: Identifiable {
 /// place that fills up, and the level test waits at the station.
 ///
 /// Only real progress counts. A place whose content isn't real yet (Read and
-/// Write, and Words until the word collections are in) is "soon" and left out
-/// of the percentage.
+/// Write, and Words at a level without ready word collections) is "soon" and
+/// left out of the percentage.
 struct LevelMap {
     let level: Level
     /// The places in the order of the walk through town; the station isn't one.
     let places: [PlaceProgress]
 
-    init(level: Level, solvedRuleIDs: Set<String>, practisedTitles: Set<String>) {
+    /// - Parameter collectedTitles: the titles of the word collections with words in Memory.
+    init(level: Level, solvedRuleIDs: Set<String>, practisedTitles: Set<String>, collectedTitles: Set<String> = []) {
         self.level = level
         let rules = GrammarProgress.rules(at: level)
         let school = PlaceProgress(place: .school, stops: rules.isEmpty ? nil : rules.map { rule in
@@ -67,14 +71,21 @@ struct LevelMap {
             return MapStop(id: situation.id, title: title, isDone: practisedTitles.contains(title),
                            destination: .situation(id: situation.id))
         })
-        places = [cafe, PlaceProgress(place: .library, stops: nil), PlaceProgress(place: .market, stops: nil), school]
+        let collections = WordCollections.ready.filter { $0.level == level }
+        let market = PlaceProgress(place: .market, stops: collections.isEmpty ? nil : collections.map { collection in
+            MapStop(id: collection.id, title: collection.title, isDone: collectedTitles.contains(collection.title),
+                    destination: .collection(id: collection.id))
+        })
+        places = [cafe, PlaceProgress(place: .library, stops: nil), market, school]
     }
 
-    /// From what the app has saved: the solved rules and the conversations kept in the history.
-    init(level: Level, solved: [SolvedRule], sessions: [SessionRecord]) {
+    /// From what the app has saved: the solved rules, the conversations kept
+    /// in the history and the words collections added to Memory.
+    init(level: Level, solved: [SolvedRule], sessions: [SessionRecord], collectionWords: [MemoryItem] = []) {
         self.init(level: level,
                   solvedRuleIDs: Set(solved.map(\.ruleID)),
-                  practisedTitles: Set(sessions.filter { $0.kind == .conversation }.map(\.title)))
+                  practisedTitles: Set(sessions.filter { $0.kind == .conversation }.map(\.title)),
+                  collectedTitles: CollectionMemory.addedTitles(collectionWords))
     }
 
     /// The level after this one, or `nil` at the top.

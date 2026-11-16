@@ -17,10 +17,13 @@ struct LevelMapView: View {
     @Environment(AppState.self) private var appState
     @Query private var solved: [SolvedRule]
     @Query private var sessions: [SessionRecord]
+    @Query(filter: #Predicate<MemoryItem> { $0.sourceRaw == "collection" }) private var collectionWords: [MemoryItem]
     @Query private var profiles: [UserProfile]
     @State private var openPlace: TownPlace?
     /// What to open once the place's sheet has gone.
     @State private var pendingStop: MapStop?
+    /// A word collection opened from the market or the next-stop card.
+    @State private var openCollection: WordCollection?
     /// Another level's map the learner is looking at; `nil` shows their own.
     @State private var shownLevel: Level?
     /// Which way the town slides when the level changes: a higher level comes down from above.
@@ -32,7 +35,8 @@ struct LevelMapView: View {
     private var ownLevel: Level { profiles.first?.level ?? .a1 }
 
     var body: some View {
-        let map = LevelMap(level: shownLevel ?? ownLevel, solved: solved, sessions: sessions)
+        let map = LevelMap(level: shownLevel ?? ownLevel, solved: solved, sessions: sessions,
+                           collectionWords: collectionWords)
         let isOwn = map.level == ownLevel
         ZStack {
             town(map, isOwn: isOwn)
@@ -72,6 +76,9 @@ struct LevelMapView: View {
                 openPlace = nil
             }
             .navigationTransition(.zoom(sourceID: place, in: placeZoom))
+        }
+        .sheet(item: $openCollection) { collection in
+            WordCollectionSheet(collection: collection)
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: openPlace) { _, place in place != nil }
         .sensoryFeedback(.impact(weight: .medium), trigger: shownLevel)
@@ -153,6 +160,7 @@ struct LevelMapView: View {
         switch stop.destination {
         case .rule(let id): appState.open(.rule(id: id))
         case .situation(let id): appState.present(.situation(id))
+        case .collection(let id): openCollection = WordCollections.collection(id: id)
         }
     }
 }
