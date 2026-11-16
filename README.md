@@ -298,7 +298,7 @@ Alltag/                                   ← repo root
 │  │  ├─ MockReading.swift                Read screen: saved articles, texts from daily life (with German to read, until #270)
 │  │  ├─ MockWriteListen.swift            Write tasks and phrases, Listen clips
 │  │  ├─ MockActivities.swift             ACTS
-│  │  ├─ MockRules.swift                  the rules in order (`all`); the prototype rule of C1 (RULES)
+│  │  ├─ MockRules.swift                  the rules in order (`all`) (RULES)
 │  │  ├─ MockRules+Accusative.swift       the accusative (A1): the first rule with a picture and an exam
 │  │  ├─ MockRules+A1Start.swift          A1: pronouns, sein/haben/möchte, present tense, verb second, questions
 │  │  ├─ MockRules+A1Nouns.swift          A1: articles, plural, nicht/kein, possessives, welcher/dieser
@@ -322,6 +322,13 @@ Alltag/                                   ← repo root
 │  │  ├─ MockRules+B2.swift               B2: the list in order (`b2`), and word order
 │  │  ├─ MockRules+B2….swift              B2: Konjunktiv II, passive, prepositions, verbs, modal verbs, nouns, forms,
 │  │  │                                   clauses, relative clauses, words, style (one file each)
+│  │  ├─ MockRules+C1.swift               C1: the rules in order (`c1`)
+│  │  ├─ MockRules+C1Verbs.swift          C1: tenses, guesses about the past, sollen/wollen, umfahren, genitive verbs
+│  │  ├─ MockRules+C1Forms.swift          C1: alle/viele + adjective, the passive without a subject, its limits, without werden
+│  │  ├─ MockRules+C1Prepositions.swift   C1: vor/über/unter beyond places, um/bei/aus…, laut/zufolge, zuliebe/mittels
+│  │  ├─ MockRules+C1Connectors.swift     C1: preposition, adverb or connector for time, reason, means
+│  │  ├─ MockRules+C1Style.swift          C1: nominal style, noun-verb pairs (in Kraft treten), attributes
+│  │  ├─ MockRules+C1Sentence.swift       C1: auch/nur/erst, known before new, spoken German
 │  │  ├─ MockLevels.swift                 LEVELS
 │  │  ├─ MockPhrasebook.swift             PB
 │  │  ├─ MockDebrief.swift                DB
@@ -489,7 +496,7 @@ Rule: level pill → title → numbered sections:
 **A2 is written in full too**, twenty rules in the same shape and order of opening (`MockRules.a2`, IDs starting with `a2-`): the past with haben, the participle, the past with sein, war/hatte/konnte, pronouns in the accusative and dative, verbs with the dative, giving (two objects), reflexive verbs, und/aber/oder/denn, deshalb/trotzdem/dann, weil/dass/wenn, Wo? or Wohin?, zum/beim/vom, hier/hin/her, adjectives after der, adjectives after ein, comparing, the particles denn/mal/doch, compound nouns, endings that tell the article.
 **B1 is written in full too: thirty rules in the same shape**, in the order they open (`MockRules.b1`, IDs starting with `b1-`): the simple past, the past perfect, wenn/als, bevor/nachdem/während/seit, indirect questions, relative clauses 1 and 2, separable or not, reflexive pronouns in the dative, stellen/stehen, verbs with prepositions, da-/wo- words, the infinitive with zu, without zu, um … zu/damit, lassen, the future, the passive, Konjunktiv II, the four jobs of werden, the genitive, wegen/trotz/innerhalb/außerhalb, time prepositions, nouns that add -n, adjectives without an article, adjectives as nouns, the superlative, verb + d as an adjective, two-part connectors and je … desto. The verb at the end after weil, dass and wenn is an A2 rule.
 **B2 is written in full too: 61 rules in the same shape** (`MockRules.b2`, IDs starting with `b2-`), from word order through the Konjunktiv II, the passive, prepositions, verbs, nouns and adjectives, subordinate and relative clauses to modal particles and commas.
-At C1 there is still the prototype's rule with "Try it": nominal; other topics there are listed only.
+**C1 is written in the same shape: twenty-two rules** (`MockRules.c1`, IDs starting with `c1-`), only the rules that are new at C1 (those shared with B2 belong to B2): the tenses, guesses about the past, sollen/wollen, umfahren/umfahren, verbs with the genitive, endings after alle/viele, three on the passive, four on prepositions, three on preposition, adverb or connector, nominal style, noun-verb pairs, attributes, focus particles, the order of information and spoken German.
 
 ### Debrief
 "Lunch at the bakery · 12:40" (from Calendar). Text field "What did you want to say?" → "Find the words" → spinner → two phrase cards (tap to hear), grammar tip, "Save to phrasebook".
