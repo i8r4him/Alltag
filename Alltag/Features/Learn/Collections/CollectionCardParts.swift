@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// What every stack design needs: the collections in order, which are in
+/// What the row of collections needs: the collections in order, which are in
 /// Memory, and what a tap on a card or its + does.
 struct CollectionDeck {
     let collections: [WordCollection]

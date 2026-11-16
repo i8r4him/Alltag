@@ -234,11 +234,11 @@ Alltag/                                   ← repo root
 │  │  │  ├─ SkillProgress.swift           what each banner shows: rules solved, words saved from Read, or "Coming soon" (tested)
 │  │  │  ├─ Collections/                  (#386) ready-made words by topic and level; + adds them to Memory
 │  │  │  │  ├─ WordCollection.swift       a collection and its words; the order for the learner's level
-│  │  │  │  ├─ WordCollectionsSection.swift the section on Learn; five stack designs behind a temporary switcher
+│  │  │  │  ├─ WordCollectionsSection.swift the section on Learn: a sideways row of stacked cards
+│  │  │  │  ├─ FannedRowStack.swift       the row: square glass cards with two cards fanned out behind each
 │  │  │  │  ├─ WordCollectionSheet.swift  a collection's words, zooming out of its card
 │  │  │  │  ├─ CollectionMemory.swift     adds a collection's words to Memory and takes them out (tested)
-│  │  │  │  ├─ CollectionCardParts.swift  the + button, level badge, artwork and stack layers the designs share
-│  │  │  │  ├─ Stacks/                    the five designs to choose from
+│  │  │  │  ├─ CollectionCardParts.swift  the + button, level badge, artwork and stack layers
 │  │  │  │  └─ Content/                   the words: A2 (doctor's, flat, shopping) and B1 (work, offices, transport)
 │  │  │  ├─ Ask/
 │  │  │  │  ├─ AskInPlace.swift           the field you type in on Learn and the German answer there, with Translate's parts (#304)
