@@ -73,13 +73,18 @@ jobs:
 
       - name: String Catalogs are up to date
         run: |
-          # The kept build still holds the strings of Swift files that were deleted or renamed,
-          # so only the strings of files that exist now count.
+          # The kept build still holds the strings of Swift files that were deleted or renamed
+          # (a .stringsdata next to the file's .o). Those are skipped; the rest, such as the
+          # App Intents strings, which have no .o of their own, all count.
           swift_files=$(git ls-files '*.swift' | sed 's|.*/||; s|\.swift$||' | sort -u)
           stringsdata=()
           while IFS= read -r -d '' file; do
             name=$(basename "$file" .stringsdata)
-            if grep -qxF "$name" <<< "$swift_files"; then stringsdata+=(--stringsdata "$file"); fi
+            if [ -e "$(dirname "$file")/$name.o" ] && ! grep -qxF "$name" <<< "$swift_files"; then
+              echo "Skipping $name.stringsdata: no $name.swift any more"
+              continue
+            fi
+            stringsdata+=(--stringsdata "$file")
           done < <(find "$DERIVED_DATA" -name "*.stringsdata" \( -path "*/Debug-iphonesimulator/Alltag.build/Objects-normal/*" -o -path "*/Debug-iphonesimulator/AlltagTranslation.build/Objects-normal/*" \) -print0)
           mkdir -p "$RUNNER_TEMP/catalog"
           for name in Localizable AppShortcuts; do
@@ -92,4 +97,5 @@ jobs:
 
       - name: Shut down the CI simulator
         if: always()
-        run: xcrun simctl shutdown "$SIMULATOR" || true
+        # xcodebuild may have shut it down already.
+        run: xcrun simctl shutdown "$SIMULATOR" 2>/dev/null || true
