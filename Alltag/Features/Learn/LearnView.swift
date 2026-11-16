@@ -8,8 +8,8 @@
 import SwiftData
 import SwiftUI
 
-/// Learn: everything apart from speaking (that's on Today). Your mistakes first,
-/// then Read, Write, Listen and Grammar.
+/// Learn: something new to learn. Speaking is on Today, and keeping and
+/// reviewing (your mistakes too) is in Memory.
 struct LearnView: View {
     @Environment(AppState.self) private var appState
     @State private var toolTaps = 0
@@ -35,11 +35,6 @@ struct LearnView: View {
         ScrollView {
             VStack(spacing: Spacing.section) {
                 ToolsSection(onOpen: open)
-                LearnSection(title: "Fix your mistakes", note: Text("1 min")) {
-                    MistakesCard { appState.present(.activity(.mistakes)) }
-                    SessionsLink { appState.open(.sessions) }
-                }
-                .fontDesign(.rounded)
                 SkillsSection(onOpen: open)
             }
             .padding(.horizontal, Spacing.screen)

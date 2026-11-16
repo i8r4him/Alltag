@@ -9,8 +9,8 @@ import Foundation
 import Observation
 import SwiftData
 
-/// A round of Fix your mistakes: one answer per mistake (the learner turns
-/// the card over and says whether they knew the fix). Each answer moves
+/// A round of Fix your mistakes: one answer per mistake (the learner writes
+/// the sentence correctly, or asks for the fix). Each answer moves
 /// the mistake in Memory at once (stronger and further away, or weaker and
 /// back next time), so leaving half-way loses nothing.
 @Observable

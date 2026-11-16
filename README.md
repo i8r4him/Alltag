@@ -184,7 +184,7 @@ Alltag/                                   ← repo root
 │  │  │     ├─ TalkTopic.swift            a topic in German; TalkTopics picks one written for the learner's level
 │  │  │     └─ TalkTopics+A1.swift … +C1  50 topics for each level (C2 uses C1's)
 │  │  ├─ Sessions/                        (#225)
-│  │  │  ├─ SessionsView.swift            "Your sessions" link on Learn and the list (swipe to delete, delete all)
+│  │  │  ├─ SessionsView.swift            "Your sessions" link on Today and the list (swipe to delete, delete all)
 │  │  │  ├─ SessionDetailView.swift       one session: lines, fixes, and the recording of a 60-second talk
 │  │  │  └─ RecordingPlayer.swift         play or stop a recording, off the main thread
 │  │  ├─ Situations/                      (#178)
@@ -214,22 +214,23 @@ Alltag/                                   ← repo root
 │  │  │     └─ TranslateHistorySheet.swift the history's cards, in the shared `HistorySheet`
 │  │  ├─ Memory/
 │  │  │  ├─ MemoryView.swift              large title, segmented Words | Phrasebook, .searchable, review card
-│  │  │  ├─ MemoryFolders.swift           From your day · Saved · Mistakes folders (filter the list)
+│  │  │  ├─ MemoryFolders.swift           From your day · Saved · Mistakes folders (filter the list; Mistakes shows Fix your mistakes)
 │  │  │  ├─ MemoryFilter.swift            filters, search, ReviewSummary (pure, tested)
 │  │  │  ├─ WordRow.swift
-│  │  │  └─ PhrasebookTab.swift           (#33)
+│  │  │  ├─ PhrasebookTab.swift           (#33)
+│  │  │  └─ Mistakes/                     Fix your mistakes (#354)
+│  │  │     ├─ MistakesCard.swift         Fix your mistakes, on top of the Mistakes folder: the mistakes due now and their count; "All fixed for now" with when the next returns; empty state (#248, #251)
+│  │  │     ├─ MistakePractice.swift      conversation fixes → Memory › Mistakes; which are due, when the next returns
+│  │  │     ├─ MistakeQuestion.swift      one mistake ready to ask: what was said, the correction, why
+│  │  │     ├─ MistakeRoundModel.swift    one answer per mistake, each moving it in Memory at once (tested)
+│  │  │     ├─ MistakeRoundView.swift     the practice, full screen, zooming out of the card; the explanation after each answer
+│  │  │     ├─ MistakeQuestionViews.swift one mistake to write correctly: the field starts with what was said; the fix and why after Check
+│  │  │     └─ MistakeRoundEnd.swift      before and after: what was said, the correction, when it comes back
 │  │  ├─ Learn/
-│  │  │  ├─ LearnView.swift               tools, Fix your mistakes, then Practise (everything apart from speaking)
+│  │  │  ├─ LearnView.swift               tools, then Practise (something new; reviewing and your mistakes are in Memory)
 │  │  │  ├─ LearnTools.swift              the "How do I say …?" field (answers in place), Translate and Articles
 │  │  │  ├─ LearnComponents.swift         LearnScreen, LearnHeroCard, LearnSection, LearnList, LearnRow
 │  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour
-│  │  │  ├─ MistakesCard.swift            the mistakes due now and their count; "All fixed for now" with when the next returns; empty state (#248, #251)
-│  │  │  ├─ MistakePractice.swift         conversation fixes → Memory › Mistakes; which are due, when the next returns
-│  │  │  ├─ MistakeQuestion.swift         one mistake ready to ask: what was said, the correction, why
-│  │  │  ├─ MistakeRoundModel.swift       one answer per mistake, each moving it in Memory at once (tested)
-│  │  │  ├─ MistakeRoundView.swift        the practice, full screen, zooming out of the card; the explanation after each answer
-│  │  │  ├─ MistakeQuestionViews.swift    the flashcard: what was said, "Show the fix", then "Not yet" or "I knew it"
-│  │  │  ├─ MistakeRoundEnd.swift         before and after: what was said, the correction, when it comes back
 │  │  │  ├─ Ask/
 │  │  │  │  ├─ AskInPlace.swift           the field you type in on Learn and the German answer there, with Translate's parts (#304)
 │  │  │  │  └─ AskModel.swift             Translate's model, asked only when the learner sends (tested)
@@ -482,7 +483,8 @@ Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's init
 3. **Today's Focus** — glass card with one thing to do today (`TodayFocus`), different every day, and the big button; "Done today" after it was done.
 4. **Situations** — a few everyday situations (different every day) and "Situations ›" → all of them by category. Tapping one starts a live-voice role-play (`Situation.scenario`).
 5. **From your day** list: 60-second briefing · Debrief bakery · 3 new words from Safari (→ Memory filtered) · 1 writing mistake (→ Activity).
-6. "Learning beyond the app" ticket → Beyond.
+6. **Your sessions** — a glass row → every saved session to reread.
+7. "Learning beyond the app" ticket → Beyond.
 
 ### Conversation (full-screen)
 Today's sky background and rounded type. Header: close · title/meta (scenario) · voice/keyboard segmented glass. Goal in a glass capsule below.
@@ -500,7 +502,7 @@ Title "Translate" (`.inlineLarge`). One glass card with both languages: the text
 
 ### Memory
 Segmented Words | Phrasebook.
-Words: search, three folders (From your day · Saved · Mistakes — first words, item count; tap filters, tap again shows all), "Ready to review" card, list rows (article in secondary + word, meaning, MISTAKE badge, 4 strength dots) expanding to context sentence, source, Listen, Practise.
+Words: search, three folders (From your day · Saved · Mistakes — first words, item count; tap filters, tap again shows all; Mistakes opens with **Fix your mistakes**: the mistakes due now, each written correctly in a field that starts with what was said, then the fix and why), "Ready to review" card, list rows (article in secondary + word, meaning, MISTAKE badge, 4 strength dots) expanding to context sentence, source, Listen, Practise.
 Phrasebook: groups by place (At the doctor, Trains & travel, With my landlord, At work; "At the bakery" NEW after Debrief save).
 
 ### Learn & Activity

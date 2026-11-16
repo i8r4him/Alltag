@@ -8,7 +8,8 @@
 import SwiftData
 import SwiftUI
 
-/// Memory: the learner's words (#32) and phrasebook (#33).
+/// Memory: the learner's words (#32) and phrasebook (#33). The Mistakes folder
+/// is where they fix their own mistakes.
 struct MemoryView: View {
     enum Tab: Hashable {
         case words
@@ -98,6 +99,12 @@ struct MemoryView: View {
     @ViewBuilder
     private var words: some View {
         MemoryFolders(items: items, filter: $filter)
+
+        // Fix your mistakes lives in the Mistakes folder: the ones due now, ready to write correctly.
+        if filter == .mistakes, query.isEmpty {
+            MistakesCard { appState.present(.activity(.mistakes)) }
+                .transition(.opacity)
+        }
 
         let review = ReviewSummary(items: items)
         if filter == .all, query.isEmpty, !review.isEmpty {
