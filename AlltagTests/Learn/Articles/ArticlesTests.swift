@@ -53,6 +53,26 @@ struct ArticlesTests {
         #expect(try container.mainContext.fetch(FetchDescriptor<PracticeSession>()).map(\.kind) == [.review])
     }
 
+    @Test("A noun that lands before an answer counts as wrong and comes back")
+    func timeOut() throws {
+        let defaults = try #require(UserDefaults(suiteName: "ArticlesTests-\(UUID().uuidString)"))
+        var generator = SystemRandomNumberGenerator()
+        let trainer = ArticleTrainer(nouns: fixtures, defaults: defaults, using: &generator)
+        let first = try #require(trainer.current)
+
+        trainer.timeOut()
+        trainer.pick(first.article)
+        #expect(trainer.hasAnswered)
+        #expect(trainer.picked == nil)
+        #expect(trainer.isRight == false)
+        #expect(trainer.queue.last == first)
+        #expect(trainer.missed == [first])
+
+        trainer.next()
+        #expect(!trainer.timedOut)
+        #expect(trainer.index == 1)
+    }
+
     @Test("Nouns missed before come first in the next round")
     func missedComeFirst() throws {
         let defaults = try #require(UserDefaults(suiteName: "ArticlesTests-\(UUID().uuidString)"))
@@ -145,35 +165,128 @@ struct ArticleRoundModelTests {
         return services
     }
 
+    private func loaded(_ level: Level = .a2, defaults: UserDefaults) async -> ArticleRoundModel {
+        let model = ArticleRoundModel(services: services(StubArticleService()), level: level, defaults: defaults)
+        model.start()
+        while model.phase == .loading { await Task.yield() }
+        return model
+    }
+
     @Test("A round loads, keeps a wrong answer as a mistake, and counts as practice when it ends")
     func round() async throws {
         let defaults = try #require(UserDefaults(suiteName: "ArticleRoundModelTests-\(UUID().uuidString)"))
         let container = try AlltagStore.makeContainer(inMemory: true)
-        let model = ArticleRoundModel(services: services(StubArticleService()), level: .a2, defaults: defaults)
-        #expect(model.phase == .loading)
-
-        model.start()
-        while model.phase == .loading { await Task.yield() }
-        #expect(model.phase == .playing)
+        let model = await loaded(defaults: defaults)
+        #expect(model.phase == .ready)
         #expect(model.asked == 3)
         #expect(defaults.stringArray(forKey: ArticleRoundModel.recentKey)?.count == 3)
 
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        model.begin(at: start)
+        #expect(model.phase == .playing)
+        #expect(model.isFalling)
+
         let first = try #require(model.current)
         let wrong = try #require(Article.allCases.first { $0 != first.article })
-        model.pick(wrong, in: container.mainContext)
+        model.pick(wrong, at: start.addingTimeInterval(1), in: container.mainContext)
         #expect(model.isRight == false)
+        #expect(!model.isFalling)
+        #expect(model.score == 0)
+        #expect(model.savedMistakes == 1)
         #expect(model.saveFailed == false)
         #expect(try container.mainContext.fetch(FetchDescriptor<MemoryItem>()).count == 1)
 
-        model.next(in: container.mainContext)
+        var now = start.addingTimeInterval(2)
+        model.next(at: now, in: container.mainContext)
         while let noun = model.current {
-            model.pick(noun.article, in: container.mainContext)
-            model.next(in: container.mainContext)
+            model.pick(noun.article, at: now, in: container.mainContext)
+            now = now.addingTimeInterval(1)
+            model.next(at: now, in: container.mainContext)
         }
         #expect(model.phase == .done)
         #expect(model.rightFirstTime == 2)
         #expect(model.missedCount == 1)
+        #expect(model.isNewBest)
+        #expect(defaults.integer(forKey: ArticleRoundModel.bestKey) == model.score)
         #expect(try container.mainContext.fetch(FetchDescriptor<PracticeSession>()).map(\.kind) == [.review])
+    }
+
+    @Test("Each noun falls faster than the one before, down to the fastest")
+    func speedRises() async throws {
+        let defaults = try #require(UserDefaults(suiteName: "ArticleRoundModelTests-\(UUID().uuidString)"))
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let model = await loaded(defaults: defaults)
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        model.begin(at: start)
+        #expect(model.fallDuration == ArticleRoundModel.firstFall)
+        #expect(model.progress(at: start.addingTimeInterval(ArticleRoundModel.firstFall / 2)) == 0.5)
+
+        let first = try #require(model.current)
+        model.pick(first.article, at: start, in: container.mainContext)
+        model.next(at: start, in: container.mainContext)
+        #expect(model.fallDuration < ArticleRoundModel.firstFall)
+        #expect(model.progress(at: start) == 0)
+        // However long the round, never faster than the fastest.
+        #expect(ArticleRoundModel.firstFall - ArticleRoundModel.speedUp * 30 < ArticleRoundModel.fastestFall)
+    }
+
+    @Test("A quick right answer earns more points than a late one")
+    func quickBonus() async throws {
+        let defaults = try #require(UserDefaults(suiteName: "ArticleRoundModelTests-\(UUID().uuidString)"))
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let model = await loaded(defaults: defaults)
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        model.begin(at: start)
+
+        let first = try #require(model.current)
+        model.pick(first.article, at: start, in: container.mainContext)
+        #expect(model.lastPoints == ArticleRoundModel.points + ArticleRoundModel.quickBonus)
+        model.next(at: start, in: container.mainContext)
+
+        let second = try #require(model.current)
+        model.pick(second.article, at: start.addingTimeInterval(model.fallDuration * 0.9), in: container.mainContext)
+        #expect(model.lastPoints == ArticleRoundModel.points + 1)
+        #expect(model.score == 2 * ArticleRoundModel.points + ArticleRoundModel.quickBonus + 1)
+    }
+
+    @Test("A noun that lands counts as wrong and comes back, but isn't kept as a mistake")
+    func landing() async throws {
+        let defaults = try #require(UserDefaults(suiteName: "ArticleRoundModelTests-\(UUID().uuidString)"))
+        let container = try AlltagStore.makeContainer(inMemory: true)
+        let model = await loaded(defaults: defaults)
+        model.begin(at: Date(timeIntervalSinceReferenceDate: 0))
+        let first = try #require(model.current)
+
+        model.land()
+        #expect(model.timedOut)
+        #expect(model.isRight == false)
+        #expect(model.missed == [first])
+        #expect(model.total == 4)
+        #expect(model.savedMistakes == 0)
+        #expect(try container.mainContext.fetch(FetchDescriptor<MemoryItem>()).isEmpty)
+        #expect(defaults.stringArray(forKey: ArticleTrainer.missedKey) == [first.id])
+
+        // Too late to pick once it has landed.
+        model.pick(first.article, at: .now, in: container.mainContext)
+        #expect(model.score == 0)
+        model.next(at: .now, in: container.mainContext)
+        #expect(!model.timedOut)
+    }
+
+    @Test("In the background the noun stops falling and goes on from where it was")
+    func pause() async throws {
+        let defaults = try #require(UserDefaults(suiteName: "ArticleRoundModelTests-\(UUID().uuidString)"))
+        let model = await loaded(defaults: defaults)
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        model.begin(at: start)
+
+        model.pause(at: start.addingTimeInterval(2))
+        #expect(!model.isFalling)
+        #expect(model.remaining(at: start.addingTimeInterval(60)) == ArticleRoundModel.firstFall - 2)
+
+        model.resume(at: start.addingTimeInterval(60))
+        #expect(model.isFalling)
+        #expect(model.remaining(at: start.addingTimeInterval(61)) == ArticleRoundModel.firstFall - 3)
     }
 
     @Test("When the nouns don't arrive, the round says so and can be tried again")
