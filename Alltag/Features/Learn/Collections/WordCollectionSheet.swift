@@ -9,13 +9,17 @@ import SwiftData
 import SwiftUI
 
 /// A collection's words, opened from its card: the topic at the top, the big
-/// button to add them to Memory, and each word with a sentence from real life.
+/// button to add them to Memory, and the words with a sentence from real life.
+///
+/// The four ways to show the words sit behind a temporary ‹ n / 4 › switcher
+/// until Ibrahim picks one (#386); the others and the switcher go before merging.
 struct WordCollectionSheet: View {
     let collection: WordCollection
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Query(filter: #Predicate<MemoryItem> { $0.sourceRaw == "collection" }) private var collectionWords: [MemoryItem]
+    @AppStorage("learn.collectionWordsLayout") private var layout = CollectionWordsLayout.flashcards
     @State private var toggles = 0
 
     private var isAdded: Bool {
@@ -28,16 +32,14 @@ struct WordCollectionSheet: View {
                 VStack(alignment: .leading, spacing: Spacing.section) {
                     header
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Words")
-                            .textRole(.sectionHeader)
-                            .padding(.horizontal, 4)
-                        VStack(spacing: 0) {
-                            ForEach(Array(collection.words.enumerated()), id: \.element.id) { index, word in
-                                if index > 0 { Divider().padding(.leading, Spacing.card) }
-                                CollectionWordRow(word: word)
-                            }
+                        HStack {
+                            Text("Words")
+                                .textRole(.sectionHeader)
+                            Spacer()
+                            WordsLayoutSwitcher(layout: $layout)
                         }
-                        .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
+                        .padding(.horizontal, 4)
+                        words
                     }
                 }
                 .padding(.horizontal, Spacing.screen)
@@ -55,6 +57,15 @@ struct WordCollectionSheet: View {
             }
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: toggles)
+    }
+
+    @ViewBuilder private var words: some View {
+        switch layout {
+        case .flashcards: FlashcardWords(words: collection.words)
+        case .tiles: WordTiles(words: collection.words)
+        case .grouped: GroupedWords(words: collection.words)
+        case .sentences: SentenceWords(words: collection.words)
+        }
     }
 
     private var header: some View {
@@ -93,34 +104,6 @@ struct WordCollectionSheet: View {
         } else {
             try? CollectionMemory.add(collection, in: context)
         }
-    }
-}
-
-/// A word with its article, its meaning, and the sentence it's used in.
-private struct CollectionWordRow: View {
-    let word: CollectionWord
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(verbatim: word.displayWord)
-                    .font(.headline)
-                Spacer(minLength: 8)
-                Text(verbatim: word.meaning)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.trailing)
-            }
-            Text(verbatim: word.example)
-                .font(.subheadline)
-                .foregroundStyle(.accent)
-            Text(verbatim: word.exampleMeaning)
-                .font(.footnote)
-                .foregroundStyle(.tertiary)
-        }
-        .padding(Spacing.card)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .combine)
     }
 }
 

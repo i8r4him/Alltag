@@ -237,6 +237,7 @@ Alltag/                                   ← repo root
 │  │  │  │  ├─ WordCollectionsSection.swift the section on Learn: a sideways row of stacked cards
 │  │  │  │  ├─ FannedRowStack.swift       the row: square glass cards with two cards fanned out behind each
 │  │  │  │  ├─ WordCollectionSheet.swift  a collection's words, zooming out of its card
+│  │  │  │  ├─ Words/                     four ways to show the words, behind a temporary switcher: flashcards, tiles, grouped, sentences
 │  │  │  │  ├─ CollectionMemory.swift     adds a collection's words to Memory and takes them out (tested)
 │  │  │  │  ├─ CollectionCardParts.swift  the + button, level badge, artwork and stack layers
 │  │  │  │  └─ Content/                   the words: A2 (doctor's, flat, shopping) and B1 (work, offices, transport)
