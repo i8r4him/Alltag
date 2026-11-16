@@ -68,20 +68,22 @@ jobs:
             -parallel-testing-enabled NO \
             CODE_SIGNING_ALLOWED=NO \
             COMPILER_INDEX_STORE_ENABLE=NO \
-            | tee test.log | grep -E "error:|warning:|Test case|TEST (SUCCEEDED|FAILED)" || true
+            | tee test.log | grep -E "error:|warning:|Test case '|✘|Test run with|TEST (SUCCEEDED|FAILED)" || true
           grep -q "TEST SUCCEEDED" test.log
 
       - name: String Catalogs are up to date
         run: |
-          # The kept build still holds the strings of Swift files that were deleted or renamed
-          # (a .stringsdata next to the file's .o). Those are skipped; the rest, such as the
-          # App Intents strings, which have no .o of their own, all count.
-          swift_files=$(git ls-files '*.swift' | sed 's|.*/||; s|\.swift$||' | sort -u)
+          # The kept build still holds the strings of Swift files that were deleted or renamed:
+          # a .stringsdata next to an .o whose Swift file this build no longer compiled (the
+          # target's .SwiftFileList, generated files included). Those are skipped; the rest,
+          # such as the App Intents strings, which have no .o of their own, all count.
           stringsdata=()
           while IFS= read -r -d '' file; do
+            dir=$(dirname "$file")
             name=$(basename "$file" .stringsdata)
-            if [ -e "$(dirname "$file")/$name.o" ] && ! grep -qxF "$name" <<< "$swift_files"; then
-              echo "Skipping $name.stringsdata: no $name.swift any more"
+            if [ -e "$dir/$name.o" ] && compgen -G "$dir/*.SwiftFileList" > /dev/null \
+              && ! cat "$dir"/*.SwiftFileList | grep -qF "/$name.swift"; then
+              echo "Skipping $name.stringsdata: $name.swift is no longer built"
               continue
             fi
             stringsdata+=(--stringsdata "$file")
