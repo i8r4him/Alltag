@@ -75,6 +75,7 @@ struct SessionsView: View {
                             }
                     }
                 }
+                .scrollIndicators(.hidden)
                 .scrollEdgeEffectStyle(.soft, for: .all)
                 .scrollContentBackground(.hidden)
             }

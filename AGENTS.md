@@ -67,7 +67,7 @@ iCloud sync (SwiftData + CloudKit, #54) is switched on in `v1` (decided 15 Nov; 
 - **Everything follows the theme colour** (`AppTheme.shared.palette`, `.accent`, `.accentFill`). No fixed colours except meaning (coral for mistakes).
 - **Choosing a design:** when a screen's design is open, build two to four options on the branch behind a temporary "‹ n / N ›" glass switcher. The maintainer picks one, and the others and the switcher are removed before the PR is merged.
 - **Touch feedback:** a tap that opens or starts something answers with a **medium** haptic (`.sensoryFeedback(.impact(weight: .medium), …)`), not a light one. A sheet opened from a button or card **zooms out of it** (`.matchedTransitionSource` on the source, `.navigationTransition(.zoom)` on the sheet). Articles has both; the rest of the app follows.
-- **Soft scroll edges:** every scrolling screen (`ScrollView`, `List`, `Form`, sheets included) gets `.scrollEdgeEffectStyle(.soft, for: .all)` (the maintainer's rule, 15 Nov).
+- **Soft scroll edges, no scroll bars:** every scrolling view (`ScrollView`, `List`, `Form`, sheets and sideways rows included) gets `.scrollEdgeEffectStyle(.soft, for: .all)` and `.scrollIndicators(.hidden)` (the maintainer's rules, 15 and 16 Nov).
 - **Smooth interaction:** state that drives one control (a popover, a toggle) lives in that control's own view, so changing it doesn't redraw the whole screen mid-animation (see `StreakButton`).
 
 ## Workflow

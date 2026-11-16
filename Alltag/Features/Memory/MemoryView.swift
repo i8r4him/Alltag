@@ -52,6 +52,7 @@ struct MemoryView: View {
             .animation(.easeOut(duration: 0.25), value: filter)
             .animation(.easeOut(duration: 0.25), value: expandedID)
         }
+        .scrollIndicators(.hidden)
         .scrollEdgeEffectStyle(.soft, for: .all)
         .readableContentMargins()
         .skyBackground()

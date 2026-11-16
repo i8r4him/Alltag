@@ -54,6 +54,7 @@ struct ProfileView: View {
                 .padding(.bottom, 32)
             }
         }
+        .scrollIndicators(.hidden)
         .fontDesign(.rounded)
         .readableContentMargins()
         .scrollEdgeEffectStyle(.soft, for: .all)

@@ -241,6 +241,7 @@ struct CompanionEditor: View {
                     .textSelection(.enabled)
             }
         }
+        .scrollIndicators(.hidden)
         .scrollEdgeEffectStyle(.soft, for: .all)
         .navigationTitle(Text(verbatim: "Companion"))
     }

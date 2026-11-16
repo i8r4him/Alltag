@@ -132,6 +132,7 @@ private struct NewSituationSheet: View {
                     }
                 }
             }
+            .scrollIndicators(.hidden)
             .scrollEdgeEffectStyle(.soft, for: .all)
             .navigationTitle("New situation")
             .navigationBarTitleDisplayMode(.inline)

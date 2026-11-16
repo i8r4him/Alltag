@@ -47,6 +47,7 @@ struct PermissionsStep: View {
                 .padding(.horizontal, 4)
             }
         }
+        .scrollIndicators(.hidden)
         .scrollEdgeEffectStyle(.soft, for: .all)
     }
 }
