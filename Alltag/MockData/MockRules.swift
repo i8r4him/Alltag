@@ -10,8 +10,8 @@ import Foundation
 /// The grammar rules. The A1 and B1 rules have the new shape (one line of
 /// rule, a picture with a tiny table, an exam): the twenty A1 rules are in the
 /// `MockRules+A1….swift` files and `MockRules+Accusative.swift`, in the order
-/// `a1` lists them, the B1 rules in the `MockRules+B1….swift` files, in the
-/// order `b1` lists them. The other rules are still the prototype's (`RULES`).
+/// `a1` lists them. The twenty A2 rules have the same shape and are listed in
+/// `MockRules+A2.swift`. The rules above A2 are still the prototype's (`RULES`).
 enum MockRules {
     typealias Tile = GrammarRule.Tile
     typealias Slot = GrammarRule.PatternSlot
@@ -26,7 +26,7 @@ enum MockRules {
         fixedPrepositions, timePrepositions, whichThis
     ]
 
-    static let all: [GrammarRule] = a1 + b1 + [perfekt, seit, passiv, nominal]
+    static let all: [GrammarRule] = a1 + a2 + b1 + [passiv, nominal]
 
     static func rule(id: String) -> GrammarRule? {
         all.first { $0.id == id }
@@ -46,22 +46,6 @@ enum MockRules {
         taskAnswers: ["Morgen fahre ich nach Berlin"],
         visual: verbSecondVisual,
         exam: verbSecondExam
-    )
-
-    static let perfekt = GrammarRule(
-        id: "perfekt", level: .a2, title: "Talking about the past",
-        place: "Monday at work", systemImage: "briefcase",
-        german: "Ich bin am Wochenende nach Potsdam gefahren.", english: "I went to Potsdam at the weekend.",
-        tiles: [Tile(text: "Ich"), Tile(text: "bin", role: .verb), Tile(text: "am Wochenende"),
-                Tile(text: "nach Potsdam"), Tile(text: "gefahren", role: .end)],
-        notice: "Two verb parts form a bracket around everything else.",
-        rule: "In conversation, the past uses haben or sein in position 2 and the participle at the very end. "
-            + "Movement or change → sein.",
-        pattern: [Slot(label: "Subject"), Slot(label: "haben / sein", emphasis: .verb), Slot(label: "…"),
-                  Slot(label: "Participle", emphasis: .end)],
-        taskPrompt: "Say: \"I cooked yesterday.\"",
-        taskWords: ["gekocht", "Ich", "gestern", "habe"],
-        taskAnswers: ["Ich habe gestern gekocht"]
     )
 
     static let seit = GrammarRule(
