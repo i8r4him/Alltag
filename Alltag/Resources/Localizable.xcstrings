@@ -26,6 +26,7 @@
         }
       }
     },
+    "%@ test · locked" : {},
     "%@ · %@" : {
       "localizations" : {
         "en" : {
@@ -56,6 +57,26 @@
         }
       }
     },
+    "%@ · %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld of %3$lld"
+          }
+        }
+      }
+    },
+    "%@ · %lld%% to %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld%% to %3$@"
+          }
+        }
+      }
+    },
     "%@ · lesson in a later version" : {},
     "%@ · Rule %lld of %lld" : {
       "localizations" : {
@@ -68,6 +89,8 @@
       }
     },
     "%@ · Solved" : {},
+    "%@ · soon" : {},
+    "%@ · the top level" : {},
     "%@, %@" : {
       "localizations" : {
         "en" : {
@@ -78,6 +101,27 @@
         }
       }
     },
+    "%@, %lld of %lld done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$lld of %3$lld done"
+          }
+        }
+      }
+    },
+    "%@, %lld percent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$lld percent"
+          }
+        }
+      }
+    },
+    "%@, coming soon" : {},
     "%@: %@. %@" : {
       "localizations" : {
         "en" : {
@@ -406,6 +450,7 @@
     "Butter is 1.49 euros today." : {},
     "Buy a ticket and ask about the platform" : {},
     "By the end of the month we will have processed all the applications." : {},
+    "Café" : {},
     "Calendar" : {},
     "Calendar and keyboard text stay on your iPhone. Allow live voice to send audio to Google in Settings." : {},
     "Call me as soon as you're there." : {},
@@ -566,6 +611,7 @@
     "Even my boss laughed!" : {},
     "Evening" : {},
     "Every article right. Another round brings new nouns." : {},
+    "Every open place is full" : {},
     "Every plural takes die, so it doesn't tell you the singular's article." : {},
     "Every rule is done" : {},
     "Everyday life in Germany" : {},
@@ -864,7 +910,10 @@
     "Letters, notices and forms" : {},
     "LEVEL" : {},
     "Level" : {},
+    "Level test" : {},
+    "Level test, locked" : {},
     "Level track" : {},
+    "Library" : {},
     "Life's Situations" : {},
     "Lifelong learning" : {},
     "Listen" : {},
@@ -899,6 +948,7 @@
     "Many verbs come with a fixed preposition. Learn them as one piece, with the case." : {},
     "Mark as solved" : {},
     "Marked as solved" : {},
+    "Market" : {},
     "Marks the rule as not solved." : {},
     "Marks the rule as solved." : {},
     "Masculine, feminine, neuter, plural" : {},
@@ -928,6 +978,7 @@
     "Moral courage" : {},
     "More" : {},
     "More for %@" : {},
+    "More places open soon, then the level test at the station." : {},
     "More than one home" : {},
     "More to learn" : {},
     "Morning" : {},
@@ -1009,8 +1060,10 @@
     "News headline" : {},
     "News on the radio" : {},
     "Newspaper article" : {},
+    "Next" : {},
     "Next clue" : {},
     "Next question" : {},
+    "Next stop · %@" : {},
     "Next time, say" : {},
     "Next year" : {},
     "nicht" : {},
@@ -1186,6 +1239,7 @@
     "Railway app" : {},
     "Rainy Monday" : {},
     "Read" : {},
+    "Read and Write" : {},
     "Read the rule again" : {},
     "Reading a novel" : {},
     "Reading in the digital age" : {},
@@ -1245,6 +1299,7 @@
     "Saying no" : {},
     "Scan a letter" : {},
     "Scan it, and Alltag explains it simply." : {},
+    "School" : {},
     "School then and now" : {},
     "Score" : {},
     "Search your memory" : {},
@@ -1286,6 +1341,7 @@
     "Shows all situations." : {},
     "Shows an example" : {},
     "Shows the English" : {},
+    "Shows what's in this place" : {},
     "sich lassen + infinitive" : {},
     "Sign at a cinema" : {},
     "Sign at the bakery" : {},
@@ -1336,6 +1392,7 @@
     "Spanish" : {},
     "Speak" : {},
     "Speak German" : {},
+    "Speaking" : {},
     "Speaking…" : {},
     "Speech recognition isn't available right now. You can type instead." : {},
     "Speed" : {},
@@ -1358,6 +1415,7 @@
     "Starts a one-minute exercise on your mistakes." : {},
     "Starts a short review of the words you saved in Alltag." : {},
     "Statements" : {},
+    "Station" : {},
     "Station announcement" : {},
     "Steady progress" : {},
     "Still remembered 30 days after you met them" : {},
@@ -1417,6 +1475,16 @@
     "That's the colleague I work with." : {},
     "That's the customer I spoke to on the phone." : {},
     "That’s all for today" : {},
+    "The %@ test opens when every place in town is full. Pass it, and you're %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The %1$@ test opens when every place in town is full. Pass it, and you're %2$@."
+          }
+        }
+      }
+    },
     "The achievement society" : {},
     "The article can change with the meaning. Look the word up to see each meaning on its own." : {},
     "The bag belongs to the teacher." : {},
@@ -1559,6 +1627,7 @@
     "This is Jonas. He's new here." : {},
     "This morning" : {},
     "This needs the internet. Connect to Wi‑Fi or mobile data." : {},
+    "This place fills up once its texts and tasks are ready. Until then, it doesn't count towards your level." : {},
     "This rule isn't available any more." : {},
     "This session isn't on this iPhone any more." : {},
     "This shapes the situations you rehearse and the words we notice." : {},
@@ -1768,6 +1837,7 @@
     "Yesterday" : {},
     "Yesterday the Bundestag voted on the law." : {},
     "Yesterday the mayor opened the festival." : {},
+    "You are here" : {},
     "You can hang your coat on the coat rack." : {},
     "You can leave the car here until tomorrow." : {},
     "You can pay either in cash or by card." : {},
@@ -1792,6 +1862,8 @@
     "You save time by applying online." : {},
     "You speak both German and English." : {},
     "You wrote" : {},
+    "You're at the top" : {},
+    "You're at the top level. There's no test left to take." : {},
     "You're learning **German**. What do you speak already?" : {},
     "You're set, %@." : {},
     "You've reached your live voice limit for today. Keep practising on your iPhone." : {},
@@ -1805,6 +1877,8 @@
     "Your first saved word appears here." : {},
     "Your first step is waiting on Home. From now on, Alltag starts noticing words from your day." : {},
     "Your ID card was issued on 3 May." : {},
+    "Your level" : {},
+    "Your level map" : {},
     "Your next rule" : {},
     "Your own sentence" : {},
     "Your own situation" : {},

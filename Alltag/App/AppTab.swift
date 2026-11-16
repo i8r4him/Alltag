@@ -36,7 +36,7 @@ extension Route {
     /// The tab a screen opened from outside the app (Siri, Shortcuts) is pushed onto.
     var homeTab: AppTab {
         switch self {
-        case .articles, .howToSay, .read, .write, .listen, .grammar, .rule, .progress: .learn
+        case .articles, .howToSay, .read, .write, .listen, .grammar, .rule, .progress, .levelMap: .learn
         case .memory: .memory
         default: .today
         }

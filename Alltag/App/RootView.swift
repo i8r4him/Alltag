@@ -18,6 +18,8 @@ struct RootView: View {
     @Environment(\.modelContext) private var modelContext
     /// Shared by the mistakes card on Learn and the practice, which zooms out of it.
     @Namespace private var mistakesZoom
+    /// Shared by Learn's level ring and the level map, which zooms out of it.
+    @Namespace private var levelMapZoom
 
     var body: some View {
         Group {
@@ -46,6 +48,7 @@ struct RootView: View {
             Tab("Memory", systemImage: "book", value: AppTab.memory) { stack(.memory) }
         }
         .environment(\.mistakesZoom, mistakesZoom)
+        .environment(\.levelMapZoom, levelMapZoom)
         .fullScreenCover(item: $appState.fullScreen, content: fullScreen)
     }
 
@@ -101,6 +104,9 @@ struct RootView: View {
             SituationsView()
         case .progress:
             ProgressOverviewView()
+        case .levelMap:
+            LevelMapView()
+                .navigationTransition(.zoom(sourceID: LevelRingButton.zoomID, in: levelMapZoom))
         case .profile:
             ProfileView()
         case .settings:

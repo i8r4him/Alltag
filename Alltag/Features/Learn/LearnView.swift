@@ -13,6 +13,9 @@ import SwiftUI
 struct LearnView: View {
     @Environment(AppState.self) private var appState
     @State private var toolTaps = 0
+    @Environment(\.levelMapZoom) private var levelMapZoom
+    /// Used only when no screen above shares a namespace (previews).
+    @Namespace private var ownZoom
 
     private func open(_ tool: LearnTool) {
         switch tool {
@@ -46,6 +49,12 @@ struct LearnView: View {
         .skyBackground()
         .navigationTitle("Learn")
         .toolbarTitleDisplayMode(.inlineLarge)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                LevelRingButton()
+            }
+            .matchedTransitionSource(id: LevelRingButton.zoomID, in: levelMapZoom ?? ownZoom)
+        }
         .scrollEdgeEffectStyle(.soft, for: .all)
         .sensoryFeedback(.impact(weight: .light), trigger: toolTaps)
     }

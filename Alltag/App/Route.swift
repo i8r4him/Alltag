@@ -28,6 +28,8 @@ enum Route: Hashable {
     case grammar
     case rule(id: String)
     case progress
+    /// The way to the next level, as a town (Learn's ring opens it).
+    case levelMap
     case profile
     case settings
     case beyond
