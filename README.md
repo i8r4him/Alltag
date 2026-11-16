@@ -341,13 +341,17 @@ Alltag/                                   ← repo root
 │     ├─ Sounds/focus.wav                 the soft two-note chime when free talk starts (made for Alltag)
 │     └─ AppShortcuts.xcstrings           Siri phrases
 │
-├─ AlltagTests/                           Swift Testing (added in M0)
-│  ├─ ConversationModelTests.swift
-│  ├─ RealtimeConversationTests.swift
-│  ├─ SupabaseRealtimeClientTests.swift
-│  ├─ ActivityModelTests.swift
-│  ├─ RuleModelTests.swift
-│  └─ OnboardingModelTests.swift
+├─ AlltagTests/                           Swift Testing, one folder per part of the app
+│  ├─ App/                                app start, state and routing, intents, layout, colours, SwiftData, sample content, onboarding
+│  ├─ Today/                              Today, briefing, debrief, situations, 60 seconds
+│  ├─ Conversation/                       the conversation models, Gemini Live, Supabase Realtime, the companion orb
+│  ├─ Learn/                              activities, "How do I say …?", the reader
+│  │  ├─ Articles/                        der, die, das and "Look up a word"
+│  │  ├─ Grammar/                         the rules of every level, the exam, progress
+│  │  └─ Translate/                       the Translate screen, streaming, the translation extension
+│  ├─ Memory/                             Memory's filters, phrasebook, the mistakes loop
+│  ├─ Profile/                            profile, progress, streak, settings
+│  └─ Services/                           the services, speech and the companions (on device, cloud)
 │
 ├─ supabase/                             backend: the Edge Functions (voice, checks, translation), migrations (see supabase/README.md)
 ├─ AGENTS.md                              rules for every coding agent: build, code, data, design, workflow, plan
