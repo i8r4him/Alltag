@@ -164,22 +164,25 @@ Alltag/                                   ← repo root
 │  │  │     └─ SummaryStep.swift
 │  │  ├─ Home/
 │  │  │  ├─ HomeView.swift                the Today tab; streak flame and profile Menu in the toolbar
-│  │  │  ├─ Streak.swift                  days in a row with practice, and the last seven days
-│  │  │  ├─ StreakPopover.swift           tap the flame: days in a row, the week, what to do today
-│  │  │  ├─ StarSky.swift                static night haze in the theme colour
-│  │  │  ├─ HomeHeader.swift              Avatar
 │  │  │  ├─ TodayHero.swift               CompanionOrb (glass bubble, eyes that blink and glance), Words · Minutes · Level (→ Progress), BigNumber (1.2k from 1,000)
-│  │  │  ├─ FocusCard.swift               Today's Focus: title, line, artwork and the big button; "Done today" once its session is saved
-│  │  │  ├─ TodayFocus.swift              what the Focus is today: the situation of the day (#174)
+│  │  │  ├─ HomeHeader.swift              Avatar
+│  │  │  ├─ StarSky.swift                 static night haze in the theme colour
 │  │  │  ├─ FromYourDayList.swift         briefing card, Today actions and Beyond row
 │  │  │  ├─ SixtySecondsCard.swift        big "60 seconds", text and play button → 60 seconds of talking
-│  │  │  └─ BeyondRow.swift
+│  │  │  ├─ BeyondRow.swift
+│  │  │  ├─ Focus/
+│  │  │  │  ├─ FocusCard.swift            Today's Focus: title, line, artwork and the big button; "Done today" once its session is saved
+│  │  │  │  └─ TodayFocus.swift           what the Focus is today: the situation of the day (#174)
+│  │  │  └─ Streak/
+│  │  │     ├─ Streak.swift               days in a row with practice, and the last seven days
+│  │  │     └─ StreakPopover.swift        tap the flame: days in a row, the week, what to do today
 │  │  ├─ SixtySeconds/                    (#184)
-│  │  │  ├─ TalkTopic.swift               a topic in German; TalkTopics picks one written for the learner's level
-│  │  │  ├─ TalkTopics+A1.swift … +C1     50 topics for each level (C2 uses C1's)
-│  │  │  ├─ TopicReel.swift               the topic is chosen at random, shown as a reel that slows down
+│  │  │  ├─ SixtySecondsView.swift        choosing, talking with the countdown ring, the result
 │  │  │  ├─ SixtySecondsModel.swift       topic → 60 s of on-device listening → sentences checked → fixes saved
-│  │  │  └─ SixtySecondsView.swift        choosing, talking with the countdown ring, the result
+│  │  │  ├─ TopicReel.swift               the topic is chosen at random, shown as a reel that slows down
+│  │  │  └─ Topics/
+│  │  │     ├─ TalkTopic.swift            a topic in German; TalkTopics picks one written for the learner's level
+│  │  │     └─ TalkTopics+A1.swift … +C1  50 topics for each level (C2 uses C1's)
 │  │  ├─ Sessions/                        (#225)
 │  │  │  ├─ SessionsView.swift            "Your sessions" link on Learn and the list (swipe to delete, delete all)
 │  │  │  ├─ SessionDetailView.swift       one session: lines, fixes, and the recording of a 60-second talk
@@ -192,20 +195,23 @@ Alltag/                                   ← repo root
 │  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls; free talk: voice only, consent card
 │  │  │  ├─ ConversationModel.swift       state machine
 │  │  │  ├─ LineReviewer.swift            checks live learner lines on device while the conversation goes on (#209)
-│  │  │  ├─ LiveProblemView.swift         a live conversation that can't start: limit, no internet, no microphone, busy; try again or Settings (#210, #172)
-│  │  │  ├─ TranscriptView.swift          companion lines (cut off with …), learner lines in a theme-tinted bubble, heard text with caret
-│  │  │  ├─ FeedbackCard.swift
-│  │  │  └─ SummarySheet.swift            (#30)
+│  │  │  └─ Parts/
+│  │  │     ├─ TranscriptView.swift       companion lines (cut off with …), learner lines in a theme-tinted bubble, heard text with caret
+│  │  │     ├─ FeedbackCard.swift
+│  │  │     ├─ LiveProblemView.swift      a live conversation that can't start: limit, no internet, no microphone, busy; try again or Settings (#210, #172)
+│  │  │     └─ SummarySheet.swift         (#30)
 │  │  ├─ Translate/
 │  │  │  ├─ TranslateView.swift           the title, the parts in order, the toolbar's history, the state cards
-│  │  │  ├─ TranslateStart.swift          the welcome and its prompts in the card's lower half, and the empty lower half
-│  │  │  ├─ TranslateInput.swift          the languages, the field (clear, system Paste) and the swap
-│  │  │  ├─ TranslateResult.swift         the translation with Listen, Slowly, Copy, Share and the bookmark
-│  │  │  ├─ TranslateLoading.swift        while the translation and its details are on their way
-│  │  │  ├─ TranslateHistory.swift        the recent translations, kept in UserDefaults
-│  │  │  ├─ TranslateHistorySheet.swift   the history's cards, in the shared `HistorySheet`
 │  │  │  ├─ TranslateModel.swift          direction, swap, translating, why it failed, saving, the history
-│  │  │  └─ TranslateSections.swift       Word by word, Tone, In context: with symbols
+│  │  │  ├─ Parts/
+│  │  │  │  ├─ TranslateInput.swift       the languages, the field (clear, system Paste) and the swap
+│  │  │  │  ├─ TranslateStart.swift       the welcome and its prompts in the card's lower half, and the empty lower half
+│  │  │  │  ├─ TranslateLoading.swift     while the translation and its details are on their way
+│  │  │  │  ├─ TranslateResult.swift      the translation with Listen, Slowly, Copy, Share and the bookmark
+│  │  │  │  └─ TranslateSections.swift    Word by word, Tone, In context: with symbols
+│  │  │  └─ History/
+│  │  │     ├─ TranslateHistory.swift     the recent translations, kept in UserDefaults
+│  │  │     └─ TranslateHistorySheet.swift the history's cards, in the shared `HistorySheet`
 │  │  ├─ Memory/
 │  │  │  ├─ MemoryView.swift              large title, segmented Words | Phrasebook, .searchable, review card
 │  │  │  ├─ MemoryFolders.swift           From your day · Saved · Mistakes folders (filter the list)
@@ -215,32 +221,37 @@ Alltag/                                   ← repo root
 │  │  ├─ Learn/
 │  │  │  ├─ LearnView.swift               tools, Fix your mistakes, then Practise (everything apart from speaking)
 │  │  │  ├─ LearnTools.swift              the "How do I say …?" field (answers in place), Translate and Articles
-│  │  │  ├─ AskInPlace.swift              the field you type in on Learn and the German answer there, with Translate's parts (#304)
-│  │  │  ├─ AskModel.swift                Translate's model, asked only when the learner sends (tested)
-│  │  │  ├─ MistakesCard.swift            the mistakes due now and their count; "All fixed for now" with when the next returns; empty state (#248, #251)
 │  │  │  ├─ LearnComponents.swift         LearnScreen, LearnHeroCard, LearnSection, LearnList, LearnRow
 │  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour
-│  │  │  ├─ ActivityView.swift            the sample activities (recall, listen): toolbar, options, audio, done; sky and glass
-│  │  │  ├─ ActivityModel.swift           one pick per question, scoring, audio
+│  │  │  ├─ MistakesCard.swift            the mistakes due now and their count; "All fixed for now" with when the next returns; empty state (#248, #251)
 │  │  │  ├─ MistakePractice.swift         conversation fixes → Memory › Mistakes; which are due, when the next returns
 │  │  │  ├─ MistakeQuestion.swift         one mistake ready to ask: what was said, the correction, why
 │  │  │  ├─ MistakeRoundModel.swift       one answer per mistake, each moving it in Memory at once (tested)
 │  │  │  ├─ MistakeRoundView.swift        the practice, full screen, zooming out of the card; the explanation after each answer
 │  │  │  ├─ MistakeQuestionViews.swift    the flashcard: what was said, "Show the fix", then "Not yet" or "I knew it"
-│  │  │  └─ MistakeRoundEnd.swift         before and after: what was said, the correction, when it comes back
+│  │  │  ├─ MistakeRoundEnd.swift         before and after: what was said, the correction, when it comes back
+│  │  │  ├─ Ask/
+│  │  │  │  ├─ AskInPlace.swift           the field you type in on Learn and the German answer there, with Translate's parts (#304)
+│  │  │  │  └─ AskModel.swift             Translate's model, asked only when the learner sends (tested)
+│  │  │  └─ Activity/
+│  │  │     ├─ ActivityView.swift         the sample activities (recall, listen): toolbar, options, audio, done; sky and glass
+│  │  │     └─ ActivityModel.swift        one pick per question, scoring, audio
 │  │  ├─ Articles/                        (#252)
 │  │  │  ├─ ArticlesView.swift            Learn › Articles: the round to start, "Look up a word", the clues
-│  │  │  ├─ ArticleRoundView.swift        a round full screen: the noun, der · die · das, the answer, the summary
-│  │  │  ├─ ArticleRoundModel.swift       asks the server for the nouns, keeps wrong answers for Fix your mistakes
-│  │  │  ├─ ArticleTrainer.swift          the round's queue: a missed noun comes back, and first next time
-│  │  │  ├─ ArticleLookupCard.swift       the field; searching, not found, offline and other failure cards
-│  │  │  ├─ ArticleLookupModel.swift      the look-up, why it failed, what is saved, the history (UserDefaults)
-│  │  │  ├─ ArticleLookupHistory.swift    the toolbar's sheet of looked-up words: cards in the shared `HistorySheet`
-│  │  │  ├─ ArticleWordCard.swift         a found noun like a dictionary entry, with the bookmark to save or unsave
-│  │  │  ├─ ArticleRules.swift            the clues as a grid of glass tiles (endings, -chen, compounds, the plural)
-│  │  │  ├─ ArticleRuleSheet.swift        a clue zoomed out of its tile: examples, "Next clue"
 │  │  │  ├─ ArticleMemory.swift           wrong picks → Memory › Mistakes; looked-up nouns → Memory › Saved
-│  │  │  └─ Noun.swift                    Article, Noun
+│  │  │  ├─ Noun.swift                    Article, Noun
+│  │  │  ├─ Round/
+│  │  │  │  ├─ ArticleRoundView.swift     a round full screen: the noun, der · die · das, the answer, the summary
+│  │  │  │  ├─ ArticleRoundModel.swift    asks the server for the nouns, keeps wrong answers for Fix your mistakes
+│  │  │  │  └─ ArticleTrainer.swift       the round's queue: a missed noun comes back, and first next time
+│  │  │  ├─ Lookup/
+│  │  │  │  ├─ ArticleLookupCard.swift    the field; searching, not found, offline and other failure cards
+│  │  │  │  ├─ ArticleLookupModel.swift   the look-up, why it failed, what is saved, the history (UserDefaults)
+│  │  │  │  ├─ ArticleLookupHistory.swift the toolbar's sheet of looked-up words: cards in the shared `HistorySheet`
+│  │  │  │  └─ ArticleWordCard.swift      a found noun like a dictionary entry, with the bookmark to save or unsave
+│  │  │  └─ Clues/
+│  │  │     ├─ ArticleRules.swift         the clues as a grid of glass tiles (endings, -chen, compounds, the plural)
+│  │  │     └─ ArticleRuleSheet.swift     a clue zoomed out of its tile: examples, "Next clue"
 │  │  ├─ Write/
 │  │  │  └─ WriteView.swift               picked task, tasks from daily life (Sie / du), useful phrases
 │  │  ├─ Listen/
@@ -256,23 +267,27 @@ Alltag/                                   ← repo root
 │  │  │  ├─ GrammarView.swift             your next rule, the rule in real life, cheat sheets, all rules (glass)
 │  │  │  ├─ GrammarProgress.swift         solved status, counts, the next rule in order, which rules are still locked (tested)
 │  │  │  ├─ NextRuleCard.swift            the next rule at the learner's level, Today's glass card
-│  │  │  ├─ RuleInRealLife.swift          a real sentence of the day with the rule's words marked, as a glass row
-│  │  │  ├─ RealLifeSentences.swift       the sentences for each rule
-│  │  │  ├─ RealLifeSentences+A2.swift    the three sentences of each A2 rule
-│  │  │  ├─ RealLifeSentences+B1.swift    the B1 sentences by rule, first half (second half in +B1More)
-│  │  │  ├─ RealLifeSentences+B2….swift   the B2 rules' sentences, in three parts
-│  │  │  ├─ CheatSheet.swift              a cheat sheet: label, title, parts of German forms
-│  │  │  ├─ CheatSheetsBasic.swift        the sheets for A1 and A2 (and the list of all)
-│  │  │  ├─ CheatSheetsAdvanced.swift     the sheets for B1, B2 and C1
-│  │  │  ├─ CheatSheetViews.swift         the three glass tiles of the learner's level and the sheet they open
-│  │  │  ├─ RuleView.swift                numbered steps: heard, notice, rule, your own German; then the exam, or "Try it"
-│  │  │  ├─ RuleVisualView.swift          the picture of a rule (who does what to what, in symbols) and its tiny table
-│  │  │  ├─ ExamCard.swift                what the exam is and the big button it zooms out of; the card of a locked rule
-│  │  │  ├─ ExamView.swift                the exam, full screen: three questions, then the result
-│  │  │  ├─ ExamAnswerViews.swift         the options of a choice, the tiles of a sentence, the feedback
-│  │  │  ├─ ExamModel.swift               one question at a time, checked once; all three right solves the rule (tested)
-│  │  │  ├─ RuleModel.swift               word-order task, check, solved
-│  │  │  └─ WordOrderTask.swift           "Try it" with tiles, Check, Mark as solved (rules without an exam)
+│  │  │  ├─ Rule/
+│  │  │  │  ├─ RuleView.swift             numbered steps: heard, notice, rule, your own German; then the exam, or "Try it"
+│  │  │  │  ├─ RuleVisualView.swift       the picture of a rule (who does what to what, in symbols) and its tiny table
+│  │  │  │  ├─ RuleInRealLife.swift       a real sentence of the day with the rule's words marked, as a glass row
+│  │  │  │  ├─ RuleModel.swift            word-order task, check, solved
+│  │  │  │  └─ WordOrderTask.swift        "Try it" with tiles, Check, Mark as solved (rules without an exam)
+│  │  │  ├─ Exam/
+│  │  │  │  ├─ ExamCard.swift             what the exam is and the big button it zooms out of; the card of a locked rule
+│  │  │  │  ├─ ExamView.swift             the exam, full screen: three questions, then the result
+│  │  │  │  ├─ ExamAnswerViews.swift      the options of a choice, the tiles of a sentence, the feedback
+│  │  │  │  └─ ExamModel.swift            one question at a time, checked once; all three right solves the rule (tested)
+│  │  │  ├─ CheatSheets/
+│  │  │  │  ├─ CheatSheet.swift           a cheat sheet: label, title, parts of German forms
+│  │  │  │  ├─ CheatSheetsBasic.swift     the sheets for A1 and A2 (and the list of all)
+│  │  │  │  ├─ CheatSheetsAdvanced.swift  the sheets for B1, B2 and C1
+│  │  │  │  └─ CheatSheetViews.swift      the three glass tiles of the learner's level and the sheet they open
+│  │  │  └─ Content/
+│  │  │     ├─ RealLifeSentences.swift    the sentences for each rule
+│  │  │     ├─ RealLifeSentences+A2.swift the three sentences of each A2 rule
+│  │  │     ├─ RealLifeSentences+B1.swift the B1 sentences by rule, first half (second half in +B1More)
+│  │  │     └─ RealLifeSentences+B2….swift the B2 rules' sentences, in three parts
 │  │  ├─ Debrief/
 │  │  │  ├─ DebriefView.swift             input, Find the words, Next time say, Save to phrasebook
 │  │  │  └─ DebriefModel.swift            phases, companion, saving to the Phrasebook
