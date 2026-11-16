@@ -75,7 +75,6 @@ private struct AllRulesSection: View {
                 .frame(maxWidth: .infinity)
                 .glassEffect(.regular, in: .rect(cornerRadius: Radius.card, style: .continuous))
             }
-            .animation(.easeOut(duration: 0.2), value: shownLevel)
         }
     }
 }
