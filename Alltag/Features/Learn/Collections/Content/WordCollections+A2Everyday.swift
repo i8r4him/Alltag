@@ -48,7 +48,7 @@ extension WordCollections {
     )
 
     static let a2Phone = WordCollection(
-        id: "a2-handy", title: "Handy und Internet", subtitle: "Phone and internet", level: .a2, category: .everyday, systemImage: "iphone",
+        id: "a2-handy", title: "Mein Handy", subtitle: "Phone and internet", level: .a2, category: .everyday, systemImage: "iphone",
         words: [
             CollectionWord("das ", "Handy", "mobile phone",
                            "Mein Handy ist gleich leer.", "My phone’s about to die."),
