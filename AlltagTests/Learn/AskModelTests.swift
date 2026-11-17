@@ -129,7 +129,9 @@ struct AskModelTests {
     func everydayByDefault() async {
         let model = makeModel()
         #expect(model.register == .everyday)
+        #expect(!model.showsRegister)
         model.text = "Can we move the appointment to tomorrow?"
+        #expect(model.showsRegister)
         await model.send()?.value
         #expect(translation.registers == [.everyday])
     }

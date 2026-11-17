@@ -68,15 +68,17 @@ struct LevelRingButton: View {
             appState.open(.levelMap)
         } label: {
             ZStack {
-                LevelRing(fraction: map.fraction, lineWidth: 5)
+                LevelRing(fraction: map.fraction, lineWidth: 5.5)
+                // The app's big-number type (SF Rounded, bold), as large as fits inside the line.
                 Text(map.percent, format: .number)
-                    .font(.system(size: 10, weight: .heavy, design: .rounded))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
                     .monospacedDigit()
+                    .contentTransition(.numericText(value: Double(map.percent)))
                     .lineLimit(1)
-                    .minimumScaleFactor(0.6)
-                    .padding(6)
+                    .minimumScaleFactor(0.8)
+                    .padding(.horizontal, 7)
             }
-            .frame(width: 36, height: 36)
+            .frame(width: 42, height: 42)
             .frame(width: Spacing.minTouchTarget, height: Spacing.minTouchTarget)
             .contentShape(.rect)
         }

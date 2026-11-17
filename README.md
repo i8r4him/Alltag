@@ -63,6 +63,7 @@ Alltag/                                   ← repo root
 │  │     ├─ Toast.swift                   ToastView, .toast(_:)
 │  │     ├─ StateCard.swift               StateCard (a state in the Focus card's layout), CloudFailureCard
 │  │     ├─ HistorySheet.swift            things looked up before as glass cards on the sky (Translate, Articles)
+│  │     ├─ FieldFocusEffect.swift        a top field comes forward and glows, the page behind darkens and sinks back (Learn, Articles)
 │  │     ├─ FlowLayout.swift              wrapping layout for chips
 │  │     └─ ComponentGallery.swift        previews of every component
 │  │
@@ -246,7 +247,8 @@ Alltag/                                   ← repo root
 │  │  │  │  └─ Content/                   the words: A2 (doctor's, flat, shopping), B1 (work, offices, transport); planned topics by name
 │  │  │  ├─ Ask/
 │  │  │  │  ├─ AskInPlace.swift           the field you type in on Learn and the German answer there, with Translate's parts (#304)
-│  │  │  │  └─ AskModel.swift             Translate's model, asked only when the learner sends (tested)
+│  │  │  │  ├─ AskModel.swift             Translate's model, asked only when the learner sends (tested)
+│  │  │  │  └─ AskMotion.swift            how the answer, the details and the X move; what Learn animates the page on
 │  │  │  └─ Activity/
 │  │  │     ├─ ActivityView.swift         the sample activities (recall, listen): toolbar, options, audio, done; sky and glass
 │  │  │     └─ ActivityModel.swift        one pick per question, scoring, audio

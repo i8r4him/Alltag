@@ -27,6 +27,8 @@ final class AskModel {
 
     /// How the German sounds: everyday by default, formal on request.
     var register: GermanRegister { translate.register ?? .everyday }
+    /// Everyday or Formal is offered once there is a question or an answer.
+    var showsRegister: Bool { !isEmpty || hasAnswer }
 
     var text: String {
         get { translate.input }
