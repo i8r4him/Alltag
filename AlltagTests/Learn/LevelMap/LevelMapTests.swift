@@ -178,16 +178,16 @@ struct LevelMapTests {
     @Test("A sign's bulbs light up with what's done, the last one only when everything is")
     func bulbs() {
         let none = NeonSign.Bulbs(done: 0, total: 5)
-        #expect(none.count == 5 && none.lit == 0)
+        #expect(none.number == 5 && none.lit == 0)
         let some = NeonSign.Bulbs(done: 2, total: 5)
-        #expect(some.count == 5 && some.lit == 2)
+        #expect(some.number == 5 && some.lit == 2)
         // Many things to do share the most bulbs a sign has.
         let many = NeonSign.Bulbs(done: 10, total: 20)
-        #expect(many.count == NeonSign.Bulbs.maximum && many.lit == 4)
+        #expect(many.number == NeonSign.Bulbs.maximum && many.lit == 4)
         // A first step always shows; almost done isn't full.
         #expect(NeonSign.Bulbs(done: 1, total: 30).lit == 1)
         #expect(NeonSign.Bulbs(done: 29, total: 30).lit == NeonSign.Bulbs.maximum - 1)
         let full = NeonSign.Bulbs(done: 30, total: 30)
-        #expect(full.lit == full.count)
+        #expect(full.lit == full.number)
     }
 }

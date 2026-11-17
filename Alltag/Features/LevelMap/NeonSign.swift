@@ -17,22 +17,23 @@ struct NeonSign: View {
         /// A sign never has more bulbs than this; each one then stands for several things to do.
         static let maximum = 8
 
-        let count: Int
+        /// How many bulbs hang under the name.
+        let number: Int
         let lit: Int
 
         /// One bulb per thing to do, up to `maximum`. A start lights the
         /// first bulb, and the last one lights only when everything is done.
         init(done: Int, total: Int) {
-            count = min(max(total, 0), Self.maximum)
-            guard count > 0, done > 0 else {
+            number = min(max(total, 0), Self.maximum)
+            guard number > 0, done > 0 else {
                 lit = 0
                 return
             }
             if done >= total {
-                lit = count
+                lit = number
             } else {
-                let share = Int((Double(done) / Double(total) * Double(count)).rounded())
-                lit = min(max(share, 1), count - 1)
+                let share = Int((Double(done) / Double(total) * Double(number)).rounded())
+                lit = min(max(share, 1), number - 1)
             }
         }
     }
@@ -91,7 +92,7 @@ private struct BulbRow: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            ForEach(0..<bulbs.count, id: \.self) { index in
+            ForEach(0..<bulbs.number, id: \.self) { index in
                 let isOn = isLit && index < bulbs.lit
                 Circle()
                     .fill(isOn ? AnyShapeStyle(.primary) : AnyShapeStyle(.quaternary))
