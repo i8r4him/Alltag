@@ -75,7 +75,7 @@ struct CollectionWord: Identifiable {
 /// The collections Learn offers: A1's everyday basics and a first sample of
 /// words at A2 and B1; the other topics are names only until their words are written.
 enum WordCollections {
-    static let all: [WordCollection] = a1 + a2 + b1 + planned
+    static let all: [WordCollection] = a1 + a2 + b1 + b2 + planned
 
     /// The collections with words.
     static var ready: [WordCollection] { all.filter(\.isReady) }
