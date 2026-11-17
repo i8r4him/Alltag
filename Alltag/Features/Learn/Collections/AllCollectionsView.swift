@@ -38,7 +38,7 @@ struct AllCollectionsView: View {
                                            description: Text("Choose another level."))
                 }
                 ForEach(topics) { topic in
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 12) {
                         Text(topic.category.title)
                             .textRole(.sectionHeader)
                             .padding(.horizontal, 4)
