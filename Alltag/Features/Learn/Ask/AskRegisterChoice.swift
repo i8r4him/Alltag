@@ -7,40 +7,78 @@
 
 import SwiftUI
 
-/// How the answer to "How do I say …?" sounds: Everyday (the default, the way
-/// people really talk) or Formal (Sie, for an email or an office), as two glass
-/// chips under the field. The chosen one is outlined in the theme colour.
+/// How the answer to "How do I say …?" sounds, in the Tone card of its
+/// details: Everyday (the default, the way people really talk) or Formal
+/// (Sie, for an email or an office), with the answer's note above them.
+/// Choosing the other one asks again; the chosen one has a tick, or turns
+/// while its answer is on its way.
 struct AskRegisterChoice: View {
     let selection: GermanRegister
+    /// The answer's note on register or usage, if any.
+    let note: String
+    let isLoading: Bool
     let onChoose: (GermanRegister) -> Void
 
     var body: some View {
-        GlassEffectContainer(spacing: 8) {
-            HStack(spacing: 8) {
-                ForEach(GermanRegister.allCases) { register in
-                    let isSelected = register == selection
-                    Button {
-                        onChoose(register)
-                    } label: {
-                        Label { Text(register.title) } icon: { Image(systemName: register.systemImage) }
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(isSelected ? Color.accent : Color.primary)
-                            .padding(.horizontal, 14)
-                            .frame(minHeight: 36)
-                            .overlay {
-                                Capsule().strokeBorder(Color.accentFill, lineWidth: isSelected ? 2 : 0)
-                            }
-                            .contentShape(.capsule)
-                    }
-                    .buttonStyle(.plain)
-                    .glassEffect(.regular.interactive(), in: .capsule)
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
-                    .accessibilityHint(Text(register.hint))
+        VStack(alignment: .leading, spacing: 0) {
+            if !note.isEmpty {
+                Label {
+                    Text(verbatim: note)
+                } icon: {
+                    Image(systemName: "info.circle.fill").foregroundStyle(.accent)
                 }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 12)
+                Divider()
+            }
+            ForEach(Array(GermanRegister.allCases.enumerated()), id: \.element) { index, register in
+                if index > 0 { Divider() }
+                row(register)
             }
         }
-        .padding(.vertical, 4) // a 44pt tap target
         .sensoryFeedback(.selection, trigger: selection)
+    }
+
+    private func row(_ register: GermanRegister) -> some View {
+        let isSelected = register == selection
+        return Button { onChoose(register) } label: {
+            HStack(spacing: 12) {
+                Image(systemName: register.systemImage)
+                    .font(.title3)
+                    .foregroundStyle(.accent)
+                    .frame(width: 28)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(register.title)
+                        .font(.headline)
+                        .foregroundStyle(isSelected ? AnyShapeStyle(.accent) : AnyShapeStyle(.primary))
+                    Text(register.subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                if isSelected {
+                    if isLoading {
+                        ProgressView()
+                    } else {
+                        Image(systemName: "checkmark")
+                            .font(.headline)
+                            .foregroundStyle(.accent)
+                            .accessibilityHidden(true)
+                    }
+                }
+            }
+            .padding(.vertical, 12)
+            .frame(minHeight: 44)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .disabled(isLoading)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
@@ -52,23 +90,25 @@ extension GermanRegister {
         }
     }
 
-    var systemImage: String {
+    var subtitle: LocalizedStringResource {
         switch self {
-        case .everyday: "bubble.left.and.bubble.right"
-        case .formal: "envelope"
+        case .everyday: "How friends and colleagues say it"
+        case .formal: "With Sie, for an email or an office"
         }
     }
 
-    var hint: LocalizedStringResource {
+    var systemImage: String {
         switch self {
-        case .everyday: "German the way people really talk, to friends, colleagues and in shops."
-        case .formal: "Polite German with Sie, for an email, a letter or an office."
+        case .everyday: "bubble.left.and.bubble.right.fill"
+        case .formal: "envelope.fill"
         }
     }
 }
 
 #Preview {
     @Previewable @State var register = GermanRegister.everyday
-    AskRegisterChoice(selection: register) { register = $0 }
-        .padding()
+    AskRegisterChoice(selection: register, note: "Casual, for friends; use Formal in an email.", isLoading: false) {
+        register = $0
+    }
+    .padding()
 }

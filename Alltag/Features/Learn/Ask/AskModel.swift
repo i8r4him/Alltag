@@ -27,8 +27,6 @@ final class AskModel {
 
     /// How the German sounds: everyday by default, formal on request.
     var register: GermanRegister { translate.register ?? .everyday }
-    /// Everyday or Formal is offered once there is a question or an answer.
-    var showsRegister: Bool { !isEmpty || hasAnswer }
 
     var text: String {
         get { translate.input }
@@ -59,14 +57,14 @@ final class AskModel {
         return ask()
     }
 
-    /// Chooses how the German sounds. With an answer shown (or on its way), asks
-    /// again at once, so the answer switches. Returns that request, for tests to wait on.
+    /// Chooses how the German sounds and asks again, so the answer switches; the
+    /// answer shown stays until the new one arrives. Nothing changes while an
+    /// answer is on its way. Returns the request, for tests to wait on.
     @discardableResult
     func choose(_ register: GermanRegister) -> Task<Void, Never>? {
-        guard register != self.register else { return nil }
+        guard register != self.register, !translate.isTranslating else { return nil }
         translate.register = register
         guard hasAnswer, !isEmpty else { return nil }
-        translate.clearResult()
         return ask()
     }
 

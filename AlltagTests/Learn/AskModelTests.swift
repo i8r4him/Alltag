@@ -129,14 +129,12 @@ struct AskModelTests {
     func everydayByDefault() async {
         let model = makeModel()
         #expect(model.register == .everyday)
-        #expect(!model.showsRegister)
         model.text = "Can we move the appointment to tomorrow?"
-        #expect(model.showsRegister)
         await model.send()?.value
         #expect(translation.registers == [.everyday])
     }
 
-    @Test("Choosing formal with an answer shown asks again in formal; without one it asks nothing")
+    @Test("Choosing a register with an answer shown asks again in it; without one it asks nothing")
     func choosingTheRegister() async {
         let model = makeModel()
         #expect(model.choose(.formal) == nil)
@@ -146,7 +144,10 @@ struct AskModelTests {
         model.text = "Can we move the appointment to tomorrow?"
         await model.send()?.value
         #expect(model.choose(.formal) == nil)
-        await model.choose(.everyday)?.value
+        let request = model.choose(.everyday)
+        // The answer shown stays until the new one arrives.
+        #expect(model.translate.resultText == "Können wir den Termin auf morgen verschieben?")
+        await request?.value
         #expect(translation.registers == [.formal, .everyday])
         #expect(model.translate.resultText == "Können wir den Termin auf morgen verschieben?")
         // Choosing doesn't count as sending: no second haptic.

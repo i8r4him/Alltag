@@ -36,7 +36,6 @@ enum AskMotion {
 /// What decides the size of what is under the field. Learn animates the page
 /// when it changes, also when the change comes from the server.
 struct AskLayout: Equatable {
-    let showsRegister: Bool
     let hasAnswer: Bool
     let isTranslating: Bool
     let isExplaining: Bool
@@ -45,7 +44,7 @@ struct AskLayout: Equatable {
 
 extension AskModel {
     var layout: AskLayout {
-        AskLayout(showsRegister: showsRegister, hasAnswer: hasAnswer, isTranslating: translate.isTranslating,
+        AskLayout(hasAnswer: hasAnswer, isTranslating: translate.isTranslating,
                   isExplaining: translate.isExplaining, result: translate.result)
     }
 }

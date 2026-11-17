@@ -139,12 +139,24 @@ struct TranslateSectionRows: View {
 /// Word by word, tone and in context: each part on its own glass card, its
 /// symbol in the header. A part slides in when it arrives; with `unfolds`
 /// (opened by a tap, on "How do I say …?") the parts unfold one after another.
-struct TranslateDetails: View {
+/// A `toneCard` takes the place of the tones and is always shown ("How do I
+/// say …?" puts its choice of everyday or formal German there).
+struct TranslateDetails<ToneCard: View>: View {
     let result: TranslationResult
-    var unfolds = false
+    let unfolds: Bool
+    let toneCard: ToneCard?
     let onListen: (String) -> Void
 
-    private var sections: [TranslateSection] { TranslateSection.allCases.filter { !$0.isEmpty(in: result) } }
+    init(result: TranslationResult, unfolds: Bool = false, toneCard: ToneCard?, onListen: @escaping (String) -> Void) {
+        self.result = result
+        self.unfolds = unfolds
+        self.toneCard = toneCard
+        self.onListen = onListen
+    }
+
+    private var sections: [TranslateSection] {
+        TranslateSection.allCases.filter { ($0 == .tone && toneCard != nil) || !$0.isEmpty(in: result) }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -155,16 +167,29 @@ struct TranslateDetails: View {
                     }
                     .textRole(.sectionHeader)
                     .padding(.horizontal, 4)
-                    TranslateSectionRows(section: section, result: result, onListen: onListen)
-                        .padding(.horizontal, Spacing.cardLarge)
-                        .padding(.vertical, 6)
-                        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+                    Group {
+                        if section == .tone, let toneCard {
+                            toneCard
+                        } else {
+                            TranslateSectionRows(section: section, result: result, onListen: onListen)
+                        }
+                    }
+                    .padding(.horizontal, Spacing.cardLarge)
+                    .padding(.vertical, 6)
+                    .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
                 }
                 .modifier(UnfoldIn(index: index, isOn: unfolds))
                 .transition(unfolds ? .opacity : .move(edge: .bottom).combined(with: .opacity))
             }
         }
         .animation(.easeOut(duration: 0.3), value: sections)
+    }
+}
+
+extension TranslateDetails where ToneCard == EmptyView {
+    /// The details with the tones, as Translate shows them.
+    init(result: TranslationResult, unfolds: Bool = false, onListen: @escaping (String) -> Void) {
+        self.init(result: result, unfolds: unfolds, toneCard: nil, onListen: onListen)
     }
 }
 
