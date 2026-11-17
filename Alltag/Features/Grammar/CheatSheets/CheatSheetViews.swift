@@ -71,10 +71,9 @@ private struct CheatSheetTile: View {
 }
 
 /// A cheat sheet opened from its tile, in Today's look: the sky, the artwork,
-/// what it's about, and each part on a glass card.
+/// what it's about, and each part on a glass card with its picture.
 struct CheatSheetDetail: View {
     let sheet: CheatSheet
-    @State private var design = CheatSheetDesign.symbols
     @Environment(\.dismiss) private var dismiss
     @ScaledMetric(relativeTo: .largeTitle) private var artworkSize: CGFloat = 112
 
@@ -95,12 +94,8 @@ struct CheatSheetDetail: View {
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
 
-                    if design == .key, !sheet.keys.isEmpty {
-                        CheatSheetKeyCard(keys: sheet.keys)
-                    }
-
                     ForEach(Array(sheet.parts.enumerated()), id: \.offset) { _, part in
-                        CheatSheetPartCard(part: part, sheet: sheet, design: design)
+                        CheatSheetPartCard(part: part)
                     }
                 }
                 .padding(.horizontal, Spacing.onboarding)
@@ -109,13 +104,6 @@ struct CheatSheetDetail: View {
             }
             .scrollEdgeEffectStyle(.soft, for: .all)
             .scrollIndicators(.hidden)
-            .safeAreaInset(edge: .bottom) {
-                // Temporary, for choosing a design: only the sheet that has them.
-                if !sheet.keys.isEmpty {
-                    CheatSheetDesignSwitcher(design: $design)
-                        .padding(.bottom, 8)
-                }
-            }
             .skyBackground()
             .navigationTitle(Text(verbatim: sheet.level.title))
             .navigationBarTitleDisplayMode(.inline)
