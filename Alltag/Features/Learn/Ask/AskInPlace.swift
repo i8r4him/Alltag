@@ -47,7 +47,9 @@ private struct AskContent: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.grid) {
-            AskField(text: text, isFocused: isFocused, canSend: model.canSend, onSend: send, onClear: clear)
+            GlassInputField(systemImage: LearnTool.howToSay.systemImage, prompt: "How do I say …?", text: text,
+                            isFocused: isFocused, sendLabel: "Say it in German", canSend: model.canSend,
+                            onSend: send, onClear: clear)
                 .fieldFocusEffect(isActive: isFocused.wrappedValue)
             if model.hasAnswer {
                 AskAnswer(model: model, showsDetails: showsDetails)
@@ -104,52 +106,6 @@ private struct AskDetailsButton: View {
             .frame(maxWidth: .infinity, minHeight: 30)
         }
         .buttonStyle(.glass)
-    }
-}
-
-/// The "How do I say …?" field: a glass capsule to type in, with a clear
-/// button and the arrow that sends once there is something to send.
-struct AskField: View {
-    @Binding var text: String
-    var isFocused: FocusState<Bool>.Binding
-    let canSend: Bool
-    let onSend: () -> Void
-    let onClear: () -> Void
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: LearnTool.howToSay.systemImage)
-                .font(.title3)
-                .foregroundStyle(.accent)
-                .accessibilityHidden(true)
-            TextField("How do I say …?", text: $text)
-                .font(.title3)
-                .focused(isFocused)
-                .submitLabel(.send)
-                .onSubmit(onSend)
-            if !text.isEmpty {
-                Button("Clear", systemImage: "xmark.circle.fill", action: onClear)
-                    .labelStyle(.iconOnly)
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 32, height: 44)
-                    .contentShape(.rect)
-                    .buttonStyle(.plain)
-                Button("Say it in German", systemImage: "arrow.up", action: onSend)
-                    .labelStyle(.iconOnly)
-                    .font(.headline.weight(.bold))
-                    .foregroundStyle(canSend ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.tertiary))
-                    .frame(width: 40, height: 40)
-                    .background(canSend ? AnyShapeStyle(.accentFill) : AnyShapeStyle(.controlFill), in: .circle)
-                    .buttonStyle(.plain)
-                    .disabled(!canSend)
-            }
-        }
-        .padding(.leading, 20)
-        .padding(.trailing, text.isEmpty ? 20 : 10)
-        .frame(height: 60)
-        .glassEffect(.regular.interactive(), in: .capsule)
-        .animation(.easeOut(duration: 0.2), value: text.isEmpty)
     }
 }
 
