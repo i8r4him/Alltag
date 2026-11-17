@@ -16,12 +16,6 @@ extension WordCollections {
                        category: .freeTime, systemImage: "figure.run"),
         WordCollection(id: "a2-wetter", title: "Das Wetter", subtitle: "The weather", level: .a2,
                        category: .everyday, systemImage: "cloud.sun.fill"),
-        WordCollection(id: "b1-bank", title: "Bank und Geld", subtitle: "Banking and money", level: .b1,
-                       category: .paperwork, systemImage: "banknote.fill"),
-        WordCollection(id: "b1-wohnungssuche", title: "Wohnungssuche", subtitle: "Finding a flat", level: .b1,
-                       category: .home, systemImage: "key.fill"),
-        WordCollection(id: "b1-urlaub", title: "Urlaub und Reisen", subtitle: "Holidays", level: .b1,
-                       category: .travel, systemImage: "airplane"),
         WordCollection(id: "c1-diskutieren", title: "Diskutieren und Argumentieren", subtitle: "Discussing and arguing",
                        level: .c1, category: .work, systemImage: "bubble.left.and.bubble.right.fill")
     ]
