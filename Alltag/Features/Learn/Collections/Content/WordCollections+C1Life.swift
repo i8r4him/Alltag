@@ -1,0 +1,215 @@
+//
+//  WordCollections+C1Life.swift
+//  Alltag
+//
+//  Created by Ibrahim Abdullah on 07.11.26.
+//
+
+import Foundation
+
+extension WordCollections {
+    // C1: food, home, health and getting around.
+
+    static let c1Food = WordCollection(
+        id: "c1-lebensmittel", title: "Lebensmittel und Handel", subtitle: "Where our food comes from", level: .c1,
+        category: .food, systemImage: "basket.fill",
+        words: [
+            CollectionWord("die ", "Lieferkette", "supply chain",
+                           "Die Lieferkette von Kaffee ist oft schwer nachzuvollziehen.",
+                           "The supply chain for coffee is often hard to trace."),
+            CollectionWord("das ", "Siegel", "label, seal",
+                           "Achte beim Einkaufen auf das Bio-Siegel.", "Look for the organic label when you shop."),
+            CollectionWord("die ", "Massentierhaltung", "factory farming",
+                           "Wegen der Massentierhaltung kaufe ich kaum noch Fleisch.",
+                           "Because of factory farming I hardly buy meat any more."),
+            CollectionWord("die ", "Herkunftsangabe", "label of origin",
+                           "Auf der Packung fehlt die Herkunftsangabe.", "The pack doesn’t say where it comes from."),
+            CollectionWord("die ", "Ernte", "harvest",
+                           "Wegen der Dürre fiel die Ernte dieses Jahr schlecht aus.",
+                           "Because of the drought, this year’s harvest was poor."),
+            CollectionWord("die ", "Lebensmittelverschwendung", "food waste",
+                           "Jeder kann etwas gegen Lebensmittelverschwendung tun.", "Everyone can do something about food waste."),
+            CollectionWord("der ", "Erzeuger", "producer",
+                           "Wir kaufen Eier direkt beim Erzeuger.", "We buy eggs straight from the producer."),
+            CollectionWord("der ", "Einzelhandel", "retail",
+                           "Der Einzelhandel leidet unter dem Onlinehandel.", "High-street shops are suffering from online shopping."),
+            CollectionWord("die ", "Preissteigerung", "price rise",
+                           "Die Preissteigerungen bei Butter sind enorm.", "The price rises for butter are huge."),
+            CollectionWord("der ", "Hofladen", "farm shop",
+                           "Samstags holen wir Gemüse im Hofladen.", "On Saturdays we get vegetables from the farm shop."),
+            CollectionWord("die ", "Eigenmarke", "own brand",
+                           "Die Eigenmarke vom Discounter schmeckt genauso gut.", "The discounter’s own brand tastes just as good."),
+            CollectionWord("", "saisonal", "seasonal",
+                           "Saisonal einzukaufen ist günstiger und besser fürs Klima.",
+                           "Buying seasonal food is cheaper and better for the climate."),
+            CollectionWord("", "fair gehandelt", "fair trade",
+                           "Wir trinken nur fair gehandelten Kaffee.", "We only drink fair-trade coffee."),
+            CollectionWord("", "unverpackt", "package-free",
+                           "Im Unverpackt-Laden bringt man seine eigenen Dosen mit.",
+                           "At the package-free shop you bring your own containers."),
+            CollectionWord("", "verderben", "to go off",
+                           "Bei dieser Hitze verdirbt die Milch schnell.", "Milk goes off quickly in this heat.")
+        ]
+    )
+
+    static let c1Gastronomy = WordCollection(
+        id: "c1-genuss", title: "Genuss und Gastronomie", subtitle: "Fine food and restaurants", level: .c1,
+        category: .food, systemImage: "wineglass.fill",
+        words: [
+            CollectionWord("der ", "Feinschmecker", "gourmet",
+                           "Mein Onkel ist ein echter Feinschmecker.", "My uncle is a real gourmet."),
+            CollectionWord("der ", "Gaumen", "palate",
+                           "Das Gericht ist ein Fest für den Gaumen.", "The dish is a treat for the palate."),
+            CollectionWord("die ", "Sterneküche", "Michelin-starred cooking",
+                           "Für Sterneküche zahlt man in Berlin schnell 150 Euro.", "Starred cooking in Berlin can easily cost 150 euros."),
+            CollectionWord("das ", "Aroma", "flavour, aroma",
+                           "Frische Kräuter geben der Soße ein tolles Aroma.", "Fresh herbs give the sauce a great flavour."),
+            CollectionWord("die ", "Spezialität", "speciality",
+                           "Maultaschen sind eine schwäbische Spezialität.", "Maultaschen are a Swabian speciality."),
+            CollectionWord("der ", "Stammgast", "regular (customer)",
+                           "Als Stammgast bekommt er immer seinen Lieblingstisch.", "As a regular he always gets his favourite table."),
+            CollectionWord("die ", "Bewirtung", "food and drink (for guests)",
+                           "Die Bewirtung auf der Hochzeit war hervorragend.", "The food and drink at the wedding were excellent."),
+            CollectionWord("die ", "Weinkarte", "wine list",
+                           "Darf ich Ihnen die Weinkarte bringen?", "May I bring you the wine list?"),
+            CollectionWord("der ", "Gastwirt", "landlord, innkeeper",
+                           "Der Gastwirt kennt alle im Dorf.", "The landlord knows everyone in the village."),
+            CollectionWord("", "garnieren", "to garnish",
+                           "Zum Schluss die Suppe mit frischer Petersilie garnieren.", "Finally, garnish the soup with fresh parsley."),
+            CollectionWord("", "verfeinern", "to finish, to refine",
+                           "Mit etwas Sahne kannst du die Suppe verfeinern.", "You can finish the soup with a little cream."),
+            CollectionWord("", "schmoren", "to braise",
+                           "Das Fleisch muss drei Stunden schmoren.", "The meat needs to braise for three hours."),
+            CollectionWord("", "deftig", "hearty",
+                           "Im Winter esse ich gern etwas Deftiges.", "In winter I like something hearty."),
+            CollectionWord("", "bekömmlich", "easy to digest",
+                           "Das Essen war lecker, aber nicht besonders bekömmlich.", "The food was tasty but not easy on the stomach."),
+            CollectionWord("", "erlesen", "exquisite",
+                           "Das Restaurant bietet erlesene Weine aus der Pfalz.",
+                           "The restaurant offers exquisite wines from the Palatinate.")
+        ]
+    )
+
+    static let c1Property = WordCollection(
+        id: "c1-eigentum", title: "Bauen und Kaufen", subtitle: "Buying and building a home", level: .c1,
+        category: .home, systemImage: "key.fill",
+        words: [
+            CollectionWord("das ", "Eigenkapital", "deposit, own funds",
+                           "Für den Kredit brauchen wir zwanzig Prozent Eigenkapital.", "We need a twenty per cent deposit for the loan."),
+            CollectionWord("die ", "Baufinanzierung", "mortgage",
+                           "Die Bank hat uns ein Angebot für die Baufinanzierung gemacht.", "The bank has made us a mortgage offer."),
+            CollectionWord("die ", "Tilgung", "repayment",
+                           "Wir zahlen jeden Monat Zinsen und Tilgung.", "Every month we pay interest and repayments."),
+            CollectionWord("das ", "Grundstück", "plot of land",
+                           "Das Grundstück liegt direkt am Waldrand.", "The plot is right on the edge of the forest."),
+            CollectionWord("der ", "Notar", "notary",
+                           "Der Kaufvertrag wird beim Notar unterschrieben.", "The purchase contract is signed at the notary’s."),
+            CollectionWord("das ", "Grundbuch", "land register",
+                           "Erst mit dem Eintrag im Grundbuch gehört uns das Haus.",
+                           "The house is only ours once it’s in the land register."),
+            CollectionWord("die ", "Grunderwerbsteuer", "property transfer tax",
+                           "Die Grunderwerbsteuer kommt zum Kaufpreis noch dazu.", "Property transfer tax comes on top of the price."),
+            CollectionWord("die ", "Sanierung", "renovation",
+                           "Die Sanierung des Altbaus hat länger gedauert als geplant.",
+                           "Renovating the old building took longer than planned."),
+            CollectionWord("die ", "Dämmung", "insulation",
+                           "Seit der neuen Dämmung zahlen wir viel weniger für die Heizung.",
+                           "Since the new insulation we pay much less for heating."),
+            CollectionWord("der ", "Bauherr", "client (who builds a house)",
+                           "Der Bauherr muss alle Genehmigungen einholen.", "The client has to get all the permits."),
+            CollectionWord("die ", "Baugenehmigung", "planning permission",
+                           "Auf die Baugenehmigung warten wir seit Monaten.", "We’ve been waiting months for planning permission."),
+            CollectionWord("die ", "Doppelhaushälfte", "semi-detached house",
+                           "Wir haben eine Doppelhaushälfte am Stadtrand gekauft.", "We bought a semi-detached house on the edge of town."),
+            CollectionWord("die ", "Wertsteigerung", "rise in value",
+                           "In dieser Lage ist mit einer Wertsteigerung zu rechnen.", "In this location you can expect the value to rise."),
+            CollectionWord("", "abbezahlen", "to pay off",
+                           "In zwanzig Jahren ist das Haus abbezahlt.", "In twenty years the house will be paid off."),
+            CollectionWord("", "renovierungsbedürftig", "in need of renovation",
+                           "Die Wohnung ist günstig, aber renovierungsbedürftig.", "The flat is cheap but needs renovating.")
+        ]
+    )
+
+    static let c1Medicine = WordCollection(
+        id: "c1-vorsorge", title: "Medizin und Vorsorge", subtitle: "Medicine and prevention", level: .c1,
+        category: .health, systemImage: "cross.case.fill",
+        words: [
+            CollectionWord("die ", "Krebsvorsorge", "cancer screening",
+                           "Frauen sollten regelmäßig zur Krebsvorsorge gehen.", "Women should go for cancer screening regularly."),
+            CollectionWord("die ", "Wechselwirkung", "interaction (of medicines)",
+                           "Fragen Sie in der Apotheke nach Wechselwirkungen mit anderen Medikamenten.",
+                           "Ask at the pharmacy about interactions with other medicines."),
+            CollectionWord("die ", "Zweitmeinung", "second opinion",
+                           "Vor der Operation hole ich mir eine Zweitmeinung.", "I’m getting a second opinion before the operation."),
+            CollectionWord("die ", "Selbsthilfegruppe", "support group",
+                           "In der Selbsthilfegruppe habe ich Menschen mit derselben Krankheit getroffen.",
+                           "In the support group I met people with the same illness."),
+            CollectionWord("der ", "Organspendeausweis", "organ donor card",
+                           "Ich trage meinen Organspendeausweis immer im Portemonnaie.", "I always carry my donor card in my wallet."),
+            CollectionWord("die ", "Früherkennung", "early detection",
+                           "Früherkennung kann Leben retten.", "Early detection can save lives."),
+            CollectionWord("die ", "Auffrischung", "booster",
+                           "Die Tetanusimpfung braucht alle zehn Jahre eine Auffrischung.",
+                           "The tetanus jab needs a booster every ten years."),
+            CollectionWord("das ", "Blutbild", "blood count",
+                           "Ihr Blutbild ist völlig in Ordnung.", "Your blood test results are completely normal."),
+            CollectionWord("die ", "Vorerkrankung", "pre-existing condition",
+                           "Haben Sie Vorerkrankungen?", "Do you have any pre-existing conditions?"),
+            CollectionWord("der ", "Heilpraktiker", "alternative practitioner",
+                           "Viele gehen zusätzlich zum Heilpraktiker.", "Many people also see an alternative practitioner."),
+            CollectionWord("der ", "Beipackzettel", "package leaflet",
+                           "Lesen Sie den Beipackzettel, bevor Sie die Tabletten nehmen.", "Read the leaflet before you take the tablets."),
+            CollectionWord("", "vorbeugen", "to prevent",
+                           "Mit Bewegung kann man vielen Krankheiten vorbeugen.", "With exercise you can prevent many illnesses."),
+            CollectionWord("", "abklären", "to have something checked",
+                           "Den Knoten sollten Sie unbedingt abklären lassen.", "You should definitely have that lump checked."),
+            CollectionWord("", "erblich", "hereditary",
+                           "In unserer Familie ist Diabetes erblich.", "Diabetes runs in our family."),
+            CollectionWord("", "rezeptfrei", "over the counter",
+                           "Das Mittel gibt es rezeptfrei in der Apotheke.", "You can get the medicine over the counter at the pharmacy.")
+        ]
+    )
+
+    static let c1Mobility = WordCollection(
+        id: "c1-mobilitaet", title: "Mobilität und Verkehrswende", subtitle: "Transport for the future", level: .c1,
+        category: .travel, systemImage: "tram.fill",
+        words: [
+            CollectionWord("die ", "Verkehrswende", "shift to greener transport",
+                           "Die Stadt will die Verkehrswende mit mehr Radwegen schaffen.",
+                           "The city wants to make transport greener with more cycle lanes."),
+            CollectionWord("der ", "Pendler", "commuter",
+                           "Jeden Morgen stehen Tausende Pendler im Stau.", "Thousands of commuters sit in traffic every morning."),
+            CollectionWord("das ", "Carsharing", "car sharing",
+                           "Seit wir Carsharing nutzen, haben wir kein eigenes Auto mehr.",
+                           "Since we started car sharing, we no longer have a car of our own."),
+            CollectionWord("das ", "Lastenrad", "cargo bike",
+                           "Morgens fahren die Kinder im Lastenrad zur Kita.",
+                           "In the mornings the children ride to nursery in the cargo bike."),
+            CollectionWord("der ", "Nahverkehr", "local transport",
+                           "Der Nahverkehr auf dem Land ist oft schlecht.", "Local transport in the countryside is often poor."),
+            CollectionWord("die ", "Anbindung", "transport links",
+                           "Das Dorf hat eine gute Anbindung an die Autobahn.", "The village has good links to the motorway."),
+            CollectionWord("der ", "Takt", "regular interval (of a service)",
+                           "Die S-Bahn fährt im Zehn-Minuten-Takt.", "The S-Bahn runs every ten minutes."),
+            CollectionWord("der ", "Schienenverkehr", "rail transport",
+                           "Der Schienenverkehr soll bis 2030 deutlich wachsen.", "Rail transport is meant to grow a lot by 2030."),
+            CollectionWord("die ", "Elektromobilität", "electric transport",
+                           "Die Regierung fördert die Elektromobilität.", "The government is promoting electric vehicles."),
+            CollectionWord("die ", "Reichweite", "range",
+                           "Mit einer Ladung hat das Auto 400 Kilometer Reichweite.",
+                           "The car has a range of 400 kilometres on one charge."),
+            CollectionWord("der ", "Ausbau", "expansion, upgrade",
+                           "Der Ausbau der Bahnstrecke dauert noch Jahre.", "Upgrading the railway line will take years."),
+            CollectionWord("die ", "Umweltzone", "low-emission zone",
+                           "In die Umweltzone dürfen nur Autos mit grüner Plakette.",
+                           "Only cars with a green sticker can enter the low-emission zone."),
+            CollectionWord("der ", "Lieferverkehr", "delivery traffic",
+                           "Der Lieferverkehr verstopft morgens die Innenstadt.",
+                           "Delivery traffic clogs the city centre in the mornings."),
+            CollectionWord("", "autofrei", "car-free",
+                           "Die Innenstadt soll bis 2030 autofrei werden.", "The city centre is to be car-free by 2030."),
+            CollectionWord("", "barrierefrei", "step-free, accessible",
+                           "Nicht jeder Bahnhof ist barrierefrei.", "Not every station is step-free.")
+        ]
+    )
+}

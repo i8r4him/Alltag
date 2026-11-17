@@ -38,8 +38,6 @@ struct WordCollectionsTests {
         // Memory skips a word it already has, so one word in two collections would go missing from one.
         let words = a1.flatMap(\.words).map(\.displayWord)
         #expect(Set(words).count == words.count)
-        let planned = WordCollections.planned.filter { $0.level == .a1 }
-        #expect(planned.isEmpty)
     }
 
     @Test("Learn shows only collections with words, the learner's own level first")
@@ -56,7 +54,7 @@ struct WordCollectionsTests {
     func readyFirstInTopic() {
         let paperwork = WordCollections.collections(at: .b1, in: .paperwork)
         #expect(paperwork.map(\.id) == ["b1-behoerden", "b1-bank"])
-        #expect(WordCollections.collections(at: .c2, in: .health).isEmpty)
+        #expect(WordCollections.collections(at: .c2, in: .health).map(\.id) == ["c2-ethik"])
     }
 
     @Test("Saving only some words adds just those")

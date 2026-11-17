@@ -21,7 +21,7 @@ struct AllCollectionsView: View {
     @Namespace private var zoom
 
     init(level: Level) {
-        _level = State(initialValue: Level.selectable.contains(level) ? level : .b1)
+        _level = State(initialValue: level)
     }
 
     var body: some View {
@@ -80,7 +80,7 @@ private struct CollectionTopic: Identifiable {
     var id: CollectionCategory { category }
 }
 
-/// A1 to C1 as glass chips; the chosen one is outlined in the theme colour.
+/// A1 to C2 as glass chips; the chosen one is outlined in the theme colour.
 private struct CollectionLevelChips: View {
     @Binding var selection: Level
 
@@ -88,7 +88,7 @@ private struct CollectionLevelChips: View {
         ScrollView(.horizontal) {
             GlassEffectContainer(spacing: 8) {
                 HStack(spacing: 8) {
-                    ForEach(Level.selectable) { level in
+                    ForEach(Level.allCases) { level in
                         Button {
                             withAnimation(.snappy) { selection = level }
                         } label: {

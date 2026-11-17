@@ -72,10 +72,10 @@ struct CollectionWord: Identifiable {
     var displayWord: String { article + word }
 }
 
-/// The collections Learn offers: A1's everyday basics and a first sample of
-/// words at A2 and B1; the other topics are names only until their words are written.
+/// The collections Learn offers, from A1's everyday basics to C2's idioms,
+/// each level in its own `WordCollections+<level>…` files.
 enum WordCollections {
-    static let all: [WordCollection] = a1 + a2 + b1 + b2 + planned
+    static let all: [WordCollection] = a1 + a2 + b1 + b2 + c1 + c2
 
     /// The collections with words.
     static var ready: [WordCollection] { all.filter(\.isReady) }

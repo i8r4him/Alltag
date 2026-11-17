@@ -57,8 +57,11 @@ struct LevelMapTests {
 
     @Test("The library, and the market at a level without collections, are soon: no ring, and they don't count")
     func soonPlaces() throws {
-        #expect(allCollections(at: .c2).isEmpty)
-        #expect(map(.c2).progress(of: .market)?.isOpen == false)
+        let noCollections = LevelMap(level: .c2, solvedRuleIDs: [], practisedTitles: [], collections: [])
+        #expect(noCollections.progress(of: .market)?.isOpen == false)
+        // Every level has word collections now, C2 included.
+        let closedMarkets = Level.allCases.filter { map($0).progress(of: .market)?.isOpen != true }
+        #expect(closedMarkets.isEmpty)
         let fresh = map(.a1)
         #expect(fresh.progress(of: .library)?.isOpen == false)
         #expect(fresh.progress(of: .market)?.isOpen == true)
