@@ -28,10 +28,25 @@ struct WordCollectionsTests {
         }
     }
 
+    @Test("A1 covers every topic with fifteen words each, and no word in two of its collections")
+    func a1Coverage() {
+        let a1 = WordCollections.ready.filter { $0.level == .a1 }
+        #expect(a1.count == WordCollections.a1.count)
+        #expect(Set(a1.map(\.category)) == Set(CollectionCategory.allCases))
+        let sizes = a1.map(\.words.count)
+        #expect(sizes.allSatisfy { $0 == 15 })
+        // Memory skips a word it already has, so one word in two collections would go missing from one.
+        let words = a1.flatMap(\.words).map(\.displayWord)
+        #expect(Set(words).count == words.count)
+        let planned = WordCollections.planned.filter { $0.level == .a1 }
+        #expect(planned.isEmpty)
+    }
+
     @Test("Learn shows only collections with words, the learner's own level first")
     func ownLevelFirst() {
         #expect(WordCollections.ordered(for: .b1).first?.level == .b1)
         #expect(WordCollections.ordered(for: .a2).first?.level == .a2)
+        #expect(WordCollections.ordered(for: .a1).first?.level == .a1)
         #expect(WordCollections.ordered(for: .a1).count == WordCollections.ready.count)
         let allReady = WordCollections.ordered(for: .a1).allSatisfy { $0.isReady }
         #expect(allReady)
