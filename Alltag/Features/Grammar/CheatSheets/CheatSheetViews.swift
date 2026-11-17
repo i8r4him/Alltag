@@ -74,6 +74,7 @@ private struct CheatSheetTile: View {
 /// what it's about, and each part on a glass card.
 struct CheatSheetDetail: View {
     let sheet: CheatSheet
+    @State private var design = CheatSheetDesign.symbols
     @Environment(\.dismiss) private var dismiss
     @ScaledMetric(relativeTo: .largeTitle) private var artworkSize: CGFloat = 112
 
@@ -94,8 +95,12 @@ struct CheatSheetDetail: View {
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
 
+                    if design == .key, !sheet.keys.isEmpty {
+                        CheatSheetKeyCard(keys: sheet.keys)
+                    }
+
                     ForEach(Array(sheet.parts.enumerated()), id: \.offset) { _, part in
-                        CheatSheetPartCard(part: part)
+                        CheatSheetPartCard(part: part, sheet: sheet, design: design)
                     }
                 }
                 .padding(.horizontal, Spacing.onboarding)
@@ -104,6 +109,13 @@ struct CheatSheetDetail: View {
             }
             .scrollEdgeEffectStyle(.soft, for: .all)
             .scrollIndicators(.hidden)
+            .safeAreaInset(edge: .bottom) {
+                // Temporary, for choosing a design: only the sheet that has them.
+                if !sheet.keys.isEmpty {
+                    CheatSheetDesignSwitcher(design: $design)
+                        .padding(.bottom, 8)
+                }
+            }
             .skyBackground()
             .navigationTitle(Text(verbatim: sheet.level.title))
             .navigationBarTitleDisplayMode(.inline)
@@ -118,40 +130,6 @@ struct CheatSheetDetail: View {
     }
 }
 
-/// One part of a sheet: its title, then each German form with what it means.
-private struct CheatSheetPartCard: View {
-    let part: CheatSheet.Part
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(part.title)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
-                .accessibilityAddTraits(.isHeader)
-                .padding(.bottom, 6)
-            ForEach(Array(part.rows.enumerated()), id: \.offset) { index, row in
-                if index > 0 { Divider() }
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(verbatim: row.german)
-                        .font(.title3.weight(.medium))
-                        .foregroundStyle(.accent)
-                        .environment(\.locale, Locale(identifier: "de_DE"))
-                    Text(row.meaning)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 12)
-                .accessibilityElement(children: .combine)
-            }
-        }
-        .padding(Spacing.cardLarge)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-    }
-}
-
 #Preview("Section") {
     ScrollView {
         CheatSheetsSection(level: .a2)
@@ -162,5 +140,5 @@ private struct CheatSheetPartCard: View {
 }
 
 #Preview("Sheet") {
-    CheatSheetDetail(sheet: CheatSheet.cases)
+    CheatSheetDetail(sheet: CheatSheet.prepositions)
 }

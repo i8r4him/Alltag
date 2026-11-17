@@ -17,8 +17,9 @@ extension CheatSheet {
         formalStyle, particles, passiveAlternatives
     ]
 
-    static func row(_ german: String, _ meaning: LocalizedStringResource) -> Row {
-        Row(german: german, meaning: meaning)
+    static func row(_ german: String, _ meaning: LocalizedStringResource,
+                    symbol: String? = nil, marked: String? = nil, key: String? = nil) -> Row {
+        Row(german: german, meaning: meaning, systemImage: symbol, marked: marked, key: key)
     }
 
     // MARK: A1
@@ -128,19 +129,57 @@ extension CheatSheet {
         systemImage: "mappin.and.ellipse",
         parts: [
             Part(title: "Always dative", rows: [
-                row("aus · bei · mit · nach · seit · von · zu", "from, at, with, after, since, from, to"),
-                row("Ich fahre mit dem Bus.", "I'm going by bus."),
-                row("zum · zur · beim · vom", "Short for zu dem, zu der, bei dem, von dem")
-            ]),
+                row("Ich fahre mit dem Bus zur Arbeit.", "mit: how you go, or who with", symbol: "bus.fill", marked: "mit dem", key: "dat"),
+                row("Heute Abend bin ich bei meiner Schwester.", "bei: at someone's place", symbol: "house.fill",
+                    marked: "bei meiner", key: "dat"),
+                row("Ich muss morgen zum Arzt.", "zu: to a person or place. zum is zu dem", symbol: "cross.case.fill",
+                    marked: "zum", key: "dat"),
+                row("Ich komme gerade von der Arbeit.", "von: from a person or place", symbol: "briefcase.fill",
+                    marked: "von der", key: "dat"),
+                row("Seit einem Jahr wohne ich in Köln.", "seit: since, and still true", symbol: "calendar",
+                    marked: "Seit einem", key: "dat"),
+                row("aus · bei · mit · nach · seit · von · zu", "The seven to learn together", symbol: "list.bullet", key: "dat")
+            ], key: "dat", picture: RuleVisual(
+                source: RuleVisual.Part(systemImage: "figure.stand", german: "Ich fahre", role: "Wer?"),
+                verb: "mit",
+                target: RuleVisual.Part(systemImage: "bus.fill", german: "dem Bus", marked: "dem", role: "Womit?", name: "Dativ"),
+                sentence: "Ich fahre mit dem Bus.", columns: [], rows: []
+            )),
             Part(title: "Always accusative", rows: [
-                row("durch · für · gegen · ohne · um", "through, for, against, without, around"),
-                row("Das ist für dich.", "This is for you.")
-            ]),
+                row("Die Blumen sind für dich.", "für: for someone", symbol: "gift.fill", marked: "für dich", key: "akk"),
+                row("Ich fahre ohne meinen Mann in den Urlaub.", "ohne: without", symbol: "suitcase.rolling.fill",
+                    marked: "ohne meinen", key: "akk"),
+                row("Wir laufen durch den Park.", "durch: through", symbol: "tree.fill", marked: "durch den", key: "akk"),
+                row("Der Supermarkt ist gleich um die Ecke.", "um: around. With a time: um 8 Uhr", symbol: "cart.fill",
+                    marked: "um die", key: "akk"),
+                row("durch · für · gegen · ohne · um", "The five to learn together", symbol: "list.bullet", key: "akk")
+            ], key: "akk", picture: RuleVisual(
+                source: RuleVisual.Part(systemImage: "gift.fill", german: "die Blumen", role: "Was?"),
+                verb: "für",
+                target: RuleVisual.Part(systemImage: "person.fill", german: "dich", marked: "dich", role: "Für wen?", name: "Akkusativ"),
+                sentence: "Die Blumen sind für dich.", columns: [], rows: []
+            )),
             Part(title: "Where? or Where to?", rows: [
-                row("Ich bin in der Küche.", "Where: dative"),
-                row("Ich gehe in die Küche.", "Where to: accusative"),
-                row("an · auf · hinter · in · neben · über · unter · vor · zwischen", "These nine work this way")
-            ])
+                row("Ich bin in der Küche.", "You stay in a place: dative", symbol: "mappin.and.ellipse", marked: "in der", key: "wo"),
+                row("Ich gehe in die Küche.", "You move to a place: accusative", symbol: "figure.walk", marked: "in die", key: "wohin"),
+                row("Das Handy liegt auf dem Tisch.", "liegen: it stays there", symbol: "iphone", marked: "auf dem", key: "wo"),
+                row("Ich lege das Handy auf den Tisch.", "legen: you put it there", symbol: "hand.point.down.fill",
+                    marked: "auf den", key: "wohin"),
+                row("an · auf · hinter · in · neben · über · unter · vor · zwischen", "These nine work this way",
+                    symbol: "list.bullet")
+            ], picture: RuleVisual(
+                source: RuleVisual.Part(systemImage: "mappin.and.ellipse", german: "in der Küche", marked: "der",
+                                        role: "Wo?", name: "Dativ"),
+                target: RuleVisual.Part(systemImage: "figure.walk", german: "in die Küche", marked: "die",
+                                        role: "Wohin?", name: "Akkusativ"),
+                sentence: "Wo? In der Küche. Wohin? In die Küche.", columns: [], rows: [], isLinked: false
+            ))
+        ],
+        keys: [
+            Key(id: "dat", systemImage: "d.circle.fill", german: "Dativ", meaning: "Always after aus, bei, mit, nach, seit, von, zu"),
+            Key(id: "akk", systemImage: "a.circle.fill", german: "Akkusativ", meaning: "Always after durch, für, gegen, ohne, um"),
+            Key(id: "wo", systemImage: "mappin.circle.fill", german: "Wo?", meaning: "You stay in a place: dative"),
+            Key(id: "wohin", systemImage: "arrow.right.circle.fill", german: "Wohin?", meaning: "You move to a place: accusative")
         ]
     )
 }
