@@ -9,14 +9,13 @@ import SwiftUI
 
 /// Tools on Learn: things you reach for in the moment, not practice.
 enum LearnTool: CaseIterable, Identifiable {
-    case translate, howToSay, articles
+    case translate, articles
 
     var id: Self { self }
 
     var title: LocalizedStringResource {
         switch self {
         case .translate: "Translate"
-        case .howToSay: "How to say it"
         case .articles: "Articles"
         }
     }
@@ -24,7 +23,6 @@ enum LearnTool: CaseIterable, Identifiable {
     var systemImage: String {
         switch self {
         case .translate: "translate"
-        case .howToSay: "quote.bubble.fill"
         case .articles: "tag.fill"
         }
     }
@@ -39,7 +37,7 @@ struct ToolsSection: View {
     var body: some View {
         GlassEffectContainer(spacing: 8) {
             HStack(spacing: 8) {
-                ForEach([LearnTool.translate, .articles]) { tool in
+                ForEach(LearnTool.allCases) { tool in
                     Button {
                         taps += 1
                         onOpen(tool)

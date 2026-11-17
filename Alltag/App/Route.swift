@@ -11,8 +11,6 @@ import Foundation
 enum Route: Hashable {
     /// Translate, optionally pre-filled (e.g. from Siri).
     case translate(text: String? = nil)
-    /// Translate, opened to ask: the field is ready and the answer is German.
-    case howToSay
     /// Look up an article, and the der, die, das trainer.
     case articles
     /// Every word collection, by level and topic.
