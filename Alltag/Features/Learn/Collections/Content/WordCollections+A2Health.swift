@@ -24,8 +24,8 @@ extension WordCollections {
                            "An der Kreuzung ist ein Unfall passiert.", "There’s been an accident at the crossroads."),
             CollectionWord("die ", "Verletzung", "injury",
                            "Die Verletzung ist zum Glück nicht schlimm.", "Luckily the injury isn’t serious."),
-            CollectionWord("das ", "Krankenhaus", "hospital",
-                           "Sie liegt seit Dienstag im Krankenhaus.", "She’s been in hospital since Tuesday."),
+            CollectionWord("die ", "Wunde", "wound",
+                           "Die Wunde muss genäht werden.", "The wound needs stitches."),
             CollectionWord("die ", "Notaufnahme", "A&E",
                            "In der Notaufnahme mussten wir drei Stunden warten.", "We had to wait three hours in A&E."),
             CollectionWord("der ", "Notarzt", "emergency doctor",
@@ -40,7 +40,7 @@ extension WordCollections {
             CollectionWord("", "verletzt", "injured, hurt",
                            "Ist jemand verletzt?", "Is anyone hurt?"),
             CollectionWord("", "bluten", "to bleed",
-                           "Die Wunde blutet stark.", "The wound is bleeding heavily."),
+                           "Er blutet an der Hand.", "His hand is bleeding."),
             CollectionWord("", "bewusstlos", "unconscious",
                            "Der Mann ist bewusstlos, aber er atmet.", "The man is unconscious, but he’s breathing.")
         ]

@@ -20,7 +20,7 @@ struct FannedRowStack: View {
 
     var body: some View {
         ScrollView(.horizontal) {
-            HStack(spacing: 20) {
+            LazyHStack(spacing: 20) {
                 ForEach(Array(deck.collections.enumerated()), id: \.element.id) { index, collection in
                     FannedCard(collection: collection, deck: deck, tilt: index.isMultiple(of: 2) ? 1 : -1)
                         .frame(width: side, height: side)

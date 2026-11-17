@@ -13,12 +13,12 @@ extension WordCollections {
         id: "a2-freizeit", title: "Freizeit und Hobbys", subtitle: "Free time", level: .a2,
         category: .freeTime, systemImage: "paintpalette.fill",
         words: [
-            CollectionWord("das ", "Hobby", "hobby",
-                           "Was sind deine Hobbys?", "What are your hobbies?"),
+            CollectionWord("der ", "Chor", "choir",
+                           "Meine Mutter singt in einem Chor.", "My mum sings in a choir."),
             CollectionWord("die ", "Freizeit", "free time",
                            "In meiner Freizeit spiele ich Gitarre.", "In my free time I play the guitar."),
-            CollectionWord("das ", "Wochenende", "weekend",
-                           "Was machst du am Wochenende?", "What are you doing at the weekend?"),
+            CollectionWord("das ", "Brettspiel", "board game",
+                           "Am Abend spielen wir ein Brettspiel.", "In the evening we play a board game."),
             CollectionWord("der ", "Verein", "club",
                            "Viele Deutsche sind in einem Verein.", "Lots of Germans belong to a club."),
             CollectionWord("der ", "Ausflug", "day trip, outing",
@@ -65,10 +65,10 @@ extension WordCollections {
                            "Nach dem Training habe ich Muskelkater.", "My muscles ache after training."),
             CollectionWord("", "joggen", "to jog",
                            "Ich jogge jeden Morgen im Park.", "I go jogging in the park every morning."),
-            CollectionWord("", "schwimmen", "to swim",
-                           "Kannst du gut schwimmen?", "Are you a good swimmer?"),
-            CollectionWord("", "Rad fahren", "to cycle",
-                           "Am Wochenende fahren wir oft Rad.", "We often go cycling at the weekend."),
+            CollectionWord("der ", "Schiedsrichter", "referee",
+                           "Der Schiedsrichter hat das Tor nicht gegeben.", "The referee disallowed the goal."),
+            CollectionWord("das ", "Turnier", "tournament",
+                           "Am Samstag spielen wir ein Turnier.", "We’re playing in a tournament on Saturday."),
             CollectionWord("", "gewinnen", "to win",
                            "Wer gewinnt heute?", "Who’s going to win today?"),
             CollectionWord("", "verlieren", "to lose",
@@ -78,19 +78,19 @@ extension WordCollections {
             CollectionWord("", "trainieren", "to train, to work out",
                            "Sie trainiert für einen Marathon.", "She’s training for a marathon."),
             CollectionWord("", "fit", "fit",
-                           "Seit ich Rad fahre, bin ich viel fitter.", "Since I started cycling I’m much fitter.")
+                           "Seit ich jogge, bin ich viel fitter.", "Since I started jogging I’m much fitter.")
         ]
     )
 
     static let a2GoingOut = WordCollection(
         id: "a2-ausgehen", title: "Kino und Konzert", subtitle: "Going out", level: .a2, category: .freeTime, systemImage: "ticket.fill",
         words: [
-            CollectionWord("das ", "Kino", "cinema",
-                           "Was läuft heute im Kino?", "What’s on at the cinema today?"),
-            CollectionWord("der ", "Film", "film",
-                           "Welchen Film wollen wir sehen?", "Which film shall we see?"),
-            CollectionWord("das ", "Konzert", "concert",
-                           "Wie war das Konzert gestern?", "How was the concert yesterday?"),
+            CollectionWord("die ", "Komödie", "comedy",
+                           "Lass uns heute eine Komödie anschauen.", "Let’s watch a comedy tonight."),
+            CollectionWord("der ", "Schauspieler", "actor",
+                           "Der Schauspieler kommt aus Hamburg.", "The actor is from Hamburg."),
+            CollectionWord("das ", "Festival", "festival",
+                           "Im Sommer fahren wir auf ein Festival.", "In summer we’re going to a festival."),
             CollectionWord("das ", "Theater", "theatre",
                            "Wir haben Karten fürs Theater.", "We’ve got tickets for the theatre."),
             CollectionWord("die ", "Eintrittskarte", "ticket",

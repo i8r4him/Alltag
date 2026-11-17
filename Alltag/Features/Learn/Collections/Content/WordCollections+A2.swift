@@ -13,8 +13,8 @@ extension WordCollections {
     /// `WordCollections+A2….swift` files by group.
     static let a2: [WordCollection] = [
         doctor, flat, shopping, a2Restaurant, a2Town, a2DailyRoutine, a2Friends, a2Phone, a2Weather,
-        a2Hobbies, a2Celebrations, a2Feelings, a2Clothes, a2Cooking, a2Housework, a2Furniture,
-        a2Hotel, a2CarAndBike, a2WorkingDay, a2LanguageCourse, a2Post, a2Forms, a2Emergencies,
+        a2Hobbies, a2Celebrations, a2Feelings, a2Online, a2Cooking, a2Housework, a2Furniture,
+        a2Hotel, a2CarAndBike, a2WorkingDay, a2LanguageCourse, a2Post, a2Money, a2Emergencies,
         a2Sport, a2GoingOut
     ]
 

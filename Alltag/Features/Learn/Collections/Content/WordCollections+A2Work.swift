@@ -8,16 +8,16 @@
 import Foundation
 
 extension WordCollections {
-    // A2, work, the language course, post and forms.
+    // A2, work, the language course, post and money.
     static let a2WorkingDay = WordCollection(
         id: "a2-arbeitstag", title: "Der Arbeitstag", subtitle: "A working day", level: .a2, category: .work, systemImage: "laptopcomputer",
         words: [
-            CollectionWord("der ", "Kollege", "colleague",
-                           "Mein Kollege hilft mir mit dem neuen Programm.", "My colleague is helping me with the new program."),
+            CollectionWord("das ", "Team", "team",
+                           "Unser Team hat acht Leute.", "There are eight people in our team."),
             CollectionWord("der ", "Chef", "boss",
                            "Der Chef möchte dich kurz sprechen.", "The boss would like a quick word with you."),
-            CollectionWord("das ", "Büro", "office",
-                           "Ich bin von neun bis fünf im Büro.", "I’m in the office from nine to five."),
+            CollectionWord("die ", "Abteilung", "department",
+                           "In welcher Abteilung arbeiten Sie?", "Which department do you work in?"),
             CollectionWord("der ", "Arbeitsplatz", "job, workplace",
                            "Mein Arbeitsplatz ist mit dem Fahrrad gut zu erreichen.", "My workplace is easy to get to by bike."),
             CollectionWord("die ", "Pause", "break",
@@ -40,8 +40,8 @@ extension WordCollections {
                            "Ich muss noch ein paar Sachen erledigen.", "I still have to get a few things done."),
             CollectionWord("", "sich krankmelden", "to call in sick",
                            "Ich muss mich heute krankmelden.", "I have to call in sick today."),
-            CollectionWord("", "pünktlich", "on time",
-                           "Bitte seien Sie morgen pünktlich um acht da.", "Please be here at eight sharp tomorrow.")
+            CollectionWord("der ", "Urlaubstag", "day of holiday",
+                           "Ich habe dieses Jahr noch fünf Urlaubstage.", "I’ve still got five days’ holiday this year.")
         ]
     )
 
@@ -51,8 +51,8 @@ extension WordCollections {
         words: [
             CollectionWord("der ", "Kurs", "course, class",
                            "Der Kurs findet dreimal pro Woche statt.", "The class is three times a week."),
-            CollectionWord("die ", "Lehrerin", "teacher",
-                           "Unsere Lehrerin erklärt die Grammatik sehr gut.", "Our teacher explains the grammar really well."),
+            CollectionWord("die ", "Kursleiterin", "course teacher",
+                           "Unsere Kursleiterin erklärt die Grammatik sehr gut.", "Our teacher explains the grammar really well."),
             CollectionWord("die ", "Hausaufgabe", "homework",
                            "Hast du die Hausaufgaben schon gemacht?", "Have you done the homework yet?"),
             CollectionWord("die ", "Prüfung", "exam",
@@ -71,8 +71,8 @@ extension WordCollections {
                            "Können Sie das bitte wiederholen?", "Could you repeat that, please?"),
             CollectionWord("", "erklären", "to explain",
                            "Kannst du mir das Wort erklären?", "Can you explain the word to me?"),
-            CollectionWord("", "buchstabieren", "to spell",
-                           "Können Sie Ihren Namen bitte buchstabieren?", "Could you spell your name, please?"),
+            CollectionWord("die ", "Übung", "exercise",
+                           "Macht bitte Übung drei auf Seite zwölf.", "Please do exercise three on page twelve."),
             CollectionWord("", "üben", "to practise",
                            "Wir üben die Dialoge zu zweit.", "We practise the dialogues in pairs."),
             CollectionWord("", "sich anmelden", "to sign up",
@@ -98,8 +98,8 @@ extension WordCollections {
                            "Vergessen Sie den Absender nicht.", "Don’t forget the sender’s address."),
             CollectionWord("der ", "Empfänger", "recipient",
                            "Der Empfänger war nicht zu Hause.", "The recipient wasn’t at home."),
-            CollectionWord("die ", "Adresse", "address",
-                           "Bitte schreiben Sie die Adresse deutlich.", "Please write the address clearly."),
+            CollectionWord("das ", "Porto", "postage",
+                           "Wie viel kostet das Porto nach Syrien?", "How much is the postage to Syria?"),
             CollectionWord("die ", "Benachrichtigung", "delivery card",
                            "Im Briefkasten lag eine Benachrichtigung.", "There was a delivery card in the letterbox."),
             CollectionWord("die ", "Packstation", "parcel locker",
@@ -119,40 +119,39 @@ extension WordCollections {
         ]
     )
 
-    static let a2Forms = WordCollection(
-        id: "a2-formulare", title: "Formulare", subtitle: "Filling in forms", level: .a2,
-        category: .paperwork, systemImage: "list.clipboard.fill",
+    static let a2Money = WordCollection(
+        id: "a2-geld", title: "Geld im Alltag", subtitle: "Money", level: .a2, category: .paperwork, systemImage: "eurosign.circle.fill",
         words: [
-            CollectionWord("der ", "Vorname", "first name",
-                           "Schreiben Sie Ihren Vornamen in Druckbuchstaben.", "Write your first name in capitals."),
-            CollectionWord("der ", "Nachname", "surname",
-                           "Mein Nachname ist Al-Khatib.", "My surname is Al-Khatib."),
-            CollectionWord("das ", "Geburtsdatum", "date of birth",
-                           "Ihr Geburtsdatum, bitte?", "Your date of birth, please?"),
-            CollectionWord("der ", "Geburtsort", "place of birth",
-                           "Im Pass steht Damaskus als Geburtsort.", "The passport gives Damascus as the place of birth."),
-            CollectionWord("die ", "Staatsangehörigkeit", "nationality",
-                           "Welche Staatsangehörigkeit haben Sie?", "What nationality are you?"),
-            CollectionWord("der ", "Familienstand", "marital status",
-                           "Familienstand: ledig, verheiratet oder geschieden.", "Marital status: single, married or divorced."),
-            CollectionWord("die ", "Anschrift", "address",
-                           "Bitte geben Sie Ihre aktuelle Anschrift an.", "Please give your current address."),
-            CollectionWord("die ", "Postleitzahl", "postcode",
-                           "Die Postleitzahl hat in Deutschland fünf Ziffern.", "In Germany a postcode has five digits."),
-            CollectionWord("das ", "Datum", "date",
-                           "Bitte Datum und Unterschrift nicht vergessen.", "Please don’t forget the date and your signature."),
-            CollectionWord("der ", "Reisepass", "passport",
-                           "Bitte bringen Sie Ihren Reisepass mit.", "Please bring your passport with you."),
-            CollectionWord("das ", "Pflichtfeld", "required field",
-                           "Felder mit Sternchen sind Pflichtfelder.", "Fields with an asterisk are required."),
-            CollectionWord("", "ledig", "single",
-                           "Ich bin ledig und habe keine Kinder.", "I’m single and have no children."),
-            CollectionWord("", "ausfüllen", "to fill in",
-                           "Ich fülle das Formular zu Hause aus.", "I’ll fill in the form at home."),
-            CollectionWord("", "unterschreiben", "to sign",
-                           "Unterschreiben Sie bitte unten rechts.", "Please sign at the bottom right."),
-            CollectionWord("", "ankreuzen", "to tick",
-                           "Kreuzen Sie bitte Zutreffendes an.", "Please tick where applicable.")
+            CollectionWord("das ", "Konto", "bank account",
+                           "Für die Arbeit brauchen Sie ein Konto in Deutschland.", "For the job you need a bank account in Germany."),
+            CollectionWord("der ", "Geldautomat", "cash machine",
+                           "Der Geldautomat hat meine Karte behalten.", "The cash machine kept my card."),
+            CollectionWord("das ", "Bargeld", "cash",
+                           "Auf dem Flohmarkt braucht man Bargeld.", "You need cash at the flea market."),
+            CollectionWord("der ", "Schein", "note",
+                           "Ich habe nur einen Fünfzig-Euro-Schein.", "I’ve only got a fifty-euro note."),
+            CollectionWord("die ", "Münze", "coin",
+                           "Für das Schließfach braucht man eine Münze.", "You need a coin for the locker."),
+            CollectionWord("die ", "Geheimzahl", "PIN",
+                           "Geben Sie bitte Ihre Geheimzahl ein.", "Please enter your PIN."),
+            CollectionWord("der ", "Kontoauszug", "bank statement",
+                           "Den Kontoauszug kannst du in der App sehen.", "You can see the bank statement in the app."),
+            CollectionWord("die ", "Gebühr", "fee",
+                           "Für das Konto zahle ich keine Gebühr.", "I don’t pay a fee for the account."),
+            CollectionWord("die ", "Quittung", "receipt",
+                           "Können Sie mir bitte eine Quittung geben?", "Could you give me a receipt, please?"),
+            CollectionWord("die ", "Rate", "instalment",
+                           "Ich zahle das Handy in zwölf Raten.", "I’m paying for the phone in twelve instalments."),
+            CollectionWord("", "Geld abheben", "to withdraw money",
+                           "Ich muss noch schnell Geld abheben.", "I just need to get some money out."),
+            CollectionWord("", "sparen", "to save",
+                           "Wir sparen für den Urlaub.", "We’re saving for our holiday."),
+            CollectionWord("", "ausgeben", "to spend",
+                           "Für Essen geben wir zu viel aus.", "We spend too much on food."),
+            CollectionWord("", "leihen", "to lend, to borrow",
+                           "Kannst du mir zehn Euro leihen?", "Can you lend me ten euros?"),
+            CollectionWord("", "überweisen", "to transfer",
+                           "Ich überweise dir das Geld heute noch.", "I’ll transfer the money to you today.")
         ]
     )
 }

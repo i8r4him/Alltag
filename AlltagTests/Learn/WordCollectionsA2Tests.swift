@@ -23,9 +23,15 @@ struct WordCollectionsA2Tests {
         #expect(WordCollections.a2.map(\.id) == a2.map(\.id), "every A2 collection is in the A2 list")
     }
 
-    @Test("Each A2 collection has enough words, and no word is in two of them")
+    @Test("Each A2 collection has enough words, and no word is in two collections at any level")
     func wordsAreSound() {
+        // Memory skips a word it already has, so a word in two collections would go missing from one.
         var seen: [String: String] = [:]
+        for collection in WordCollections.all where collection.level != .a2 {
+            for word in collection.words {
+                seen[word.displayWord.lowercased()] = collection.id
+            }
+        }
         for collection in a2 {
             #expect(collection.words.count >= 12, "\(collection.id) has few words")
             for word in collection.words {

@@ -10,7 +10,7 @@ import Foundation
 extension WordCollections {
     // A2, everyday: your day, your phone, the weather.
     static let a2DailyRoutine = WordCollection(
-        id: "a2-tagesablauf", title: "Mein Tag", subtitle: "Daily routine", level: .a2,
+        id: "a2-tagesablauf", title: "Mein Alltag", subtitle: "Daily routine", level: .a2,
         category: .everyday, systemImage: "sun.horizon.fill",
         words: [
             CollectionWord("der ", "Wecker", "alarm clock",
@@ -23,16 +23,17 @@ extension WordCollections {
                            "Zum Mittagessen gibt es heute Suppe.", "There’s soup for lunch today."),
             CollectionWord("das ", "Abendessen", "dinner",
                            "Das Abendessen ist um sieben fertig.", "Dinner is ready at seven."),
-            CollectionWord("", "aufstehen", "to get up",
-                           "Am Wochenende stehe ich spät auf.", "At the weekend I get up late."),
-            CollectionWord("", "duschen", "to have a shower",
-                           "Ich dusche immer nach dem Sport.", "I always have a shower after sport."),
+            CollectionWord("", "verschlafen", "to oversleep",
+                           "Heute habe ich verschlafen und den Bus verpasst.", "I overslept today and missed the bus."),
+            CollectionWord("", "sich fertig machen", "to get ready",
+                           "Morgens brauche ich zwanzig Minuten, um mich fertig zu machen.",
+                           "In the morning I need twenty minutes to get ready."),
             CollectionWord("", "Zähne putzen", "to brush your teeth",
                            "Vergiss nicht, Zähne zu putzen!", "Don’t forget to brush your teeth!"),
-            CollectionWord("", "frühstücken", "to have breakfast",
-                           "Wir frühstücken um halb acht.", "We have breakfast at half past seven."),
-            CollectionWord("", "einkaufen", "to do the shopping",
-                           "Nach der Arbeit kaufe ich noch ein.", "After work I’ll do some shopping."),
+            CollectionWord("der ", "Arbeitsweg", "commute",
+                           "Mein Arbeitsweg dauert eine halbe Stunde.", "My commute takes half an hour."),
+            CollectionWord("", "sich beeilen", "to hurry",
+                           "Beeil dich, wir kommen zu spät!", "Hurry up, we’ll be late!"),
             CollectionWord("", "sich ausruhen", "to rest",
                            "Nach dem Mittagessen ruhe ich mich kurz aus.", "After lunch I have a little rest."),
             CollectionWord("", "ins Bett gehen", "to go to bed",
@@ -41,8 +42,8 @@ extension WordCollections {
                            "Ohne Musik kann ich nicht einschlafen.", "I can’t fall asleep without music."),
             CollectionWord("", "meistens", "usually",
                            "Meistens koche ich am Abend.", "I usually cook in the evening."),
-            CollectionWord("", "früh", "early",
-                           "Morgen muss ich früh raus.", "I have to get up early tomorrow.")
+            CollectionWord("", "normalerweise", "normally",
+                           "Normalerweise esse ich um zwölf zu Mittag.", "I normally have lunch at twelve.")
         ]
     )
 
