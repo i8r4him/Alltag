@@ -48,8 +48,6 @@ struct LearnView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.grid) {
-                // TEMPORARY (#397): the opening effects to choose from.
-                FieldFocusEffectSwitcher()
                 AskInPlace(model: ask, isFocused: $isAsking)
                 VStack(spacing: Spacing.section) {
                     ToolsSection(onOpen: open)
