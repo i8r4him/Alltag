@@ -71,7 +71,7 @@ private struct CheatSheetTile: View {
 }
 
 /// A cheat sheet opened from its tile, in Today's look: the sky, the artwork,
-/// what it's about, and each part on a glass card.
+/// what it's about, and each part on a glass card with its picture.
 struct CheatSheetDetail: View {
     let sheet: CheatSheet
     @Environment(\.dismiss) private var dismiss
@@ -118,40 +118,6 @@ struct CheatSheetDetail: View {
     }
 }
 
-/// One part of a sheet: its title, then each German form with what it means.
-private struct CheatSheetPartCard: View {
-    let part: CheatSheet.Part
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(part.title)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
-                .accessibilityAddTraits(.isHeader)
-                .padding(.bottom, 6)
-            ForEach(Array(part.rows.enumerated()), id: \.offset) { index, row in
-                if index > 0 { Divider() }
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(verbatim: row.german)
-                        .font(.title3.weight(.medium))
-                        .foregroundStyle(.accent)
-                        .environment(\.locale, Locale(identifier: "de_DE"))
-                    Text(row.meaning)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 12)
-                .accessibilityElement(children: .combine)
-            }
-        }
-        .padding(Spacing.cardLarge)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-    }
-}
-
 #Preview("Section") {
     ScrollView {
         CheatSheetsSection(level: .a2)
@@ -162,5 +128,5 @@ private struct CheatSheetPartCard: View {
 }
 
 #Preview("Sheet") {
-    CheatSheetDetail(sheet: CheatSheet.cases)
+    CheatSheetDetail(sheet: CheatSheet.prepositions)
 }

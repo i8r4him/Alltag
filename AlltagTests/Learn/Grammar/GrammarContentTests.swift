@@ -7,6 +7,7 @@
 
 import Foundation
 import Testing
+import UIKit
 @testable import Alltag
 
 @Suite("Grammar content")
@@ -56,5 +57,25 @@ struct GrammarContentTests {
         let ids = CheatSheet.all.map(\.id)
         #expect(Set(ids).count == ids.count)
         #expect(!CheatSheet.all.contains { $0.label == "der · die · das" })
+    }
+
+    @Test("Cheat sheet symbols exist, and the marked words are in their German")
+    func cheatSheetSymbolsAndMarks() {
+        for sheet in CheatSheet.all {
+            for part in sheet.parts {
+                for side in [part.picture.source, part.picture.target] {
+                    #expect(UIImage(systemName: side.systemImage) != nil, "\(sheet.id): \(side.systemImage)")
+                    if let marked = side.marked {
+                        #expect(side.german.contains(marked), "\(sheet.id): \(side.german)")
+                    }
+                }
+                for row in part.rows {
+                    #expect(UIImage(systemName: row.systemImage) != nil, "\(sheet.id): \(row.systemImage)")
+                    if let marked = row.marked {
+                        #expect(row.german.contains(marked), "\(sheet.id): \(row.german)")
+                    }
+                }
+            }
+        }
     }
 }
