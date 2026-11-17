@@ -55,8 +55,8 @@ extension WordCollections {
             CollectionWord("die ", "Gleitzeit", "flexitime",
                            "Dank Gleitzeit kann ich zwischen sieben und neun anfangen.",
                            "Thanks to flexitime I can start between seven and nine."),
-            CollectionWord("die ", "Teilzeit", "part-time work",
-                           "Seit der Geburt meiner Tochter arbeite ich in Teilzeit.", "Since my daughter was born I’ve worked part-time."),
+            CollectionWord("die ", "Elternzeit", "parental leave",
+                           "Nach der Geburt nehme ich ein Jahr Elternzeit.", "After the birth I’m taking a year of parental leave."),
             CollectionWord("die ", "Erfahrung", "experience",
                            "Haben Sie schon Erfahrung in der Pflege?", "Do you have any experience in care work?")
         ]
@@ -66,24 +66,24 @@ extension WordCollections {
         id: "b1-ausbildung", title: "Ausbildung und Studium", subtitle: "Training and studying", level: .b1,
         category: .work, systemImage: "graduationcap.fill",
         words: [
-            CollectionWord("die ", "Ausbildung", "vocational training",
-                           "Die Ausbildung zur Pflegefachfrau dauert drei Jahre.", "Training as a nurse takes three years."),
+            CollectionWord("die ", "Umschulung", "retraining",
+                           "Das Jobcenter bezahlt mir eine Umschulung.", "The job centre is paying for me to retrain."),
             CollectionWord("das ", "Studium", "university degree",
                            "Mein Studium dauert noch zwei Jahre.", "I’ve got two more years of my degree."),
             CollectionWord("der ", "Abschluss", "qualification",
                            "Wird mein Abschluss in Deutschland anerkannt?", "Will my qualification be recognised in Germany?"),
             CollectionWord("die ", "Anerkennung", "recognition (of a qualification)",
                            "Die Anerkennung meines Diploms hat ein Jahr gedauert.", "Getting my diploma recognised took a year."),
-            CollectionWord("die ", "Prüfung", "exam",
-                           "Ich habe die Prüfung beim ersten Mal bestanden.", "I passed the exam the first time."),
+            CollectionWord("die ", "Klausur", "written exam",
+                           "Morgen schreiben wir eine Klausur in Statistik.", "Tomorrow we have a written exam in statistics."),
             CollectionWord("", "durchfallen", "to fail (an exam)",
                            "Wer durchfällt, kann die Prüfung wiederholen.", "If you fail, you can retake the exam."),
             CollectionWord("die ", "Note", "mark, grade",
                            "In Deutschland ist eine Eins die beste Note.", "In Germany a one is the best mark."),
             CollectionWord("das ", "Zeugnis", "school report, certificate",
                            "Am letzten Schultag gibt es Zeugnisse.", "On the last day of school you get your report."),
-            CollectionWord("der ", "Kurs", "course",
-                           "Der Kurs findet zweimal pro Woche statt.", "The course takes place twice a week."),
+            CollectionWord("die ", "Hochschule", "university, college",
+                           "Sie studiert an einer Hochschule in München.", "She studies at a university in Munich."),
             CollectionWord("die ", "Vorlesung", "lecture",
                            "Die Vorlesung fängt um acht Uhr an.", "The lecture starts at eight."),
             CollectionWord("das ", "Semester", "semester, term",
@@ -105,8 +105,8 @@ extension WordCollections {
             CollectionWord("der ", "Integrationskurs", "integration course",
                            "Im Integrationskurs lerne ich Deutsch und viel über Deutschland.",
                            "In the integration course I learn German and a lot about Germany."),
-            CollectionWord("das ", "Zertifikat", "certificate",
-                           "Für die Einbürgerung brauche ich das B1-Zertifikat.", "For citizenship I need the B1 certificate.")
+            CollectionWord("der ", "Nachweis", "proof",
+                           "Für die Einbürgerung brauche ich einen Nachweis über B1.", "For citizenship I need proof of B1.")
         ]
     )
 
@@ -151,8 +151,8 @@ extension WordCollections {
                            "Ich brauche eine Bescheinigung von meinem Arbeitgeber.", "I need a letter of confirmation from my employer."),
             CollectionWord("die ", "Gebühr", "fee",
                            "Die Gebühr können Sie hier mit Karte bezahlen.", "You can pay the fee here by card."),
-            CollectionWord("die ", "Staatsangehörigkeit", "nationality",
-                           "Welche Staatsangehörigkeit haben Sie?", "What nationality are you?"),
+            CollectionWord("die ", "Einbürgerung", "naturalisation, getting citizenship",
+                           "Die Einbürgerung dauert oft über ein Jahr.", "Getting citizenship often takes over a year."),
             CollectionWord("", "ablehnen", "to turn down",
                            "Mein Antrag wurde leider abgelehnt.", "Sadly my application was turned down.")
         ]

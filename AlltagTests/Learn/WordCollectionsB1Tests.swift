@@ -31,6 +31,13 @@ struct WordCollectionsB1Tests {
         #expect(repeated.isEmpty, "Repeated: \(repeated)")
     }
 
+    @Test("No B1 word is in another level's collection, so saving both never skips one")
+    func noWordFromOtherLevels() {
+        let others = Set(WordCollections.all.filter { $0.level != .b1 }.flatMap(\.words).map(\.word))
+        let shared = b1.flatMap(\.words).map(\.word).filter(others.contains).sorted()
+        #expect(shared.isEmpty, "Also at another level: \(shared)")
+    }
+
     @Test("Every B1 sentence is a full sentence and every symbol exists")
     func sentencesAndSymbols() {
         for collection in b1 {
