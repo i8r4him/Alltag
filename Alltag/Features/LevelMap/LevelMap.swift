@@ -58,8 +58,11 @@ struct LevelMap {
     /// The places in the order of the walk through town; the station isn't one.
     let places: [PlaceProgress]
 
-    /// - Parameter collectedTitles: the titles of the word collections with words in Memory.
-    init(level: Level, solvedRuleIDs: Set<String>, practisedTitles: Set<String>, collectedTitles: Set<String> = []) {
+    /// - Parameters:
+    ///   - collectedTitles: the titles of the word collections with words in Memory.
+    ///   - collections: the word collections to choose the level's from; the ready ones by default.
+    init(level: Level, solvedRuleIDs: Set<String>, practisedTitles: Set<String>, collectedTitles: Set<String> = [],
+         collections: [WordCollection] = WordCollections.ready) {
         self.level = level
         let rules = GrammarProgress.rules(at: level)
         let school = PlaceProgress(place: .school, stops: rules.isEmpty ? nil : rules.map { rule in
@@ -71,7 +74,7 @@ struct LevelMap {
             return MapStop(id: situation.id, title: title, isDone: practisedTitles.contains(title),
                            destination: .situation(id: situation.id))
         })
-        let collections = WordCollections.ready.filter { $0.level == level }
+        let collections = collections.filter { $0.level == level && $0.isReady }
         let market = PlaceProgress(place: .market, stops: collections.isEmpty ? nil : collections.map { collection in
             MapStop(id: collection.id, title: collection.title, isDone: collectedTitles.contains(collection.title),
                     destination: .collection(id: collection.id))

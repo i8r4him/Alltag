@@ -245,7 +245,7 @@ Alltag/                                   ← repo root
 │  │  │  │  │  └─ WordParts.swift         the speaker button, the word with its article, the highlighted example
 │  │  │  │  ├─ CollectionMemory.swift     adds a collection's words (or some) to Memory and takes them out (tested)
 │  │  │  │  ├─ CollectionCardParts.swift  the + button, level badge, artwork and stack layers
-│  │  │  │  └─ Content/                   the words: A2 (doctor's, flat, shopping), B1 (work, offices, transport); planned topics by name
+│  │  │  │  └─ Content/                   the words, one set of files per level (A1 to C2), every topic group at every level
 │  │  │  ├─ Ask/
 │  │  │  │  ├─ AskInPlace.swift           the field you type in on Learn and the German answer there, with Translate's parts (#304)
 │  │  │  │  ├─ AskModel.swift             Translate's model, asked only when the learner sends (tested)
@@ -298,10 +298,11 @@ Alltag/                                   ← repo root
 │  │  │  │  ├─ ExamAnswerViews.swift      the options of a choice, the tiles of a sentence, the feedback
 │  │  │  │  └─ ExamModel.swift            one question at a time, checked once; all three right solves the rule (tested)
 │  │  │  ├─ CheatSheets/
-│  │  │  │  ├─ CheatSheet.swift           a cheat sheet: label, title, parts of German forms
+│  │  │  │  ├─ CheatSheet.swift           a cheat sheet: label, title, parts with a picture and everyday examples
 │  │  │  │  ├─ CheatSheetsBasic.swift     the sheets for A1 and A2 (and the list of all)
 │  │  │  │  ├─ CheatSheetsAdvanced.swift  the sheets for B1, B2 and C1
-│  │  │  │  └─ CheatSheetViews.swift      the three glass tiles of the learner's level and the sheet they open
+│  │  │  │  ├─ CheatSheetViews.swift      the three glass tiles of the learner's level and the sheet they open
+│  │  │  │  └─ CheatSheetCards.swift      a part's glass card: its picture, then each example with its symbol
 │  │  │  └─ Content/
 │  │  │     ├─ RealLifeSentences.swift    the sentences for each rule
 │  │  │     ├─ RealLifeSentences+A2.swift the three sentences of each A2 rule

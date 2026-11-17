@@ -57,15 +57,20 @@ struct LevelMapTests {
 
     @Test("The library, and the market at a level without collections, are soon: no ring, and they don't count")
     func soonPlaces() throws {
-        #expect(allCollections(at: .a1).isEmpty)
+        let noCollections = LevelMap(level: .c2, solvedRuleIDs: [], practisedTitles: [], collections: [])
+        #expect(noCollections.progress(of: .market)?.isOpen == false)
+        // Every level has word collections now, C2 included.
+        let closedMarkets = Level.allCases.filter { map($0).progress(of: .market)?.isOpen != true }
+        #expect(closedMarkets.isEmpty)
         let fresh = map(.a1)
         #expect(fresh.progress(of: .library)?.isOpen == false)
-        #expect(fresh.progress(of: .market)?.isOpen == false)
+        #expect(fresh.progress(of: .market)?.isOpen == true)
         #expect(fresh.progress(of: .station) == nil)
         let rules = GrammarProgress.rules(at: .a1).map(\.id)
-        // All rules solved, no situation: the open places are half done.
-        #expect(map(.a1, solved: Set(rules)).fraction == 0.5)
-        #expect(map(.a1, solved: Set(rules)).percent == 50)
+        // All rules solved and every collection added, no situation: two of the three open places are done.
+        let twoOfThree = map(.a1, solved: Set(rules), collected: allCollections(at: .a1))
+        #expect(abs(twoOfThree.fraction - 2.0 / 3.0) < 0.000_1)
+        #expect(twoOfThree.percent == 66)
     }
 
     @Test("The market holds the level's ready word collections, and counts the ones added to Memory")
