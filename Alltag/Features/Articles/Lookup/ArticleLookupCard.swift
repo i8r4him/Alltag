@@ -68,37 +68,15 @@ struct ArticleLookupCard: View {
         }
     }
 
-    /// The field, in the look of "How do I say …?": a glass capsule with the symbol on the left.
+    /// The field of "How do I say …?", with the round button that looks the word up.
     private var field: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "magnifyingglass")
-                .font(.title3)
-                .foregroundStyle(.accent)
-                .accessibilityHidden(true)
-            TextField("A noun, or what it means", text: $model.text)
-                .font(.title3)
-                .focused(isFieldFocused)
-                .submitLabel(.search)
-                .autocorrectionDisabled()
-                .onSubmit(lookUp)
-            if !model.text.isEmpty {
-                Button("Clear", systemImage: "xmark.circle.fill", action: clear)
-                    .labelStyle(.iconOnly)
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 32, height: 44)
-                    .contentShape(.rect)
-                    .buttonStyle(.plain)
-                    .transition(reduceMotion ? .opacity : .scale(scale: 0.6).combined(with: .opacity))
-            }
-        }
-        .padding(.leading, 20)
-        .padding(.trailing, model.text.isEmpty ? 20 : 12)
-        .frame(height: 60)
-        .glassEffect(.regular.interactive(), in: .capsule)
-        .animation(.smooth(duration: 0.25), value: model.text.isEmpty)
-        // The same opening effect as "How do I say …?" on Learn.
-        .fieldFocusEffect(isActive: isFieldFocused.wrappedValue)
+        GlassInputField(systemImage: "magnifyingglass", prompt: "A noun, or what it means", text: $model.text,
+                        isFocused: isFieldFocused, submitLabel: .search, sendLabel: "Look up a word",
+                        canSend: !model.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !model.isLookingUp,
+                        onSend: lookUp, onClear: clear)
+            .autocorrectionDisabled()
+            // The same opening effect as "How do I say …?" on Learn.
+            .fieldFocusEffect(isActive: isFieldFocused.wrappedValue)
     }
 
     private func lookUp() {

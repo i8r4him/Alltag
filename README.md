@@ -64,6 +64,7 @@ Alltag/                                   ← repo root
 │  │     ├─ StateCard.swift               StateCard (a state in the Focus card's layout), CloudFailureCard
 │  │     ├─ HistorySheet.swift            things looked up before as glass cards on the sky (Translate, Articles)
 │  │     ├─ FieldFocusEffect.swift        a top field comes forward and glows, the page behind darkens and sinks back (Learn, Articles)
+│  │     ├─ GlassInputField.swift         the glass capsule field at the top of a page, with the X and the round send button (Learn, Articles)
 │  │     ├─ FlowLayout.swift              wrapping layout for chips
 │  │     └─ ComponentGallery.swift        previews of every component
 │  │
