@@ -90,6 +90,7 @@ Translate and "How do I say …?" in the app. Text only.
 - Send `POST {URL}/functions/v1/translate` with the same two headers as above.
 - The body is `{"text": "…", "language": "English", "level": "B1"}`. Only `text` is required (600 characters at most). `language` is the learner's own language, by its English name.
 - German text is translated into the learner's language; anything else into natural everyday German.
+- `register` (optional, sent by "How do I say …?") chooses how the German sounds: `"everyday"` is spoken Umgangssprache with *du*, `"formal"` is polite written German with *Sie* (an email with greeting and closing). Without it, or with any other value, nothing changes, so Translate and the translation panel keep the translator's German.
 - `200` returns `{"german", "other", "source_is_german", "note", "words": [{word, grammar, meaning}], "tones": [{tone, german}], "examples": [{german, other}]}`.
 - **Nothing the learner wrote is stored.** The table `translations` keeps only who asked and when, for the limits: `TRANSLATE_PER_USER_DAILY` (default 200) and `TRANSLATE_GLOBAL_DAILY` (default 20,000). Developer accounts skip the per-user limit.
 - Set `stream` to the string `"true"` to receive OpenAI server-sent events as the answer is generated; without it, the function retains its JSON response for older app versions. Streaming requests count towards the quota when OpenAI accepts them.

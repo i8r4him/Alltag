@@ -28,6 +28,9 @@ final class TranslateModel {
     /// The text put in the field from the history, with its translation: changing
     /// the field to it must not clear what was just shown.
     private(set) var restoredInput: String?
+    /// How the German should sound. `nil` on Translate, which keeps the translator's
+    /// natural German; "How do I say …?" sets it.
+    var register: GermanRegister?
     /// The recent translations, for the toolbar's history.
     let history: TranslationHistory
 
@@ -83,7 +86,7 @@ final class TranslateModel {
         missingLanguages = nil
         failure = nil
         do {
-            let translated = try await translation.translate(text) { partial in
+            let translated = try await translation.translate(text, register: register) { partial in
                 guard !Task.isCancelled, self.input.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
                 self.result = partial
             }

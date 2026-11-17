@@ -116,6 +116,7 @@ struct AskAnswer: View {
     let model: AskModel
     let showsDetails: Bool
     @Environment(\.modelContext) private var context
+    @Environment(\.reducesMotion) private var reduceMotion
     @Query private var saved: [SavedTranslation]
 
     private var translate: TranslateModel { model.translate }
@@ -134,13 +135,14 @@ struct AskAnswer: View {
                 }
                 if showsDetails, let result = translate.result {
                     // Each part unfolds in turn as it appears.
-                    TranslateDetails(result: result, unfolds: true) { german in
+                    TranslateDetails(result: result, unfolds: true, toneCard: registerChoice(note: result.note)) { german in
                         Task { await translate.listen(to: german) }
                     }
                     .padding(.top, 10)
                     .transition(.opacity)
                     if translate.isExplaining || translate.isTranslating {
-                        TranslateLoadingDetails(pending: TranslateSection.allCases.filter { $0.isEmpty(in: result) })
+                        // The Tone card is always there: it holds the choice of everyday or formal.
+                        TranslateLoadingDetails(pending: TranslateSection.allCases.filter { $0 != .tone && $0.isEmpty(in: result) })
                             .transition(.opacity)
                     }
                 }
@@ -149,6 +151,14 @@ struct AskAnswer: View {
             }
         }
         .fontDesign(.rounded)
+    }
+
+    /// Everyday or formal, in place of the tones. Choosing the other asks again;
+    /// the answer shown stays until the new one arrives.
+    private func registerChoice(note: String) -> AskRegisterChoice {
+        AskRegisterChoice(selection: model.register, note: note, isLoading: translate.isTranslating) { register in
+            withAnimation(AskMotion.answer(reduceMotion: reduceMotion)) { _ = model.choose(register) }
+        }
     }
 
     private func card(@ViewBuilder content: () -> some View) -> some View {
