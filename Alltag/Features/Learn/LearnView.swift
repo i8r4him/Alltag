@@ -31,7 +31,6 @@ struct LearnView: View {
         isAsking = false
         switch tool {
         case .translate: appState.open(.translate())
-        case .howToSay: appState.open(.howToSay)
         case .articles: appState.open(.articles)
         }
     }

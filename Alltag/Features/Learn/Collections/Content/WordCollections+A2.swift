@@ -8,8 +8,15 @@
 import Foundation
 
 extension WordCollections {
-    /// A2: the doctor's, the flat, shopping.
-    static let a2: [WordCollection] = [doctor, flat, shopping]
+    /// A2: everyday life in many topics, the most useful first. The doctor's,
+    /// the flat and shopping are in this file; the other topics are in the
+    /// `WordCollections+A2….swift` files by group.
+    static let a2: [WordCollection] = [
+        doctor, flat, shopping, a2Restaurant, a2Town, a2DailyRoutine, a2Friends, a2Phone, a2Weather,
+        a2Hobbies, a2Celebrations, a2Feelings, a2Online, a2Cooking, a2Housework, a2Furniture,
+        a2Hotel, a2CarAndBike, a2WorkingDay, a2LanguageCourse, a2Post, a2Money, a2Emergencies,
+        a2Sport, a2GoingOut
+    ]
 
     static let doctor = WordCollection(
         id: "a2-arzt", title: "Beim Arzt", subtitle: "At the doctor’s", level: .a2, category: .health, systemImage: "stethoscope",
