@@ -76,8 +76,6 @@ struct RootView: View {
         switch route {
         case .translate(let text):
             TranslateView(initialText: text)
-        case .howToSay:
-            TranslateView(initialText: nil, isAsking: true)
         case .articles:
             ArticlesView(level: profiles.first?.level ?? .a1)
         case .collections:

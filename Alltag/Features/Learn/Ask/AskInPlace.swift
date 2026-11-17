@@ -47,7 +47,7 @@ private struct AskContent: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.grid) {
-            GlassInputField(systemImage: LearnTool.howToSay.systemImage, prompt: "How do I say …?", text: text,
+            GlassInputField(systemImage: "quote.bubble.fill", prompt: "How do I say …?", text: text,
                             isFocused: isFocused, sendLabel: "Say it in German", canSend: model.canSend,
                             onSend: send, onClear: clear)
                 .fieldFocusEffect(isActive: isFocused.wrappedValue)

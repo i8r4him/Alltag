@@ -10,19 +10,15 @@ import SwiftUI
 import Translation
 
 /// Translate: English ⇄ German with word-by-word, tone and examples.
-///
-/// Opened from "How do I say …?" (`isAsking`), it is the same screen ready to
-/// be asked: the keyboard is up, there is no welcome, and Return translates.
 struct TranslateView: View {
     let initialText: String?
-    var isAsking = false
     @Environment(\.services) private var services
     @State private var model: TranslateModel?
 
     var body: some View {
         Group {
             if let model {
-                TranslateContent(model: model, isAsking: isAsking)
+                TranslateContent(model: model)
             } else {
                 Color.clear
             }
@@ -37,7 +33,6 @@ struct TranslateView: View {
 
 private struct TranslateContent: View {
     @Bindable var model: TranslateModel
-    var isAsking = false
     @FocusState private var isFieldFocused: Bool
     @Environment(\.modelContext) private var modelContext
     @Query private var savedTranslations: [SavedTranslation]
@@ -55,9 +50,8 @@ private struct TranslateContent: View {
     @Namespace private var transition
 
     private var isEmpty: Bool { model.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-    private var prompt: LocalizedStringResource { isAsking ? "How do I say …?" : "Type or paste text" }
     /// Nothing has been asked yet: the welcome, or whatever takes its place.
-    private var isStart: Bool { !isAsking && !model.hasAttempted && model.result == nil }
+    private var isStart: Bool { !model.hasAttempted && model.result == nil }
     private var isLoadingResult: Bool { model.isTranslating && model.result == nil }
 
     var body: some View {
@@ -83,7 +77,7 @@ private struct TranslateContent: View {
         .skyBackground()
         .fontDesign(.rounded)
         // A title like Learn's other screens; the languages and the swap are in the card.
-        .navigationTitle(isAsking ? Text("How do I say …?") : Text("Translate"))
+        .navigationTitle("Translate")
         .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -97,7 +91,6 @@ private struct TranslateContent: View {
                 .navigationTransition(.zoom(sourceID: Self.historyTransition, in: transition))
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: isShowingHistory) { _, isShowing in isShowing }
-        .onAppear { if isAsking { isFieldFocused = true } }
         .translationTask(download) { session in
             do {
                 try await session.prepareTranslation()
@@ -129,7 +122,7 @@ private struct TranslateContent: View {
 extension TranslateContent {
     /// The languages, the field and the swap, with the translation in the lower half.
     private var input: some View {
-        TranslateInputCard(text: $model.input, sourceLabel: model.sourceLabel, prompt: prompt,
+        TranslateInputCard(text: $model.input, sourceLabel: model.sourceLabel, prompt: "Type or paste text",
                            isFocused: $isFieldFocused, onSwap: swap, onEdit: { taps += 1 }, lower: { lower })
     }
 
@@ -149,7 +142,7 @@ extension TranslateContent {
     }
 
     private var translateButton: some View {
-        Button(isAsking ? "Say it in German" : "Translate", systemImage: isAsking ? "quote.bubble.fill" : "translate") {
+        Button("Translate", systemImage: "translate") {
             translate()
         }
         .buttonStyle(.primary)
@@ -211,14 +204,6 @@ extension TranslateContent {
         model.clearResult()
         if translatesAfterSwap {
             translatesAfterSwap = false
-            translate()
-            return
-        }
-        // When asking, Return sends the question: the field grows with the text,
-        // so Return would otherwise only start a new line.
-        if isAsking, input.hasSuffix("\n") {
-            model.input = input.trimmingCharacters(in: .newlines)
-            isFieldFocused = false
             translate()
         }
     }
