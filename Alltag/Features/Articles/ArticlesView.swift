@@ -16,22 +16,33 @@ struct ArticlesView: View {
     @Environment(AppState.self) private var appState
     @State private var lookup = ArticleLookupModel()
     @State private var isShowingHistory = false
+    @FocusState private var isSearchFocused: Bool
+    @Environment(\.reducesMotion) private var reduceMotion
     @Namespace private var transition
 
     var body: some View {
         LearnScreen(title: "Articles") {
             ArticlesHeroCard(level: level) { appState.present(.articles) }
+                .fieldFocusBackdrop(isActive: isSearchFocused) { isSearchFocused = false }
             LearnSection(title: "Look up a word") {
-                ArticleLookupCard(level: level, model: lookup)
+                ArticleLookupCard(level: level, model: lookup, isFieldFocused: $isSearchFocused)
             }
             LearnSection(title: "A few useful clues") {
                 ArticleRules()
             }
+            .fieldFocusBackdrop(isActive: isSearchFocused) { isSearchFocused = false }
         }
+        // Dragging down lowers the keyboard, as does a tap on the page behind the field (fieldFocusBackdrop).
         .scrollDismissesKeyboard(.interactively)
+        // On the whole screen, so the clues below move with the cards instead of jumping.
+        .animation(ArticleLookupMotion.change(reduceMotion: reduceMotion), value: lookup.phase)
+        .onDisappear { isSearchFocused = false }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Looked up", systemImage: "clock.arrow.circlepath") { isShowingHistory = true }
+                Button("Looked up", systemImage: "clock.arrow.circlepath") {
+                    isSearchFocused = false
+                    isShowingHistory = true
+                }
             }
             .matchedTransitionSource(id: Self.historyTransition, in: transition)
         }

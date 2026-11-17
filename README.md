@@ -265,6 +265,7 @@ Alltag/                                   ← repo root
 │  │  │  │  ├─ ArticleLookupCard.swift    the field; searching, not found, offline and other failure cards
 │  │  │  │  ├─ ArticleLookupModel.swift   the look-up, why it failed, what is saved, the history (UserDefaults)
 │  │  │  │  ├─ ArticleLookupHistory.swift the toolbar's sheet of looked-up words: cards in the shared `HistorySheet`
+│  │  │  │  ├─ ArticleLookupMotion.swift  how the cards come in (a light blur, one after the other) and the page moves with them
 │  │  │  │  └─ ArticleWordCard.swift      a found noun like a dictionary entry, with the bookmark to save or unsave
 │  │  │  └─ Clues/
 │  │  │     ├─ ArticleRules.swift         the clues as a grid of glass tiles (endings, -chen, compounds, the plural)
