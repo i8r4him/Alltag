@@ -31,6 +31,13 @@ struct WordCollectionsB2Tests {
         #expect(repeated.isEmpty, "in two collections: \(repeated)")
     }
 
+    @Test("No B2 word is in a collection of another level, so Memory never skips it")
+    func newToB2() {
+        let others = Set(WordCollections.all.filter { $0.level != .b2 }.flatMap(\.words).map { $0.word.lowercased() })
+        let repeated = WordCollections.b2.flatMap(\.words).map(\.word).filter { others.contains($0.lowercased()) }
+        #expect(repeated.isEmpty, "also at another level: \(repeated)")
+    }
+
     @Test("Every B2 sentence is a full sentence in both languages")
     func sentencesAreComplete() {
         for word in WordCollections.b2.flatMap(\.words) {
