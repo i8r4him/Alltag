@@ -8,8 +8,12 @@
 import Foundation
 
 extension WordCollections {
-    /// B1: work, offices and paperwork, getting around.
-    static let b1: [WordCollection] = [work, offices, transport]
+    /// B1: everyday life in Germany, from work and the flat to the hospital and
+    /// celebrations. Learn shows them in this order.
+    static let b1: [WordCollection] = [
+        work, b1FlatHunting, offices, transport, b1Relationships, b1Phones, b1Cooking, b1Neighbours, b1Hospital, b1Holidays, b1Education,
+        b1Bank, b1Orders, b1HealthyLiving, b1Celebrations, b1Driving, b1Sport, b1Culture
+    ]
 
     static let work = WordCollection(
         id: "b1-arbeit", title: "Arbeit und Beruf", subtitle: "Work", level: .b1, category: .work, systemImage: "briefcase.fill",
@@ -19,11 +23,9 @@ extension WordCollections {
             CollectionWord("das ", "Vorstellungsgespräch", "job interview",
                            "Das Vorstellungsgespräch ist am Donnerstag um zehn.", "The interview is on Thursday at ten."),
             CollectionWord("der ", "Lebenslauf", "CV",
-                           "Schicken Sie uns bitte Ihren Lebenslauf und Ihre Zeugnisse.",
-                           "Please send us your CV and your certificates."),
+                           "Schicken Sie uns bitte Ihren Lebenslauf und Ihre Zeugnisse.", "Please send us your CV and your certificates."),
             CollectionWord("der ", "Arbeitsvertrag", "employment contract",
-                           "Lesen Sie den Arbeitsvertrag genau, bevor Sie unterschreiben.",
-                           "Read the contract carefully before you sign."),
+                           "Lesen Sie den Arbeitsvertrag genau, bevor Sie unterschreiben.", "Read the contract carefully before you sign."),
             CollectionWord("die ", "Probezeit", "probation period",
                            "Die Probezeit dauert sechs Monate.", "The probation period lasts six months."),
             CollectionWord("das ", "Gehalt", "salary",
@@ -45,7 +47,66 @@ extension WordCollections {
             CollectionWord("", "sich bewerben", "to apply",
                            "Ich bewerbe mich als Krankenpfleger in Hamburg.", "I’m applying for a nursing job in Hamburg."),
             CollectionWord("", "kündigen", "to hand in your notice",
-                           "Er hat zum Ende des Monats gekündigt.", "He handed in his notice for the end of the month.")
+                           "Er hat zum Ende des Monats gekündigt.", "He handed in his notice for the end of the month."),
+            CollectionWord("der ", "Arbeitgeber", "employer",
+                           "Mein Arbeitgeber zahlt mir das Deutschlandticket.", "My employer pays for my Deutschlandticket."),
+            CollectionWord("die ", "Abteilung", "department",
+                           "In welcher Abteilung arbeiten Sie?", "Which department do you work in?"),
+            CollectionWord("die ", "Gleitzeit", "flexitime",
+                           "Dank Gleitzeit kann ich zwischen sieben und neun anfangen.",
+                           "Thanks to flexitime I can start between seven and nine."),
+            CollectionWord("die ", "Elternzeit", "parental leave",
+                           "Nach der Geburt nehme ich ein Jahr Elternzeit.", "After the birth I’m taking a year of parental leave."),
+            CollectionWord("die ", "Erfahrung", "experience",
+                           "Haben Sie schon Erfahrung in der Pflege?", "Do you have any experience in care work?")
+        ]
+    )
+
+    static let b1Education = WordCollection(
+        id: "b1-ausbildung", title: "Ausbildung und Studium", subtitle: "Training and studying", level: .b1,
+        category: .work, systemImage: "graduationcap.fill",
+        words: [
+            CollectionWord("die ", "Umschulung", "retraining",
+                           "Das Jobcenter bezahlt mir eine Umschulung.", "The job centre is paying for me to retrain."),
+            CollectionWord("das ", "Studium", "university degree",
+                           "Mein Studium dauert noch zwei Jahre.", "I’ve got two more years of my degree."),
+            CollectionWord("der ", "Abschluss", "qualification",
+                           "Wird mein Abschluss in Deutschland anerkannt?", "Will my qualification be recognised in Germany?"),
+            CollectionWord("die ", "Anerkennung", "recognition (of a qualification)",
+                           "Die Anerkennung meines Diploms hat ein Jahr gedauert.", "Getting my diploma recognised took a year."),
+            CollectionWord("die ", "Klausur", "written exam",
+                           "Morgen schreiben wir eine Klausur in Statistik.", "Tomorrow we have a written exam in statistics."),
+            CollectionWord("", "durchfallen", "to fail (an exam)",
+                           "Wer durchfällt, kann die Prüfung wiederholen.", "If you fail, you can retake the exam."),
+            CollectionWord("die ", "Note", "mark, grade",
+                           "In Deutschland ist eine Eins die beste Note.", "In Germany a one is the best mark."),
+            CollectionWord("das ", "Zeugnis", "school report, certificate",
+                           "Am letzten Schultag gibt es Zeugnisse.", "On the last day of school you get your report."),
+            CollectionWord("die ", "Hochschule", "university, college",
+                           "Sie studiert an einer Hochschule in München.", "She studies at a university in Munich."),
+            CollectionWord("die ", "Vorlesung", "lecture",
+                           "Die Vorlesung fängt um acht Uhr an.", "The lecture starts at eight."),
+            CollectionWord("das ", "Semester", "semester, term",
+                           "Ich bin im dritten Semester.", "I’m in my third semester."),
+            CollectionWord("das ", "Stipendium", "scholarship",
+                           "Sie hat ein Stipendium für ihr Studium bekommen.", "She got a scholarship for her degree."),
+            CollectionWord("das ", "Praktikum", "internship",
+                           "Im Sommer mache ich ein Praktikum bei einer Bank.", "In the summer I’m doing an internship at a bank."),
+            CollectionWord("der ", "Azubi", "apprentice, trainee",
+                           "Unser neuer Azubi lernt sehr schnell.", "Our new apprentice learns very quickly."),
+            CollectionWord("die ", "Berufsschule", "vocational school",
+                           "Zwei Tage pro Woche gehe ich in die Berufsschule.", "Two days a week I go to vocational school."),
+            CollectionWord("die ", "Weiterbildung", "further training",
+                           "Mein Chef bezahlt mir eine Weiterbildung.", "My boss is paying for me to do further training."),
+            CollectionWord("", "sich einschreiben", "to enrol",
+                           "Bis wann muss ich mich an der Uni einschreiben?", "By when do I have to enrol at the university?"),
+            CollectionWord("das ", "Fach", "subject",
+                           "Welches Fach unterrichtest du?", "Which subject do you teach?"),
+            CollectionWord("der ", "Integrationskurs", "integration course",
+                           "Im Integrationskurs lerne ich Deutsch und viel über Deutschland.",
+                           "In the integration course I learn German and a lot about Germany."),
+            CollectionWord("der ", "Nachweis", "proof",
+                           "Für die Einbürgerung brauche ich einen Nachweis über B1.", "For citizenship I need proof of B1.")
         ]
     )
 
@@ -56,8 +117,7 @@ extension WordCollections {
             CollectionWord("das ", "Bürgeramt", "citizens’ office",
                            "Für die Anmeldung muss ich zum Bürgeramt.", "I have to go to the citizens’ office to register."),
             CollectionWord("die ", "Anmeldung", "registering your address",
-                           "Nach dem Umzug haben Sie zwei Wochen Zeit für die Anmeldung.",
-                           "After moving you have two weeks to register."),
+                           "Nach dem Umzug haben Sie zwei Wochen Zeit für die Anmeldung.", "After moving you have two weeks to register."),
             CollectionWord("das ", "Formular", "form",
                            "Füllen Sie das Formular bitte in Druckbuchstaben aus.", "Please fill in the form in capital letters."),
             CollectionWord("der ", "Antrag", "application",
@@ -84,47 +144,64 @@ extension WordCollections {
             CollectionWord("", "beglaubigen", "to certify",
                            "Die Kopie muss amtlich beglaubigt sein.", "The copy has to be officially certified."),
             CollectionWord("", "zuständig", "responsible, in charge",
-                           "Welches Amt ist dafür zuständig?", "Which office is responsible for that?")
+                           "Welches Amt ist dafür zuständig?", "Which office is responsible for that?"),
+            CollectionWord("die ", "Geburtsurkunde", "birth certificate",
+                           "Für die Heirat brauchen Sie eine Geburtsurkunde.", "To get married you need a birth certificate."),
+            CollectionWord("die ", "Bescheinigung", "written confirmation",
+                           "Ich brauche eine Bescheinigung von meinem Arbeitgeber.", "I need a letter of confirmation from my employer."),
+            CollectionWord("die ", "Gebühr", "fee",
+                           "Die Gebühr können Sie hier mit Karte bezahlen.", "You can pay the fee here by card."),
+            CollectionWord("die ", "Einbürgerung", "naturalisation, getting citizenship",
+                           "Die Einbürgerung dauert oft über ein Jahr.", "Getting citizenship often takes over a year."),
+            CollectionWord("", "ablehnen", "to turn down",
+                           "Mein Antrag wurde leider abgelehnt.", "Sadly my application was turned down.")
         ]
     )
 
-    static let transport = WordCollection(
-        id: "b1-unterwegs", title: "Mit Bus und Bahn", subtitle: "Getting around", level: .b1, category: .travel, systemImage: "tram.fill",
+    static let b1Bank = WordCollection(
+        id: "b1-bank", title: "Bank und Geld", subtitle: "Banking and money", level: .b1,
+        category: .paperwork, systemImage: "banknote.fill",
         words: [
-            CollectionWord("die ", "Verspätung", "delay",
-                           "Der Zug hat zwanzig Minuten Verspätung.", "The train is twenty minutes late."),
-            CollectionWord("der ", "Anschluss", "connection",
-                           "Ich habe meinen Anschluss in Köln verpasst.", "I missed my connection in Cologne."),
-            CollectionWord("das ", "Gleis", "platform, track",
-                           "Der ICE fährt heute von Gleis 7 ab.", "The ICE leaves from platform 7 today."),
-            CollectionWord("die ", "Fahrkarte", "ticket",
-                           "Die Fahrkarte können Sie auch in der App kaufen.", "You can also buy the ticket in the app."),
-            CollectionWord("die ", "Durchsage", "announcement",
-                           "Hast du die Durchsage verstanden?", "Did you understand the announcement?"),
-            CollectionWord("der ", "Schienenersatzverkehr", "rail replacement bus",
-                           "Wegen Bauarbeiten fährt ein Schienenersatzverkehr.",
-                           "Because of engineering works there’s a rail replacement bus."),
-            CollectionWord("die ", "Haltestelle", "stop",
-                           "An der nächsten Haltestelle steigen wir aus.", "We get off at the next stop."),
-            CollectionWord("die ", "Richtung", "direction",
-                           "Fährt diese Bahn in Richtung Hauptbahnhof?", "Does this train go towards the main station?"),
-            CollectionWord("der ", "Fahrplan", "timetable",
-                           "Laut Fahrplan kommt der Bus um 8:12 Uhr.", "According to the timetable, the bus comes at 8:12."),
-            CollectionWord("die ", "Kontrolle", "ticket inspection",
-                           "Bei der Kontrolle hatte ich mein Ticket nicht dabei.",
-                           "I didn’t have my ticket on me at the inspection."),
-            CollectionWord("die ", "Sitzplatzreservierung", "seat reservation",
-                           "Mit einer Sitzplatzreservierung hast du einen festen Platz.",
-                           "With a seat reservation you have a fixed seat."),
-            CollectionWord("das ", "Deutschlandticket", "Germany-wide monthly pass",
-                           "Mit dem Deutschlandticket fahre ich mit Bus und Bahn durch ganz Deutschland.",
-                           "With the Deutschlandticket I can take local buses and trains all over Germany."),
-            CollectionWord("", "umsteigen", "to change trains",
-                           "In Hannover müssen Sie umsteigen.", "You have to change in Hanover."),
-            CollectionWord("", "entwerten", "to validate a ticket",
-                           "Vergiss nicht, die Fahrkarte zu entwerten.", "Don’t forget to validate your ticket."),
-            CollectionWord("", "ausfallen", "to be cancelled",
-                           "Die S-Bahn fällt heute wegen eines Streiks aus.", "The S-Bahn is cancelled today because of a strike.")
+            CollectionWord("das ", "Girokonto", "current account",
+                           "Für Ihr Gehalt brauchen Sie ein Girokonto.", "You need a current account for your salary."),
+            CollectionWord("", "überweisen", "to transfer (money)",
+                           "Ich überweise dir das Geld heute Abend.", "I’ll transfer the money to you this evening."),
+            CollectionWord("die ", "IBAN", "IBAN, account number",
+                           "Für die Überweisung brauche ich deine IBAN.", "I need your IBAN for the transfer."),
+            CollectionWord("der ", "Dauerauftrag", "standing order",
+                           "Die Miete zahle ich per Dauerauftrag.", "I pay the rent by standing order."),
+            CollectionWord("die ", "Lastschrift", "direct debit",
+                           "Den Strom zahle ich per Lastschrift.", "I pay for electricity by direct debit."),
+            CollectionWord("", "abheben", "to withdraw (money)",
+                           "Am Geldautomaten kann ich kostenlos Geld abheben.", "I can withdraw money for free at the cash machine."),
+            CollectionWord("der ", "Kontoauszug", "bank statement",
+                           "Den Kontoauszug kann ich online ansehen.", "I can look at my bank statement online."),
+            CollectionWord("die ", "Zinsen", "interest (plural)",
+                           "Auf dem Sparkonto bekomme ich kaum Zinsen.", "I get hardly any interest on my savings account."),
+            CollectionWord("der ", "Kredit", "loan",
+                           "Für das Auto haben wir einen Kredit aufgenommen.", "We took out a loan for the car."),
+            CollectionWord("die ", "Schulden", "debts (plural)",
+                           "Er hat hohe Schulden bei der Bank.", "He owes the bank a lot of money."),
+            CollectionWord("", "sparen", "to save (money)",
+                           "Wir sparen für eine größere Wohnung.", "We’re saving up for a bigger flat."),
+            CollectionWord("die ", "Ausgaben", "spending (plural)",
+                           "Ich schreibe alle meine Ausgaben auf.", "I write down everything I spend."),
+            CollectionWord("das ", "Bargeld", "cash",
+                           "Auf dem Markt brauchst du Bargeld.", "You need cash at the market."),
+            CollectionWord("das ", "Onlinebanking", "online banking",
+                           "Mit dem Onlinebanking erledige ich alles vom Sofa aus.", "With online banking I do everything from the sofa."),
+            CollectionWord("", "sperren", "to block (a card)",
+                           "Ich habe meine Karte verloren und muss sie sperren lassen.", "I’ve lost my card and have to have it blocked."),
+            CollectionWord("die ", "Geheimzahl", "PIN",
+                           "Geben Sie bitte Ihre Geheimzahl ein.", "Please enter your PIN."),
+            CollectionWord("der ", "Betrag", "amount",
+                           "Der Betrag wird am Monatsende abgebucht.", "The amount is taken at the end of the month."),
+            CollectionWord("die ", "Steuererklärung", "tax return",
+                           "Die Steuererklärung mache ich jedes Jahr im Frühling.", "I do my tax return every spring."),
+            CollectionWord("die ", "Rente", "pension, retirement",
+                           "Meine Eltern sind seit letztem Jahr in Rente.", "My parents have been retired since last year."),
+            CollectionWord("die ", "Kosten", "costs (plural)",
+                           "Die Kosten für Strom sind stark gestiegen.", "Electricity costs have gone up a lot.")
         ]
     )
 }
