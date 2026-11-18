@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Testing
+import UIKit
 @testable import Alltag
 
 @Suite("Level map")
@@ -159,5 +160,39 @@ struct LevelMapTests {
         let selectable = Level.selectable.map(TownLayout.of)
         #expect(Set(selectable.map(\.townName)).count == selectable.count)
         #expect(Set(selectable.map(\.seed)).count == selectable.count)
+    }
+
+    @Test("Every town has its own places, each with a German name and a real symbol")
+    func placesPerTown() {
+        for place in TownPlace.allCases {
+            let names = Level.selectable.map { place.germanName(at: $0) }
+            #expect(Set(names).count == names.count, "\(place) has the same name in two towns")
+            #expect(names.allSatisfy { $0.hasPrefix("Der ") || $0.hasPrefix("Die ") || $0.hasPrefix("Das ") })
+        }
+        for level in Level.allCases {
+            let symbols = TownPlace.allCases.map { $0.systemImage(at: level) }
+            #expect(Set(symbols).count == symbols.count, "Two places share a symbol at \(level)")
+            for symbol in symbols {
+                #expect(UIImage(systemName: symbol) != nil, "No SF Symbol named \(symbol)")
+            }
+        }
+        // C2 has no town of its own: it shares the capital's places.
+        #expect(TownPlace.school.germanName(at: .c2) == TownPlace.school.germanName(at: .c1))
+    }
+
+    @Test("A sign's bulbs light up with what's done, the last one only when everything is")
+    func bulbs() {
+        let none = NeonSign.Bulbs(done: 0, total: 5)
+        #expect(none.number == 5 && none.lit == 0)
+        let some = NeonSign.Bulbs(done: 2, total: 5)
+        #expect(some.number == 5 && some.lit == 2)
+        // Many things to do share the most bulbs a sign has.
+        let many = NeonSign.Bulbs(done: 10, total: 20)
+        #expect(many.number == NeonSign.Bulbs.maximum && many.lit == 4)
+        // A first step always shows; almost done isn't full.
+        #expect(NeonSign.Bulbs(done: 1, total: 30).lit == 1)
+        #expect(NeonSign.Bulbs(done: 29, total: 30).lit == NeonSign.Bulbs.maximum - 1)
+        let full = NeonSign.Bulbs(done: 30, total: 30)
+        #expect(full.lit == full.number)
     }
 }

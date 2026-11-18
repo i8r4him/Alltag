@@ -11,6 +11,8 @@ import SwiftUI
 /// next. Each row opens its rule or situation.
 struct PlaceSheet: View {
     let place: TownPlace
+    /// The level whose town the place is in: it gives the place its German name.
+    let level: Level
     /// `nil` for the station.
     let progress: PlaceProgress?
     let nextLevel: Level?
@@ -33,11 +35,13 @@ struct PlaceSheet: View {
 
     private var header: some View {
         HStack(spacing: 14) {
-            PlaceDisc(place: place, fraction: progress.flatMap { $0.isOpen ? $0.fraction : nil },
+            PlaceDisc(place: place, level: level, fraction: progress.flatMap { $0.isOpen ? $0.fraction : nil },
                       isDim: !(progress?.isOpen ?? false), size: 64)
             VStack(alignment: .leading, spacing: 2) {
-                Text(place.name)
+                Text(verbatim: place.germanName(at: level))
                     .font(.title.weight(.bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                 subtitle
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.secondary)
