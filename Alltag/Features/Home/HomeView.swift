@@ -18,29 +18,14 @@ struct HomeView: View {
     @Query private var sessions: [PracticeSession]
     @Query private var records: [SessionRecord]
 
-    @Environment(\.reducesMotion) private var reduceMotion
-    @AppStorage(OrbLaunchStyle.storageKey) private var launchStyle = OrbLaunchStyle.hop.rawValue
-
     private var name: String { profiles.first?.name ?? "" }
-
-    /// Today's orb carries the learner into the conversation; with Reduce Motion, the page just opens.
-    private func startTalking(from frame: CGRect) {
-        let style = OrbLaunchStyle(rawValue: launchStyle) ?? .hop
-        appState.talk(from: reduceMotion ? nil : OrbLaunch(frame: frame, style: style))
-    }
-
-    /// The orb is flying into the conversation, which shows Today through it while it fades in.
-    private var isOrbAway: Bool {
-        appState.fullScreen == .conversation(.freeTalk) && appState.orbLaunch.map { $0.style != .zoom } == true
-    }
     private var newReadingWords: Int { FromYourDay.newReadingWords(in: memoryItems) }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
                 TodayHero(words: memoryItems.count, minutesSpoken: sessions.minutesSpoken, level: level,
-                          isOrbAway: isOrbAway, onStart: startTalking, onProgress: { appState.open(.progress) })
-                OrbLaunchSwitcher()
+                          onStart: { appState.talkFromOrb() }, onProgress: { appState.open(.progress) })
 
                     FocusCard(focus: focus, isDone: focus.isDone(in: records)) { appState.present(focus.route) }
                     TodaySituations(situations: SituationCatalogue.suggestions(),

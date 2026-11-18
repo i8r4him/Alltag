@@ -67,39 +67,6 @@ struct OrbReactionTests {
     }
 }
 
-@Suite("Orb flight")
-@MainActor
-struct OrbFlightTests {
-    @Test("The flight starts at Today's orb and ends round, in its place", arguments: [OrbLaunchStyle.hop, .glide])
-    func endsInPlace(style: OrbLaunchStyle) {
-        #expect(OrbFlightPose(at: 0, style: style).progress == 0)
-        let end = OrbFlightPose(at: OrbFlightPose.duration(of: style), style: style)
-        #expect(end.progress == 1)
-        #expect(abs(end.lift) < 0.001)
-        #expect(abs(end.stretchX - 1) < 0.02 && abs(end.stretchY - 1) < 0.02)
-        #expect(OrbFlightPose(at: 99, style: style) == end)
-    }
-
-    @Test("Hopping, the orb squashes, rises above where it was, then falls and squashes as it lands")
-    func hop() {
-        let poses = stride(from: 0.0, through: 1, by: 0.01).map { OrbFlightPose(at: $0, style: .hop) }
-        #expect(poses[5].stretchY < 1 && poses[5].stretchX > 1)
-        #expect(poses.map(\.lift).min() ?? 0 < -40)
-        #expect(poses[20].progress == 0)
-        #expect(poses[84].stretchY < 0.85)
-        // Never moves back up once it has started down.
-        let progress = poses.map(\.progress)
-        #expect(zip(progress, progress.dropFirst()).allSatisfy { $0 <= $1 })
-    }
-
-    @Test("Gliding, the orb arcs gently without squashing")
-    func glide() {
-        let poses = stride(from: 0.0, through: 0.72, by: 0.02).map { OrbFlightPose(at: $0, style: .glide) }
-        #expect(poses.allSatisfy { $0.stretchX == 1 && $0.stretchY == 1 })
-        #expect(poses.map(\.lift).min() ?? 0 < -20)
-    }
-}
-
 @Suite("Voice meter")
 struct VoiceMeterTests {
     @Test("A reading holds for a moment, then fades")

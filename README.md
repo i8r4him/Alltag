@@ -75,7 +75,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ CompanionOrb.swift           CompanionOrb (eyes blink and glance), OrbDynamics, OrbReaction (swells, ripples, breathes with the voice), EyeLook, CompanionEditor (DEBUG, Settings › Developer)
 │  │  │  ├─ VoiceMeter.swift             how loud the learner and the companion are, written by the audio, read by the orb each frame
 │  │  │  ├─ OrbPress.swift               the jelly squash when the orb is pressed
-│  │  │  └─ OrbLaunch.swift              Today's orb flying into the conversation (Hop, Glide, Zoom; #424)
+│  │  │  └─ OrbZoom.swift                Today's orb opens the conversation: zoom and drop (#424)
 │  │  ├─ WordTile.swift                plain / key (outlined) / highlighted / placed
 │  │  ├─ PatternBar.swift              slots with amber emphasis
 │  │  └─ EqualizerBars.swift
@@ -514,7 +514,7 @@ Option card: min-height 60, radius 18, `#1C1C1E`; selected = accent 10% fill + a
 
 ### Today (Home)
 Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's initial → a native `Menu` (Profile, Progress, Settings). A soft haze and a few faint stars in the theme colour sit over the glow at the top of the screen.
-1. **Orb** — the companion, still on Today. A tap squashes it like jelly, and it flies down to its place in today's Conversation as the page fades in (#424).
+1. **Orb** — the companion, still on Today. A tap squashes it like jelly, today's Conversation zooms out of it, and the conversation's orb falls straight down into its place with a small bounce (#424).
 2. **Words · Spoken · Level** — three numbers → Progress.
 3. **Today's Focus** — glass card with one thing to do today (`TodayFocus`), different every day, and the big button; "Done today" after it was done.
 4. **Situations** — a few everyday situations (different every day) and "Situations ›" → all of them by category. Tapping one starts a live-voice role-play (`Situation.scenario`).

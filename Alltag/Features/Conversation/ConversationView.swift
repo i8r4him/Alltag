@@ -12,20 +12,13 @@ import SwiftUI
 struct ConversationView: View {
     let scenario: Scenario
     var level: Level = .a1
-    /// Today's orb, when the learner tapped it to come here.
-    var launch: OrbLaunch?
+    /// The page zoomed out of Today's orb, so its own orb falls into place.
+    var dropsIn = false
     @Environment(\.services) private var services
     @Environment(AppState.self) private var appState
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
     @State private var model: ConversationModel?
-    /// Today's orb has reached its place, so the page's own orb shows.
-    @State private var hasLanded = false
-    /// The page fades in under the flying orb.
-    @State private var isShown = false
-
-    /// Today's orb flies here while the page fades in under it.
-    private var flies: Bool { launch.map { $0.style != .zoom } ?? false }
 
     var body: some View {
         Group {
@@ -36,17 +29,8 @@ struct ConversationView: View {
             }
         }
         .background(.screenBackground)
-        .opacity(flies && !isShown ? 0 : 1)
-        .overlayPreferenceValue(OrbSlotKey.self) { slot in
-            if let launch, flies, !hasLanded {
-                OrbFlight(launch: launch, target: slot) { hasLanded = true }
-            }
-        }
-        .environment(\.orbIsLanding, flies && !hasLanded)
-        .environment(\.orbDropsIn, launch?.style == .zoom)
-        .presentationBackground(.clear)
+        .environment(\.orbDropsIn, dropsIn)
         .onAppear {
-            withAnimation(.easeOut(duration: 0.5).delay(0.15)) { isShown = true }
             if model == nil {
                 let model = ConversationModel(scenario: scenario, services: services,
                                               usesCloudVoice: appState.settings.usesCloudForPro, level: level)
@@ -230,7 +214,6 @@ private struct ConversationContent: View {
                 }
                 Spacer()
                 TalkOrb(model: model)
-                    .anchorPreference(key: OrbSlotKey.self, value: .bounds) { $0 }
                 Spacer()
                 if model.showsFinishButton {
                     CircleGlassButton(title: "Finish", systemImage: "checkmark", size: 48) { model.finishCloudConversation() }
