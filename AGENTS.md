@@ -135,6 +135,8 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 
 **Live voice is Gemini (#309):** `gpt-realtime` cost too much for a subscription to carry (an estimated $0.60–1.00 for ten minutes), so the live voice is Google's Gemini 3.8 Live (about a fifth): `GeminiLiveConversationService`, with tokens from the `gemini-live-session` function. The maintainer compared both on the iPhone and chose Gemini; the OpenAI voice and the switch are gone from the app. The `realtime-session` function and the old `write` function are still deployed and unused; retiring them is a change under `supabase/`, so ask first (the maintainer said not now, 17 Nov).
 
+**A natural voice for every Listen button (#422, in v1 at the maintainer's request, 18 Nov):** the iPhone's voice sounds too poor, so `CloudVoiceService` speaks with Gemini TTS through the `speak` function, which caches each sentence once for everyone; the app caches what it played. Offline it says "Listening needs the internet" rather than using the iPhone's voice; with cloud use switched off, or when the server refuses, the iPhone's voice (`SystemVoiceService`) speaks. Study: https://claude.ai/artifact/5WKBd2k3pzrALjrZugrZ9s. The Listen section itself (#280) stays in v1.1, and its clips are to be made once and shipped, chosen by a blind listening test (`voice_test.py` in the project files).
+
 **Prices (decided 16 Nov):** Alltag Pro is €9.99 a month or €59.99 a year, with 10 minutes of Gemini Live and 20 minutes of a cheaper voice a day. Minute packs (#372) are an idea for later. What is free and what is Pro is #338.
 
 **TestFlight:** Alltag has an App Store Connect record and the paid apps agreement is signed. Build 1.0 (4) is on TestFlight, so the next upload is 5. The `asc` CLI on the maintainer's Mac is signed in with an API key and can upload and manage builds. Archive from a clean `main`, not a branch with uncommitted work.
@@ -183,4 +185,4 @@ Still open on Learn, **in this order**:
 - `Alltag/Services/<Area>/`: service protocols, mocks and live implementations.
 - `Alltag/DesignSystem/`: tokens and shared components. Use them rather than raw values.
 - `Alltag/Intents/`: App Intents (Siri, Shortcuts, Spotlight).
-- `supabase/`: the Edge Functions (`gemini-live-session` for the voice, `realtime-session` the old OpenAI voice and unused, `check-german` for the mistake check, `translate` for translating) and migrations, owned by the maintainer. See `supabase/README.md`.
+- `supabase/`: the Edge Functions (`gemini-live-session` for the voice, `realtime-session` the old OpenAI voice and unused, `check-german` for the mistake check, `translate` for translating, `speak` for the natural voice of the Listen buttons) and migrations, owned by the maintainer. See `supabase/README.md`.

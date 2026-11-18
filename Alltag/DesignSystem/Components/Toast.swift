@@ -12,6 +12,8 @@ struct ToastMessage: Equatable, Identifiable {
     let id = UUID()
     let text: LocalizedStringResource
     var systemImage = "checkmark.circle.fill"
+    /// Something didn't work ("Listening needs the internet"): a plain symbol and a warning haptic.
+    var isProblem = false
 }
 
 /// The toast capsule itself. Show it with `.toast(_:)`.
@@ -22,7 +24,7 @@ struct ToastView: View {
         Label {
             Text(message.text)
         } icon: {
-            Image(systemName: message.systemImage).foregroundStyle(.success)
+            Image(systemName: message.systemImage).foregroundStyle(message.isProblem ? Color.secondary : Color.success)
         }
         .textRole(.bodySmall)
         .fontWeight(.medium)
@@ -52,7 +54,10 @@ private struct ToastModifier: ViewModifier {
                 }
             }
             .animation(Motion.modal(reduceMotion: reduceMotion), value: message)
-            .sensoryFeedback(.success, trigger: message?.id) { _, new in new != nil }
+            .sensoryFeedback(trigger: message?.id) { _, new in
+                guard new != nil else { return nil }
+                return message?.isProblem == true ? .warning : .success
+            }
     }
 }
 

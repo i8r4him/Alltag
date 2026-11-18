@@ -20,11 +20,12 @@ struct AppServices {
     var articles: any ArticleService = UnavailableArticleService()
     var realtime: any RealtimeConversationService = MockRealtimeConversationService()
 
-    /// Real voice services, and the companion that checks sentences with OpenAI or on device.
+    /// Real voice services (a natural cloud voice for listening), and the companion that checks
+    /// sentences with OpenAI or on device.
     static func live() -> AppServices {
         AppServices(
             speech: liveSpeech(),
-            voice: SystemVoiceService(),
+            voice: CloudVoiceService(),
             translation: CloudTranslationService(),
             companion: liveCompanion(),
             calendar: MockCalendarService(),

@@ -8,11 +8,13 @@
 import AVFoundation
 
 /// Speaks German with the system voice (`AVSpeechSynthesizer`, de-DE).
-/// Real in phase 1.
+/// Only a fallback since #422: `CloudVoiceService` speaks with a natural voice and uses this
+/// when the learner switched cloud use off or the server can't answer.
 @Observable
 final class SystemVoiceService: NSObject, VoiceService {
     private(set) var isSpeaking = false
     var prefersSlowerSpeech = false
+    var notice: ToastMessage?
     @ObservationIgnored private let synthesizer = AVSpeechSynthesizer()
     @ObservationIgnored private var continuation: CheckedContinuation<Void, Never>?
 

@@ -24,6 +24,8 @@ protocol VoiceService: AnyObject {
     var isSpeaking: Bool { get }
     /// Settings · Slower speech by default.
     var prefersSlowerSpeech: Bool { get set }
+    /// A short message when listening can't work right now (offline), shown as a toast.
+    var notice: ToastMessage? { get set }
     /// Speaks `text` and returns when it has finished (or was stopped).
     func speak(_ text: String, rate: SpeechRate) async
     func stop()
@@ -35,6 +37,7 @@ final class MockVoiceService: VoiceService {
     private(set) var spoken: [(text: String, rate: SpeechRate)] = []
     private(set) var isSpeaking = false
     var prefersSlowerSpeech = false
+    var notice: ToastMessage?
     private let duration: Duration
 
     init(duration: Duration = .zero) {

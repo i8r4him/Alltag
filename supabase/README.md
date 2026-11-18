@@ -1,7 +1,7 @@
 # Alltag backend (Supabase)
 
 The project is `Alltag` (ref `flbymqlcauvwumznvviq`, region eu-central-1, free plan).
-Its only job is to keep the API keys off the phone: Google's for the live voice, OpenAI's for checking sentences, translating and articles.
+Its only job is to keep the API keys off the phone: Google's for the live voice and the spoken sentences, OpenAI's for checking sentences, translating and articles.
 
 ```
 App ──(Supabase anonymous session)──▶ gemini-live-session ──(GEMINI_API_KEY)──▶ Google
@@ -103,10 +103,12 @@ Translate and "How do I say …?" in the app. Text only.
 - `functions/realtime-session/index.ts`: the old OpenAI voice. Deployed, unused by the app.
 - `functions/check-german/index.ts`: the sentence check. Deploy it with JWT verification on.
 - `functions/translate/index.ts`: translating. Deploy it with JWT verification on.
+- `functions/speak/index.ts`: the natural voice of every Listen button. Deploy it with JWT verification on.
 - `migrations/20261107200000_realtime_sessions.sql`: the session log used for the limits.
 - `migrations/20261111100000_realtime_developers.sql`: the accounts that skip the per-user limit.
 - `migrations/20261113100000_german_checks.sql`: the check log used for the limits.
 - `migrations/20261113120000_translations.sql`: the translation log used for the limits.
+- `migrations/20261118100000_speech.sql`: the log of new spoken sentences used for the limits, and the private Storage bucket `speech` that caches the audio.
 
 ## Articles (`articles`)
 
@@ -121,3 +123,15 @@ The live voice (#309). The maintainer compared it with OpenAI's on the iPhone an
 - Limits: the same table and the same numbers as `realtime-session` (`REALTIME_PER_USER_DAILY`, `REALTIME_GLOBAL_DAILY`), so a learner has one allowance for the live voice. No migration.
 - Price (Google's pricing page, 14 Nov 2026): $0.005 a minute listened to and $0.018 a minute spoken; OpenAI's `gpt-realtime` is $32 / $64 per million audio tokens.
 - Checked from a Mac with the function's own token: a German role-play answered in about two seconds, 24 kHz speech was heard and transcribed, the thinking pause was kept, and talking over the answer was signalled.
+
+## Speaking German (`speak`)
+
+Every Listen button in the app (#422): a natural voice in place of the iPhone's.
+
+- Send `POST {URL}/functions/v1/speak` with the same two headers as above and `{"text": "…"}` (300 characters at most; the app sends one sentence at a time).
+- `200` returns the audio itself, `audio/wav` (24 kHz, mono, 16-bit), with the header `X-Alltag-Cache: hit` or `miss`.
+- **One sentence is made once, for everyone.** The audio is kept in the private Storage bucket `speech`, named by a SHA-256 of the model, the voice, the reading style and the text. A sentence someone asked for before comes from there and costs nothing but the download. The app keeps what it played too, so a replay doesn't even ask.
+- **Only new sentences count** towards the limits, in the table `speech_requests` (who and when, never the text): `SPEAK_PER_USER_DAILY` (default 300) and `SPEAK_GLOBAL_DAILY` (default 20,000). Developer accounts skip the per-user limit. The errors are the same as in the table above, plus `400 bad_request` for an empty or too long text.
+- The model is `SPEAK_MODEL` (default `gemini-3.8-flash-lite-tts`) with the voice `SPEAK_VOICE` (default `Kore`), on the same `GEMINI_API_KEY` as the live voice. Changing either makes new cache entries; the old ones stay until deleted in Storage. The function asks Google's Interactions API and, if that refuses, `generateContent`.
+- **Cost:** about $0.009 a minute of speech now and $0.018 from 1 Jan 2027 (Google doubles the TTS prices then), paid only once per sentence. The audio is uncompressed WAV (about 48 KB a second), so Storage and egress grow with use: watch them on the free plan (5 GB egress a month).
+- The cached audio is of the text only, with no link to who asked. Translate's German answers end up there too: say so in the privacy policy.

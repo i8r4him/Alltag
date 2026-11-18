@@ -112,7 +112,11 @@ Alltag/                                   ← repo root
 │  │  │  └─ SystemSpeechService.swift     SpeechAnalyzer + SpeechTranscriber, de-DE, on device
 │  │  ├─ Voice/
 │  │  │  ├─ VoiceService.swift            VoiceService, SpeechRate, MockVoiceService (silent)
-│  │  │  └─ SystemVoiceService.swift      AVSpeechSynthesizer, de-DE (real in phase 1)
+│  │  │  ├─ CloudVoiceService.swift       the natural voice for every Listen button: Gemini TTS via `speak`, sentence by sentence; offline says so (tested)
+│  │  │  ├─ SpeechAudioCache.swift        spoken sentences kept on the iPhone, named by a hash, oldest dropped past 60 MB (tested)
+│  │  │  ├─ SpeechAudioPlayer.swift       AVAudioPlayer; "Slowly" lowers the rate and keeps the pitch
+│  │  │  ├─ SpeechChunks.swift            a text split into sentences (NaturalLanguage) within the server's 300 characters (tested)
+│  │  │  └─ SystemVoiceService.swift      AVSpeechSynthesizer, de-DE: only the fallback (cloud use off, server refused)
 │  │  ├─ Sound/
 │  │  │  └─ SoundEffects.swift            short app sounds (the focus chime), ambient, follow the silent switch
 │  │  ├─ Realtime/
@@ -575,7 +579,8 @@ Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for 
 Learn › Articles, in Today's look. A glass hero card starts **a round**: ten nouns for the learner's level, asked for from OpenAI through the `articles` function (`ArticleService`; no noun list ships in the app), shown full screen like an activity with der · die · das as three glass answers. A wrong answer is kept at once in Memory › Mistakes (`ArticleMemory`), so it comes up in Fix your mistakes, and comes back in the round and first in the next one (`ArticleTrainer`). **Look up a word** asks the same function for a noun's article, plural, meaning and an example, one card per meaning, laid out like a dictionary entry with a bookmark that saves it to Memory and takes it out again. Searching, "no noun", offline, the cloud switched off and the daily limit each have their own card. The words looked up are kept on the device (the last 30, in `UserDefaults`, not the database) and open again from the toolbar without asking the server. **A few useful clues** are written in the app: a grid of glass tiles, each opening in a sheet that zooms out of it. The search field, the history and the tiles answer with a medium haptic tap. Generated facts still need a linguistic eye: the JSON schema checks the shape, not the German.
 
 ## Simulated vs real
-- **Real in native build (phase 1):** navigation, all UI states, AVSpeechSynthesizer pronunciation, haptics, local mock data, SwiftData persistence.
+- **Real in native build (phase 1):** navigation, all UI states, haptics, local mock data, SwiftData persistence.
+- **Real everywhere with internet:** every Listen button speaks with a natural voice (Gemini TTS through the `speak` function, #422), in the simulator too. Offline it says "Listening needs the internet"; with cloud use switched off in Settings, or when the server refuses, the iPhone's voice (`AVSpeechSynthesizer`) speaks.
 - **Real on iPhone:** German speech recognition with `SpeechAnalyzer` (on device; the simulator keeps the simulated listening). Saying roughly the scripted line continues the script; anything else is your own sentence and gets feedback.
 - **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. On-device conversations keep their scripted replies so each scenario reaches its goal.
 - **Live voice on iPhone:** Google's Gemini Live, with a short-lived token from the `gemini-live-session` Edge Function, and both speakers' captions (#309). Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange.
@@ -597,7 +602,9 @@ All Apple frameworks — nothing to install.
 |---|---|
 | SwiftUI + Observation | All screens and app state |
 | SwiftData | Profile, words, phrasebook, practice sessions, saved translations. Every model follows CloudKit's rules (defaults, nothing unique, optional relationships) so iCloud sync can be switched on |
-| AVFoundation (`AVSpeechSynthesizer`) | Speaking German aloud |
+| AVFoundation (`AVAudioPlayer`, `AVSpeechSynthesizer`) | Speaking German aloud: the natural voice's audio, and the iPhone's voice as a fallback |
+| NaturalLanguage (`NLTokenizer`) | Splitting a text into sentences for the natural voice |
+| CryptoKit (`SHA256`) | Naming spoken sentences in the iPhone's cache |
 | AVFoundation (`AVAudioEngine`) | Live microphone capture and audio playback |
 | Foundation (`URLSession`, `URLSessionWebSocketTask`) | Supabase authentication and the Gemini Live voice |
 | Security (Keychain) | Supabase access and refresh tokens |

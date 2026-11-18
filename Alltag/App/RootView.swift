@@ -49,7 +49,15 @@ struct RootView: View {
         }
         .environment(\.mistakesZoom, mistakesZoom)
         .environment(\.levelMapZoom, levelMapZoom)
-        .fullScreenCover(item: $appState.fullScreen, content: fullScreen)
+        .toast(voiceNotice)
+        .fullScreenCover(item: $appState.fullScreen) { route in
+            fullScreen(route).toast(voiceNotice)
+        }
+    }
+
+    /// "Listening needs the internet", from any Listen button in the app.
+    private var voiceNotice: Binding<ToastMessage?> {
+        Binding { services.voice.notice } set: { services.voice.notice = $0 }
     }
 
     /// A tab's own navigation stack, starting at its root.
