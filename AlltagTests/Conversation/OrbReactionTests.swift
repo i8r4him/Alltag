@@ -10,6 +10,7 @@ import Testing
 @testable import Alltag
 
 @Suite("Orb reaction")
+@MainActor
 struct OrbReactionTests {
     @Test("Listening, the orb swells with the learner's voice")
     func listening() {
@@ -67,6 +68,7 @@ struct OrbReactionTests {
 }
 
 @Suite("Orb flight")
+@MainActor
 struct OrbFlightTests {
     @Test("The flight starts at Today's orb and ends round, in its place", arguments: [OrbLaunchStyle.hop, .glide])
     func endsInPlace(style: OrbLaunchStyle) {
