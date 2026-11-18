@@ -43,10 +43,10 @@ struct CloudVoiceTests {
             .appending(path: "SpeechTests-\(UUID().uuidString)", directoryHint: .isDirectory))
     }
 
-    private static func voice(server: Server, player: SilentPlayer, fallback: MockVoiceService = MockVoiceService(),
-                              cache: SpeechAudioCache = freshCache(), allowed: Bool = true) -> CloudVoiceService {
-        CloudVoiceService(fetch: { try await server.fetch($0) }, cache: cache, player: player,
-                          fallback: fallback, isAllowed: { allowed })
+    private static func voice(server: Server, player: SilentPlayer, fallback: MockVoiceService? = nil,
+                              allowed: Bool = true) -> CloudVoiceService {
+        CloudVoiceService(fetch: { try await server.fetch($0) }, cache: freshCache(), player: player,
+                          fallback: fallback ?? MockVoiceService(), isAllowed: { allowed })
     }
 
     @Test("A sentence is fetched once; the second time it plays from the iPhone's cache")

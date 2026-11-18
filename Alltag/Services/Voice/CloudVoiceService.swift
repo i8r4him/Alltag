@@ -37,18 +37,20 @@ final class CloudVoiceService: VoiceService {
     @ObservationIgnored private var generation = 0
     @ObservationIgnored private let logger = Logger(subsystem: "i8r4him.Alltag", category: "Voice")
 
-    init(fetch: @escaping Fetch = { text in
-             try await SupabaseRealtimeClient.shared.post(to: "speak", body: ["text": text])
-         },
-         cache: SpeechAudioCache = SpeechAudioCache(),
-         player: any SpeechAudioPlayer = SystemSpeechAudioPlayer(),
-         fallback: any VoiceService = SystemVoiceService(),
-         isAllowed: @escaping () -> Bool = CloudVoiceService.cloudIsAllowed) {
-        self.fetch = fetch
-        self.cache = cache
-        self.player = player
-        self.fallback = fallback
-        self.isAllowed = isAllowed
+    /// Without arguments: the server, the iPhone's cache and player, and the iPhone's voice as the
+    /// fallback. (Built in the body, not as default values, which run outside the main actor.)
+    init(fetch: Fetch? = nil,
+         cache: SpeechAudioCache? = nil,
+         player: (any SpeechAudioPlayer)? = nil,
+         fallback: (any VoiceService)? = nil,
+         isAllowed: (() -> Bool)? = nil) {
+        self.fetch = fetch ?? { text in
+            try await SupabaseRealtimeClient.shared.post(to: "speak", body: ["text": text])
+        }
+        self.cache = cache ?? SpeechAudioCache()
+        self.player = player ?? SystemSpeechAudioPlayer()
+        self.fallback = fallback ?? SystemVoiceService()
+        self.isAllowed = isAllowed ?? Self.cloudIsAllowed
     }
 
     /// The natural voice is used unless the learner switched cloud use off in Settings.

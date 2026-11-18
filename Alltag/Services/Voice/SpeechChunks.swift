@@ -11,7 +11,7 @@ import NaturalLanguage
 /// and a sentence longer than the server takes is split between words.
 enum SpeechChunks {
     /// The server's `speak` function takes 300 characters; this leaves room.
-    static let limit = 280
+    nonisolated static let limit = 280
 
     static func split(_ text: String, limit: Int = limit) -> [String] {
         let text = SpeechAudioCache.normalised(text)
