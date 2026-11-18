@@ -1,10 +1,11 @@
 // speak — turns a short German text into natural speech with Google's Gemini TTS, for every
 // Listen button in the app (#422). It replaces the iPhone's own voice.
 //
-// The Gemini API key never leaves this function. Each sentence is made once and kept in the
-// private Storage bucket `speech`, named by a hash of the model, the voice and the text, so the
-// same sentence is free for everyone after the first time. The cache holds only audio of the
-// text, never who asked for it.
+// The Gemini API key never leaves this function. `SPEAK_GEMINI_API_KEY` is its own key (from its
+// own Google project, so its cost shows on its own); without it the live voice's `GEMINI_API_KEY`.
+// Each sentence is made once and kept in the private Storage bucket `speech`, named by a hash of
+// the model, the voice and the text, so the same sentence is free for everyone after the first
+// time. The cache holds only audio of the text, never who asked for it.
 //
 // Request:  POST, Authorization: Bearer <Supabase access token>
 //           { "text": "Der Zug fährt heute von Gleis 12." }   (300 characters at most)
@@ -16,7 +17,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const GEMINI_API_KEY = Deno.env.get("SPEAK_GEMINI_API_KEY") ?? Deno.env.get("GEMINI_API_KEY");
 const MODEL = Deno.env.get("SPEAK_MODEL") ?? "gemini-3.8-flash-lite-tts";
 const VOICE = Deno.env.get("SPEAK_VOICE") ?? "Kore";
 /** New sentences per user per rolling 24 hours. Accounts in `realtime_developers` are exempt. */
