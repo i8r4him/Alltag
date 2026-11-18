@@ -72,18 +72,24 @@ final class AppState {
     }
 
     /// Starts today's conversation from Today's orb. With `launch`, the orb carries the learner
-    /// there: the page appears at once and fades in around it, so it isn't slid up.
+    /// there, and the conversation is drawn over the tabs instead of slid up as a cover
+    /// (see `talksOverTabs`), so it can fade in around the orb.
     func talk(from launch: OrbLaunch?) {
         orbLaunch = launch
-        guard launch != nil else {
-            fullScreen = .conversation(.freeTalk)
-            return
-        }
-        withTransaction(\.disablesAnimations, true) { fullScreen = .conversation(.freeTalk) }
+        fullScreen = .conversation(.freeTalk)
+    }
+
+    /// Today's conversation, started from the orb, is drawn over the tabs rather than as a cover.
+    var talksOverTabs: Bool {
+        orbLaunch != nil && fullScreen == .conversation(.freeTalk)
     }
 
     func dismissFullScreen() {
-        fullScreen = nil
+        guard talksOverTabs else {
+            fullScreen = nil
+            return
+        }
+        withAnimation(.easeOut(duration: 0.3)) { fullScreen = nil }
     }
 
     /// Whether motion should be reduced, combining the system setting with the in-app toggle.

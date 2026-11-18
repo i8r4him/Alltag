@@ -42,6 +42,8 @@ struct RootView: View {
 
     private var navigation: some View {
         @Bindable var appState = appState
+        // Today's conversation from the orb isn't a cover: it fades in over the tabs (see `talksOverTabs`).
+        let cover = Binding { appState.talksOverTabs ? nil : appState.fullScreen } set: { appState.fullScreen = $0 }
         return TabView(selection: $appState.tab) {
             Tab("Today", systemImage: "sun.horizon", value: AppTab.today) { stack(.today) }
             Tab("Learn", systemImage: "bolt", value: AppTab.learn) { stack(.learn) }
@@ -49,7 +51,16 @@ struct RootView: View {
         }
         .environment(\.mistakesZoom, mistakesZoom)
         .environment(\.levelMapZoom, levelMapZoom)
-        .fullScreenCover(item: $appState.fullScreen, content: fullScreen)
+        .accessibilityHidden(appState.talksOverTabs)
+        .fullScreenCover(item: cover, content: fullScreen)
+        .overlay {
+            if let launch = appState.orbLaunch, appState.talksOverTabs {
+                ConversationView(scenario: MockScenarios.scenario(.freeTalk), level: profiles.first?.level ?? .a1,
+                                 launch: launch)
+                    // It fades itself in around the orb; leaving, it fades out.
+                    .transition(.asymmetric(insertion: .identity, removal: .opacity))
+            }
+        }
     }
 
     /// A tab's own navigation stack, starting at its root.
@@ -127,8 +138,7 @@ struct RootView: View {
     private func fullScreen(_ route: FullScreenRoute) -> some View {
         switch route {
         case .conversation(let id):
-            ConversationView(scenario: MockScenarios.scenario(id), level: profiles.first?.level ?? .a1,
-                             launch: id == .freeTalk ? appState.orbLaunch : nil)
+            ConversationView(scenario: MockScenarios.scenario(id), level: profiles.first?.level ?? .a1)
         case .situation(let id):
             if let situation = SituationCatalogue.situation(id: id, in: modelContext) {
                 ConversationView(scenario: situation.scenario, level: profiles.first?.level ?? .a1)

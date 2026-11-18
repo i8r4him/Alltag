@@ -40,7 +40,6 @@ struct ConversationView: View {
             }
         }
         .environment(\.orbIsLanding, launch != nil && !hasLanded)
-        .presentationBackground(.clear)
         .onAppear {
             withAnimation(.easeOut(duration: 0.55).delay(0.1)) { isShown = true }
             if model == nil {
