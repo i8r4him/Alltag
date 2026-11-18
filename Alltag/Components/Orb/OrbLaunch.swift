@@ -130,16 +130,16 @@ struct OrbFlight: View {
         GeometryReader { proxy in
             if let target {
                 let origin = proxy.frame(in: .global).origin
-                let from = launch.frame.offsetBy(dx: -origin.x, dy: -origin.y)
-                let to = proxy[target]
+                let source = launch.frame.offsetBy(dx: -origin.x, dy: -origin.y)
+                let place = proxy[target]
                 TimelineView(.animation) { context in
                     let pose = OrbFlightPose(at: context.date.timeIntervalSince(start), style: launch.style)
-                    let side = from.width + (to.width - from.width) * pose.progress
+                    let side = source.width + (place.width - source.width) * pose.progress
                     CompanionOrb(isLive: true)
                         .frame(width: side, height: side)
                         .scaleEffect(x: pose.stretchX, y: pose.stretchY, anchor: .bottom)
-                        .position(x: from.midX + (to.midX - from.midX) * pose.progress,
-                                  y: from.midY + (to.midY - from.midY) * pose.progress + pose.lift)
+                        .position(x: source.midX + (place.midX - source.midX) * pose.progress,
+                                  y: source.midY + (place.midY - source.midY) * pose.progress + pose.lift)
                 }
             }
         }
