@@ -5,6 +5,7 @@
 // Not for the app. Called by `scripts/warm_speech.py` with a token whose SHA-256 is below (only
 // the hash is here; whoever warms makes a new token and deploys its hash):
 // POST { "texts": ["Hallo, ich bin Lena.", …] }   (header `X-Warm-Token`, 25 texts at most)
+// Gemini allows 10 requests a minute for this model on Tier 1, so the script sends a few a minute.
 // → { "made": n, "had": n, "failed": ["…"] }
 //
 // Keep MODEL, VOICE, STYLE and the Gemini request in step with `speak/index.ts`.
@@ -17,8 +18,8 @@ const MODEL = Deno.env.get("SPEAK_MODEL") ?? "gemini-3.8-flash-lite-tts";
 const VOICE = Deno.env.get("SPEAK_VOICE") ?? "Kore";
 const MAX_TEXT = 300;
 const MAX_TEXTS = 25;
-/** Sentences made at the same time, to stay within Gemini's rate limit. */
-const PARALLEL = Number(Deno.env.get("SPEAK_WARM_PARALLEL") ?? "5");
+/** Sentences made at the same time. The script keeps to Gemini's rate limit. */
+const PARALLEL = Number(Deno.env.get("SPEAK_WARM_PARALLEL") ?? "2");
 const BUCKET = "speech";
 /** How every sentence is read. Changing it makes new cache entries (it is part of the key). */
 const STYLE = "a friendly native speaker from Germany, clear standard German at a natural everyday pace";
@@ -96,6 +97,8 @@ async function synthesise(text: string): Promise<Uint8Array | undefined> {
     console.error("Gemini interactions answer had no audio");
   } else {
     console.error("Gemini interactions failed", interactions.status, (await interactions.text()).slice(0, 500));
+    // Over the rate limit (10 a minute on Tier 1): asking the other way would only count again.
+    if (interactions.status === 429) return undefined;
   }
 
   const generate = await fetch(

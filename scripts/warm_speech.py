@@ -6,8 +6,8 @@ speaks) and the grammar rules' sentences from the Swift content files, splits th
 sentences the way the app does (`SpeechChunks`), and sends them to the `speak-warm` function,
 which makes only what the shared cache doesn't have yet. Run it again after adding content.
 
-    python3 scripts/warm_speech.py           # make what's missing (about 45 minutes for everything)
-    python3 scripts/warm_speech.py --list    # only count the texts, send nothing
+    caffeinate -i python3 scripts/warm_speech.py   # make what's missing (8 a minute: hours for all)
+    python3 scripts/warm_speech.py --list           # only count the texts, send nothing
 
 The token comes from `ALLTAG_WARM_TOKEN` or the file `.warm_token` next to this repo's README
 (ignored by git).
@@ -27,7 +27,10 @@ import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 URL = "https://flbymqlcauvwumznvviq.supabase.co/functions/v1/speak-warm"
-BATCH = 25
+BATCH = 8
+# Gemini allows 10 requests a minute for the TTS model on Tier 1, shared with the app's own
+# requests: one batch of 8 a minute leaves room for them.
+MINUTE = 60
 LIMIT = 280  # SpeechChunks.limit
 ABBREVIATIONS = {"z.", "B.", "Dr.", "Nr.", "usw.", "ca.", "bzw.", "Str.", "Hr.", "Fr.", "d.", "h.", "u.", "a."}
 
@@ -63,17 +66,19 @@ def literals(source, index, count):
 
 
 def fixed_texts():
-    texts = []
+    """The grammar rules' sentences first, then the collections' examples, then their words."""
+    rules, examples, words = [], [], []
+    for path in sorted(glob.glob(f"{ROOT}/Alltag/MockData/MockRules*.swift")):
+        source = open(path, encoding="utf-8").read()
+        for match in re.finditer(r"^        german: ", source, re.M):
+            rules.append(literal(source, match.end())[0])
     for path in sorted(glob.glob(f"{ROOT}/Alltag/Features/Learn/Collections/Content/*.swift")):
         source = open(path, encoding="utf-8").read()
         for match in re.finditer(r"CollectionWord\(", source):
             article, word, _, example, _ = literals(source, match.end(), 5)
-            texts += [example, article + word]
-    for path in sorted(glob.glob(f"{ROOT}/Alltag/MockData/MockRules*.swift")):
-        source = open(path, encoding="utf-8").read()
-        for match in re.finditer(r"^        german: ", source, re.M):
-            texts.append(literal(source, match.end())[0])
-    return texts
+            examples.append(example)
+            words.append(article + word)
+    return rules + examples + words
 
 
 def sentences(text):
@@ -131,6 +136,7 @@ def main():
     failed = []
     for start in range(0, len(unique), BATCH):
         batch = unique[start:start + BATCH]
+        began = time.monotonic()
         for attempt in range(4):
             try:
                 result = send(batch, token)
@@ -145,8 +151,8 @@ def main():
         had += result["had"]
         failed += result["failed"]
         print(f"{start + len(batch)}/{len(unique)}: made {made}, had {had}, failed {len(failed)}", flush=True)
-        if result["failed"]:
-            time.sleep(20)  # most likely Gemini's rate limit
+        if result["made"] or result["failed"]:
+            time.sleep(max(0, MINUTE - (time.monotonic() - began)))
     print(f"Done: made {made}, had {had}, failed {len(failed)}")
     if failed:
         print("Failed (run again to retry):", *failed[:20], sep="\n  ")

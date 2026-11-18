@@ -109,6 +109,8 @@ async function synthesise(text: string): Promise<Uint8Array | undefined> {
     console.error("Gemini interactions answer had no audio");
   } else {
     console.error("Gemini interactions failed", interactions.status, (await interactions.text()).slice(0, 500));
+    // Over the rate limit (10 a minute on Tier 1): asking the other way would only count again.
+    if (interactions.status === 429) return undefined;
   }
 
   const generate = await fetch(
