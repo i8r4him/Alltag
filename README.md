@@ -72,7 +72,10 @@ Alltag/                                   ← repo root
 │  │  ├─ Orb/
 │  │  │  ├─ Orb.metal                    bubbleOrb shader: dark glass, golden rim, smoky silk
 │  │  │  ├─ VoiceOrbState.swift          idle / listening / thinking / speaking
-│  │  │  └─ CompanionOrb.swift           CompanionOrb (eyes blink and glance), CompanionPalette (7 colours), CompanionLook (saved look), OrbDynamics, CompanionEditor (DEBUG, Settings › Developer)
+│  │  │  ├─ CompanionOrb.swift           CompanionOrb (eyes blink and glance), OrbDynamics, OrbReaction (swells, ripples, breathes with the voice), EyeLook, CompanionEditor (DEBUG, Settings › Developer)
+│  │  │  ├─ VoiceMeter.swift             how loud the learner and the companion are, written by the audio, read by the orb each frame
+│  │  │  ├─ OrbPress.swift               the jelly squash when the orb is pressed
+│  │  │  └─ OrbLaunch.swift              Today's orb flying into the conversation (Hop, Glide, Zoom; #424)
 │  │  ├─ WordTile.swift                plain / key (outlined) / highlighted / placed
 │  │  ├─ PatternBar.swift              slots with amber emphasis
 │  │  └─ EqualizerBars.swift
@@ -196,8 +199,11 @@ Alltag/                                   ← repo root
 │  │  ├─ Conversation/
 │  │  │  ├─ ConversationView.swift        native toolbar (close, title, voice/keyboard picker), goal, controls; free talk: voice only, consent card
 │  │  │  ├─ ConversationModel.swift       state machine
+│  │  │  ├─ ConversationModel+TalkMode.swift  hands-free or hold to talk (#424)
+│  │  │  ├─ ConversationModel+Matching.swift  is what was heard the scripted line
 │  │  │  ├─ LineReviewer.swift            checks live learner lines on device while the conversation goes on (#209)
 │  │  │  └─ Parts/
+│  │  │     ├─ TalkOrb.swift              the orb at the bottom: tap (hands-free) or hold (hold to talk)
 │  │  │     ├─ TranscriptView.swift       companion lines (cut off with …), learner lines in a theme-tinted bubble, heard text with caret
 │  │  │     ├─ FeedbackCard.swift
 │  │  │     ├─ LiveProblemView.swift      a live conversation that can't start: limit, no internet, no microphone, busy; try again or Settings (#210, #172)
@@ -508,7 +514,7 @@ Option card: min-height 60, radius 18, `#1C1C1E`; selected = accent 10% fill + a
 
 ### Today (Home)
 Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's initial → a native `Menu` (Profile, Progress, Settings). A soft haze and a few faint stars in the theme colour sit over the glow at the top of the screen.
-1. **Orb** — a static amber sphere (drawn once, never animated) → today's Conversation.
+1. **Orb** — the companion, still on Today. A tap squashes it like jelly, and it flies down to its place in today's Conversation as the page fades in (#424).
 2. **Words · Spoken · Level** — three numbers → Progress.
 3. **Today's Focus** — glass card with one thing to do today (`TodayFocus`), different every day, and the big button; "Done today" after it was done.
 4. **Situations** — a few everyday situations (different every day) and "Situations ›" → all of them by category. Tapping one starts a live-voice role-play (`Situation.scenario`).
@@ -519,9 +525,9 @@ Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's init
 ### Conversation (full-screen)
 Today's sky background and rounded type. Header: close · title/meta (scenario) · voice/keyboard segmented glass. Goal in a glass capsule below.
 Transcript: AI lines 23pt semibold left ("COMPANION" caption, tap toggles English); user lines 18pt right ("YOU") with feedback card (green check "good", coral edit "fix", grey info "note").
-Bottom: keyboard button · **the companion** (`CompanionOrb`, 150pt, tap to speak) · hint (lightbulb) button; state label below. The "Try saying" hint is on the Focus card's surface.
+Bottom: keyboard button · **the companion** (`TalkOrb`, 150pt, tap to speak, or hold to talk) · hint (lightbulb) button, or Finish while holding to talk with the live voice; state label below, then **Hands-free · Hold to talk** (remembered in `AppSettings.holdsToTalk`). Holding to talk, the live voice answers when the learner lets go, however long they pause: `gemini-live-session` switches Google's turn detection off and the app sends `activityStart` and `activityEnd`. Switching during a live conversation reconnects and carries on with what was said. The "Try saying" hint is on the Focus card's surface.
 **State machine:** idle → (tap) listening (words appear one at a time, 230ms, amber caret) → thinking (the silk swirls faster) → AI reply appended → speaking (livelier silk) → idle. After last line → summary sheet (2 turns · 1 fix · 2 phrases saved; CTA "Practise your fixes · 1 min", "Done"). Every fix (what you said, the correction, the rule) is saved to Memory › Mistakes, and "Practise your fixes" asks about the saved mistakes that are due (never samples: with none due it says so). **The loop:** a right answer makes a mistake stronger and sends it 1, 3, 7, then 14 days away, after which it is learned and leaves the stack (it stays in Memory); a wrong answer takes it a step back and it is due again next time (`ReviewSchedule`). Live voice conversations are checked on device with Apple Intelligence when they end, so they get feedback cards and the same summary.
-Companion: `OrbDynamics` sets its speed and energy per state; it grows slightly while listening, always drifts in a conversation, and stands still with Reduce Motion.
+Companion: `OrbDynamics` sets its speed and energy per state, and `OrbReaction` shows who is talking from `VoiceMeter`: listening, it swells with the learner's voice; speaking, its edge ripples and glows with the companion's (the system voice pulses per word); thinking and waiting, it breathes. Its eyes widen to listen, look up to think and squint to speak (`EyeLook`). It always drifts in a conversation, and stands still with Reduce Motion.
 Text mode: field "Antworte auf Deutsch…" + accent send. Scenarios: dentist, post office, train (see MockData in HTML `SCEN`).
 Native: `Speech` (`SpeechAnalyzer` + `SpeechTranscriber`, de-DE — the newer API that replaces `SFSpeechRecognizer`), `AVSpeechSynthesizer`, haptics on state changes.
 
@@ -579,7 +585,7 @@ Learn › Articles, in Today's look. A glass hero card starts **a round**: ten n
 - **Real in native build (phase 1):** navigation, all UI states, AVSpeechSynthesizer pronunciation, haptics, local mock data, SwiftData persistence.
 - **Real on iPhone:** German speech recognition with `SpeechAnalyzer` (on device; the simulator keeps the simulated listening). Saying roughly the scripted line continues the script; anything else is your own sentence and gets feedback.
 - **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. On-device conversations keep their scripted replies so each scenario reaches its goal.
-- **Live voice on iPhone:** Google's Gemini Live, with a short-lived token from the `gemini-live-session` Edge Function, and both speakers' captions (#309). Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange.
+- **Live voice on iPhone:** Google's Gemini Live, with a short-lived token from the `gemini-live-session` Edge Function, and both speakers' captions (#309). Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange (holding to talk, one made-up answer per hold), with made-up loudness for the orb.
 - **Translate:** OpenAI through Supabase when cloud use is allowed. The translation, words, tone and examples appear as they arrive. If cloud use is unavailable, the screen reports the error rather than showing an on-device translation.
 - **Read:** a tapped word goes to the translation service, once per word while the text is open: OpenAI through Supabase when cloud use is allowed (the word with its article, a grammar note and an example), otherwise Apple's Translation on the iPhone (the meaning only). The texts are samples until #270 decides where they come from.
 - **Simulated:** scripted companion replies & feedback, placement.

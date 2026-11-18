@@ -131,6 +131,8 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 
 **Feature freeze (17 Nov, the maintainer):** no new features from now. Finish what exists and decide, part by part, what is in v1 and what moves to v1.1. Write new ideas down as `idea` issues; don't pitch or start them.
 
+**The orb (#424, in progress):** it shows who is talking (`VoiceMeter`, `OrbReaction`), a tap on Today's orb flies it into the conversation (Hop, Glide and Zoom behind a temporary switcher on Today, for the maintainer to pick), and conversations are hands-free or hold to talk. Hold to talk is `push_to_talk` on `gemini-live-session` (approved and deployed on 18 Nov). Needs the iPhone: the voice levels and hold to talk with the real Gemini.
+
 **Today is done.** #212 (the live voice stopped hearing) is closed; the maintainer retests it on the iPhone and reopens it if it happens again. #185 and #194 were closed as not planned, #171 as done.
 
 **Live voice is Gemini (#309):** `gpt-realtime` cost too much for a subscription to carry (an estimated $0.60–1.00 for ten minutes), so the live voice is Google's Gemini 3.8 Live (about a fifth): `GeminiLiveConversationService`, with tokens from the `gemini-live-session` function. The maintainer compared both on the iPhone and chose Gemini; the OpenAI voice and the switch are gone from the app. The `realtime-session` function and the old `write` function are still deployed and unused; retiring them is a change under `supabase/`, so ask first (the maintainer said not now, 17 Nov).
