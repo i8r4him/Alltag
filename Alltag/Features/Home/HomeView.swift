@@ -18,14 +18,26 @@ struct HomeView: View {
     @Query private var sessions: [PracticeSession]
     @Query private var records: [SessionRecord]
 
+    @Environment(\.reducesMotion) private var reduceMotion
+
     private var name: String { profiles.first?.name ?? "" }
+
+    /// Today's orb carries the learner into the conversation; with Reduce Motion, the page just opens.
+    private func startTalking(from frame: CGRect) {
+        appState.talk(from: reduceMotion ? nil : OrbLaunch(frame: frame))
+    }
+
+    /// The orb is moving into the conversation, which shows Today through it while it fades in.
+    private var isOrbAway: Bool {
+        appState.fullScreen == .conversation(.freeTalk) && appState.orbLaunch != nil
+    }
     private var newReadingWords: Int { FromYourDay.newReadingWords(in: memoryItems) }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
                 TodayHero(words: memoryItems.count, minutesSpoken: sessions.minutesSpoken, level: level,
-                          onStart: { appState.talkFromOrb() }, onProgress: { appState.open(.progress) })
+                          isOrbAway: isOrbAway, onStart: startTalking, onProgress: { appState.open(.progress) })
 
                     FocusCard(focus: focus, isDone: focus.isDone(in: records)) { appState.present(focus.route) }
                     TodaySituations(situations: SituationCatalogue.suggestions(),

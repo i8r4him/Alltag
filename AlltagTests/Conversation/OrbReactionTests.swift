@@ -67,6 +67,32 @@ struct OrbReactionTests {
     }
 }
 
+@Suite("Orb flight")
+@MainActor
+struct OrbFlightTests {
+    @Test("The flight starts at Today's orb and ends round, at its size, in its place")
+    func endsInPlace() {
+        #expect(OrbFlightPose(at: 0).progress == 0)
+        let end = OrbFlightPose(at: OrbFlightPose.duration)
+        #expect(end.progress == 1)
+        #expect(abs(end.growth - 1) < 0.001)
+        #expect(abs(end.stretchX - 1) < 0.001 && abs(end.stretchY - 1) < 0.001)
+        #expect(OrbFlightPose(at: 99) == end)
+    }
+
+    @Test("The orb grows at once, moves down without turning back, and squashes as it lands")
+    func growsMovesLands() {
+        let poses = stride(from: 0.0, through: OrbFlightPose.duration, by: 0.01).map { OrbFlightPose(at: $0) }
+        #expect(poses[0].growth == 1)
+        #expect(poses[15].growth > 1.1)
+        #expect(poses[10].progress > 0)
+        let progress = poses.map(\.progress)
+        #expect(zip(progress, progress.dropFirst()).allSatisfy { $0 <= $1 })
+        #expect(poses.map(\.stretchY).min() ?? 1 < 0.95)
+        #expect(poses.prefix(70).allSatisfy { $0.stretchY == 1 })
+    }
+}
+
 @Suite("Voice meter")
 struct VoiceMeterTests {
     @Test("A reading holds for a moment, then fades")

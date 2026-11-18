@@ -19,8 +19,8 @@ struct TalkOrb: View {
     @State private var isHeld = false
     @State private var presses = 0
     @Environment(\.reducesMotion) private var reduceMotion
-    /// The page zoomed out of Today's orb: this one lands in its place.
-    @Environment(\.orbLands) private var lands
+    /// Today's orb is still moving here: this one shows once it has landed.
+    @Environment(\.orbIsLanding) private var isLanding
 
     var body: some View {
         Group {
@@ -57,7 +57,7 @@ struct TalkOrb: View {
         CompanionOrb(dynamics: OrbDynamics(state: model.phase), isLive: !model.isFinished)
             .frame(width: size, height: size)
             .orbSquash(isPressed: pressed, reduceMotion: reduceMotion)
-            .orbLands(lands, reduceMotion: reduceMotion)
+            .opacity(isLanding ? 0 : 1)
     }
 
     /// Down: the learner starts talking. Up: they're done.

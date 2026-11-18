@@ -75,7 +75,7 @@ Alltag/                                   ← repo root
 │  │  │  ├─ CompanionOrb.swift           CompanionOrb (eyes blink and glance), OrbDynamics, OrbReaction (swells, ripples, breathes with the voice), EyeLook, CompanionEditor (DEBUG, Settings › Developer)
 │  │  │  ├─ VoiceMeter.swift             how loud the learner and the companion are, written by the audio, read by the orb each frame
 │  │  │  ├─ OrbPress.swift               the jelly squash when the orb is pressed
-│  │  │  └─ OrbZoom.swift                Today's orb opens the conversation: zoom and landing (#424)
+│  │  │  └─ OrbLaunch.swift              Today's orb grows and moves down into the conversation (#424)
 │  │  ├─ WordTile.swift                plain / key (outlined) / highlighted / placed
 │  │  ├─ PatternBar.swift              slots with amber emphasis
 │  │  └─ EqualizerBars.swift
@@ -514,7 +514,7 @@ Option card: min-height 60, radius 18, `#1C1C1E`; selected = accent 10% fill + a
 
 ### Today (Home)
 Title "Alltag" (`.inlineLarge`). Toolbar: Translate button · the learner's initial → a native `Menu` (Profile, Progress, Settings). A soft haze and a few faint stars in the theme colour sit over the glow at the top of the screen.
-1. **Orb** — the companion, still on Today. A tap squashes it like jelly, today's Conversation zooms out of it, so the conversation's orb rides the zoom down to its place and lands with a small squash (#424).
+1. **Orb** — the companion, still on Today. A tap squashes it like jelly, the orb grows, moves down to its place in today's Conversation and lands with a squash, while Today fades away and the conversation fades in around it (#424).
 2. **Words · Spoken · Level** — three numbers → Progress.
 3. **Today's Focus** — glass card with one thing to do today (`TodayFocus`), different every day, and the big button; "Done today" after it was done.
 4. **Situations** — a few everyday situations (different every day) and "Situations ›" → all of them by category. Tapping one starts a live-voice role-play (`Situation.scenario`).
