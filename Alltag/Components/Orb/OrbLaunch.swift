@@ -53,8 +53,8 @@ extension EnvironmentValues {
 }
 
 /// Where the conversation's orb sits, for the flight to end there.
-struct OrbSlotKey: PreferenceKey {
-    static let defaultValue: Anchor<CGRect>? = nil
+nonisolated struct OrbSlotKey: PreferenceKey {
+    static var defaultValue: Anchor<CGRect>? { nil }
 
     static func reduce(value: inout Anchor<CGRect>?, nextValue: () -> Anchor<CGRect>?) {
         value = value ?? nextValue()

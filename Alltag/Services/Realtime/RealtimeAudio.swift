@@ -149,10 +149,15 @@ final class SystemRealtimeAudio: RealtimeAudio {
     /// The companion's loudness, as it plays, for the orb.
     private func installPlaybackMeter() throws {
         guard !hasPlaybackTap else { return }
+        try Self.installMeter(on: player)
+        hasPlaybackTap = true
+    }
+
+    /// The tap runs on the audio thread, so it is made outside the main actor.
+    nonisolated private static func installMeter(on player: AVAudioPlayerNode) throws {
         try player.__installTap(onBus: 0, bufferSize: 1_024, format: nil, error: ()) { @Sendable buffer, _ in
             VoiceMeter.shared.record(buffer, from: .companion)
         }
-        hasPlaybackTap = true
     }
 
     private func startEngine(recordingIn format: AVAudioFormat, continuation: AsyncThrowingStream<Data, any Error>.Continuation) throws {
