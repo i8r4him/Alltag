@@ -12,8 +12,8 @@ import SwiftUI
 struct ConversationView: View {
     let scenario: Scenario
     var level: Level = .a1
-    /// The page zoomed out of Today's orb, so its own orb falls into place.
-    var dropsIn = false
+    /// The page zoomed out of Today's orb, so its own orb lands in its place.
+    var landsFromOrb = false
     @Environment(\.services) private var services
     @Environment(AppState.self) private var appState
     @Environment(\.scenePhase) private var scenePhase
@@ -29,7 +29,7 @@ struct ConversationView: View {
             }
         }
         .background(.screenBackground)
-        .environment(\.orbDropsIn, dropsIn)
+        .environment(\.orbLands, landsFromOrb)
         .onAppear {
             if model == nil {
                 let model = ConversationModel(scenario: scenario, services: services,

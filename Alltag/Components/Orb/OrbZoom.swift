@@ -7,46 +7,47 @@
 
 import SwiftUI
 
-/// A tap on Today's orb opens the conversation by zooming out of it, and the
-/// conversation's orb falls into its place at the bottom (#424, the maintainer's pick).
+/// A tap on Today's orb opens the conversation by zooming out of it (#424, the maintainer's pick).
+/// As the page grows, the conversation's orb rides it from where Today's orb was down to
+/// its place at the bottom, and lands there with a small squash.
 enum OrbZoom {
     /// Today's orb, as the source of the zoom.
     static let sourceID = "today-orb"
 
-    /// How far above its place the conversation's orb starts, and how big.
-    static let dropHeight: CGFloat = 120
-    static let dropScale: CGFloat = 1.2
-
-    /// The fall: it leaves at once with the zoom, picks up speed and lands with a small bounce.
-    static let drop = Animation.spring(duration: 0.55, bounce: 0.28)
+    /// When the zoom has carried the orb to its place, so it lands.
+    static let landing: Duration = .milliseconds(380)
+    /// How long it stays squashed before it springs back.
+    static let squash: Duration = .milliseconds(110)
 }
 
 extension EnvironmentValues {
     /// Shared by Today's orb and the conversation that zooms out of it.
     @Entry var orbZoom: Namespace.ID?
-    /// The conversation's orb falls into its place when it appears.
-    @Entry var orbDropsIn = false
+    /// The conversation zoomed out of Today's orb, so its orb lands when it appears.
+    @Entry var orbLands = false
 }
 
 extension View {
-    /// After the tap on Today's orb, the orb falls into its place from above.
-    func orbDropsIn(_ isActive: Bool) -> some View {
-        modifier(OrbDrop(isActive: isActive))
+    /// After the zoom, the orb lands in its place with a squash and springs back.
+    func orbLands(_ isActive: Bool, reduceMotion: Bool) -> some View {
+        modifier(OrbLanding(isActive: isActive && !reduceMotion, reduceMotion: reduceMotion))
     }
 }
 
-private struct OrbDrop: ViewModifier {
+private struct OrbLanding: ViewModifier {
     let isActive: Bool
-    @State private var hasDropped = false
+    let reduceMotion: Bool
+    @State private var isSquashed = false
 
     func body(content: Content) -> some View {
         content
-            .offset(y: isActive && !hasDropped ? -OrbZoom.dropHeight : 0)
-            .scaleEffect(isActive && !hasDropped ? OrbZoom.dropScale : 1)
-            .onAppear {
+            .orbSquash(isPressed: isSquashed, reduceMotion: reduceMotion)
+            .task {
                 guard isActive else { return }
-                // No delay: the orb moves the moment the page starts to zoom.
-                withAnimation(OrbZoom.drop) { hasDropped = true }
+                try? await Task.sleep(for: OrbZoom.landing)
+                isSquashed = true
+                try? await Task.sleep(for: OrbZoom.squash)
+                isSquashed = false
             }
     }
 }

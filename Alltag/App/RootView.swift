@@ -131,7 +131,7 @@ struct RootView: View {
         switch route {
         case .conversation(let id):
             if id == .freeTalk && appState.startedFromOrb {
-                ConversationView(scenario: MockScenarios.scenario(id), level: profiles.first?.level ?? .a1, dropsIn: true)
+                ConversationView(scenario: MockScenarios.scenario(id), level: profiles.first?.level ?? .a1, landsFromOrb: true)
                     .navigationTransition(.zoom(sourceID: OrbZoom.sourceID, in: orbZoom))
             } else {
                 ConversationView(scenario: MockScenarios.scenario(id), level: profiles.first?.level ?? .a1)
