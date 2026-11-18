@@ -9,6 +9,8 @@ import SwiftUI
 
 /// How the companion moves in each conversation state. Pure, so it can be tested.
 struct OrbDynamics: Equatable {
+    /// Who is talking, which sets how the orb and its eyes react.
+    var state: VoiceOrbState = .idle
     /// How fast the silk drifts (1 = the shader's natural pace).
     var speed: Double
     /// 0 calm … 1 excited.
@@ -17,6 +19,7 @@ struct OrbDynamics: Equatable {
     /// The motion for `state`, with `level` the current voice loudness (0…1).
     init(state: VoiceOrbState, level: Double = 0) {
         let level = min(max(level, 0), 1)
+        self.state = state
         switch state {
         case .idle: (speed, energy) = (0.35, 0)
         case .listening: (speed, energy) = (0.6, 0.15 + level * 0.7)
@@ -31,8 +34,47 @@ struct OrbDynamics: Equatable {
     }
 }
 
+/// How the orb answers the voice it hears, for one frame. Pure, so it can be tested.
+///
+/// Listening, it swells with the learner's voice; speaking, its edge ripples
+/// and glows with the companion's; thinking, it breathes quickly; waiting,
+/// it breathes slowly.
+struct OrbReaction: Equatable {
+    /// The orb's size, 1 at rest.
+    var scale: Double
+    /// Added to the shader's energy: brighter silk, rim and halo.
+    var glow: Double
+    /// 0 round … 1 the edge ripples like a voice.
+    var wobble: Double
+
+    /// `voice` is the smoothed loudness (0…1) and `time` seconds of wall time.
+    init(state: VoiceOrbState, voice: Double, time: Double) {
+        let voice = min(max(voice, 0), 1)
+        switch state {
+        case .idle: (scale, glow, wobble) = (1 + 0.015 * sin(time * 1.8), 0, 0)
+        case .listening: (scale, glow, wobble) = (1 + 0.1 * voice, 0.6 * voice, 0.35 * voice)
+        case .thinking: (scale, glow, wobble) = (1 + 0.025 * sin(time * 5), 0.15, 0)
+        case .speaking: (scale, glow, wobble) = (1 + 0.045 * voice, 0.7 * voice, voice)
+        }
+    }
+
+    /// At rest: still, as on Today.
+    static let still = OrbReaction(state: .listening, voice: 0, time: 0)
+
+    /// Whose voice the orb follows in `state`, if anyone's.
+    static func source(for state: VoiceOrbState) -> VoiceMeter.Source? {
+        switch state {
+        case .listening: .learner
+        case .speaking: .companion
+        case .idle, .thinking: nil
+        }
+    }
+}
+
 /// The companion: a dark glass bubble with a golden rim, smoky silk inside and
 /// two glowing eyes that blink and glance around. Drawn by a Metal shader.
+///
+/// In a conversation (`isLive`) it shows who is talking: see `OrbReaction`.
 ///
 /// One line to drop in: `CompanionOrb().frame(width: 220, height: 220)`.
 /// Its look comes from `CompanionLook` (Settings › Developer).
@@ -40,6 +82,8 @@ struct CompanionOrb: View {
     var dynamics = OrbDynamics(state: .idle)
     /// Always drifts (in a conversation), even when the Look setting keeps it still.
     var isLive = false
+    /// The loudness it reacts to.
+    var meter: VoiceMeter = .shared
 
     @AppStorage(CompanionLook.Key.rim) private var rim = 1.0
     @AppStorage(CompanionLook.Key.silk) private var silk = 1.0
@@ -56,35 +100,52 @@ struct CompanionOrb: View {
     /// The colours follow the app's theme.
     private var palette: CompanionPalette { AppTheme.shared.palette }
     @State private var clock = OrbClock()
+    @State private var voice = OrbVoice()
 
     var body: some View {
         let animates = (drifts || isLive) && !reduceMotion && isVisible
         TimelineView(.animation(paused: !animates)) { context in
             let time = animates ? clock.advance(to: context.date, speed: dynamics.speed) : Self.stillTime
-            GeometryReader { proxy in
-                Rectangle()
-                    .colorEffect(ShaderLibrary.bubbleOrb(
-                        .float2(proxy.size),
-                        .float(time),
-                        .float(dynamics.energy),
-                        .float(rim),
-                        .float(silk),
-                        .float(halo),
-                        .color(palette.deep),
-                        .color(palette.mid),
-                        .color(palette.light),
-                        .color(palette.rim)
-                    ))
+            let loudness = animates ? voice.advance(to: context.date, target: target) : 0
+            let reaction = animates
+                ? OrbReaction(state: dynamics.state, voice: loudness, time: context.date.timeIntervalSinceReferenceDate)
+                : .still
+            ZStack {
+                GeometryReader { proxy in
+                    Rectangle()
+                        .colorEffect(shader(size: proxy.size, time: time, reaction: reaction))
+                }
+                CompanionEyes(lively: lively, size: eyeSize, spacing: eyeSpacing, glow: palette.rim,
+                              state: dynamics.state, voice: loudness)
             }
+            .scaleEffect(reaction.scale)
         }
         .aspectRatio(1, contentMode: .fit)
-        .overlay {
-            CompanionEyes(lively: lively, size: eyeSize, spacing: eyeSpacing, glow: palette.rim)
-        }
         .onScrollVisibilityChange(threshold: 0.01) { isVisible = $0 }
         .onDisappear { isVisible = false }
         .onAppear { isVisible = true }
         .accessibilityHidden(true)
+    }
+
+    /// The loudness of whoever is talking now.
+    private var target: Double {
+        OrbReaction.source(for: dynamics.state).map { meter.level(of: $0) } ?? 0
+    }
+
+    private func shader(size: CGSize, time: Float, reaction: OrbReaction) -> Shader {
+        ShaderLibrary.bubbleOrb(
+            .float2(size),
+            .float(time),
+            .float(dynamics.energy + reaction.glow),
+            .float(reaction.wobble),
+            .float(rim),
+            .float(silk),
+            .float(halo),
+            .color(palette.deep),
+            .color(palette.mid),
+            .color(palette.light),
+            .color(palette.rim)
+        )
     }
 
     /// The moment shown when the silk doesn't drift: a balanced pose.
@@ -103,6 +164,44 @@ final class OrbClock {
         // Wrap, so Float stays precise in long sessions.
         time = time.truncatingRemainder(dividingBy: 10_000)
         return Float(time)
+    }
+}
+
+/// Follows the loudness smoothly: quick to rise with a voice, slower to fall,
+/// so the orb doesn't flicker between syllables. A class, like `OrbClock`.
+final class OrbVoice {
+    private var last: Date?
+    private(set) var value: Double = 0
+
+    func advance(to date: Date, target: Double) -> Double {
+        let step = last.map { min(max(date.timeIntervalSince($0), 0), 0.1) } ?? 0
+        last = date
+        let rate = target > value ? 22.0 : 7.0
+        value += (min(max(target, 0), 1) - value) * (1 - exp(-step * rate))
+        return value
+    }
+}
+
+/// How the eyes look in each state. Pure, so it can be tested.
+struct EyeLook: Equatable {
+    /// The eyes' size, 1 as designed.
+    var scale: Double
+    /// How open they are: 1 open, smaller narrows them.
+    var openness: Double
+    /// Where they look, as a fraction of the orb's size.
+    var gaze: CGSize
+
+    init(state: VoiceOrbState) {
+        switch state {
+        // Waiting: as designed, glancing around now and then.
+        case .idle: (scale, openness, gaze) = (1, 1, .zero)
+        // Listening: wide awake, looking at the learner.
+        case .listening: (scale, openness, gaze) = (1.12, 1, CGSize(width: 0, height: -0.01))
+        // Thinking: narrowed, looking up to one side.
+        case .thinking: (scale, openness, gaze) = (1, 0.5, CGSize(width: 0.045, height: -0.04))
+        // Speaking: a friendly squint.
+        case .speaking: (scale, openness, gaze) = (1, 0.8, .zero)
+        }
     }
 }
 
@@ -127,6 +226,9 @@ private struct CompanionEyes: View {
     var spacing = 1.0
     /// The light around the eyes, from the palette's rim.
     var glow = CompanionPalette.gold.rim
+    var state = VoiceOrbState.idle
+    /// The smoothed loudness of whoever is talking.
+    var voice = 0.0
 
     @Environment(\.reducesMotion) private var reduceMotion
     @State private var isBlinking = false
@@ -136,36 +238,49 @@ private struct CompanionEyes: View {
     var body: some View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
+            let look = EyeLook(state: state)
+            // Speaking, the eyes squint a little more on each loud syllable; listening, they lift.
+            let openness = look.openness - (state == .speaking ? voice * 0.25 : 0)
+            let lift = state == .listening ? voice * 0.012 : 0
             HStack(spacing: side * 0.12 * spacing) {
                 ForEach(0..<2, id: \.self) { _ in
                     Capsule()
                         .fill(eye)
-                        .frame(width: side * 0.07 * size, height: side * 0.15 * size)
-                        .scaleEffect(x: 1, y: isBlinking ? 0.1 : 1)
+                        .frame(width: side * 0.07 * size * look.scale, height: side * 0.15 * size * look.scale)
+                        .scaleEffect(x: 1, y: isBlinking ? 0.1 : openness)
                         .shadow(color: glow.opacity(0.9), radius: side * 0.04)
                         .shadow(color: eye.opacity(0.6), radius: side * 0.015)
                 }
             }
-            .offset(x: gaze.width * side, y: gaze.height * side)
+            .offset(x: (gaze.width + look.gaze.width) * side, y: (gaze.height + look.gaze.height - lift) * side)
+            .animation(.spring(duration: 0.45, bounce: 0.25), value: state)
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
         .accessibilityHidden(true)
         // Cancelled when the orb leaves the screen (e.g. another tab).
-        .task(id: lively && !reduceMotion) {
+        .task(id: Behaviour(lively: lively && !reduceMotion, glances: state == .idle)) {
             guard lively, !reduceMotion else {
                 gaze = .zero
                 return
             }
-            await live()
+            if state != .idle {
+                withAnimation(.spring(duration: 0.4)) { gaze = .zero }
+            }
+            await live(glances: state == .idle)
         }
     }
 
-    /// Blinks and glances at natural, irregular moments until cancelled.
-    private func live() async {
+    private struct Behaviour: Equatable {
+        let lively: Bool
+        let glances: Bool
+    }
+
+    /// Blinks, and glances while waiting, at natural, irregular moments until cancelled.
+    private func live(glances: Bool) async {
         var generator = SystemRandomNumberGenerator()
         while !Task.isCancelled {
             guard await pause(2.5...5.5) else { return }
-            if Double.random(in: 0...1, using: &generator) < 0.35 {
+            if glances, Double.random(in: 0...1, using: &generator) < 0.35 {
                 withAnimation(.spring(duration: 0.45, bounce: 0.2)) {
                     gaze = CompanionGaze.random(using: &generator)
                 }

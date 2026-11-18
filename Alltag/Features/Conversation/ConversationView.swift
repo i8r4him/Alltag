@@ -12,11 +12,20 @@ import SwiftUI
 struct ConversationView: View {
     let scenario: Scenario
     var level: Level = .a1
+    /// Today's orb, when the learner tapped it to come here.
+    var launch: OrbLaunch?
     @Environment(\.services) private var services
     @Environment(AppState.self) private var appState
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
     @State private var model: ConversationModel?
+    /// Today's orb has reached its place, so the page's own orb shows.
+    @State private var hasLanded = false
+    /// The page fades in under the flying orb.
+    @State private var isShown = false
+
+    /// Today's orb flies here while the page fades in under it.
+    private var flies: Bool { launch.map { $0.style != .zoom } ?? false }
 
     var body: some View {
         Group {
@@ -27,10 +36,21 @@ struct ConversationView: View {
             }
         }
         .background(.screenBackground)
+        .opacity(flies && !isShown ? 0 : 1)
+        .overlayPreferenceValue(OrbSlotKey.self) { slot in
+            if let launch, flies, !hasLanded {
+                OrbFlight(launch: launch, target: slot) { hasLanded = true }
+            }
+        }
+        .environment(\.orbIsLanding, flies && !hasLanded)
+        .environment(\.orbDropsIn, launch?.style == .zoom)
+        .presentationBackground(.clear)
         .onAppear {
+            withAnimation(.easeOut(duration: 0.5).delay(0.15)) { isShown = true }
             if model == nil {
                 let model = ConversationModel(scenario: scenario, services: services,
                                               usesCloudVoice: appState.settings.usesCloudForPro, level: level)
+                model.holdsToTalk = appState.settings.holdsToTalk
                 self.model = model
                 // Free talk starts straight away: the learner tapped the companion to talk.
                 // A soft chime first, before the microphone takes over the audio.
@@ -45,6 +65,9 @@ struct ConversationView: View {
         }
         .onChange(of: appState.settings.usesCloudForPro) { _, allowed in
             model?.setCloudVoiceConsent(allowed)
+        }
+        .onChange(of: appState.settings.holdsToTalk) { _, holds in
+            model?.holdsToTalk = holds
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background { model?.suspendCloudVoice() }
@@ -206,18 +229,12 @@ private struct ConversationContent: View {
                     CircleGlassButton(title: "Type instead", systemImage: "keyboard", size: 48) { model.mode = .text }
                 }
                 Spacer()
-                Button { model.orbTapped() } label: {
-                    CompanionOrb(dynamics: OrbDynamics(state: model.phase), isLive: !model.isFinished)
-                        .frame(width: 150, height: 150)
-                        .scaleEffect(model.phase == .listening ? 1.06 : 1)
-                        .animation(.spring(duration: 0.5), value: model.phase)
-                }
-                .buttonStyle(.plain)
-                // Not `.disabled`: that would dim the orb while thinking and speaking.
-                .allowsHitTesting(model.isUsingCloudVoice || model.canRespond || model.phase == .listening)
-                .accessibilityLabel(Text(model.isUsingCloudVoice ? "End conversation" : model.stateLabel ?? "Voice"))
+                TalkOrb(model: model)
+                    .anchorPreference(key: OrbSlotKey.self, value: .bounds) { $0 }
                 Spacer()
-                if model.scenario.isLiveOnly {
+                if model.showsFinishButton {
+                    CircleGlassButton(title: "Finish", systemImage: "checkmark", size: 48) { model.finishCloudConversation() }
+                } else if model.scenario.isLiveOnly {
                     Color.clear.frame(width: 48, height: 48)
                 } else {
                     hintButton(size: 48)
@@ -230,6 +247,9 @@ private struct ConversationContent: View {
             .foregroundStyle(.secondary)
             .frame(height: 20)
             .accessibilityHidden(true)
+            if !model.isFinished {
+                TalkModePicker()
+            }
         }
         .padding(.horizontal, 28)
         .padding(.top, 4)
@@ -271,6 +291,21 @@ private struct ConversationContent: View {
 
     private func send() {
         Task { await model.send() }
+    }
+}
+
+/// Hands-free or hold to talk, remembered for the next conversation.
+private struct TalkModePicker: View {
+    @Environment(AppState.self) private var appState
+
+    var body: some View {
+        Picker("How you talk", selection: Bindable(appState.settings).holdsToTalk) {
+            Text("Hands-free").tag(false)
+            Text("Hold to talk").tag(true)
+        }
+        .pickerStyle(.segmented)
+        .frame(maxWidth: 260)
+        .sensoryFeedback(.selection, trigger: appState.settings.holdsToTalk)
     }
 }
 

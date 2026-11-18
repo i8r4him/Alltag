@@ -13,26 +13,37 @@ struct TodayHero: View {
     let words: Int
     let minutesSpoken: Int
     let level: Level
-    let onStart: () -> Void
+    /// Today's orb is on its way into the conversation, so it isn't drawn here.
+    var isOrbAway = false
+    /// With where the orb is on screen, for it to fly from there.
+    let onStart: (CGRect) -> Void
     let onProgress: () -> Void
 
     @ScaledMetric(relativeTo: .largeTitle) private var orbSize: CGFloat = 230
+    @Environment(\.reducesMotion) private var reduceMotion
+    @Environment(\.orbZoom) private var orbZoom
+    @Namespace private var ownZoom
 
     /// Counts taps, to play haptic feedback.
     @State private var starts = 0
     @State private var progressTaps = 0
+    /// Where the orb is, kept without redrawing while the page scrolls.
+    @State private var orbFrame = OrbFrame()
 
     var body: some View {
         VStack(spacing: 32) {
             Button {
                 starts += 1
-                onStart()
+                onStart(orbFrame.frame)
             } label: {
                 // The companion; its look is edited in Settings › Developer.
                 CompanionOrb()
                     .frame(width: orbSize, height: orbSize)
+                    .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { orbFrame.frame = $0 }
             }
-                .buttonStyle(.card)
+                .buttonStyle(.orbPress(reduceMotion: reduceMotion))
+                .matchedTransitionSource(id: OrbLaunch.zoomID, in: orbZoom ?? ownZoom)
+                .opacity(isOrbAway ? 0 : 1)
                 .sensoryFeedback(.impact(weight: .medium), trigger: starts)
                 .accessibilityLabel("Talk with your companion")
 
@@ -76,6 +87,11 @@ struct TodayHero: View {
     }
 }
 
+/// The orb's place on screen. A class, so keeping it up to date doesn't redraw Today.
+private final class OrbFrame {
+    var frame = CGRect.zero
+}
+
 /// How the big numbers on Today and the profile are written: in full below
 /// 1,000, then short where the language has it ("1.2k" in English; German
 /// writes thousands in full), so three still fit side by side.
@@ -87,13 +103,13 @@ enum BigNumber {
 }
 
 #Preview("Large numbers") {
-    TodayHero(words: 12_480, minutesSpoken: 1_250, level: .c1, onStart: {}, onProgress: {})
+    TodayHero(words: 12_480, minutesSpoken: 1_250, level: .c1, onStart: { _ in }, onProgress: {})
         .padding(Spacing.screen)
         .background(.screenBackground)
 }
 
 #Preview {
-    TodayHero(words: 18, minutesSpoken: 42, level: .b1, onStart: {}, onProgress: {})
+    TodayHero(words: 18, minutesSpoken: 42, level: .b1, onStart: { _ in }, onProgress: {})
         .padding(Spacing.screen)
         .background(.screenBackground)
 }

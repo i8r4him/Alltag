@@ -21,6 +21,8 @@ final class AppState {
     private(set) var roots: [AppTab: Route] = [:]
     /// The screen currently covering everything, if any.
     var fullScreen: FullScreenRoute?
+    /// Today's orb, when the learner tapped it to start the conversation now covering everything.
+    private(set) var orbLaunch: OrbLaunch?
     /// Device settings (Reduce motion, Slower speech, …), persisted.
     let settings: AppSettings
 
@@ -65,7 +67,19 @@ final class AppState {
 
     /// Presents a full-screen flow such as a conversation.
     func present(_ route: FullScreenRoute) {
+        orbLaunch = nil
         fullScreen = route
+    }
+
+    /// Starts today's conversation from Today's orb, which carries the learner there.
+    /// Flying, the page appears at once and fades in under the orb, so it isn't slid up.
+    func talk(from launch: OrbLaunch?) {
+        orbLaunch = launch
+        guard let launch, launch.style != .zoom else {
+            fullScreen = .conversation(.freeTalk)
+            return
+        }
+        withTransaction(\.disablesAnimations, true) { fullScreen = .conversation(.freeTalk) }
     }
 
     func dismissFullScreen() {

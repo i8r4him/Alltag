@@ -24,6 +24,7 @@ final class SystemRealtimeAudio: RealtimeAudio {
     private var input: AsyncThrowingStream<Data, any Error>.Continuation?
     private var observers: [any NSObjectProtocol] = []
     private var hasTap = false
+    private var hasPlaybackTap = false
     private var isActive = false
     private var item: String?
     private var framesScheduled: AVAudioFramePosition = 0
@@ -51,6 +52,7 @@ final class SystemRealtimeAudio: RealtimeAudio {
         playbackFormat = playback
         engine.attach(player)
         try engine.connectNode(player, to: engine.mainMixerNode, format: playback)
+        try installPlaybackMeter()
         let (stream, continuation) = AsyncThrowingStream.makeStream(of: Data.self, bufferingPolicy: .bufferingOldest(128))
         input = continuation
         try startEngine(recordingIn: pcm, continuation: continuation)
@@ -119,8 +121,13 @@ final class SystemRealtimeAudio: RealtimeAudio {
         guard isActive else { return }
         clearPlayback()
         removeTap()
+        if hasPlaybackTap {
+            player.removeTap(onBus: 0)
+            hasPlaybackTap = false
+        }
         engine.stop()
         isActive = false
+        VoiceMeter.shared.reset()
         Task { _ = try? await AVAudioSession.sharedInstance().deactivate(options: .notifyOthersOnDeactivation) }
     }
 
@@ -137,6 +144,15 @@ final class SystemRealtimeAudio: RealtimeAudio {
         guard hasTap else { return }
         engine.inputNode.removeTap(onBus: 0)
         hasTap = false
+    }
+
+    /// The companion's loudness, as it plays, for the orb.
+    private func installPlaybackMeter() throws {
+        guard !hasPlaybackTap else { return }
+        try player.__installTap(onBus: 0, bufferSize: 1_024, format: nil, error: ()) { @Sendable buffer, _ in
+            VoiceMeter.shared.record(buffer, from: .companion)
+        }
+        hasPlaybackTap = true
     }
 
     private func startEngine(recordingIn format: AVAudioFormat, continuation: AsyncThrowingStream<Data, any Error>.Continuation) throws {
@@ -191,6 +207,7 @@ final class SystemRealtimeAudio: RealtimeAudio {
         let ratio = outputFormat.sampleRate / format.sampleRate
         // The iOS 27 SDK imports the throwing tap installer under this name.
         try microphone.__installTap(onBus: 0, bufferSize: 2_048, format: format, error: ()) { @Sendable buffer, _ in
+            VoiceMeter.shared.record(buffer, from: .learner)
             let capacity = AVAudioFrameCount((Double(buffer.frameLength) * ratio).rounded(.up))
             guard let pcm = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: capacity) else { return }
             var consumed = false

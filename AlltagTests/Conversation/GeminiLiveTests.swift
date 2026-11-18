@@ -71,10 +71,12 @@ struct GeminiLiveTests {
     }
 
     /// Runs a session against `script` and returns the events it emitted.
-    private func run(_ script: [String], audio: SilentAudio? = nil) async -> ([RealtimeConversationEvent], ScriptedSocket) {
+    private func run(_ script: [String], audio: SilentAudio? = nil,
+                     holdsToTalk: Bool = false) async -> ([RealtimeConversationEvent], ScriptedSocket) {
         let socket = ScriptedSocket(script)
         let audio = audio ?? SilentAudio()
-        let context = RealtimeConversationContext(scenario: MockScenarios.all[0], level: .a2, slowerSpeech: false)
+        var context = RealtimeConversationContext(scenario: MockScenarios.all[0], level: .a2, slowerSpeech: false)
+        context.holdsToTalk = holdsToTalk
         let session = GeminiLiveSession(context: context, credentials: { _ in Self.ticket }, audio: audio, connect: { _ in socket })
         var events: [RealtimeConversationEvent] = []
         // The script ends like a closed connection; what was emitted before is the point.
@@ -131,6 +133,25 @@ struct GeminiLiveTests {
         let chunk = inputs.compactMap { $0["audio"] as? [String: String] }.first
         #expect(chunk == ["data": Data([9, 9]).base64EncodedString(), "mimeType": "audio/pcm;rate=24000"])
         #expect(audio.played.map(\.item) == ["gemini-companion-1", "gemini-companion-1"])
+    }
+
+    @Test("Holding to talk, the opening is one marked turn and the microphone waits for the orb")
+    func holdToTalk() async {
+        let audio = SilentAudio()
+        audio.microphone = [Data([9, 9])]
+        let (events, socket) = await run([#"{"setupComplete":{}}"#, Self.says("Hallo!")], audio: audio, holdsToTalk: true)
+        let inputs = socket.sent.compactMap { $0["realtimeInput"] as? [String: Any] }
+        #expect(inputs.map { $0.keys.sorted() } == [["activityStart"], ["text"], ["activityEnd"]])
+        #expect(inputs[1]["text"] as? String == GeminiLiveSession.opening)
+        #expect(!events.contains { if case .phase(.listening) = $0 { true } else { false } })
+    }
+
+    @Test("Reconnecting, the opening carries the conversation so far")
+    func reconnectOpening() {
+        #expect(GeminiLiveSession.opening(history: "") == GeminiLiveSession.opening)
+        let opening = GeminiLiveSession.opening(history: "You: Hallo!\nLearner: Hi!")
+        #expect(opening.contains("You: Hallo!\nLearner: Hi!"))
+        #expect(opening.contains("don't greet again"))
     }
 
     @Test("The companion's words join into one line, and the learner's line is final when the answer begins")

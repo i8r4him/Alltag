@@ -20,6 +20,8 @@ struct RootView: View {
     @Namespace private var mistakesZoom
     /// Shared by Learn's level ring and the level map, which zooms out of it.
     @Namespace private var levelMapZoom
+    /// Shared by Today's orb and the conversation, which can zoom out of it.
+    @Namespace private var orbZoom
 
     var body: some View {
         Group {
@@ -49,6 +51,7 @@ struct RootView: View {
         }
         .environment(\.mistakesZoom, mistakesZoom)
         .environment(\.levelMapZoom, levelMapZoom)
+        .environment(\.orbZoom, orbZoom)
         .fullScreenCover(item: $appState.fullScreen, content: fullScreen)
     }
 
@@ -127,7 +130,13 @@ struct RootView: View {
     private func fullScreen(_ route: FullScreenRoute) -> some View {
         switch route {
         case .conversation(let id):
-            ConversationView(scenario: MockScenarios.scenario(id), level: profiles.first?.level ?? .a1)
+            let launch = id == .freeTalk ? appState.orbLaunch : nil
+            if launch?.style == .zoom {
+                ConversationView(scenario: MockScenarios.scenario(id), level: profiles.first?.level ?? .a1, launch: launch)
+                    .navigationTransition(.zoom(sourceID: OrbLaunch.zoomID, in: orbZoom))
+            } else {
+                ConversationView(scenario: MockScenarios.scenario(id), level: profiles.first?.level ?? .a1, launch: launch)
+            }
         case .situation(let id):
             if let situation = SituationCatalogue.situation(id: id, in: modelContext) {
                 ConversationView(scenario: situation.scenario, level: profiles.first?.level ?? .a1)

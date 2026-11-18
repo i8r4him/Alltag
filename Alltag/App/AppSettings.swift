@@ -25,6 +25,8 @@ final class AppSettings {
     var learnsFromCamera: Bool { didSet { store(learnsFromCamera, .learnsFromCamera) } }
     /// No reminders after 21:00.
     var quietEvenings: Bool { didSet { store(quietEvenings, .quietEvenings) } }
+    /// Conversations: hold the orb to talk instead of hands-free.
+    var holdsToTalk: Bool { didSet { store(holdsToTalk, .holdsToTalk) } }
     /// Prototype stand-in for the subscription until StoreKit arrives (#54).
     var isPro: Bool { didSet { store(isPro, .isPro) } }
 
@@ -39,13 +41,14 @@ final class AppSettings {
         learnsFromCamera = defaults.bool(forKey: Key.learnsFromCamera.rawValue)
         quietEvenings = defaults.object(forKey: Key.quietEvenings.rawValue) as? Bool ?? true
         isPro = defaults.bool(forKey: Key.isPro.rawValue)
+        holdsToTalk = defaults.bool(forKey: Key.holdsToTalk.rawValue)
     }
 
     /// The rate German is spoken at when a screen doesn't ask for a specific one.
     var defaultSpeechRate: SpeechRate { slowerSpeech ? .slow : .normal }
 
     private enum Key: String {
-        case reduceMotion, slowerSpeech, usesCloudForPro, learnsFromSafari, learnsFromCamera, quietEvenings, isPro
+        case reduceMotion, slowerSpeech, usesCloudForPro, learnsFromSafari, learnsFromCamera, quietEvenings, isPro, holdsToTalk
     }
 
     private func store(_ value: Bool, _ key: Key) {
