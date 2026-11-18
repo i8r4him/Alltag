@@ -398,6 +398,8 @@ Alltag/                                   ← repo root
 │  ├─ Profile/                            profile, progress, streak, settings
 │  └─ Services/                           the services, speech and the companions (on device, cloud)
 │
+├─ ci_scripts/
+│  └─ ci_post_xcodebuild.sh              Xcode Cloud: TestFlight's "What to Test" from the commits since the last testflight-* tag
 ├─ supabase/                             backend: the Edge Functions (voice, checks, translation), migrations (see supabase/README.md)
 ├─ AGENTS.md                              rules for every coding agent: build, code, data, design, workflow, plan
 ├─ CLAUDE.md                              imports AGENTS.md for Claude Code
