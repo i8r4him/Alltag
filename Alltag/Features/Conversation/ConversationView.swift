@@ -47,16 +47,14 @@ struct ConversationView: View {
                                               usesCloudVoice: appState.settings.usesCloudForPro, level: level)
                 model.holdsToTalk = appState.settings.holdsToTalk
                 self.model = model
-                // Free talk starts straight away: the learner tapped the companion to talk.
-                // A soft chime first, before the microphone takes over the audio.
-                if scenario.isLiveOnly, model.canRespond {
-                    SoundEffects.play(.focus)
-                    Task {
-                        try? await Task.sleep(for: .milliseconds(450))
-                        if model.canRespond { model.orbTapped() }
-                    }
-                }
+                // Coming from Today's orb, free talk waits until the orb has landed: starting the
+                // microphone and the voice holds up the main thread for a moment, which would
+                // make the moving orb jump.
+                if launch == nil { startFreeTalk(model) }
             }
+        }
+        .onChange(of: hasLanded) { _, landed in
+            if landed, let model { startFreeTalk(model) }
         }
         .onChange(of: appState.settings.usesCloudForPro) { _, allowed in
             model?.setCloudVoiceConsent(allowed)
@@ -70,6 +68,17 @@ struct ConversationView: View {
         .onDisappear {
             model?.stop()
             model?.recordPractice(in: modelContext)
+        }
+    }
+
+    /// Free talk starts straight away: the learner tapped the companion to talk.
+    /// A soft chime first, before the microphone takes over the audio.
+    private func startFreeTalk(_ model: ConversationModel) {
+        guard scenario.isLiveOnly, model.canRespond else { return }
+        SoundEffects.play(.focus)
+        Task {
+            try? await Task.sleep(for: .milliseconds(450))
+            if model.canRespond { model.orbTapped() }
         }
     }
 }

@@ -70,33 +70,36 @@ struct OrbFlight: View {
     let target: Anchor<CGRect>?
     let onLanded: () -> Void
 
-    @State private var start = Date.now
+    /// When the flight set off: once the conversation's orb has a place to go to.
+    /// Until then the orb waits where Today's orb was, so it never blinks out.
+    @State private var start: Date?
 
     var body: some View {
         GeometryReader { proxy in
-            if let target {
-                let origin = proxy.frame(in: .global).origin
-                let source = launch.frame.offsetBy(dx: -origin.x, dy: -origin.y)
-                let place = proxy[target]
-                TimelineView(.animation) { context in
-                    let pose = OrbFlightPose(at: context.date.timeIntervalSince(start))
-                    let side = source.width + (place.width - source.width) * pose.progress
-                    CompanionOrb(isLive: true)
-                        .frame(width: side, height: side)
-                        .scaleEffect(pose.growth)
-                        .scaleEffect(x: pose.stretchX, y: pose.stretchY, anchor: .bottom)
-                        .position(x: source.midX + (place.midX - source.midX) * pose.progress,
-                                  y: source.midY + (place.midY - source.midY) * pose.progress)
-                }
+            let origin = proxy.frame(in: .global).origin
+            let source = launch.frame.offsetBy(dx: -origin.x, dy: -origin.y)
+            let place = target.map { proxy[$0] } ?? source
+            TimelineView(.animation(paused: start == nil)) { context in
+                let pose = OrbFlightPose(at: start.map { context.date.timeIntervalSince($0) } ?? 0)
+                let side = source.width + (place.width - source.width) * pose.progress
+                CompanionOrb(isLive: true)
+                    .frame(width: side, height: side)
+                    .scaleEffect(pose.growth)
+                    .scaleEffect(x: pose.stretchX, y: pose.stretchY, anchor: .bottom)
+                    .position(x: source.midX + (place.midX - source.midX) * pose.progress,
+                              y: source.midY + (place.midY - source.midY) * pose.progress)
             }
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
         .accessibilityHidden(true)
-        .task {
-            start = .now
-            try? await Task.sleep(for: .seconds(OrbFlightPose.duration))
-            onLanded()
+        .onChange(of: target != nil, initial: true) { _, hasPlace in
+            if hasPlace, start == nil { start = .now }
+        }
+        .task(id: start) {
+            // With nowhere to go (the page shows a problem instead of its orb), it doesn't wait forever.
+            try? await Task.sleep(for: .seconds(start == nil ? 1 : OrbFlightPose.duration))
+            if !Task.isCancelled { onLanded() }
         }
     }
 }
