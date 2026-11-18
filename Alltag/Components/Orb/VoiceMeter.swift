@@ -37,7 +37,7 @@ nonisolated final class VoiceMeter: Sendable {
     init() {}
 
     /// Records `level` (0…1) for `source`.
-    func record(_ level: Double, from source: Source, at time: TimeInterval = Self.now) {
+    func record(_ level: Double, from source: Source, at time: TimeInterval = VoiceMeter.now) {
         let level = min(max(level, 0), 1)
         readings.withLock { $0[source.rawValue] = Reading(level: level, time: time) }
     }
@@ -48,7 +48,7 @@ nonisolated final class VoiceMeter: Sendable {
     }
 
     /// The level of `source` at `time`, faded since its last reading.
-    func level(of source: Source, at time: TimeInterval = Self.now) -> Double {
+    func level(of source: Source, at time: TimeInterval = VoiceMeter.now) -> Double {
         let reading = readings.withLock { $0[source.rawValue] }
         let age = time - reading.time
         guard age > Self.hold else { return age >= 0 ? reading.level : 0 }
