@@ -13,6 +13,8 @@ import SwiftUI
 /// Café is Speaking, Market is Words, Library is Read and Write), the path
 /// shows how far they've come, and the level test waits at the station.
 /// Tapping a place shows what's in it; the card at the bottom opens the next stop.
+/// Each level is its own town with its own places; swiping sideways walks to
+/// the next or previous level's town.
 struct LevelMapView: View {
     @Environment(AppState.self) private var appState
     @Query private var solved: [SolvedRule]
@@ -24,26 +26,31 @@ struct LevelMapView: View {
     @State private var pendingStop: MapStop?
     /// A word collection opened from the market or the next-stop card.
     @State private var openCollection: WordCollection?
-    /// Another level's map the learner is looking at; `nil` shows their own.
+    /// The level whose town is on screen; `nil` shows the learner's own.
+    /// Swiping sideways changes it, and so does the header's menu.
     @State private var shownLevel: Level?
-    /// Which way the town slides when the level changes: a higher level comes down from above.
-    @State private var goingUp = true
     @Environment(\.reducesMotion) private var reducesMotion
     @Namespace private var placeZoom
 
     private var ownLevel: Level { profiles.first?.level ?? .a1 }
+    private var currentLevel: Level { shownLevel ?? ownLevel }
+
+    /// The towns side by side, from the village to the capital.
+    private var levels: [Level] {
+        Level.selectable.contains(ownLevel) ? Level.selectable : Level.selectable + [ownLevel]
+    }
 
     var body: some View {
-        let map = LevelMap(level: shownLevel ?? ownLevel, solved: solved, sessions: sessions,
-                           collectionWords: collectionWords)
+        let map = map(of: currentLevel)
         let isOwn = map.level == ownLevel
-        ZStack {
-            town(map, isOwn: isOwn)
-                .id(map.level)
-                .transition(townTransition)
+        GeometryReader { proxy in
+            towns(insets: proxy.safeAreaInsets)
         }
-        .animation(reducesMotion ? .easeInOut(duration: 0.25) : .smooth(duration: 0.6), value: map.level)
         .background { Color.screenBackground.ignoresSafeArea() }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            LevelDots(levels: levels, current: currentLevel)
+                .padding(.vertical, 6)
+        }
         .safeAreaInset(edge: .bottom) {
             NextStopCard(map: map, ownLevel: isOwn ? nil : ownLevel, onGo: open) { show(ownLevel) }
                 .frame(maxWidth: Spacing.readableWidth)
@@ -67,73 +74,88 @@ struct LevelMapView: View {
         .navigationTitle(Text("Your level"))
         .toolbarTitleDisplayMode(.inline)
         .sheet(item: $openPlace, onDismiss: openPending) { place in
-            PlaceSheet(place: place, progress: map.progress(of: place), nextLevel: map.nextLevel) { stop in
+            PlaceSheet(place: place, level: map.level, progress: map.progress(of: place), nextLevel: map.nextLevel) { stop in
                 pendingStop = stop
                 openPlace = nil
             }
-            .navigationTransition(.zoom(sourceID: place, in: placeZoom))
+            .navigationTransition(.zoom(sourceID: PlaceZoomID(level: map.level, place: place), in: placeZoom))
         }
         .sheet(item: $openCollection) { collection in
             WordCollectionSheet(collection: collection)
         }
+        .onAppear {
+            if shownLevel == nil { shownLevel = ownLevel }
+        }
         .sensoryFeedback(.impact(weight: .medium), trigger: openPlace) { _, place in place != nil }
-        .sensoryFeedback(.impact(weight: .medium), trigger: shownLevel)
+        .sensoryFeedback(.selection, trigger: shownLevel) { old, _ in old != nil }
+    }
+
+    private func map(of level: Level) -> LevelMap {
+        LevelMap(level: level, solved: solved, sessions: sessions, collectionWords: collectionWords)
+    }
+
+    /// Every level's town, one page each; swiping left goes up a level.
+    /// The towns reach under the bars and the card; their places stay clear of them.
+    private func towns(insets: EdgeInsets) -> some View {
+        ScrollView(.horizontal) {
+            LazyHStack(spacing: 0) {
+                ForEach(levels) { level in
+                    town(map(of: level), isOwn: level == ownLevel, isShown: level == currentLevel, insets: insets)
+                        .containerRelativeFrame([.horizontal, .vertical])
+                        .id(level)
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .scrollTargetBehavior(.paging)
+        .scrollPosition(id: $shownLevel)
+        .scrollIndicators(.hidden)
+        .scrollEdgeEffectStyle(.soft, for: .all)
+        .ignoresSafeArea()
     }
 
     /// One level's town: its streets, its route and its places.
-    private func town(_ map: LevelMap, isOwn: Bool) -> some View {
+    private func town(_ map: LevelMap, isOwn: Bool, isShown: Bool, insets: EdgeInsets) -> some View {
         let layout = TownLayout.of(map.level)
         return GeometryReader { proxy in
             ZStack {
                 TownRoute(layout: layout, walkedTo: isOwn ? TownPlace.route.firstIndex(of: map.here) ?? 0 : 0)
-                GlassEffectContainer {
-                    ZStack {
-                        ForEach(Array(TownPlace.route.enumerated()), id: \.element) { index, place in
-                            let spot = layout.spot(of: place)
-                            pin(place, in: map, isOwn: isOwn)
-                                .modifier(PopIn(order: TownPlace.route.count - 1 - index))
-                                .position(x: spot.x * proxy.size.width, y: spot.y * proxy.size.height)
-                        }
-                    }
+                ForEach(Array(TownPlace.route.enumerated()), id: \.element) { index, place in
+                    let spot = layout.spot(of: place)
+                    pin(place, in: map, isOwn: isOwn, isShown: isShown, order: TownPlace.route.count - 1 - index)
+                        .position(x: spot.x * proxy.size.width, y: spot.y * proxy.size.height)
                 }
             }
         }
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
-        .padding(.top, 12)
-        .padding(.bottom, 8)
+        .padding(.top, insets.top + 16)
+        .padding(.bottom, insets.bottom + 8)
         .frame(maxWidth: Spacing.readableWidth)
-        .frame(maxWidth: .infinity)
-        .background { TownGround(layout: layout).ignoresSafeArea() }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background { TownGround(layout: layout) }
     }
 
-    /// The new town comes in from the side of the level it's heading to,
-    /// the old one leaves the other way; with Reduce Motion it fades.
-    private var townTransition: AnyTransition {
-        guard !reducesMotion else { return .opacity }
-        return .asymmetric(
-            insertion: .move(edge: goingUp ? .top : .bottom).combined(with: .opacity),
-            removal: .move(edge: goingUp ? .bottom : .top).combined(with: .opacity))
-    }
-
-    /// The level picked in the header; picking their own level goes back to it.
+    /// The level picked in the header; the town slides over to it.
     private var levelChoice: Binding<Level> {
-        Binding { shownLevel ?? ownLevel } set: { level in show(level) }
+        Binding { currentLevel } set: { level in show(level) }
     }
 
     private func show(_ level: Level) {
-        goingUp = level > (shownLevel ?? ownLevel)
-        shownLevel = level == ownLevel ? nil : level
+        withAnimation(reducesMotion ? nil : .smooth(duration: 0.5)) {
+            shownLevel = level
+        }
     }
 
-    private func pin(_ place: TownPlace, in map: LevelMap, isOwn: Bool) -> some View {
+    private func pin(_ place: TownPlace, in map: LevelMap, isOwn: Bool, isShown: Bool, order: Int) -> some View {
         let progress = map.progress(of: place)
         return Button {
             openPlace = place
         } label: {
-            PlacePin(place: place, progress: progress, isHere: isOwn && map.here == place, nextLevel: map.nextLevel)
+            PlacePin(place: place, level: map.level, progress: progress, isHere: isOwn && map.here == place,
+                     nextLevel: map.nextLevel, isShown: isShown, order: order)
         }
         .buttonStyle(.plain)
-        .matchedTransitionSource(id: place, in: placeZoom)
+        .matchedTransitionSource(id: PlaceZoomID(level: map.level, place: place), in: placeZoom)
         .accessibilityLabel(Text(place.name))
         .accessibilityValue(accessibilityValue(of: progress, in: map))
         .accessibilityHint(Text("Shows what's in this place"))
@@ -157,6 +179,30 @@ struct LevelMapView: View {
         case .situation(let id): appState.present(.situation(id))
         case .collection(let id): openCollection = WordCollections.collection(id: id)
         }
+    }
+}
+
+/// A place in one level's town, so a sheet zooms out of the sign it was opened from.
+private struct PlaceZoomID: Hashable {
+    let level: Level
+    let place: TownPlace
+}
+
+/// Which town is on screen, as dots under the title: a wider one for the current level.
+private struct LevelDots: View {
+    let levels: [Level]
+    let current: Level
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(levels) { level in
+                Capsule()
+                    .fill(level == current ? AnyShapeStyle(.primary) : AnyShapeStyle(.tertiary))
+                    .frame(width: level == current ? 18 : 7, height: 7)
+            }
+        }
+        .animation(.smooth(duration: 0.3), value: current)
+        .accessibilityHidden(true)
     }
 }
 
@@ -190,24 +236,6 @@ private struct LevelHeader: View {
     }
 }
 
-/// A place pops up out of the ground when its town arrives, one after the other from the station down.
-private struct PopIn: ViewModifier {
-    let order: Int
-    @State private var isShown = false
-    @Environment(\.reducesMotion) private var reducesMotion
-
-    func body(content: Content) -> some View {
-        content
-            .scaleEffect(isShown || reducesMotion ? 1 : 0.3, anchor: .bottom)
-            .opacity(isShown || reducesMotion ? 1 : 0)
-            .onAppear {
-                withAnimation(.spring(duration: 0.45, bounce: 0.4).delay(0.25 + Double(order) * 0.08)) {
-                    isShown = true
-                }
-            }
-    }
-}
-
 /// The card at the bottom: the next stop and a button to go there.
 private struct NextStopCard: View {
     let map: LevelMap
@@ -233,7 +261,7 @@ private struct NextStopCard: View {
                     .buttonStyle(.primaryCompact)
             } else if let place = map.nextPlace, let stop = place.nextStop {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Next stop · \(Text(place.place.name))")
+                    Text("Next stop · \(place.place.germanName(at: map.level))")
                         .font(.caption.weight(.heavy))
                         .textCase(.uppercase)
                         .foregroundStyle(.accent)
