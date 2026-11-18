@@ -120,7 +120,7 @@ struct TranslateSectionRows: View {
                             }
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            Image(systemName: "speaker.wave.2.fill")
+                            ListenIcon(text: example.german)
                                 .foregroundStyle(.accent)
                                 .accessibilityHidden(true)
                         }

@@ -131,7 +131,7 @@ struct AskAnswer: View {
             } else if let answer = translate.resultText {
                 card {
                     TranslateResultBlock(label: translate.resultLabel, text: answer,
-                                         isSaved: translate.isSaved(in: saved), handlers: handlers)
+                                         spoken: translate.result?.german, isSaved: translate.isSaved(in: saved), handlers: handlers)
                 }
                 if showsDetails, let result = translate.result {
                     // Each part unfolds in turn as it appears.

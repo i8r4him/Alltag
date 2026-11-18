@@ -27,6 +27,8 @@ final class CloudVoiceService: VoiceService {
     }
     /// A short message when listening can't work right now, shown as a toast.
     var notice: ToastMessage?
+    /// The text whose next sentence is still on its way from the server, for a spinner on its button.
+    private(set) var preparing: String?
 
     @ObservationIgnored private let fetch: Fetch
     @ObservationIgnored private let cache: SpeechAudioCache
@@ -78,7 +80,7 @@ final class CloudVoiceService: VoiceService {
             guard let pending = next, generation == current else { return }
             let url: URL
             do {
-                url = try await pending.value
+                url = try await wait(for: pending, of: parts[index], in: text, generation: current)
             } catch {
                 guard generation == current else { return }
                 await failed(error, remaining: parts[index...].joined(separator: " "), rate: rate)
@@ -102,6 +104,16 @@ final class CloudVoiceService: VoiceService {
         player.stop()
         fallback.stop()
         isSpeaking = false
+        preparing = nil
+    }
+
+    /// Waits for a sentence's audio. Only one that isn't on the iPhone yet takes long enough for a
+    /// spinner, so only then is `preparing` set.
+    private func wait(for pending: Task<URL, any Error>, of sentence: String, in text: String,
+                      generation current: Int) async throws -> URL {
+        if cache.url(for: sentence) == nil { preparing = text }
+        defer { if generation == current { preparing = nil } }
+        return try await pending.value
     }
 
     /// The audio for one sentence: from the iPhone's cache, or from the server once.

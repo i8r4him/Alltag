@@ -132,7 +132,7 @@ extension TranslateContent {
         if isLoadingResult {
             TranslateLoadingResult(label: model.resultLabel)
         } else if let text = model.resultText {
-            TranslateResultBlock(label: model.resultLabel, text: text,
+            TranslateResultBlock(label: model.resultLabel, text: text, spoken: model.result?.german,
                                  isSaved: model.isSaved(in: savedTranslations), handlers: handlers)
         } else if isStart {
             TranslateWelcomeContent(onChoose: use)

@@ -19,6 +19,8 @@ struct TranslateResultHandlers {
 struct TranslateResultBlock: View {
     let label: LocalizedStringResource
     let text: String
+    /// The German that Listen speaks, when the result shown is the English.
+    var spoken: String?
     let isSaved: Bool
     let handlers: TranslateResultHandlers
 
@@ -30,8 +32,8 @@ struct TranslateResultBlock: View {
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
             HStack(spacing: 10) {
-                circle("Listen", systemImage: "speaker.wave.2.fill") { handlers.listen(false) }
-                circle("Slowly", systemImage: "tortoise.fill") { handlers.listen(true) }
+                listen("Listen", systemImage: "speaker.wave.2.fill") { handlers.listen(false) }
+                listen("Slowly", systemImage: "tortoise.fill") { handlers.listen(true) }
                 circle("Copy", systemImage: "doc.on.doc", action: handlers.copy)
                 ShareLink(item: text) { circleLabel("square.and.arrow.up") }
                     .buttonStyle(.plain)
@@ -49,6 +51,20 @@ struct TranslateResultBlock: View {
             .buttonStyle(.plain)
             .glassEffect(.regular.interactive(), in: .circle)
             .accessibilityLabel(Text(title))
+    }
+
+    /// A Listen circle: a spinner stands in for its symbol while the voice is being made.
+    private func listen(_ title: LocalizedStringResource, systemImage: String,
+                        action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            ListenIcon(text: spoken ?? text, systemImage: systemImage)
+                .font(.headline)
+                .foregroundStyle(.primary)
+                .frame(width: 44, height: 44)
+        }
+        .buttonStyle(.plain)
+        .glassEffect(.regular.interactive(), in: .circle)
+        .accessibilityLabel(Text(title))
     }
 
     private func circleLabel(_ systemImage: String) -> some View {

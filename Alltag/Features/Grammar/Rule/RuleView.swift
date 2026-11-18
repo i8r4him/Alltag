@@ -127,7 +127,7 @@ struct RuleView: View {
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Image(systemName: "speaker.wave.2.fill")
+                    ListenIcon(text: rule.german)
                         .font(.subheadline)
                         .foregroundStyle(.accent)
                         .frame(width: 36, height: 36)

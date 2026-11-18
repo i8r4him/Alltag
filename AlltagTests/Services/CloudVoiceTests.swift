@@ -30,9 +30,13 @@ struct CloudVoiceTests {
     final class Server {
         private(set) var asked: [String] = []
         var error: (any Error)?
+        /// Reads what the voice shows while the server is asked.
+        var watch: (@MainActor () -> String?)?
+        private(set) var preparingWhileAsked: [String?] = []
 
         func fetch(_ text: String) async throws -> Data {
             asked.append(text)
+            preparingWhileAsked.append(await watch?())
             if let error { throw error }
             return Data(text.utf8)
         }
@@ -60,6 +64,20 @@ struct CloudVoiceTests {
         #expect(player.played.count == 2)
         #expect(player.played.first?.url == player.played.last?.url)
         #expect(!voice.isSpeaking)
+    }
+
+    @Test("A new sentence shows a spinner while it's made; one on the iPhone doesn't")
+    func showsPreparing() async {
+        let server = Server()
+        let voice = Self.voice(server: server, player: SilentPlayer())
+        server.watch = { [weak voice] in voice?.preparing }
+        await voice.speak("Guten Morgen!", rate: .normal)
+        #expect(server.preparingWhileAsked == ["Guten Morgen!"])
+        #expect(voice.preparing == nil)
+
+        server.error = RealtimeServiceError.dailyLimit
+        await voice.speak("Neu hier.", rate: .normal)
+        #expect(voice.preparing == nil)
     }
 
     @Test("A long text is spoken sentence by sentence, in order")

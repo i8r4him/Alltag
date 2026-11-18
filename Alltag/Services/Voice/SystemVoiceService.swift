@@ -15,6 +15,8 @@ final class SystemVoiceService: NSObject, VoiceService {
     private(set) var isSpeaking = false
     var prefersSlowerSpeech = false
     var notice: ToastMessage?
+    /// The iPhone's voice starts at once, so there is nothing to wait for.
+    let preparing: String? = nil
     @ObservationIgnored private let synthesizer = AVSpeechSynthesizer()
     @ObservationIgnored private var continuation: CheckedContinuation<Void, Never>?
 

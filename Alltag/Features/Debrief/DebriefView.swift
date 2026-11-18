@@ -169,7 +169,7 @@ private struct PhraseCard: View {
                 }
                 .multilineTextAlignment(.leading)
                 Spacer(minLength: 8)
-                Image(systemName: "speaker.wave.2")
+                ListenIcon(text: phrase.german, systemImage: "speaker.wave.2")
                     .foregroundStyle(.secondary)
                     .accessibilityHidden(true)
             }

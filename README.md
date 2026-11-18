@@ -61,6 +61,7 @@ Alltag/                                   ← repo root
 │  │     ├─ OptionCard.swift
 │  │     ├─ Indicators.swift              ProgressSegments, StrengthDots
 │  │     ├─ Toast.swift                   ToastView, .toast(_:)
+│  │     ├─ ListenIcon.swift              the speaker on a Listen button, a spinner while a new sentence's voice is made
 │  │     ├─ StateCard.swift               StateCard (a state in the Focus card's layout), CloudFailureCard
 │  │     ├─ HistorySheet.swift            things looked up before as glass cards on the sky (Translate, Articles)
 │  │     ├─ FieldFocusEffect.swift        a top field comes forward and glows, the page behind darkens and sinks back (Learn, Articles)

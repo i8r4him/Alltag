@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// A small glass speaker that reads German aloud with the system voice.
+/// A small glass speaker that reads German aloud with the natural voice.
 struct SpeakButton: View {
     let text: String
 
@@ -19,7 +19,7 @@ struct SpeakButton: View {
             taps += 1
             Task { await services.voice.speak(text, rate: .normal) }
         } label: {
-            Image(systemName: "speaker.wave.2.fill")
+            ListenIcon(text: text)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.accent)
                 .frame(width: 40, height: 40)

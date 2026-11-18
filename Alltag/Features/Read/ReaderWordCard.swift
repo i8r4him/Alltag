@@ -95,7 +95,7 @@ struct ReaderWordCard: View {
                 Button {
                     onListen(meaning.display)
                 } label: {
-                    Image(systemName: "speaker.wave.2.fill")
+                    ListenIcon(text: meaning.display)
                         .font(.title3.weight(.semibold))
                         .foregroundStyle(.accent)
                         .frame(width: 44, height: 44)

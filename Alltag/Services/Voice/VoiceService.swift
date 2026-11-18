@@ -26,6 +26,9 @@ protocol VoiceService: AnyObject {
     var prefersSlowerSpeech: Bool { get set }
     /// A short message when listening can't work right now (offline), shown as a toast.
     var notice: ToastMessage? { get set }
+    /// The text whose voice is still being made, so its Listen button shows a spinner (`ListenIcon`);
+    /// nil once it plays, or for a voice that needs no waiting.
+    var preparing: String? { get }
     /// Speaks `text` and returns when it has finished (or was stopped).
     func speak(_ text: String, rate: SpeechRate) async
     func stop()
@@ -38,6 +41,7 @@ final class MockVoiceService: VoiceService {
     private(set) var isSpeaking = false
     var prefersSlowerSpeech = false
     var notice: ToastMessage?
+    var preparing: String?
     private let duration: Duration
 
     init(duration: Duration = .zero) {
