@@ -15,3 +15,6 @@ build/
 # Swift Package Manager
 .build/
 .swiftpm/
+
+# The speak-warm token (scripts/warm_speech.py)
+.warm_token

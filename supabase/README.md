@@ -104,6 +104,7 @@ Translate and "How do I say …?" in the app. Text only.
 - `functions/check-german/index.ts`: the sentence check. Deploy it with JWT verification on.
 - `functions/translate/index.ts`: translating. Deploy it with JWT verification on.
 - `functions/speak/index.ts`: the natural voice of every Listen button. Deploy it with JWT verification on.
+- `functions/speak-warm/index.ts`: makes the voice of the app's fixed German ahead of time, for `scripts/warm_speech.py`. Deployed **without** JWT verification: it checks its own token instead.
 - `migrations/20261107200000_realtime_sessions.sql`: the session log used for the limits.
 - `migrations/20261111100000_realtime_developers.sql`: the accounts that skip the per-user limit.
 - `migrations/20261113100000_german_checks.sql`: the check log used for the limits.
@@ -136,3 +137,4 @@ Every Listen button in the app (#422): a natural voice in place of the iPhone's.
 - **Its own key, so its cost shows on its own:** `SPEAK_GEMINI_API_KEY`, from a separate Google AI Studio project with billing (Google bills per project). Without it the function falls back to the live voice's `GEMINI_API_KEY`. Changing either makes new cache entries; the old ones stay until deleted in Storage. The function asks Google's Interactions API and, if that refuses, `generateContent`.
 - **Cost:** about $0.009 a minute of speech now and $0.018 from 1 Jan 2027 (Google doubles the TTS prices then), paid only once per sentence. The audio is uncompressed WAV (about 48 KB a second), so Storage and egress grow with use: watch them on the free plan (5 GB egress a month).
 - The cached audio is of the text only, with no link to who asked. Translate's German answers end up there too: say so in the privacy policy.
+- **Made ahead of time:** a new sentence takes Gemini about four seconds, so the fixed German (each word collection's example and word, each grammar rule's sentence) is made once in advance by `scripts/warm_speech.py` through `speak-warm`, which makes only what the cache lacks. Run it again after adding content. `speak-warm` takes a token in `X-Warm-Token` whose SHA-256 is in its code; the token itself is in no repo (the script reads `.warm_token`, ignored by git). For a new run, make a new token, put its hash in the function and deploy it.
