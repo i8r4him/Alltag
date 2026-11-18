@@ -12,7 +12,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const GEMINI_API_KEY = Deno.env.get("SPEAK_GEMINI_API_KEY") ?? Deno.env.get("GEMINI_API_KEY");
-const WARM_TOKEN_SHA256 = "b35be6e446c88d27b01271d956021d230831378e92e99bdcea26ebb8c79796d3";
+const WARM_TOKEN_SHA256 = "7498177d2b72457b12fed7d1fdb8908bc8f3a1ac4709c24582de05794156778b";
 const MODEL = Deno.env.get("SPEAK_MODEL") ?? "gemini-3.8-flash-lite-tts";
 const VOICE = Deno.env.get("SPEAK_VOICE") ?? "Kore";
 const MAX_TEXT = 300;
