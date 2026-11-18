@@ -17,6 +17,8 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
+
 const GEMINI_API_KEY = Deno.env.get("SPEAK_GEMINI_API_KEY") ?? Deno.env.get("GEMINI_API_KEY");
 const MODEL = Deno.env.get("SPEAK_MODEL") ?? "gemini-3.8-flash-lite-tts";
 const VOICE = Deno.env.get("SPEAK_VOICE") ?? "Kore";
@@ -175,16 +177,21 @@ Deno.serve(async (req) => {
   if (!isDeveloper && (mine.count ?? 0) >= PER_USER_DAILY) return json({ error: "daily_limit" }, 429);
   if ((everyone.count ?? 0) >= GLOBAL_DAILY) return json({ error: "busy" }, 429);
 
+  const started = Date.now();
   const audio = await synthesise(text);
   if (!audio) return json({ error: "upstream" }, 502);
+  console.log(`Gemini made ${text.length} characters in ${Date.now() - started} ms`);
 
-  const [upload, insert] = await Promise.all([
+  // The learner hears the audio at once; keeping it and counting it happen after the answer.
+  // When keeping it fails, the next request makes it again.
+  const keep = Promise.all([
     admin.storage.from(BUCKET).upload(path, audio, { contentType: "audio/wav", upsert: true }),
     admin.from("speech_requests").insert({ user_id: user.id }),
-  ]);
-  // The learner still gets the audio when keeping it fails; the next request makes it again.
-  if (upload.error) console.error("Keeping the audio failed", upload.error);
-  if (insert.error) console.error("Recording the speech request failed", insert.error);
+  ]).then(([upload, insert]) => {
+    if (upload.error) console.error("Keeping the audio failed", upload.error);
+    if (insert.error) console.error("Recording the speech request failed", insert.error);
+  });
+  EdgeRuntime.waitUntil(keep);
 
   return wav(audio, "miss");
 });
