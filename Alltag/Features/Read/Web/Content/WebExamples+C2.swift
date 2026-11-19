@@ -13,14 +13,16 @@ extension WebExamples {
         WebExample(title: "Arbeitszeugnis", site: "de.wikipedia.org",
                    url: c2Link("https://de.wikipedia.org/wiki/Arbeitszeugnis"),
                    about: "How German job references are written, and their hidden code"),
-        WebExample(title: "Essay und Diskurs", site: "deutschlandfunk.de",
-                   url: c2Link("https://www.deutschlandfunk.de/essay-und-diskurs-100.html"),
-                   about: "Long essays on ideas and society, to read or listen to"),
-        WebExample(title: "Aus Politik und Zeitgeschichte", site: "bpb.de",
-                   url: c2Link("https://www.bpb.de/shop/zeitschriften/apuz/"),
-                   about: "Essays by researchers on politics, history and society"),
-        WebExample(title: "Amtsdeutsch", site: "de.wikipedia.org",
-                   url: c2Link("https://de.wikipedia.org/wiki/Amtsdeutsch"),
+        WebExample(title: "Geschlechtergerechte Sprache? Sechs Perspektiven", site: "bpb.de",
+                   url: c2Link("https://www.bpb.de/shop/zeitschriften/apuz/geschlechtergerechte-sprache-2022/"
+                       + "346145/geschlechtergerechte-sprache-sechs-perspektiven/"),
+                   about: "Six views on gender-fair German, side by side"),
+        WebExample(title: "Surveillance Capitalism – Überwachungskapitalismus. Essay", site: "bpb.de",
+                   url: c2Link("https://www.bpb.de/shop/zeitschriften/apuz/292337/"
+                       + "surveillance-capitalism-ueberwachungskapitalismus-essay/"),
+                   about: "An essay on how tech companies turn our data into money"),
+        WebExample(title: "Verwaltungssprache", site: "de.wikipedia.org",
+                   url: c2Link("https://de.wikipedia.org/wiki/Verwaltungssprache"),
                    about: "Why official German is so hard to read, and where it comes from")
     ]
 
