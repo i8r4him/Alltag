@@ -109,9 +109,9 @@ final class ChatModel {
             context.insert(PracticeSession(kind: .writing, date: startedAt))
             self.record = record
         }
-        let items = messages.filter(\.isLearner).compactMap {
-            $0.feedback.flatMap { feedback in
-                MistakePractice.item(said: $0.text, feedback: feedback, sourceDetail: chat.contact, source: .writing, at: now)
+        let items = messages.filter(\.isLearner).compactMap { message in
+            message.feedback.flatMap { feedback in
+                MistakePractice.item(said: message.text, feedback: feedback, sourceDetail: chat.contact, source: .writing, at: now)
             }
         }
         savedMistakes += MistakePractice.save(items, in: context)
