@@ -8,8 +8,12 @@
 import Foundation
 
 extension ReadDoScenes {
-    /// C1: official German at full length: a tax form, a service charge statement, a medicine box.
-    static let c1: [ReadDoScene] = [c1Replacement, c1NoParking, c1Medicine, c1Tax, c1ServiceCharges, c1Payslip]
+    /// C1: official German at full length: a tax form, a rental contract, a prescription, a plumber's bill.
+    /// The scenes from daily life are in `ReadDoScenes+C1Life.swift`.
+    static let c1: [ReadDoScene] = [
+        c1Replacement, c1Contract, c1Medicine, c1TVGuide, c1Tax, c1Ticket, c1Bins,
+        c1ServiceCharges, c1Schedule, c1NoParking, c1Prescription, c1Payslip, c1ChemistReceipt, c1Plumber
+    ]
 
     static let c1Replacement = ReadDoScene(
         id: "c1-do-replacement", level: .c1, kind: .departures,
