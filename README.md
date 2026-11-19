@@ -242,7 +242,7 @@ Alltag/                                   ← repo root
 │  │  │     ├─ MistakeQuestionViews.swift one mistake to write correctly: the field starts with what was said; the fix and why after Check
 │  │  │     └─ MistakeRoundEnd.swift      before and after: what was said, the correction, when it comes back
 │  │  ├─ Learn/
-│  │  │  ├─ LearnView.swift               the \"How do I say …?\" field and the tools, then the page (something new; reviewing and your mistakes are in Memory)
+│  │  │  ├─ LearnView.swift               the "How do I say …?" field and the tools, then the page (something new; reviewing and your mistakes are in Memory)
 │  │  │  ├─ LearnTools.swift              the "How do I say …?" field (answers in place), Translate and Articles
 │  │  │  ├─ LearnComponents.swift         LearnScreen, LearnHeroCard, LearnSection, LearnList, LearnRow
 │  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour, with real progress
