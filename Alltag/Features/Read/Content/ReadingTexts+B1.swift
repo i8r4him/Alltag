@@ -9,7 +9,11 @@ import Foundation
 
 extension ReadingTexts {
     /// B1: longer everyday texts with reasons, conditions and the passive, about 120 to 160 words.
-    static let b1: [ReadingText] = [b1Charges, b1Shift, b1Courtyard, b1Lanterns, b1Room, b1BikeStreet]
+    /// Every kind of text at least once; the rest are in `ReadingTexts+B1More.swift`.
+    static let b1: [ReadingText] = [
+        b1Charges, b1Delay, b1Lunch, b1Shift, b1Birthday, b1Courtyard,
+        b1HealthCard, b1Lanterns, b1ReplacementBus, b1Room, b1RepairCafe, b1BikeStreet
+    ]
 
     static let b1Charges = ReadingText(
         id: "b1-charges", level: .b1, kind: .letter,
