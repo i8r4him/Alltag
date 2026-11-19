@@ -26,9 +26,10 @@ extension WebExamples {
             url: link("https://www.bpb.de/kurz-knapp/lexika/lexikon-der-wirtschaft/20112/mieterschutz/"),
             about: "Tenants' rights, explained in a few lines"),
         WebExample(
-            title: "Wer benötigt eine Anerkennung?", site: "make-it-in-germany.com",
-            url: link("https://www.make-it-in-germany.com/de/visum-anerkennung/anerkennung/wer-benoetigt"),
-            about: "Who needs a qualification from abroad recognised")
+            title: "Das Anerkennungsgesetz für ausländische Berufsabschlüsse", site: "deutschland.de",
+            url: link("https://www.deutschland.de/de/topic/wirtschaft/karriere-arbeit/"
+                + "das-anerkennungsgesetz-fuer-auslaendische-berufsabschluesse"),
+            about: "How qualifications from abroad are recognised")
     ]
 
     /// A link written above. A typo in one stops the app at once instead of showing a broken row.
