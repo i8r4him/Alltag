@@ -14,6 +14,8 @@ import SwiftUI
 struct ReadView: View {
     @Query private var profiles: [UserProfile]
     @Query(filter: #Predicate<SessionRecord> { $0.kindRaw == "reading" }) private var readRecords: [SessionRecord]
+    /// Temporary, until the maintainer picks a design.
+    @AppStorage(ReadDesign.storageKey) private var design = 0
     @State private var taps = 0
     /// The text open in the reader, by its id.
     @State private var opened: String?
@@ -25,10 +27,20 @@ struct ReadView: View {
         let texts = ReadingTexts.texts(at: level)
         let read = ReadingProgress.readIDs(in: readRecords)
         LearnScreen(title: "Read") {
-            NewKindsSection(read: read, zoom: zoom, onOpen: open)
-            ReadSections(level: level, texts: texts, read: read, zoom: zoom, onOpen: open)
+            switch ReadDesign(rawValue: design) ?? .sources {
+            case .sources:
+                ReadSourcesDesign(level: level, texts: texts, read: read, zoom: zoom, onOpen: open)
+            case .realThing:
+                ReadRealThingDesign(level: level, texts: texts, read: read, zoom: zoom, onOpen: open)
+            }
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
+        .sensoryFeedback(.selection, trigger: design)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                ReadDesignSwitcher(design: $design)
+            }
+        }
         .navigationDestination(item: $opened) { id in
             if let text = ReadingTexts.text(id: id) {
                 ReaderView(text: text)

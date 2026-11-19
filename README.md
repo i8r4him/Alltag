@@ -290,15 +290,12 @@ Alltag/                                   ← repo root
 │  │  ├─ Listen/
 │  │  │  └─ ListenView.swift              picked clip, speed, real situations
 │  │  ├─ Read/
-│  │  │  ├─ ReadView.swift                the level's texts, read ones ticked, the next one with a dot
-│  │  │  ├─ ReadSections.swift            the sections by where you meet a text: letters and emails, your phone, out and about
-│  │  │  ├─ ReaderView.swift              one text in large type; a tapped word on a glass card at the bottom; Listen reads it aloud; the questions on a sheet
-│  │  │  ├─ ReaderModel.swift             the tapped word, its look-up (once per word), saving, listening, the questions (tested)
+│  │  │  ├─ ReadView.swift                scan a letter, your reading list (from Safari), picked for you, from daily life
+│  │  │  ├─ ReaderView.swift              one text in large type; a tapped word on a glass card at the bottom; Listen reads it aloud
+│  │  │  ├─ ReaderModel.swift             the tapped word, its look-up (once per word), saving, listening (tested)
 │  │  │  ├─ ReaderWordCard.swift          the word with its article, meaning, grammar and example; its states
 │  │  │  ├─ ReadingWords.swift            a text split into lines and words, each with its sentence (pure, tested)
-│  │  │  ├─ ReadingMemory.swift           a tapped word to Memory with the sentence it was read in
-│  │  │  ├─ Questions/                    three questions per text; a wrong pick lights up the answer's sentence; read texts kept in Your sessions (tested)
-│  │  │  └─ Content/                      six texts from daily life per level, A1 to C1 (C2 reads C1's), written for the app (tested)
+│  │  │  └─ ReadingMemory.swift           a tapped word to Memory with the sentence it was read in
 │  │  ├─ Grammar/
 │  │  │  ├─ GrammarView.swift             your next rule, the rule in real life, cheat sheets, all rules (glass)
 │  │  │  ├─ GrammarProgress.swift         solved status, counts, the next rule in order, which rules are still locked (tested)
@@ -357,6 +354,7 @@ Alltag/                                   ← repo root
 │  │  ├─ MockScenarios.swift              SCEN
 │  │  ├─ MockTranslations.swift           TR
 │  │  ├─ MockMemoryItems.swift            MEM
+│  │  ├─ MockReading.swift                Read screen: saved articles, texts from daily life (with German to read, until #270)
 │  │  ├─ MockWriteListen.swift            Listen clips
 │  │  ├─ MockActivities.swift             ACTS
 │  │  ├─ MockRules.swift                  the rules in order (`all`) (RULES)
@@ -597,7 +595,7 @@ Learn › Articles, in Today's look. A glass hero card starts **a round**: ten n
 - **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. On-device conversations keep their scripted replies so each scenario reaches its goal.
 - **Live voice on iPhone:** Google's Gemini Live, with a short-lived token from the `gemini-live-session` Edge Function, and both speakers' captions (#309). Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange (holding to talk, one made-up answer per hold), with made-up loudness for the orb.
 - **Translate:** OpenAI through Supabase when cloud use is allowed. The translation, words, tone and examples appear as they arrive. If cloud use is unavailable, the screen reports the error rather than showing an on-device translation.
-- **Read:** a tapped word goes to the translation service, once per word while the text is open: OpenAI through Supabase when cloud use is allowed (the word with its article, a grammar note and an example), otherwise Apple's Translation on the iPhone (the meaning only). The texts and their questions are written for the app (`ReadingTexts`), so they work offline; three right answers at the first try keep a text in Your sessions as read.
+- **Read:** a tapped word goes to the translation service, once per word while the text is open: OpenAI through Supabase when cloud use is allowed (the word with its article, a grammar note and an example), otherwise Apple's Translation on the iPhone (the meaning only). The texts are samples until #270 decides where they come from.
 - **Write:** OpenAI through the `write` function when cloud use is allowed. A text is checked sentence by sentence as it streams in; in a chat the friend (Lena, the flat's group with Mia and Tobi, Jonas) answers in casual German at the learner's level and each message is checked for texting German, so lowercase and "hab" are fine. Fixes go to Fix your mistakes, chats and texts to Your sessions. Without cloud use the screen says so.
 - **Simulated:** scripted companion replies & feedback, placement.
 - **Later:** see the framework table below.

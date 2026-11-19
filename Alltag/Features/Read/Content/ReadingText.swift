@@ -18,10 +18,6 @@ enum ReadingKind: String, CaseIterable, Hashable, Sendable {
     case advert
     case announcement
     case article
-    case recipe
-    case leaflet
-    case programme
-    case story
 
     /// "Notice", for the line above a text's title.
     var title: LocalizedStringResource {
@@ -35,10 +31,6 @@ enum ReadingKind: String, CaseIterable, Hashable, Sendable {
         case .advert: "Small ad"
         case .announcement: "Announcement"
         case .article: "Article"
-        case .recipe: "Recipe"
-        case .leaflet: "Leaflet"
-        case .programme: "Programme"
-        case .story: "Story"
         }
     }
 }
@@ -83,14 +75,12 @@ struct ReadingText: Identifiable, Hashable {
 
 /// Every text to read, by level. C2 reads C1's texts.
 enum ReadingTexts {
-    static let all: [ReadingText] = byLevel + newKinds
-    private static let byLevel: [ReadingText] = a1 + a2 + b1 + b2 + c1
+    static let all: [ReadingText] = a1 + a2 + b1 + b2 + c1
 
     /// The level's texts in order. C2 has none of its own and reads C1's.
-    /// The samples of new kinds aren't in them; Read lists those apart.
     static func texts(at level: Level) -> [ReadingText] {
         let level = level == .c2 ? .c1 : level
-        return byLevel.filter { $0.level == level }
+        return all.filter { $0.level == level }
     }
 
     static func text(id: String) -> ReadingText? {
