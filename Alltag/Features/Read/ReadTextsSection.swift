@@ -76,11 +76,13 @@ private struct PageDots: View {
     let current: String?
 
     var body: some View {
-        HStack(spacing: 6) {
+        // Smaller dots when a level has many texts, so they stay on one line.
+        let size: CGFloat = ids.count > 12 ? 5 : 7
+        HStack(spacing: ids.count > 12 ? 4 : 6) {
             ForEach(ids, id: \.self) { id in
                 Capsule()
                     .fill(id == current ? Color.primary : Color.primary.opacity(0.3))
-                    .frame(width: id == current ? 20 : 7, height: 7)
+                    .frame(width: id == current ? size * 2.8 : size, height: size)
             }
         }
         .animation(.easeOut(duration: 0.2), value: current)
