@@ -10,6 +10,7 @@ import Testing
 @testable import Alltag
 
 /// The texts to read are written by hand, so these check what a typo could break.
+@MainActor
 struct ReadingContentTests {
     @Test("Every text has a unique id that starts with its level")
     func ids() {

@@ -10,7 +10,8 @@ import Observation
 import SwiftData
 
 /// The reader: one text, the word the learner tapped and what it means,
-/// which words are saved, and whether the text is being read aloud.
+/// which words are saved, whether the text is being read aloud, and its
+/// three questions.
 ///
 /// Each word is translated once and kept while the reader is open, so tapping
 /// it again doesn't ask the server again.
@@ -34,6 +35,9 @@ final class ReaderModel {
     private(set) var saved = Set<String>()
     private(set) var isListening = false
     var notice: ToastMessage?
+    let quiz: ReadingQuiz
+    /// The questions are on screen.
+    var showsQuestions = false
 
     @ObservationIgnored private var task: Task<Void, Never>?
     @ObservationIgnored private var pendingKey: String?
@@ -43,6 +47,7 @@ final class ReaderModel {
     init(text: ReadingText) {
         self.text = text
         paragraphs = ReadingWords.paragraphs(of: text.german)
+        quiz = ReadingQuiz(questions: text.questions)
     }
 
     /// What is known about the selected word.
@@ -187,6 +192,42 @@ final class ReaderModel {
         pendingKey = nil
         voice.stop()
         isListening = false
+    }
+
+    // MARK: Questions
+
+    /// The words of the sentence that holds the answer, lit after a wrong pick.
+    var litWordIDs: Set<Int> {
+        quiz.evidence.map { ReadingWords.wordIDs(of: $0, in: paragraphs) } ?? []
+    }
+
+    /// The line to scroll to when a sentence lights up.
+    var litParagraphID: Int? {
+        let lit = litWordIDs
+        return paragraphs.first { paragraph in paragraph.words.contains { lit.contains($0.id) } }?.id
+    }
+
+    func showQuestions() {
+        close()
+        showsQuestions = true
+    }
+
+    /// The next question; after the last, a text with every answer right at
+    /// the first try is kept as read.
+    func nextQuestion(in context: ModelContext) {
+        quiz.next()
+        guard quiz.isPassed else { return }
+        do {
+            try ReadingProgress.markRead(text, in: context)
+        } catch {
+            notice = ToastMessage(text: "Couldn’t save it. Try again.", systemImage: "exclamationmark.triangle")
+        }
+    }
+
+    /// Closes the questions; a finished round starts again next time.
+    func hideQuestions() {
+        showsQuestions = false
+        if quiz.isFinished { quiz.restart() }
     }
 
     private static func key(_ word: String) -> String {

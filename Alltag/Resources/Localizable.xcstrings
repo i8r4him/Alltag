@@ -47,22 +47,22 @@
         }
       }
     },
-    "%@ · %lld min" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · %2$lld min"
-          }
-        }
-      }
-    },
     "%@ · %lld of %lld" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ · %2$lld of %3$lld"
+          }
+        }
+      }
+    },
+    "%@ · %lld of %lld read" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld of %3$lld read"
           }
         }
       }
@@ -144,6 +144,7 @@
     },
     "%lld confident" : {},
     "%lld min" : {},
+    "%lld new" : {},
     "%lld of %lld" : {
       "localizations" : {
         "en" : {
@@ -174,12 +175,32 @@
         }
       }
     },
+    "%lld of %lld read" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld read"
+          }
+        }
+      }
+    },
     "%lld of %lld right" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld of %2$lld right"
+          }
+        }
+      }
+    },
+    "%lld of %lld right at the first try" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld right at the first try"
           }
         }
       }
@@ -279,11 +300,12 @@
     "^[%lld word](inflect: true)" : {},
     "^[%lld word](inflect: true) saved" : {},
     "^[%lld writing mistake](inflect: true) to review" : {},
+    "A bike for sale" : {},
     "A book or a series" : {},
     "A book that impressed me" : {},
+    "A card from the parcel service" : {},
     "A celebration" : {},
     "A celebration from my home country" : {},
-    "A change of shift" : {},
     "A change of state takes sein" : {},
     "A changing city" : {},
     "A colleague at work" : {},
@@ -295,20 +317,19 @@
     "A dish with a story" : {},
     "A few useful clues" : {},
     "A film I recommend" : {},
-    "A form at the doctor's" : {},
     "A funny mistake in German" : {},
     "A gentle nudge, never more than twice a day" : {},
     "A goal I reached" : {},
     "A large loaf and fresh rolls, please." : {},
-    "A letter from your landlord" : {},
+    "A letter from the property management" : {},
     "A loaf of bread and a pretzel, please." : {},
     "A lot of people are talking right now. Try again in a little while." : {},
     "A lovely day" : {},
-    "A menu at the café" : {},
+    "A message from Lena" : {},
     "A misunderstanding" : {},
     "A new hobby" : {},
     "A notice from Deutsche Bahn" : {},
-    "A notice from the Bürgeramt" : {},
+    "A notice in the stairwell" : {},
     "A noun, or what it means" : {},
     "A parcel delivery call" : {},
     "A place everyone should visit" : {},
@@ -323,6 +344,8 @@
     "A rough guess is fine — we adjust as you go." : {},
     "A sample answer. Turn on Apple Intelligence for debriefs of your own moments." : {},
     "A separable verb: zu in the middle" : {},
+    "A sign at the doctor's" : {},
+    "A small ad" : {},
     "A small daily habit" : {},
     "A thought that changed me" : {},
     "A trip I'll never forget" : {},
@@ -356,6 +379,7 @@
     "All fixed for now" : {},
     "All fresh baked goods half price from 6 pm." : {},
     "All rules" : {},
+    "All three right" : {},
     "Allow" : {},
     "Allow %@" : {},
     "Allow and start" : {},
@@ -379,13 +403,14 @@
     "An announcement" : {},
     "An appointment" : {},
     "An appointment on Friday would work too." : {},
-    "An email from work" : {},
+    "An email from the language school" : {},
     "An everyday problem" : {},
     "An important decision" : {},
     "An invitation" : {},
     "Animal ethics" : {},
     "Animals" : {},
     "Anna says hello." : {},
+    "Announcement" : {},
     "Announcements and calls" : {},
     "Another round" : {},
     "Another topic" : {},
@@ -409,6 +434,7 @@
     "Are you waiting for me?" : {},
     "Art" : {},
     "Art and literature" : {},
+    "Article" : {},
     "Articles" : {},
     "Artificial intelligence in daily life" : {},
     "As a child" : {},
@@ -531,6 +557,7 @@
     "Check" : {},
     "Check my text" : {},
     "Check the spelling, or type what it means in English." : {},
+    "Check what you understood" : {},
     "Check your connection, and that Alltag may use the cloud in Settings." : {},
     "Checking your German on your iPhone…" : {},
     "Checking your German…" : {},
@@ -673,6 +700,7 @@
     "ein Auto becomes kein Auto" : {},
     "ein in the dative" : {},
     "ein: the same pattern" : {},
+    "Email" : {},
     "Email from a hotel" : {},
     "Email from work" : {},
     "Emergencies" : {},
@@ -755,9 +783,7 @@
     "freedom" : {},
     "Freedom of speech" : {},
     "Friendship" : {},
-    "From daily life" : {},
     "From December we're open on Sundays too." : {},
-    "From Safari" : {},
     "From your day" : {},
     "From your mistakes" : {},
     "From your own German" : {},
@@ -784,12 +810,12 @@
     "Good" : {},
     "Good leadership" : {},
     "Good neighbours" : {},
-    "Got a letter?" : {},
     "Grammar" : {},
     "Grammar rule" : {},
     "Grammar Rule" : {},
     "Grammar, not meaning" : {},
     "Greetings" : {},
+    "Group chat" : {},
     "Growing older" : {},
     "haben or sein" : {},
     "haben or sein in position 2, the participle at the very end." : {},
@@ -1022,8 +1048,10 @@
     "Let me know when you're there." : {},
     "Let me think for a moment." : {},
     "Let's go for a drink sometime." : {},
+    "Letter" : {},
     "Letter from an office" : {},
     "Letter from your landlord" : {},
+    "Letters and emails" : {},
     "Letters, notices and forms" : {},
     "LEVEL" : {},
     "Level" : {},
@@ -1061,6 +1089,7 @@
     "Lost and found" : {},
     "Lovely flat with a big balcony" : {},
     "Lovely flat with a large balcony to let." : {},
+    "Lunch at the café" : {},
     "Lunch with colleagues" : {},
     "Luxury" : {},
     "Making friends as an adult" : {},
@@ -1084,6 +1113,7 @@
     "Meetings and projects" : {},
     "Meetings, emails, colleagues" : {},
     "Memory" : {},
+    "Menu" : {},
     "Message" : {},
     "Message from a colleague" : {},
     "Message from a friend" : {},
@@ -1210,6 +1240,7 @@
     "No sessions yet" : {},
     "No text selected" : {},
     "No translations yet" : {},
+    "No water on Thursday" : {},
     "No words saved yet" : {},
     "No words yet" : {},
     "Normal" : {},
@@ -1242,6 +1273,7 @@
     "On the platform" : {},
     "On the train" : {},
     "On the way to work" : {},
+    "On your phone" : {},
     "On-device intelligence" : {},
     "Once the deadline has passed, notice can no longer be given." : {},
     "One or many" : {},
@@ -1260,7 +1292,6 @@
     "Opens your progress." : {},
     "Opens your words and phrases in Alltag." : {},
     "Order bread and rolls" : {},
-    "Order lunch" : {},
     "Order, ask a question and pay" : {},
     "Orders and returns" : {},
     "Other" : {},
@@ -1294,7 +1325,6 @@
     "Phrasebook" : {},
     "phrases saved" : {},
     "Phrases you needed, grouped by where you needed them." : {},
-    "Picked for you" : {},
     "Picking ten nouns for your level…" : {},
     "Place first: the same" : {},
     "Planning a holiday" : {},
@@ -1371,6 +1401,16 @@
     "Protecting the environment day to day" : {},
     "Public transport" : {},
     "Punctuality" : {},
+    "Question %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Question %1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "Question %lld of %lld · %@" : {
       "localizations" : {
         "en" : {
@@ -1387,6 +1427,8 @@
     "Read" : {},
     "Read and Write" : {},
     "Read the rule again" : {},
+    "Read the text once more, then try again." : {},
+    "Read · %lld min · 3 questions" : {},
     "Reading a novel" : {},
     "Reading in the digital age" : {},
     "Reading it like a teacher …" : {},
@@ -1449,8 +1491,6 @@
     "Say it in German" : {},
     "Say it naturally in German, or understand something you’ve read, with the words, tone and examples." : {},
     "Saying no" : {},
-    "Scan a letter" : {},
-    "Scan it, and Alltag explains it simply." : {},
     "School" : {},
     "School then and now" : {},
     "Science and research" : {},
@@ -1528,6 +1568,7 @@
     "Slower speech by default" : {},
     "Slowing down" : {},
     "Slowly" : {},
+    "Small ad" : {},
     "Small talk" : {},
     "Small talk about the weekend" : {},
     "Small things: -chen and -lein" : {},
@@ -1569,7 +1610,6 @@
     "Start a round" : {},
     "Start learning" : {},
     "Start practising without opening the app." : {},
-    "Start reading · %lld min" : {},
     "Start review" : {},
     "Start talking" : {},
     "Start the exam" : {},
@@ -1655,6 +1695,7 @@
       }
     },
     "The achievement society" : {},
+    "The answer is in the lit sentence. Try again." : {},
     "The article can change with the meaning. Look the word up to see each meaning on its own." : {},
     "The bag belongs to the teacher." : {},
     "the band" : {},
@@ -1705,6 +1746,7 @@
     "the flat" : {},
     "The flat has neither a balcony nor a cellar." : {},
     "The flat is small, but very bright." : {},
+    "The flatshare group chat" : {},
     "The form must be handed in by Monday." : {},
     "The four-day week" : {},
     "The fresh fish is only on offer today." : {},
@@ -1846,6 +1888,7 @@
     "This rule isn't available any more." : {},
     "This session isn't on this iPhone any more." : {},
     "This shapes the situations you rehearse and the words we notice." : {},
+    "This text counts as read." : {},
     "This till is closed." : {},
     "This train goes to Hamburg." : {},
     "This week" : {},
@@ -1994,12 +2037,14 @@
     "What I'm good at" : {},
     "What surprised me in Germany" : {},
     "What's it about?" : {},
+    "What's on the menu?" : {},
     "What's your address?" : {},
     "When did you first have a temperature?" : {},
     "When do you start tomorrow?" : {},
     "When I arrived, you had already eaten." : {},
     "When I came to Berlin, I didn't speak any German." : {},
     "When I was a child, we had a dog." : {},
+    "When is it open?" : {},
     "When is your break?" : {},
     "When the police arrived, the culprits had already fled." : {},
     "When this is off, the companion can't talk, and 60 seconds is checked on your iPhone. Recordings never leave your iPhone." : {},
@@ -2014,8 +2059,10 @@
     "Which bread would you like?" : {},
     "Which train goes to Bonn?" : {},
     "Who gets something: dative" : {},
+    "Who needs what?" : {},
     "Who or what you act on is accusative. Who you give to or do something for is dative." : {},
     "Who or which" : {},
+    "Whose turn is it?" : {},
     "Why" : {},
     "Why don't you drop by!" : {},
     "Why I'm learning" : {},
@@ -2096,15 +2143,17 @@
     "You've reached your live voice limit for today. Keep practising on your iPhone." : {},
     "You've used today's live conversations. You can talk again tomorrow." : {},
     "You: %@" : {},
+    "Your %@ texts" : {},
     "Your application has been approved." : {},
-    "Your appointment" : {},
     "Your body" : {},
     "Your briefing · 60 sec" : {},
     "Your briefings and examples will be about these." : {},
+    "Your course moves" : {},
     "Your first name" : {},
     "Your first saved word appears here." : {},
     "Your first step is waiting on Home. From now on, Alltag starts noticing words from your day." : {},
     "Your flat" : {},
+    "Your heating is repaired" : {},
     "Your ID card was issued on 3 May." : {},
     "Your level" : {},
     "Your level map" : {},
@@ -2113,17 +2162,17 @@
     "Your own situation" : {},
     "Your parcel arrived today." : {},
     "Your parcel has been delivered." : {},
-    "Your reading list" : {},
+    "Your parcel is waiting" : {},
     "Your rights at work" : {},
     "Your seat reservation has been saved." : {},
     "Your sentence" : {},
-    "Your service charges, explained." : {},
     "Your sessions" : {},
     "Your tenancy agreement" : {},
     "Your test results" : {},
     "Your text" : {},
     "Your text isn’t saved until it is checked." : {},
     "Your topic" : {},
+    "Your train is late" : {},
     "Your voice goes to Google while you talk with the companion; your sentences go to OpenAI as text to be checked." : {},
     "Your word of the day and what's ready to review, on the Home Screen." : {},
     "Your words in today's news" : {},

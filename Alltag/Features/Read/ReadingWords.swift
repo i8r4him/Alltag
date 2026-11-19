@@ -59,6 +59,26 @@ enum ReadingWords {
         return paragraphs
     }
 
+    /// The IDs of the words that make up `sentence`, found on one line of the
+    /// text; empty when it isn't there. A word only partly inside counts.
+    static func wordIDs(of sentence: String, in paragraphs: [ReadingParagraph]) -> Set<Int> {
+        let target = sentence.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+        guard !target.isEmpty else { return [] }
+        for paragraph in paragraphs {
+            let line = paragraph.words.map(\.written).joined(separator: " ")
+            guard let range = line.range(of: target) else { continue }
+            var ids = Set<Int>()
+            var start = line.startIndex
+            for word in paragraph.words {
+                let end = line.index(start, offsetBy: word.written.count)
+                if start < range.upperBound && end > range.lowerBound { ids.insert(word.id) }
+                start = end < line.endIndex ? line.index(after: end) : end
+            }
+            return ids
+        }
+        return []
+    }
+
     /// The word without the punctuation around it, or empty when it has no letters ("10:30", "–").
     static func clean(_ written: some StringProtocol) -> String {
         let word = written.trimmingCharacters(in: .punctuationCharacters.union(.symbols).union(.whitespaces))

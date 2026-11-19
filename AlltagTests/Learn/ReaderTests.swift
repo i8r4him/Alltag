@@ -28,13 +28,14 @@ private final class WordStub: TranslationService {
 @MainActor
 struct ReaderTests {
     private static let text = ReadingText(
-        id: "test", title: "A test", detail: "A test", level: "A2", minutes: 1, systemImage: "doc",
+        id: "a2-test", level: .a2, kind: .letter, title: "A test", detail: "A test", systemImage: "doc",
         german: """
         Sehr geehrte Frau Becker,
 
         die Nebenkostenabrechnung ist da. Bitte zahlen Sie 75 Euro – danke!
         Ihre Hausverwaltung
-        """)
+        """,
+        questions: [])
 
     private static let abrechnung = TranslationResult(
         english: "service charge statement", german: "Nebenkostenabrechnung",
@@ -200,13 +201,11 @@ struct ReaderTests {
         #expect(!model.isListening)
     }
 
-    @Test("Every sample text has German to read and its own id")
-    func samples() {
-        let texts = MockReading.texts
-        #expect(Set(texts.map(\.id)).count == texts.count)
-        for text in texts {
+    @Test("Every text has German to read and opens by its id")
+    func texts() {
+        for text in ReadingTexts.all {
             #expect(!ReadingWords.paragraphs(of: text.german).isEmpty)
-            #expect(MockReading.text(id: text.id)?.german == text.german)
+            #expect(ReadingTexts.text(id: text.id)?.german == text.german)
         }
     }
 }

@@ -11,7 +11,9 @@ import Translation
 
 /// Learn › Read › a text: the German in large type on a glass card. Tapping a
 /// word translates it and offers to save it to Memory; the speaker in the
-/// toolbar reads the whole text aloud.
+/// toolbar reads the whole text aloud. Under the text, three questions check
+/// what the learner understood; a wrong answer lights up the sentence that
+/// holds the answer.
 struct ReaderView: View {
     @State private var model: ReaderModel
     @Environment(\.services) private var services
@@ -19,29 +21,42 @@ struct ReaderView: View {
     @State private var download: TranslationSession.Configuration?
     /// Counts the speaker's taps, for the medium haptic tap.
     @State private var listenTaps = 0
+    /// Temporary: where the questions show, until the maintainer picks a design.
+    @AppStorage(ReadDesign.storageKey) private var design = 0
+    @Namespace private var questionsZoom
 
     init(text: ReadingText) {
         _model = State(initialValue: ReaderModel(text: text))
     }
 
+    private var questionsOnSheet: Bool { ReadDesign(rawValue: design) != .realThing }
+
     var body: some View {
         @Bindable var model = model
-        ScrollView {
-            VStack(alignment: .leading, spacing: Spacing.section) {
-                ReaderHeader(text: model.text)
-                page
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.section) {
+                    ReaderHeader(text: model.text)
+                    page
+                    questionsButton
+                }
+                .padding(.horizontal, Spacing.screen)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
-            .padding(.horizontal, Spacing.screen)
-            .padding(.top, 8)
-            .padding(.bottom, 24)
+            .scrollIndicators(.hidden)
+            .scrollEdgeEffectStyle(.soft, for: .all)
+            .onChange(of: model.litParagraphID) { _, id in
+                guard let id else { return }
+                // High on the screen: the questions cover the lower half.
+                withAnimation(.easeOut(duration: 0.35)) { proxy.scrollTo(id, anchor: UnitPoint(x: 0.5, y: 0.2)) }
+            }
         }
-        .scrollIndicators(.hidden)
         .fontDesign(.rounded)
         .readableContentMargins()
         .skyBackground()
         .navigationTitle(Text(model.text.title))
         .toolbarTitleDisplayMode(.inline)
-        .scrollEdgeEffectStyle(.soft, for: .all)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -57,10 +72,12 @@ struct ReaderView: View {
                 .contentTransition(.symbolEffect(.replace))
             }
         }
-        .safeAreaInset(edge: .bottom) { wordCard }
+        .safeAreaInset(edge: .bottom) { bottomCard }
         .animation(.easeOut(duration: 0.25), value: model.selected)
+        .animation(.easeOut(duration: 0.25), value: model.showsQuestions)
         .sensoryFeedback(.selection, trigger: model.selected)
         .sensoryFeedback(.impact(weight: .medium), trigger: listenTaps)
+        .sensoryFeedback(.impact(weight: .medium), trigger: model.showsQuestions) { _, shows in shows }
         .onChange(of: model.meaning) { _, _ in model.refreshSaved(in: context) }
         .onAppear { model.resume(with: services.translation) }
         .onDisappear { model.stop(services.voice) }
@@ -73,17 +90,44 @@ struct ReaderView: View {
             }
             download = nil
         }
+        .sheet(isPresented: questionsSheet) {
+            ScrollView {
+                ReadingQuestionsView(quiz: model.quiz, style: .rows,
+                                     onNext: { model.nextQuestion(in: context) },
+                                     onClose: { model.hideQuestions() })
+                    .padding(.horizontal, Spacing.screen)
+                    .padding(.top, 28)
+                    .padding(.bottom, 24)
+            }
+            .scrollIndicators(.hidden)
+            .scrollEdgeEffectStyle(.soft, for: .all)
+            .fontDesign(.rounded)
+            .presentationDetents([.medium, .large])
+            // The text stays readable and scrollable above the sheet.
+            .presentationBackgroundInteraction(.enabled(upThrough: .medium))
+            .navigationTransition(.zoom(sourceID: Self.questionsID, in: questionsZoom))
+        }
         .toast($model.notice)
+    }
+
+    private static let questionsID = "questions"
+
+    /// The questions on a sheet, in that design.
+    private var questionsSheet: Binding<Bool> {
+        Binding(get: { questionsOnSheet && model.showsQuestions },
+                set: { shows in if !shows { model.hideQuestions() } })
     }
 
     /// The text on a clear glass card, a paragraph at a time.
     private var page: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        let lit = model.litWordIDs
+        return VStack(alignment: .leading, spacing: 0) {
             ForEach(model.paragraphs) { paragraph in
-                ReaderParagraphText(paragraph: paragraph, selectedID: model.selected?.id) { id in
+                ReaderParagraphText(paragraph: paragraph, selectedID: model.selected?.id, litIDs: lit) { id in
                     if let word = model.word(id: id) { model.select(word, with: services.translation) }
                 }
                 .padding(.top, paragraph.id == 0 ? 0 : paragraph.startsBlock ? 18 : 4)
+                .id(paragraph.id)
             }
         }
         .padding(Spacing.cardLarge)
@@ -91,9 +135,19 @@ struct ReaderView: View {
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
     }
 
-    /// The tapped word on a glass card above the tab bar; the text scrolls behind it.
+    /// "Check what you understood", under the text.
+    private var questionsButton: some View {
+        Button { model.showQuestions() } label: {
+            Label("Check what you understood", systemImage: "checklist")
+        }
+        .buttonStyle(.primary)
+        .matchedTransitionSource(id: Self.questionsID, in: questionsZoom)
+    }
+
+    /// The tapped word, or the questions in that design, on a glass card above
+    /// the tab bar; the text scrolls behind it.
     @ViewBuilder
-    private var wordCard: some View {
+    private var bottomCard: some View {
         if let word = model.selected, let lookup = model.lookup {
             ReaderWordCard(word: word, lookup: lookup, isSaved: model.meaning.map(model.isSaved) ?? false,
                            onListen: { german in Task { await model.listen(to: german, with: services.voice) } },
@@ -101,18 +155,31 @@ struct ReaderView: View {
                            onRetry: { model.retry(with: services.translation) },
                            onDownload: { download = downloadConfiguration(for: lookup) },
                            onClose: { model.close() })
-                .padding(Spacing.cardLarge)
-                .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-                .padding(.horizontal, Spacing.screen)
-                .padding(.bottom, 8)
-                .readableWidth()
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .modifier(BottomGlassCard())
+        } else if !questionsOnSheet && model.showsQuestions {
+            ReadingQuestionsView(quiz: model.quiz, style: .chips,
+                                 onNext: { model.nextQuestion(in: context) },
+                                 onClose: { model.hideQuestions() })
+                .modifier(BottomGlassCard())
         }
     }
 
     private func downloadConfiguration(for lookup: ReaderModel.Lookup) -> TranslationSession.Configuration? {
         guard case let .needsDownload(source, target) = lookup else { return nil }
         return TranslationSession.Configuration(source: source, target: target)
+    }
+}
+
+/// A card on clear glass at the bottom of the reader, coming up from below.
+private struct BottomGlassCard: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding(Spacing.cardLarge)
+            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+            .padding(.horizontal, Spacing.screen)
+            .padding(.bottom, 8)
+            .readableWidth()
+            .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 }
 
@@ -128,7 +195,7 @@ private struct ReaderHeader: View {
                     Text(text.detail)
                         .font(.title3.weight(.semibold))
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("\(text.level) · \(text.minutes) min")
+                    Text("\(text.kind.title) · \(text.level.title) · \(text.minutes) min")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -147,10 +214,12 @@ private struct ReaderHeader: View {
 
 /// One paragraph of the text, as real text that wraps like a page. Every word
 /// is a link to itself, so a tap selects it; the selected word is highlighted
-/// in the theme colour.
+/// in the theme colour, and the sentence that holds an answer more softly.
 private struct ReaderParagraphText: View {
     let paragraph: ReadingParagraph
     let selectedID: Int?
+    /// The words of the sentence that holds an answer.
+    let litIDs: Set<Int>
     let onTap: (Int) -> Void
 
     var body: some View {
@@ -175,6 +244,8 @@ private struct ReaderParagraphText: View {
                 written[range].link = ReaderLink.url(for: word.id)
                 if word.id == selectedID {
                     written[range].backgroundColor = Color.accentFill.opacity(0.35)
+                } else if litIDs.contains(word.id) {
+                    written[range].backgroundColor = Color.accentFill.opacity(0.22)
                 }
             }
             text += written
@@ -197,7 +268,7 @@ enum ReaderLink {
 
 #Preview {
     NavigationStack {
-        ReaderView(text: MockReading.picked)
+        ReaderView(text: ReadingTexts.a2Water)
     }
     .modelContainer(AlltagStore.preview)
 }
