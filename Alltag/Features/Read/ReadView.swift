@@ -19,6 +19,8 @@ struct ReadView: View {
     @State private var taps = 0
     /// The text open in the reader, by its id.
     @State private var opened: String?
+    /// The "Read and do" scene open, by its id.
+    @State private var openedScene: String?
     @Namespace private var zoom
 
     private var level: Level { profiles.first?.level ?? .a1 }
@@ -33,6 +35,7 @@ struct ReadView: View {
             case .realThing:
                 ReadRealThingDesign(level: level, texts: texts, read: read, zoom: zoom, onOpen: open)
             }
+            ReadDoSection(level: level, done: read, zoom: zoom, onOpen: open)
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
         .sensoryFeedback(.selection, trigger: design)
@@ -47,11 +50,22 @@ struct ReadView: View {
                     .navigationTransition(.zoom(sourceID: id, in: zoom))
             }
         }
+        .navigationDestination(item: $openedScene) { id in
+            if let scene = ReadDoScenes.scene(id: id) {
+                ReadDoView(scene: scene)
+                    .navigationTransition(.zoom(sourceID: id, in: zoom))
+            }
+        }
     }
 
     private func open(_ text: ReadingText) {
         taps += 1
         opened = text.id
+    }
+
+    private func open(_ scene: ReadDoScene) {
+        taps += 1
+        openedScene = scene.id
     }
 }
 

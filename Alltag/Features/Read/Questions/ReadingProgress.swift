@@ -24,9 +24,10 @@ enum ReadingProgress {
                            bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]))
     }
 
-    /// Every text by its record's ID, made once.
+    /// Every text and "Read and do" scene by its record's ID, made once.
     private static let textIDsByRecord: [UUID: String] = Dictionary(
-        ReadingTexts.all.map { (recordID(for: $0.id), $0.id) }, uniquingKeysWith: { first, _ in first })
+        (ReadingTexts.all.map(\.id) + ReadDoScenes.all.map(\.id)).map { (recordID(for: $0), $0) },
+        uniquingKeysWith: { first, _ in first })
 
     /// The IDs of the texts read, from Your sessions.
     static func readIDs(in sessions: [SessionRecord]) -> Set<String> {
@@ -40,14 +41,26 @@ enum ReadingProgress {
 
     /// Keeps the text in Your sessions, or moves it to now when it was read before.
     static func markRead(_ text: ReadingText, in context: ModelContext, date: Date = .now) throws {
-        let id = recordID(for: text.id)
+        try keep(id: text.id, title: String(localized: text.title),
+                 german: text.german.split(separator: "\n").map(String.init), in: context, date: date)
+    }
+
+    /// Keeps a "Read and do" scene in Your sessions once its tasks are done.
+    static func markDone(_ scene: ReadDoScene, in context: ModelContext, date: Date = .now) throws {
+        try keep(id: scene.id, title: String(localized: scene.title),
+                 german: scene.lines.filter(\.isTappable).map { $0.cells.joined(separator: " · ") },
+                 in: context, date: date)
+    }
+
+    private static func keep(id textID: String, title: String, german: [String],
+                             in context: ModelContext, date: Date) throws {
+        let id = recordID(for: textID)
         let existing = try context.fetch(FetchDescriptor<SessionRecord>(predicate: #Predicate { $0.uuid == id }))
         if let record = existing.first {
             record.date = date
         } else {
-            let lines = text.german.split(separator: "\n").map { SessionLine(isLearner: false, german: String($0)) }
-            context.insert(SessionRecord(uuid: id, kind: .reading, title: String(localized: text.title),
-                                         lines: lines, date: date))
+            let lines = german.map { SessionLine(isLearner: false, german: $0) }
+            context.insert(SessionRecord(uuid: id, kind: .reading, title: title, lines: lines, date: date))
         }
         context.insert(PracticeSession(kind: .reading, date: date))
         try context.save()
