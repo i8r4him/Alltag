@@ -11,11 +11,12 @@ extension WebExamples {
     /// C1: explainers, science news and debate, from pages that stay online.
     static let c1: [WebExample] = [
         WebExample(title: "Die Mietpreisbremse tritt in Kraft", site: "bpb.de",
-                   url: c1Link("https://www.bpb.de/politik/hintergrund-aktuell/208048/die-mietpreisbremse-tritt-in-kraft"),
+                   url: c1Link("https://www.bpb.de/kurz-knapp/hintergrund-aktuell/208048/die-mietpreisbremse-tritt-in-kraft/"),
                    about: "How Germany caps the rent for new tenancies, explained"),
-        WebExample(title: "Zweisprachigkeit stärkt Faserverbindungen im Gehirn", site: "spektrum.de",
-                   url: c1Link("https://www.spektrum.de/news/zweisprachigkeit-staerkt-faserverbindungen-im-gehirn/1327100"),
-                   about: "What speaking two languages does to the brain"),
+        WebExample(title: "Andere Familiensprache als Deutsch: Was bedeutet mehrsprachig aufzuwachsen?", site: "bpb.de",
+                   url: c1Link("https://www.bpb.de/themen/bildung/dossier-bildung/572961/"
+                       + "andere-familiensprache-als-deutsch-was-bedeutet-mehrsprachig-aufzuwachsen/"),
+                   about: "What it means to grow up speaking two languages"),
         WebExample(title: "Debatte über Viertagewoche", site: "taz.de",
                    url: c1Link("https://taz.de/Debatte-ueber-Viertagewoche/!5929894/"),
                    about: "Should Germany work four days a week? A debate"),
