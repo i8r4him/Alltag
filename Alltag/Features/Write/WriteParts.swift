@@ -97,6 +97,8 @@ struct WriteGlassList<Content: View>: View {
 /// A chat in a list: the picture, a title, the last message and an unread dot.
 struct ChatRow: View {
     let chat: WritingChat
+    /// Not opened yet: the friend's message waits for an answer.
+    var isUnread = false
     let action: () -> Void
 
     var body: some View {
@@ -113,7 +115,7 @@ struct ChatRow: View {
                         .environment(\.locale, Locale(identifier: "de_DE"))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                if chat.isUnread {
+                if isUnread {
                     Circle()
                         .fill(Color.accentFill)
                         .frame(width: 10, height: 10)

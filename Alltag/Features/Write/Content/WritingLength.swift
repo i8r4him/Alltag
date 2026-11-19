@@ -33,4 +33,9 @@ enum WritingLength {
         case .c2: 150
         }
     }
+
+    /// The number of words to aim for in a form's answer (only A1 and A2 have forms).
+    static func formWords(for level: Level) -> Int {
+        level <= .a1 ? 20 : 30
+    }
 }

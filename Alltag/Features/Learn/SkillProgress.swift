@@ -14,6 +14,8 @@ enum SkillProgress: Equatable {
     case rules(solved: Int, total: Int, level: Level)
     /// Read: words saved to Memory from the reader. Texts read aren't recorded yet.
     case savedWords(Int)
+    /// Write: chats and texts written, from Your sessions.
+    case written(Int)
     /// A skill that is still a shell (Write, Listen) and records nothing.
     case comingSoon
 
@@ -26,6 +28,11 @@ enum SkillProgress: Equatable {
     /// Read's progress from the learner's Memory.
     static func reading(_ items: [MemoryItem]) -> SkillProgress {
         .savedWords(items.filter { $0.source == .read }.count)
+    }
+
+    /// Write's progress: every chat and text kept in Your sessions.
+    static func writing(_ sessions: [SessionRecord]) -> SkillProgress {
+        .written(sessions.filter { $0.kind == .writing }.count)
     }
 
     /// How far along, from 0 to 1, when there is a count to show as a bar.

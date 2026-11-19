@@ -58,9 +58,10 @@ struct FormalEmailCard: View {
     }
 }
 
-/// The email that came in: who sent it, its subject and its first lines.
-private struct ReceivedEmail: View {
+/// The email that came in: who sent it, its subject and its first lines (all of it without a limit).
+struct ReceivedEmail: View {
     let email: FormalEmail
+    var lineLimit: Int? = 5
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -79,7 +80,8 @@ private struct ReceivedEmail: View {
             Text(verbatim: email.body)
                 .font(.body)
                 .environment(\.locale, Locale(identifier: "de_DE"))
-                .lineLimit(5)
+                .lineLimit(lineLimit)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
