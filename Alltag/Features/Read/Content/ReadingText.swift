@@ -75,7 +75,7 @@ struct ReadingText: Identifiable, Hashable {
 
 /// Every text to read, by level. C2 reads C1's texts.
 enum ReadingTexts {
-    static let all: [ReadingText] = a1 + a2 + b1 + b2
+    static let all: [ReadingText] = a1 + a2 + b1 + b2 + c1
 
     /// The level's texts in order. C2 has none of its own and reads C1's.
     static func texts(at level: Level) -> [ReadingText] {
