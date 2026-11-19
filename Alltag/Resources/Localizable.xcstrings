@@ -57,16 +57,6 @@
         }
       }
     },
-    "%@ · %lld of %lld read" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · %2$lld of %3$lld read"
-          }
-        }
-      }
-    },
     "%@ · %lld%% to %@" : {
       "localizations" : {
         "en" : {
@@ -144,7 +134,6 @@
     },
     "%lld confident" : {},
     "%lld min" : {},
-    "%lld new" : {},
     "%lld of %lld" : {
       "localizations" : {
         "en" : {
@@ -1125,7 +1114,6 @@
     "Letter" : {},
     "Letter from an office" : {},
     "Letter from your landlord" : {},
-    "Letters and emails" : {},
     "Letters, notices and forms" : {},
     "LEVEL" : {},
     "Level" : {},
@@ -1356,7 +1344,6 @@
     "On the platform" : {},
     "On the train" : {},
     "On the way to work" : {},
-    "On your phone" : {},
     "On-device intelligence" : {},
     "Once the deadline has passed, notice can no longer be given." : {},
     "One or many" : {},

@@ -294,7 +294,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Listen/
 │  │  │  └─ ListenView.swift              picked clip, speed, real situations
 │  │  ├─ Read/
-│  │  │  ├─ ReadView.swift                texts at the level (two designs behind a switcher), Read and do, Read from the web
+│  │  │  ├─ ReadView.swift                texts at the level on cards as they look, Read and do, Read from the web
 │  │  │  ├─ Do/                           Read and do: the real thing drawn (board, sign, packaging, form, receipt, bins, bills), tap the answer (tested)
 │  │  │  ├─ Web/                          Read from the web: shared, pasted and kept articles, sites per level, loading and questions
 │  │  │  ├─ ReaderView.swift              one text in large type; a tapped word on a glass card at the bottom; Listen reads it aloud

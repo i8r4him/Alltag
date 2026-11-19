@@ -21,15 +21,10 @@ struct ReaderView: View {
     @State private var download: TranslationSession.Configuration?
     /// Counts the speaker's taps, for the medium haptic tap.
     @State private var listenTaps = 0
-    /// Temporary: where the questions show, until the maintainer picks a design.
-    @AppStorage(ReadDesign.storageKey) private var design = 0
-    @Namespace private var questionsZoom
 
     init(text: ReadingText) {
         _model = State(initialValue: ReaderModel(text: text))
     }
-
-    private var questionsOnSheet: Bool { ReadDesign(rawValue: design) != .realThing }
 
     var body: some View {
         @Bindable var model = model
@@ -92,32 +87,7 @@ struct ReaderView: View {
             }
             download = nil
         }
-        .sheet(isPresented: questionsSheet) {
-            ScrollView {
-                ReadingQuestionsView(quiz: model.quiz, style: .rows,
-                                     onNext: { model.nextQuestion(in: context) },
-                                     onClose: { model.hideQuestions() })
-                    .padding(.horizontal, Spacing.screen)
-                    .padding(.top, 28)
-                    .padding(.bottom, 24)
-            }
-            .scrollIndicators(.hidden)
-            .scrollEdgeEffectStyle(.soft, for: .all)
-            .fontDesign(.rounded)
-            .presentationDetents([.medium, .large])
-            // The text stays readable and scrollable above the sheet.
-            .presentationBackgroundInteraction(.enabled(upThrough: .medium))
-            .navigationTransition(.zoom(sourceID: Self.questionsID, in: questionsZoom))
-        }
         .toast($model.notice)
-    }
-
-    private static let questionsID = "questions"
-
-    /// The questions on a sheet, in that design.
-    private var questionsSheet: Binding<Bool> {
-        Binding(get: { questionsOnSheet && model.showsQuestions },
-                set: { shows in if !shows { model.hideQuestions() } })
     }
 
     /// The text on a clear glass card, a paragraph at a time.
@@ -143,10 +113,9 @@ struct ReaderView: View {
             Label("Check what you understood", systemImage: "checklist")
         }
         .buttonStyle(.primary)
-        .matchedTransitionSource(id: Self.questionsID, in: questionsZoom)
     }
 
-    /// The tapped word, or the questions in that design, on a glass card above
+    /// The tapped word, or the questions, on a glass card above
     /// the tab bar; the text scrolls behind it.
     @ViewBuilder
     private var bottomCard: some View {
@@ -158,7 +127,7 @@ struct ReaderView: View {
                            onDownload: { download = downloadConfiguration(for: lookup) },
                            onClose: { model.close() })
                 .modifier(BottomGlassCard())
-        } else if !questionsOnSheet && model.showsQuestions {
+        } else if model.showsQuestions {
             ReadingQuestionsView(quiz: model.quiz, style: .chips,
                                  onNext: { model.nextQuestion(in: context) },
                                  onClose: { model.hideQuestions() })
