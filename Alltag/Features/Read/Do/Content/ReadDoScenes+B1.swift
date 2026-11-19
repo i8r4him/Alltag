@@ -8,8 +8,12 @@
 import Foundation
 
 extension ReadDoScenes {
-    /// B1: things with small print: a changed platform, a parking sign, a phone bill.
-    static let b1: [ReadDoScene] = [b1Platform, b1Parking, b1Detergent, b1Registration, b1Electronics, b1PhoneBill]
+    /// B1: things with small print: a changed platform, a parking sign, a phone bill, a pay slip, a contract.
+    /// The rest are in `ReadDoScenes+B1More.swift`.
+    static let b1: [ReadDoScene] = [
+        b1Platform, b1Bins, b1Parking, b1Payslip, b1Detergent, b1Bus,
+        b1Registration, b1Gym, b1Electronics, b1Ticket, b1PhoneBill, b1Prescription
+    ]
 
     static let b1Platform = ReadDoScene(
         id: "b1-do-platform", level: .b1, kind: .departures,
