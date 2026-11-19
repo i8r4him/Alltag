@@ -88,6 +88,16 @@
       }
     },
     "%@ · lesson in a later version" : {},
+    "%@ · Next: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · Next: %2$@"
+          }
+        }
+      }
+    },
     "%@ · Rule %lld of %lld" : {
       "localizations" : {
         "en" : {
@@ -455,7 +465,6 @@
     "A “realignment” of the company" : {},
     "Abbreviations in the listings" : {},
     "abfahren → die Abfahrt: some change their form" : {},
-    "About %lld min left" : {},
     "About %lld minutes to go" : {},
     "About me" : {},
     "Accessibility" : {},
@@ -1485,6 +1494,7 @@
     "On-device intelligence" : {},
     "Once the deadline has passed, notice can no longer be given." : {},
     "One or many" : {},
+    "One thing from every part" : {},
     "One ticket for buses and local trains all over Germany" : {},
     "Online help is off" : {},
     "Online or in the shop?" : {},
@@ -1853,7 +1863,6 @@
     "Sport" : {},
     "Sport and clubs" : {},
     "Sport and health" : {},
-    "Start" : {},
     "Start 60 seconds of talking" : {},
     "Start a Conversation" : {},
     "Start a round" : {},
@@ -1874,6 +1883,16 @@
     "Station" : {},
     "Station announcement" : {},
     "Steady progress" : {},
+    "Step %lld of %lld · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Step %1$lld of %2$lld · %3$@"
+          }
+        }
+      }
+    },
     "Still remembered 30 days after you met them" : {},
     "Stop" : {},
     "Strength" : {},

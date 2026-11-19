@@ -16,8 +16,8 @@ extension LessonTarget: Identifiable {
 /// after another. Each step opens the exercise Learn already has; when the
 /// learner comes back having finished it, the lesson has moved on to the next.
 ///
-/// Three designs sit behind a temporary "‹ n / 3 ›" switcher until the
-/// maintainer picks one. The section reads its own data, so finishing a step
+/// Four designs, all one hero card, sit behind a temporary "‹ n / 4 ›"
+/// switcher until the maintainer picks one. The section reads its own data, so finishing a step
 /// redraws the lesson, not all of Learn.
 struct DailyLessonSection: View {
     /// The learner's level, from their profile.
@@ -30,7 +30,7 @@ struct DailyLessonSection: View {
     private var sessions: [SessionRecord]
     @Query(filter: #Predicate<MemoryItem> { $0.sourceRaw == "collection" }) private var collectionWords: [MemoryItem]
     @Query(MistakePractice.practisable) private var mistakes: [MemoryItem]
-    /// Which of the three designs is shown, while one is picked.
+    /// Which of the four designs is shown, while one is picked.
     @AppStorage("dailyLesson.design") private var design = 0
     /// The day the learner practised their mistakes from the lesson.
     @AppStorage("dailyLesson.mistakesDay") private var mistakesDay = ""
@@ -55,12 +55,13 @@ struct DailyLessonSection: View {
                     Text("Today’s lesson")
                         .textRole(.sectionHeader)
                     Spacer()
-                    LessonDesignSwitcher(design: $design, count: 3)
+                    LessonDesignSwitcher(design: $design, count: 4)
                 }
                 .padding(.horizontal, 4)
                 switch design {
-                case 1: LessonPathDesign(steps: steps, zoom: zoom, onOpen: open)
-                case 2: LessonDeckDesign(steps: steps, zoom: zoom, onOpen: open)
+                case 1: LessonRingDesign(level: level, steps: steps, zoom: zoom, onOpen: open)
+                case 2: LessonNextUpDesign(steps: steps, zoom: zoom, onOpen: open)
+                case 3: LessonStripDesign(steps: steps, zoom: zoom, onOpen: open)
                 default: LessonCardDesign(level: level, steps: steps, zoom: zoom, onOpen: open)
                 }
             }
@@ -120,7 +121,7 @@ struct DailyLessonSection: View {
     }
 }
 
-/// The temporary "‹ 1 / 3 ›" switcher between the lesson's designs; it goes
+/// The temporary "‹ 1 / 4 ›" switcher between the lesson's designs; it goes
 /// once the maintainer has picked one.
 private struct LessonDesignSwitcher: View {
     @Binding var design: Int
@@ -181,5 +182,34 @@ struct LessonStepDot: View {
     private var symbolStyle: AnyShapeStyle {
         if step.isDone { return AnyShapeStyle(.onAccent) }
         return isCurrent ? AnyShapeStyle(.accent) : AnyShapeStyle(.secondary)
+    }
+}
+
+/// The big button under every design: starts the lesson, or carries on with the next step.
+struct LessonStartButton: View {
+    let step: LessonStep
+    /// Nothing is done yet today.
+    let isFirst: Bool
+    /// "Start · 4 min" instead of "Start the lesson" or "Continue".
+    var showsMinutes = false
+    let onOpen: (LessonStep) -> Void
+
+    var body: some View {
+        GlassEffectContainer {
+            Button { onOpen(step) } label: {
+                Label {
+                    if showsMinutes {
+                        Text("Start · \(step.minutes) min")
+                    } else if isFirst {
+                        Text("Start the lesson")
+                    } else {
+                        Text("Continue")
+                    }
+                } icon: {
+                    Image(systemName: "play.fill")
+                }
+            }
+            .buttonStyle(.primary)
+        }
     }
 }

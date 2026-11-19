@@ -8,8 +8,8 @@
 import SwiftData
 import SwiftUI
 
-/// Learn: something new to learn. Today's lesson on top plays one thing from
-/// each part; the parts themselves follow. Speaking is on Today, and keeping
+/// Learn: something new to learn. Under the tools, Today's lesson plays one
+/// thing from each part; the parts themselves follow. Speaking is on Today, and keeping
 /// and reviewing (your mistakes too) is in Memory.
 struct LearnView: View {
     @Environment(AppState.self) private var appState
@@ -50,8 +50,8 @@ struct LearnView: View {
             VStack(spacing: Spacing.grid) {
                 AskInPlace(model: ask, isFocused: $isAsking)
                 VStack(spacing: Spacing.section) {
-                    DailyLessonSection(level: level)
                     ToolsSection(onOpen: open)
+                    DailyLessonSection(level: level)
                     WordCollectionsSection(level: level, notice: $notice)
                     SkillsSection(level: level, onOpen: open)
                 }

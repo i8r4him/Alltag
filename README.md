@@ -242,7 +242,7 @@ Alltag/                                   ← repo root
 │  │  │     ├─ MistakeQuestionViews.swift one mistake to write correctly: the field starts with what was said; the fix and why after Check
 │  │  │     └─ MistakeRoundEnd.swift      before and after: what was said, the correction, when it comes back
 │  │  ├─ Learn/
-│  │  │  ├─ LearnView.swift               Today's lesson, tools, Word collections, then Practise (something new; reviewing and your mistakes are in Memory)
+│  │  │  ├─ LearnView.swift               tools, Today's lesson, Word collections, then Practise (something new; reviewing and your mistakes are in Memory)
 │  │  │  ├─ LearnTools.swift              the "How do I say …?" field (answers in place), Translate and Articles
 │  │  │  ├─ LearnComponents.swift         LearnScreen, LearnHeroCard, LearnSection, LearnList, LearnRow
 │  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour, with real progress
@@ -261,8 +261,8 @@ Alltag/                                   ← repo root
 │  │  │  │  └─ Content/                   the words, one set of files per level (A1 to C2), every topic group at every level
 │  │  │  ├─ Lesson/                       Today's lesson: one thing from each part, played one after another (~15 min)
 │  │  │  │  ├─ DailyLesson.swift          the steps from real progress: words, the next rule, a text, a chat, mistakes due (tested)
-│  │  │  │  ├─ DailyLessonSection.swift   the section on Learn: opens each step's own screen; a temporary ‹ n / 3 › design switcher
-│  │  │  │  └─ Lesson…Design.swift        the three designs to pick from: one card, a path, swipeable cards
+│  │  │  │  ├─ DailyLessonSection.swift   the section on Learn: opens each step's own screen; a temporary ‹ n / 4 › design switcher
+│  │  │  │  └─ Lesson…Design.swift        the four designs to pick from, all one card: ring and circles, a big ring, next up, a strip
 │  │  │  ├─ Ask/
 │  │  │  │  ├─ AskInPlace.swift           the field you type in on Learn and the German answer there, with Translate's parts (#304)
 │  │  │  │  ├─ AskModel.swift             Translate's model, asked only when the learner sends (tested)

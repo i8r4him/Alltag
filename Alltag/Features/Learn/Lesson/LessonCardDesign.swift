@@ -51,16 +51,7 @@ struct LessonCardDesign: View {
             if let current {
                 VStack(spacing: 12) {
                     nextLine(current)
-                    GlassEffectContainer {
-                        Button { onOpen(current) } label: {
-                            Label {
-                                done == 0 ? Text("Start the lesson") : Text("Continue")
-                            } icon: {
-                                Image(systemName: "play.fill")
-                            }
-                        }
-                        .buttonStyle(.primary)
-                    }
+                    LessonStartButton(step: current, isFirst: done == 0, onOpen: onOpen)
                 }
             }
         }
