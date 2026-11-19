@@ -8,11 +8,13 @@
 import SwiftUI
 
 /// A clue opened from its tile, in Today's look: the sky, the artwork, the
-/// clue, its examples one per row with the article in the theme colour, and
-/// the big button on to the next clue.
+/// clue, its parts with a picture and everyday nouns with symbols, and the big
+/// button on to the next clue.
 struct ArticleRuleSheet: View {
     let rule: ArticleRule
     @Environment(\.dismiss) private var dismiss
+    /// Which of the designs to try is shown; temporary, until one is picked.
+    @AppStorage("articleClueDesign") private var design = 0
     @State private var current: ArticleRule.ID?
     @State private var turns = 0
 
@@ -20,7 +22,7 @@ struct ArticleRuleSheet: View {
 
     var body: some View {
         NavigationStack {
-            ArticleRuleFocusSheet(rule: shown, onNext: next)
+            ArticleRuleFocusSheet(rule: shown, design: ArticleClueDesign(rawValue: design) ?? .pictures, onNext: next)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .skyBackground()
                 .navigationBarTitleDisplayMode(.inline)
@@ -28,11 +30,15 @@ struct ArticleRuleSheet: View {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Close", systemImage: "xmark") { dismiss() }
                     }
+                    ToolbarItem(placement: .principal) {
+                        ArticleClueDesignSwitcher(design: $design)
+                    }
                 }
         }
         .fontDesign(.rounded)
         .presentationDetents([.large])
         .sensoryFeedback(.impact(weight: .medium), trigger: turns)
+        .sensoryFeedback(.selection, trigger: design)
         .onChange(of: current) { _, _ in turns += 1 }
     }
 
@@ -46,15 +52,17 @@ struct ArticleRuleSheet: View {
 /// One clue, and the big button for the next.
 private struct ArticleRuleFocusSheet: View {
     let rule: ArticleRule
+    let design: ArticleClueDesign
     let onNext: () -> Void
 
     var body: some View {
         ScrollView {
-            ArticleRuleContent(rule: rule)
+            ArticleRuleContent(rule: rule, design: design)
                 .id(rule.id)
                 .transition(.opacity)
                 .padding(.horizontal, Spacing.onboarding)
                 .padding(.top, 8)
+                .padding(.bottom, 24)
         }
         .scrollEdgeEffectStyle(.soft, for: .all)
         .scrollIndicators(.hidden)
@@ -71,9 +79,10 @@ private struct ArticleRuleFocusSheet: View {
 
 // MARK: - Shared
 
-/// The artwork and title, the clue, and the examples on one glass card.
+/// The artwork and title, the clue, and its parts in the chosen design.
 private struct ArticleRuleContent: View {
     let rule: ArticleRule
+    let design: ArticleClueDesign
 
     @ScaledMetric(relativeTo: .largeTitle) private var artworkSize: CGFloat = 112
 
@@ -92,48 +101,14 @@ private struct ArticleRuleContent: View {
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
 
-            VStack(alignment: .leading, spacing: 0) {
-                Text("Examples")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
-                    .padding(.bottom, 6)
-                ForEach(Array(examples.enumerated()), id: \.offset) { index, example in
-                    if index > 0 { Divider() }
-                    Text(Self.highlighted(example))
-                        .font(.title3.weight(.medium))
-                        .environment(\.locale, ArticleNounDetail.german)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 12)
+            ForEach(Array(rule.parts.enumerated()), id: \.offset) { _, part in
+                switch design {
+                case .pictures: CheatSheetPartCard(part: part)
+                case .tiles: ArticleClueTiles(part: part)
+                case .cards: ArticleClueCards(part: part)
                 }
             }
-            .padding(Spacing.cardLarge)
-            .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
         }
-    }
-
-    /// "der Tisch · die Tür" → one example per row.
-    private var examples: [String] {
-        rule.example.components(separatedBy: " · ")
-    }
-
-    /// The example with every der, die and das bold in the theme colour.
-    static func highlighted(_ example: String) -> AttributedString {
-        var text = AttributedString(example)
-        for article in Article.allCases {
-            var searchStart = text.startIndex
-            while let range = text[searchStart...].range(of: article.rawValue) {
-                let before = range.lowerBound == text.startIndex
-                    || text.characters[text.index(beforeCharacter: range.lowerBound)] == " "
-                let after = range.upperBound == text.endIndex || text.characters[range.upperBound] == " "
-                if before && after {
-                    text[range].foregroundColor = AppTheme.shared.palette.accent
-                    text[range].inlinePresentationIntent = .stronglyEmphasized
-                }
-                searchStart = range.upperBound
-            }
-        }
-        return text
     }
 }
 
