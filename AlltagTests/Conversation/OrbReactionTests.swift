@@ -6,6 +6,7 @@
 //
 
 import AVFoundation
+import CoreGraphics
 import Testing
 @testable import Alltag
 
@@ -70,26 +71,64 @@ struct OrbReactionTests {
 @Suite("Orb flight")
 @MainActor
 struct OrbFlightTests {
-    @Test("The flight starts at Today's orb and ends round, at its size, in its place")
+    private let step = 0.01
+
+    private func poses(through end: Double, returning: Bool = false) -> [OrbFlightPose] {
+        stride(from: 0.0, through: end, by: step).map {
+            returning ? OrbFlightPose(returningAt: $0) : OrbFlightPose(at: $0)
+        }
+    }
+
+    @Test("The flight starts at Today's orb and ends round, at its size, still, in its place")
     func endsInPlace() {
         #expect(OrbFlightPose(at: 0).progress == 0)
         let end = OrbFlightPose(at: OrbFlightPose.duration)
         #expect(end.progress == 1)
-        #expect(abs(end.growth - 1) < 0.001)
+        #expect(abs(end.growth - 1) < 0.001 && abs(end.lift) < 0.001)
         #expect(abs(end.stretchX - 1) < 0.001 && abs(end.stretchY - 1) < 0.001)
+        #expect(end.glow < 0.1)
         #expect(OrbFlightPose(at: 99) == end)
     }
 
-    @Test("The orb grows at once, moves down without turning back, and squashes as it lands")
-    func growsMovesLands() {
-        let poses = stride(from: 0.0, through: OrbFlightPose.duration, by: 0.01).map { OrbFlightPose(at: $0) }
-        #expect(poses[0].growth == 1)
-        #expect(poses[15].growth > 1.1)
-        #expect(poses[10].progress > 0)
-        let progress = poses.map(\.progress)
+    @Test("It crouches before it sets off, grows, and never turns back on the way")
+    func setsOff() {
+        let flight = poses(through: OrbFlightPose.duration)
+        #expect(flight[0].stretchY < 1 && flight[5].stretchY < flight[0].stretchY)
+        #expect(flight[0].growth == 1 && flight[15].growth > 1.1)
+        let progress = flight.map(\.progress)
         #expect(zip(progress, progress.dropFirst()).allSatisfy { $0 <= $1 })
-        #expect(poses.map(\.stretchY).min() ?? 1 < 0.95)
-        #expect(poses.prefix(70).allSatisfy { $0.stretchY == 1 })
+    }
+
+    @Test("It lands at touchdown with a squash and a glow, then bounces once")
+    func lands() {
+        let flight = poses(through: OrbFlightPose.duration)
+        let touchdown = OrbFlightPose.touchdown
+        #expect(OrbFlightPose(at: touchdown).progress == 1)
+        #expect(OrbFlightPose(at: touchdown + 0.06).stretchY < 0.85)
+        #expect(flight.map(\.glow).max() ?? 0 > 0.5)
+        #expect(poses(through: touchdown - 0.02).allSatisfy { $0.glow == 0 })
+        #expect(flight.map(\.lift).min() ?? 0 < -10)
+    }
+
+    @Test("Its path rises a little before it falls, and ends at both centres")
+    func curve() {
+        let source = CGPoint(x: 200, y: 200)
+        let place = CGPoint(x: 200, y: 700)
+        #expect(OrbFlightPose.point(at: 0, from: source, to: place) == source)
+        #expect(OrbFlightPose.point(at: 1, from: source, to: place) == place)
+        let early = OrbFlightPose.point(at: 0.1, from: source, to: place)
+        #expect(early.y < source.y && early.x > source.x)
+    }
+
+    @Test("Flying back, it goes from its place to Today's orb and settles round")
+    func flightBack() {
+        let back = poses(through: OrbFlightPose.returnDuration, returning: true)
+        #expect(back[0].progress == 1)
+        let end = OrbFlightPose(returningAt: OrbFlightPose.returnDuration)
+        #expect(end.progress == 0 && abs(end.growth - 1) < 0.001)
+        #expect(abs(end.stretchY - 1) < 0.001)
+        let progress = back.map(\.progress)
+        #expect(zip(progress, progress.dropFirst()).allSatisfy { $0 >= $1 })
     }
 }
 

@@ -61,7 +61,12 @@ struct AppStateTests {
         #expect(state.fullScreen == .conversation(.freeTalk))
         #expect(state.talksOverTabs)
 
+        // Ending it sends the orb back first; the conversation closes once it is there.
         state.dismissFullScreen()
+        #expect(state.isOrbReturning)
+        #expect(state.fullScreen == .conversation(.freeTalk))
+        state.finishOrbReturn()
+        #expect(!state.isOrbReturning)
         #expect(state.fullScreen == nil)
         #expect(!state.talksOverTabs)
 

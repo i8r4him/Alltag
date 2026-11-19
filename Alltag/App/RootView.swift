@@ -53,12 +53,12 @@ struct RootView: View {
         .environment(\.levelMapZoom, levelMapZoom)
         .accessibilityHidden(appState.talksOverTabs)
         .fullScreenCover(item: cover, content: fullScreen)
+        .modifier(SinksBack(isActive: appState.talksOverTabs && !appState.isOrbReturning, reduceMotion: reducesMotion))
         .overlay {
+            // It fades itself in around the orb, and out as the orb flies back.
             if let launch = appState.orbLaunch, appState.talksOverTabs {
                 ConversationView(scenario: MockScenarios.scenario(.freeTalk), level: profiles.first?.level ?? .a1,
                                  launch: launch)
-                    // It fades itself in around the orb; leaving, it fades out.
-                    .transition(.asymmetric(insertion: .identity, removal: .opacity))
             }
         }
     }
@@ -171,4 +171,28 @@ struct RootView: View {
     RootView()
         .environment(AppState())
         .modelContainer(try! AlltagStore.makeContainer(inMemory: true)) // swiftlint:disable:this force_try
+}
+
+/// Today, behind the conversation from its orb: it darkens, blurs and sinks back a little,
+/// like the page behind a field at the top of a page, and comes forward as the orb returns.
+private struct SinksBack: ViewModifier {
+    let isActive: Bool
+    let reduceMotion: Bool
+
+    func body(content: Content) -> some View {
+        // Only these change slowly, not what changes inside the tabs at the same moment.
+        content
+            .animation(SinksBack.animation) {
+                $0.blur(radius: isActive ? 4 : 0)
+                    .scaleEffect(isActive && !reduceMotion ? 0.94 : 1)
+            }
+            .overlay {
+                Color.black.opacity(isActive ? 0.35 : 0)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                    .animation(SinksBack.animation, value: isActive)
+            }
+    }
+
+    private static let animation = Animation.easeOut(duration: 0.5)
 }

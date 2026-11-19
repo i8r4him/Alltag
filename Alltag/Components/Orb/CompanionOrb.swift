@@ -84,6 +84,8 @@ struct CompanionOrb: View {
     var isLive = false
     /// The loudness it reacts to.
     var meter: VoiceMeter = .shared
+    /// Extra light from inside, 0…1: a moment's glow, like landing in a conversation.
+    var flash: Double = 0
 
     @AppStorage(CompanionLook.Key.rim) private var rim = 1.0
     @AppStorage(CompanionLook.Key.silk) private var silk = 1.0
@@ -136,7 +138,7 @@ struct CompanionOrb: View {
         ShaderLibrary.bubbleOrb(
             .float2(size),
             .float(time),
-            .float(dynamics.energy + reaction.glow),
+            .float(dynamics.energy + reaction.glow + flash),
             .float(reaction.wobble),
             .float(rim),
             .float(silk),

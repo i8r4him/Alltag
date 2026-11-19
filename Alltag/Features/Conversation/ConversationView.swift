@@ -19,9 +19,12 @@ struct ConversationView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
     @State private var model: ConversationModel?
-    /// Today's orb has reached its place, so the page's own orb shows.
+    /// Today's orb has reached its place, and has finished bouncing there, so the page's own orb shows.
+    @State private var hasTouchedDown = false
     @State private var hasLanded = false
-    /// The page fades in around the moving orb.
+    /// The orb is flying back to Today, as the page fades out around it.
+    @State private var isReturning = false
+    /// The page fades in around the moving orb, and out when it flies back.
     @State private var isShown = false
 
     var body: some View {
@@ -34,12 +37,15 @@ struct ConversationView: View {
         }
         .background(.screenBackground)
         .opacity(launch != nil && !isShown ? 0 : 1)
-        .overlayPreferenceValue(OrbSlotKey.self) { slot in
-            if let launch, !hasLanded {
-                OrbFlight(launch: launch, target: slot) { hasLanded = true }
-            }
+        .overlayPreferenceValue(OrbSlotKey.self) { flight(to: $0) }
+        .environment(\.orbIsLanding, launch != nil && (!hasLanded || isReturning))
+        .environment(\.orbHoldsPage, launch != nil && (!hasTouchedDown || isReturning))
+        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.8), trigger: hasTouchedDown) { $1 }
+        .onChange(of: appState.isOrbReturning) { _, returning in
+            guard returning, launch != nil else { return }
+            isReturning = true
+            withAnimation(.easeIn(duration: 0.4).delay(0.2)) { isShown = false }
         }
-        .environment(\.orbIsLanding, launch != nil && !hasLanded)
         .onAppear {
             withAnimation(.easeOut(duration: 0.55).delay(0.1)) { isShown = true }
             if model == nil {
@@ -68,6 +74,21 @@ struct ConversationView: View {
         .onDisappear {
             model?.stop()
             model?.recordPractice(in: modelContext)
+        }
+    }
+
+    /// Today's orb on its way here, or back to Today when the talk ends.
+    @ViewBuilder
+    private func flight(to slot: Anchor<CGRect>?) -> some View {
+        if let launch {
+            if isReturning {
+                OrbFlight(launch: launch, target: slot, isReturning: true) { appState.finishOrbReturn() }
+            } else if !hasLanded {
+                OrbFlight(launch: launch, target: slot,
+                          onTouchdown: { hasTouchedDown = true },
+                          // Also when it had nowhere to land (a problem shows instead), so the page never stays hidden.
+                          onLanded: { hasTouchedDown = true; hasLanded = true })
+            }
         }
     }
 
@@ -101,6 +122,7 @@ private struct ConversationContent: View {
                         .padding(.vertical, 7)
                         .glassEffect(.regular, in: .capsule)
                         .padding(.top, 8)
+                        .waitsForOrb()
                 }
 
                 if let problem = model.problem {
@@ -160,6 +182,7 @@ private struct ConversationContent: View {
                 model.stop()
                 appState.dismissFullScreen()
             }
+            .waitsForOrb()
         }
         ToolbarItem(placement: .principal) {
             VStack(spacing: 1) {
@@ -172,6 +195,7 @@ private struct ConversationContent: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
+            .waitsForOrb()
         }
         if !model.scenario.isLiveOnly {
             ToolbarItem(placement: .topBarTrailing) {
@@ -194,6 +218,7 @@ private struct ConversationContent: View {
     /// The transcript and the controls under it.
     @ViewBuilder private var talking: some View {
         TranscriptView(messages: model.messages, heardText: model.heardText)
+            .waitsForOrb()
 
         if model.needsCloudConsent {
             CloudConsentCard {
@@ -227,22 +252,28 @@ private struct ConversationContent: View {
     private var voiceControls: some View {
         VStack(spacing: 12) {
             HStack {
-                if model.scenario.isLiveOnly {
-                    Color.clear.frame(width: 48, height: 48)
-                } else {
-                    CircleGlassButton(title: "Type instead", systemImage: "keyboard", size: 48) { model.mode = .text }
+                Group {
+                    if model.scenario.isLiveOnly {
+                        Color.clear.frame(width: 48, height: 48)
+                    } else {
+                        CircleGlassButton(title: "Type instead", systemImage: "keyboard", size: 48) { model.mode = .text }
+                    }
                 }
+                .waitsForOrb()
                 Spacer()
                 TalkOrb(model: model)
                     .anchorPreference(key: OrbSlotKey.self, value: .bounds) { $0 }
                 Spacer()
-                if model.showsFinishButton {
-                    CircleGlassButton(title: "Finish", systemImage: "checkmark", size: 48) { model.finishCloudConversation() }
-                } else if model.scenario.isLiveOnly {
-                    Color.clear.frame(width: 48, height: 48)
-                } else {
-                    hintButton(size: 48)
+                Group {
+                    if model.showsFinishButton {
+                        CircleGlassButton(title: "Finish", systemImage: "checkmark", size: 48) { model.finishCloudConversation() }
+                    } else if model.scenario.isLiveOnly {
+                        Color.clear.frame(width: 48, height: 48)
+                    } else {
+                        hintButton(size: 48)
+                    }
                 }
+                .waitsForOrb()
             }
             Group {
                 if let label = model.stateLabel { Text(label) }
@@ -251,8 +282,10 @@ private struct ConversationContent: View {
             .foregroundStyle(.secondary)
             .frame(height: 20)
             .accessibilityHidden(true)
+            .waitsForOrb()
             if !model.isFinished {
                 TalkModePicker()
+                    .waitsForOrb()
             }
         }
         .padding(.horizontal, 28)
