@@ -28,8 +28,8 @@ extension ReadingTexts {
         """,
         questions: [
             ReadingQuestion(prompt: "Where is your parcel now?",
-                            options: ["At the post office on Bahnhofstraße", "With a neighbour", "In front of your door"],
-                            answer: 0, evidence: "Ihr Paket ist jetzt in der Post-Filiale in der Bahnhofstraße 4."),
+                            options: ["With a neighbour", "At the post office on Bahnhofstraße", "In front of your door"],
+                            answer: 1, evidence: "Ihr Paket ist jetzt in der Post-Filiale in der Bahnhofstraße 4."),
             ReadingQuestion(prompt: "When can you pick it up?",
                             options: ["Today at 10:15", "From tomorrow at 9", "Only in seven days"],
                             answer: 1, evidence: "Sie können es ab morgen um 9 Uhr abholen."),
@@ -52,8 +52,8 @@ extension ReadingTexts {
         """,
         questions: [
             ReadingQuestion(prompt: "Why does Mia write?",
-                            options: ["She is going shopping", "She is cooking tonight", "She is late"],
-                            answer: 0, evidence: "Ich gehe gleich einkaufen."),
+                            options: ["She is cooking tonight", "She is late", "She is going shopping"],
+                            answer: 2, evidence: "Ich gehe gleich einkaufen."),
             ReadingQuestion(prompt: "What does Ali need?",
                             options: ["Milk and bread", "Eggs, and there is no coffee", "Pasta"],
                             answer: 1, evidence: "Ich brauche Eier, bitte sechs Stück."),
@@ -135,8 +135,8 @@ extension ReadingTexts {
         """,
         questions: [
             ReadingQuestion(prompt: "Is the practice open on Wednesday afternoon?",
-                            options: ["No, only in the morning", "Yes, until 6 pm", "No, it's closed all day"],
-                            answer: 0, evidence: "Mittwoch und Freitag: 8 bis 12 Uhr"),
+                            options: ["Yes, until 6 pm", "No, it's closed all day", "No, only in the morning"],
+                            answer: 2, evidence: "Mittwoch und Freitag: 8 bis 12 Uhr"),
             ReadingQuestion(prompt: "How do you get an appointment?",
                             options: ["Online", "You call first", "You just come in"],
                             answer: 1, evidence: "Bitte rufen Sie vorher an und machen Sie einen Termin."),
@@ -162,8 +162,8 @@ extension ReadingTexts {
                             options: ["About 15 minutes", "About 5 minutes", "One hour"],
                             answer: 0, evidence: "Der ICE nach München, Abfahrt 14:20 Uhr, hat heute etwa 15 Minuten Verspätung."),
             ReadingQuestion(prompt: "Where does the train leave from today?",
-                            options: ["Platform 3", "Platform 5", "Platform 14"],
-                            answer: 1, evidence: "Der Zug fährt heute von Gleis 5."),
+                            options: ["Platform 5", "Platform 3", "Platform 14"],
+                            answer: 0, evidence: "Der Zug fährt heute von Gleis 5."),
             ReadingQuestion(prompt: "What is closed today?",
                             options: ["Platform 3", "The ticket office", "The bistro on the train"],
                             answer: 2, evidence: "Das Bistro im Zug ist heute leider geschlossen.")
