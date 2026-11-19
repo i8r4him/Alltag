@@ -8,8 +8,12 @@
 import Foundation
 
 extension ReadDoScenes {
-    /// A2: daily life gets busier: a late train, house rules, a restaurant bill.
-    static let a2: [ReadDoScene] = [a2Train, a2Laundry, a2Pizza, a2Library, a2Restaurant, a2Sorting]
+    /// A2: daily life gets busier: a late train, house rules, a restaurant bill, a
+    /// first pay slip. The second six are in `ReadDoScenes+A2More.swift`.
+    static let a2: [ReadDoScene] = [
+        a2Train, a2Laundry, a2Pizza, a2Library, a2Restaurant, a2Sorting,
+        a2Gym, a2Concert, a2Paediatrician, a2Prescription, a2TV, a2Payslip
+    ]
 
     static let a2Train = ReadDoScene(
         id: "a2-do-train", level: .a2, kind: .departures,
@@ -105,14 +109,15 @@ extension ReadDoScenes {
         1 Tiramisu | 5,90
         ---
         Summe | 34,80
-        inkl. MwSt. 19 % | 5,56
-        Bedienung nicht inklusive.
+        inkl. MwSt. 7 % (Speisen) | 1,78
+        inkl. MwSt. 19 % (Getränke) | 1,21
+        Trinkgeld ___
         Vielen Dank und bis bald!
         """,
         tasks: [
             ReadDoTask(prompt: "How much were the two drinks?", answer: "Apfelschorle"),
             ReadDoTask(prompt: "What do you pay in all?", answer: "Summe"),
-            ReadDoTask(prompt: "Is the tip already in the bill? Tap where it says.", answer: "Bedienung")
+            ReadDoTask(prompt: "You want to add a tip when you pay by card. Tap where you write it.", answer: "Trinkgeld")
         ])
 
     static let a2Sorting = ReadDoScene(

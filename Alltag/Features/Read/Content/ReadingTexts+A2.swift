@@ -8,8 +8,13 @@
 import Foundation
 
 extension ReadingTexts {
-    /// A2: everyday texts with "weil", "dass" and the perfect tense, about 80 to 120 words.
-    static let a2: [ReadingText] = [a2Water, a2Course, a2Bike, a2Cleaning, a2Heating, a2Works]
+    /// A2: everyday texts with "weil", "dass", "wenn" and the perfect tense, about 80 to 120 words.
+    /// Four from the letterbox, four from the phone, four from out and about; the
+    /// second six are in `ReadingTexts+A2More.swift`.
+    static let a2: [ReadingText] = [
+        a2Water, a2Course, a2Bike, a2Cleaning, a2Heating, a2Works,
+        a2Dentist, a2Neighbour, a2Canteen, a2Postcard, a2Library, a2Cat
+    ]
 
     static let a2Water = ReadingText(
         id: "a2-water", level: .a2, kind: .notice,
@@ -18,7 +23,7 @@ extension ReadingTexts {
         german: """
         Liebe Mieterinnen und Mieter,
 
-        am Donnerstag, 21. November, ist von 8 bis 12 Uhr kein Wasser im Haus.
+        am Donnerstag, 26. November, ist von 8 bis 12 Uhr kein Wasser im Haus.
         Im Keller werden die Wasserrohre repariert.
         Bitte füllen Sie vorher Wasser in Flaschen oder Töpfe ab.
         In dieser Zeit können Sie auch die Waschmaschine nicht benutzen.
@@ -30,7 +35,7 @@ extension ReadingTexts {
         questions: [
             ReadingQuestion(prompt: "When is there no water?",
                             options: ["All day on Thursday", "Thursday morning", "Friday from 8 o'clock"],
-                            answer: 1, evidence: "am Donnerstag, 21. November, ist von 8 bis 12 Uhr kein Wasser im Haus."),
+                            answer: 1, evidence: "am Donnerstag, 26. November, ist von 8 bis 12 Uhr kein Wasser im Haus."),
             ReadingQuestion(prompt: "What should you do before?",
                             options: ["Fill bottles or pots with water", "Call the property management", "Open the cellar"],
                             answer: 0, evidence: "Bitte füllen Sie vorher Wasser in Flaschen oder Töpfe ab."),
@@ -49,8 +54,8 @@ extension ReadingTexts {
         ab nächster Woche ist der Kurs A2.2 in einem anderen Raum. \
         Wir sind jetzt in Raum 104 im ersten Stock, nicht mehr in Raum 12 im Erdgeschoss.
         Die Zeit ändert sich auch: Der Kurs beginnt am Montag und Mittwoch schon um 17:30 Uhr und endet um 19 Uhr.
-        Am 4. Dezember fällt der Unterricht aus, weil Ihre Lehrerin auf einer Fortbildung ist.
-        Die Prüfung ist wie geplant am 18. Dezember.
+        Am 2. Dezember fällt der Unterricht aus, weil Ihre Lehrerin auf einer Fortbildung ist.
+        Die Prüfung ist wie geplant am 16. Dezember.
 
         Bei Fragen schreiben Sie mir gern.
         Viele Grüße
@@ -64,9 +69,9 @@ extension ReadingTexts {
                             options: ["At 5:30 pm", "At 7 pm", "At 6 pm"],
                             answer: 0,
                             evidence: "Der Kurs beginnt am Montag und Mittwoch schon um 17:30 Uhr und endet um 19 Uhr."),
-            ReadingQuestion(prompt: "Why is there no lesson on 4 December?",
+            ReadingQuestion(prompt: "Why is there no lesson on 2 December?",
                             options: ["It's a holiday", "The teacher is on a training course", "There is an exam"],
-                            answer: 1, evidence: "Am 4. Dezember fällt der Unterricht aus, weil Ihre Lehrerin auf einer Fortbildung ist.")
+                            answer: 1, evidence: "Am 2. Dezember fällt der Unterricht aus, weil Ihre Lehrerin auf einer Fortbildung ist.")
         ])
 
     static let a2Bike = ReadingText(
