@@ -57,6 +57,16 @@
         }
       }
     },
+    "%@ · %lld of %lld done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld of %3$lld done"
+          }
+        }
+      }
+    },
     "%@ · %lld%% to %@" : {
       "localizations" : {
         "en" : {
@@ -303,6 +313,7 @@
     "A bike for sale" : {},
     "A bill from the bike shop" : {},
     "A bill from the gym" : {},
+    "A bit of everything" : {},
     "A book or a series" : {},
     "A book review" : {},
     "A book that impressed me" : {},
@@ -364,6 +375,7 @@
     "A misunderstanding" : {},
     "A new caretaker" : {},
     "A new hobby" : {},
+    "A new lesson is ready tomorrow." : {},
     "A no-parking zone for a day" : {},
     "A notice about road works" : {},
     "A notice by the letterboxes" : {},
@@ -443,6 +455,8 @@
     "A “realignment” of the company" : {},
     "Abbreviations in the listings" : {},
     "abfahren → die Abfahrt: some change their form" : {},
+    "About %lld min left" : {},
+    "About %lld minutes to go" : {},
     "About me" : {},
     "Accessibility" : {},
     "According to experts, prices will keep rising." : {},
@@ -812,6 +826,7 @@
     "Don't forget your appointment" : {},
     "Don't worry, I'll be on time." : {},
     "Done" : {},
+    "Done for today" : {},
     "Done today" : {},
     "Done. It’s kept in Your sessions." : {},
     "Download English and German once to translate privately on your iPhone." : {},
@@ -902,6 +917,7 @@
     "First steps" : {},
     "First, what should we call you?" : {},
     "Fix" : {},
+    "Fix ^[%lld mistake](inflect: true)" : {},
     "FIX YOUR MISTAKES" : {},
     "Fixed" : {},
     "Flat advert" : {},
@@ -1307,6 +1323,7 @@
     "Mistake" : {},
     "Mistakes" : {},
     "Mistakes from your conversations and 60 seconds land here." : {},
+    "Mistakes practised" : {},
     "mit: how you go, or who with" : {},
     "Modal particles" : {},
     "Mode" : {},
@@ -1404,6 +1421,7 @@
     "Newspaper article" : {},
     "Next" : {},
     "Next clue" : {},
+    "Next design" : {},
     "Next question" : {},
     "Next stop · %@" : {},
     "Next task" : {},
@@ -1591,6 +1609,7 @@
     "Present" : {},
     "Present tense" : {},
     "Presents" : {},
+    "Previous design" : {},
     "Prices at the swimming pool" : {},
     "Privacy" : {},
     "Privacy & AI" : {},
@@ -1834,6 +1853,7 @@
     "Sport" : {},
     "Sport and clubs" : {},
     "Sport and health" : {},
+    "Start" : {},
     "Start 60 seconds of talking" : {},
     "Start a Conversation" : {},
     "Start a round" : {},
@@ -1842,8 +1862,10 @@
     "Start review" : {},
     "Start talking" : {},
     "Start the exam" : {},
+    "Start the lesson" : {},
     "Start this rule" : {},
     "Start writing" : {},
+    "Start · %lld min" : {},
     "Starts a German speaking session in Alltag." : {},
     "Starts a one-minute exercise on your mistakes." : {},
     "Starts a short review of the words you saved in Alltag." : {},
@@ -1912,6 +1934,7 @@
     "Tenants’ rights" : {},
     "Tenses" : {},
     "Text" : {},
+    "Text %@" : {},
     "Text a friend" : {},
     "Thanks a lot for that!" : {},
     "Thanks for helping me!" : {},
@@ -2203,6 +2226,7 @@
     "Today we're open until 6 pm." : {},
     "Today's focus" : {},
     "Today: fresh waffles with hot cherries." : {},
+    "Today’s lesson" : {},
     "Tomorrow the sun will shine." : {},
     "Tomorrow there'll be heavy rain all day." : {},
     "Tomorrow there'll be lots of sun." : {},
@@ -2506,6 +2530,7 @@
     "Your landlord's yearly bill" : {},
     "Your level" : {},
     "Your level map" : {},
+    "Your mistakes" : {},
     "Your new rental contract" : {},
     "Your next rule" : {},
     "Your own sentence" : {},
