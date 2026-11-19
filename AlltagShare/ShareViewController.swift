@@ -7,7 +7,6 @@
 
 import SwiftUI
 import UIKit
-import UniformTypeIdentifiers
 
 /// "Alltag" in the share sheet: keeps the shared link in the App Group, where
 /// Learn › Read finds it and opens the article with help. Nothing is loaded
@@ -30,19 +29,29 @@ final class ShareViewController: UIViewController {
     /// The web link shared: a URL, or the first link in shared text.
     private func sharedLink() async -> URL? {
         let providers = (extensionContext?.inputItems as? [NSExtensionItem] ?? []).flatMap { $0.attachments ?? [] }
-        for provider in providers where provider.hasItemConformingToTypeIdentifier(UTType.url.identifier) {
-            if let url = try? await provider.loadItem(forTypeIdentifier: UTType.url.identifier) as? URL,
-               url.scheme == "https" || url.scheme == "http" {
+        for provider in providers where provider.canLoadObject(ofClass: URL.self) {
+            if let url = await Self.url(from: provider), url.scheme == "https" || url.scheme == "http" {
                 return url
             }
         }
-        for provider in providers where provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier) {
-            if let text = try? await provider.loadItem(forTypeIdentifier: UTType.plainText.identifier) as? String,
-               let url = Self.firstLink(in: text) {
+        for provider in providers where provider.canLoadObject(ofClass: String.self) {
+            if let text = await Self.text(from: provider), let url = Self.firstLink(in: text) {
                 return url
             }
         }
         return nil
+    }
+
+    private nonisolated static func url(from provider: NSItemProvider) async -> URL? {
+        await withCheckedContinuation { continuation in
+            _ = provider.loadObject(ofClass: URL.self) { url, _ in continuation.resume(returning: url) }
+        }
+    }
+
+    private nonisolated static func text(from provider: NSItemProvider) async -> String? {
+        await withCheckedContinuation { continuation in
+            _ = provider.loadObject(ofClass: String.self) { text, _ in continuation.resume(returning: text) }
+        }
     }
 
     private static func firstLink(in text: String) -> URL? {

@@ -92,7 +92,7 @@ extension WebArticles {
 }
 
 /// A German site with articles for a level, to start from.
-struct WebReadingSite: Identifiable, Hashable {
+struct WebReadingSite: Identifiable {
     let name: String
     let url: URL
     let about: LocalizedStringResource
