@@ -35,13 +35,10 @@ struct FriendAvatar: View {
 /// "B1 · about 80 words".
 struct TopicLengthText: View {
     let level: Level
+    let words: Int
 
     var body: some View {
-        Self.text(for: level)
-    }
-
-    static func text(for level: Level) -> Text {
-        Text("\(level.title) · about \(WritingLength.words(for: level)) words")
+        Text("\(level.title) · about \(words) words")
     }
 }
 
@@ -55,7 +52,7 @@ struct TopicCard: View {
         VStack(spacing: 18) {
             HStack(alignment: .center, spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
-                    TopicLengthText(level: topic.level)
+                    TopicLengthText(level: topic.level, words: WritingLength.words(for: topic.level))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.accent)
                     Text(verbatim: topic.title)

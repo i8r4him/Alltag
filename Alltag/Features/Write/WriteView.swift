@@ -8,11 +8,10 @@
 import SwiftData
 import SwiftUI
 
-/// Learn › Write: chats with German friends in everyday German, then formal
-/// writing: answer an email, a letter as a language course sets it, a form,
-/// and a topic at the learner's level, as long as the level asks for. The
-/// chat and the writing come in their own issues; for now a tap only answers
-/// with a haptic.
+/// Learn › Write, all at the learner's level: chats with German friends in
+/// everyday German, a formal email as a language course sets it, a topic as
+/// long as the level asks for, and a form at A1 and A2. The chat and the
+/// writing come in their own issues; for now a tap only answers with a haptic.
 struct WriteView: View {
     @Query private var profiles: [UserProfile]
     @State private var taps = 0
@@ -23,23 +22,25 @@ struct WriteView: View {
         LearnScreen(title: "Write") {
             LearnSection(title: "Text a friend") {
                 WriteGlassList {
-                    ForEach(MockWriting.chats) { chat in
+                    ForEach(MockWriting.chats(at: level)) { chat in
                         ChatRow(chat: chat, action: tapped)
                     }
                 }
             }
-            LearnSection(title: "Reply to an email") {
-                EmailCard(email: MockWriting.email, onReply: tapped)
-            }
-            LearnSection(title: "Write a letter", note: Text("Like in a course")) {
-                LetterTaskCard(task: MockWriting.letter, level: level, onStart: tapped)
-            }
-            LearnSection(title: "Fill in a form") {
-                FormCard(form: MockWriting.form, onStart: tapped)
+            if let task = MockWriting.formalTask(at: level) {
+                LearnSection(title: "Formal email", note: Text("Like in a course")) {
+                    FormalEmailCard(task: task, onStart: tapped)
+                }
             }
             if let topic = MockWriting.topics(at: level).first {
                 LearnSection(title: "Write about a topic") {
                     TopicCard(topic: topic, onStart: tapped)
+                }
+            }
+            // A form is only worth practising at the first two levels.
+            if level <= .a2 {
+                LearnSection(title: "Fill in a form") {
+                    FormCard(form: MockWriting.form, onStart: tapped)
                 }
             }
         }

@@ -7,57 +7,21 @@
 
 import SwiftUI
 
-/// A formal email that came in: who sent it, its subject and its first lines,
-/// and the button to answer it with *Sie*.
-struct EmailCard: View {
-    let email: FormalEmail
-    let onReply: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 12) {
-                ScenarioArtwork(systemImage: "envelope.fill", symbolSize: 20, cornerRadius: 12)
-                    .frame(width: 44, height: 44)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(verbatim: email.sender)
-                        .font(.headline)
-                    Text(verbatim: email.subject)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .accessibilityElement(children: .combine)
-            }
-            Text(verbatim: email.body)
-                .font(.body)
-                .environment(\.locale, Locale(identifier: "de_DE"))
-                .lineLimit(5)
-                .padding(14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.fill.tertiary, in: .rect(cornerRadius: Radius.option, style: .continuous))
-            GlassEffectContainer {
-                Button(action: onReply) {
-                    Label("Reply formally", systemImage: "arrowshape.turn.up.left.fill")
-                }
-                .buttonStyle(.primary)
-            }
-        }
-        .padding(Spacing.cardLarge)
-        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
-    }
-}
-
-/// A letter as a language course sets it: the length for the level, the
-/// situation, the points to write about and the reminder of the greeting.
-struct LetterTaskCard: View {
-    let task: LetterTask
-    let level: Level
+/// A formal email as a language course sets it: the length for the level,
+/// the email to answer if there is one, the situation, the points to write
+/// about and the reminder of the greeting.
+struct FormalEmailCard: View {
+    let task: FormalTask
     let onStart: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            TopicLengthText(level: level)
+            TopicLengthText(level: task.level, words: WritingLength.formalWords(for: task.level))
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.accent)
+            if let email = task.email {
+                ReceivedEmail(email: email)
+            }
             Text(verbatim: task.situation)
                 .font(.title3.weight(.semibold))
                 .environment(\.locale, Locale(identifier: "de_DE"))
@@ -79,7 +43,11 @@ struct LetterTaskCard: View {
                 .foregroundStyle(.secondary)
             GlassEffectContainer {
                 Button(action: onStart) {
-                    Label("Start writing", systemImage: "pencil")
+                    if task.email == nil {
+                        Label("Start writing", systemImage: "pencil")
+                    } else {
+                        Label("Reply formally", systemImage: "arrowshape.turn.up.left.fill")
+                    }
                 }
                 .buttonStyle(.primary)
             }
@@ -87,6 +55,35 @@ struct LetterTaskCard: View {
         .padding(Spacing.cardLarge)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+    }
+}
+
+/// The email that came in: who sent it, its subject and its first lines.
+private struct ReceivedEmail: View {
+    let email: FormalEmail
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                ScenarioArtwork(systemImage: "envelope.fill", symbolSize: 20, cornerRadius: 12)
+                    .frame(width: 44, height: 44)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: email.sender)
+                        .font(.headline)
+                    Text(verbatim: email.subject)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityElement(children: .combine)
+            }
+            Text(verbatim: email.body)
+                .font(.body)
+                .environment(\.locale, Locale(identifier: "de_DE"))
+                .lineLimit(5)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.fill.tertiary, in: .rect(cornerRadius: Radius.option, style: .continuous))
     }
 }
 
