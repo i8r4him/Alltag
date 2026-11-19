@@ -8,8 +8,12 @@
 import Foundation
 
 extension ReadDoScenes {
-    /// B2: the paperwork of a settled life: a bank transfer, an electricity bill, a pay slip.
-    static let b2: [ReadDoScene] = [b2Airport, b2Detour, b2Label, b2Transfer, b2Electricity, b2Payslip]
+    /// B2: the paperwork of a settled life: a bank transfer, an electricity bill, a pay slip, a tenancy
+    /// agreement. The scenes of the flat and the street are in `ReadDoScenes+B2Home.swift`.
+    static let b2: [ReadDoScene] = [
+        b2Airport, b2Parking, b2Label, b2Transfer, b2Hardware, b2Electricity, b2Medicine,
+        b2Payslip, b2Bins, b2Insurance, b2Lease, b2ServiceCharges, b2Detour
+    ]
 
     static let b2Airport = ReadDoScene(
         id: "b2-do-airport", level: .b2, kind: .departures,

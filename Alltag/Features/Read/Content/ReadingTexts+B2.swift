@@ -8,8 +8,12 @@
 import Foundation
 
 extension ReadingTexts {
-    /// B2: texts from work, the house and the news, with formal phrasing, about 130 to 170 words.
-    static let b2: [ReadingText] = [b2Renovation, b2Interview, b2Waste, b2Party, b2FourDays, b2Strike]
+    /// B2: texts from work, the house, the family and the news, with formal phrasing, about 90 to 160
+    /// words. The texts from family, health, the flat and the car are in `ReadingTexts+B2Everyday.swift`.
+    static let b2: [ReadingText] = [
+        b2Renovation, b2Garage, b2Interview, b2FlatAd, b2Party, b2Dentist, b2Waste,
+        b2Canteen, b2FourDays, b2Nursery, b2Strike, b2Gym, b2ClassTrip, b2Recognition
+    ]
 
     static let b2Renovation = ReadingText(
         id: "b2-renovation", level: .b2, kind: .letter,
