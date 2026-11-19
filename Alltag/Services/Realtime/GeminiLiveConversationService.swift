@@ -55,6 +55,13 @@ final class GeminiLiveSession: RealtimeConversationSession {
     private var isStopped = false
     private var isResponding = false
     private var isListening = false
+    /// Hold to talk: the learner is holding the orb.
+    private var isHolding = false
+    /// Hold to talk: Gemini was told the turn started, so the microphone goes out.
+    private var isTurnOpen = false
+    /// Hold to talk: the start and end of turns, sent one after the other.
+    private var turnMessages: Task<Void, Never>?
+    private var emit: ((RealtimeConversationEvent) -> Void)?
     private var turns = 0
     /// The companion's line being spoken, if one is.
     private var companionItem: String?
@@ -81,15 +88,25 @@ final class GeminiLiveSession: RealtimeConversationSession {
         try await configure(socket, model: ticket.model)
         try checkRunning()
         let samples = try await audio.start()
+        self.emit = emit
         // The model waits to be spoken to. A line of text makes it open the conversation,
-        // as its instructions say; it is not shown and not spoken.
-        try await send(["realtimeInput": ["text": Self.opening]], over: socket)
+        // as its instructions say; it is not shown and not spoken. Holding to talk, Gemini
+        // doesn't listen for pauses, so the line is marked as a whole turn.
+        let opening = Self.opening(history: context.history)
+        if context.holdsToTalk {
+            let turn: [[String: Any]] = [Self.activity(.start), ["realtimeInput": ["text": opening]], Self.activity(.end)]
+            for message in turn { try await send(message, over: socket) }
+        } else {
+            try await send(["realtimeInput": ["text": opening]], over: socket)
+        }
         try checkRunning()
 
         upload = Task {
             do {
                 for try await chunk in samples {
                     try checkRunning()
+                    // Holding to talk, only what is said while the orb is held goes out.
+                    if context.holdsToTalk, !isTurnOpen { continue }
                     let audio = ["data": chunk.base64EncodedString(), "mimeType": Self.inputFormat]
                     try await send(["realtimeInput": ["audio": audio]], over: socket)
                 }
@@ -104,9 +121,39 @@ final class GeminiLiveSession: RealtimeConversationSession {
         }
     }
 
+    func beginTurn() {
+        guard context.holdsToTalk, !isStopped, !isHolding, let socket, let emit else { return }
+        isHolding = true
+        // Talking over the companion stops it, as when Gemini hears it in hands-free.
+        if let cut = audio.interrupt() { emit(.interruptTranscript(id: cut.item)) }
+        endCompanionTurn()
+        emit(.phase(.listening))
+        let previous = turnMessages
+        turnMessages = Task {
+            await previous?.value
+            try? await send(Self.activity(.start), over: socket)
+            // Only now does the microphone go out, so it can't arrive before the start.
+            isTurnOpen = isHolding && !isStopped
+        }
+    }
+
+    func endTurn() {
+        guard context.holdsToTalk, isHolding, let socket, let emit else { return }
+        isHolding = false
+        isTurnOpen = false
+        emit(.phase(.thinking))
+        let previous = turnMessages
+        turnMessages = Task {
+            await previous?.value
+            try? await send(Self.activity(.end), over: socket)
+        }
+    }
+
     func stop() {
         guard !isStopped else { return }
         isStopped = true
+        emit = nil
+        turnMessages?.cancel()
         upload?.cancel()
         upload = nil
         socket?.close()
@@ -115,6 +162,21 @@ final class GeminiLiveSession: RealtimeConversationSession {
     }
 
     static let opening = "(The learner has joined. Begin.)"
+
+    /// The hidden line that opens the conversation. Reconnecting, it carries what was said,
+    /// so the companion carries on instead of greeting again.
+    static func opening(history: String) -> String {
+        guard !history.isEmpty else { return opening }
+        return "(The conversation so far:\n\(history)\nThe connection was renewed. Carry on from here; don't greet again.)"
+    }
+
+    private enum Activity { case start, end }
+
+    /// Hold to talk: marks where the learner's turn starts and ends.
+    private static func activity(_ activity: Activity) -> [String: Any] {
+        ["realtimeInput": [activity == .start ? "activityStart" : "activityEnd": [String: Any]()]]
+    }
+
     /// The microphone's format. Gemini listens at 16 kHz and resamples what says otherwise.
     static let inputFormat = "audio/pcm;rate=\(SystemRealtimeAudio.sampleRate)"
 
@@ -154,7 +216,8 @@ final class GeminiLiveSession: RealtimeConversationSession {
             emit(.phase(.listening))
         }
         if let heard = message.heard, !heard.isEmpty { hear(heard, emit: emit) }
-        if !message.audio.isEmpty || message.spoken != nil {
+        // Holding to talk over the companion: what it still sends of the cut answer isn't played.
+        if !isHolding, !message.audio.isEmpty || message.spoken != nil {
             let item = beginCompanionTurn(emit: emit)
             for chunk in message.audio {
                 try audio.play(chunk, item: item) { [weak self] in self?.finishPlayback(emit: emit) }
@@ -208,7 +271,9 @@ final class GeminiLiveSession: RealtimeConversationSession {
     }
 
     private func finishPlayback(emit: (RealtimeConversationEvent) -> Void) {
-        if !isStopped, !isResponding, !isListening, !audio.hasPlayback { emit(.phase(.listening)) }
+        guard !isStopped, !isResponding, !isListening, !isHolding, !audio.hasPlayback else { return }
+        // Holding to talk, the companion waits for the orb to be held again.
+        emit(.phase(context.holdsToTalk ? .idle : .listening))
     }
 
     private func checkRunning() throws {

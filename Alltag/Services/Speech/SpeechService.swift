@@ -68,6 +68,8 @@ final class MockSpeechService: SpeechService {
                 try? await Task.sleep(for: interval)
                 if Task.isCancelled { return }
                 continuation.yield(words.prefix(count).joined(separator: " "))
+                // Each simulated word is a pulse for the orb.
+                VoiceMeter.shared.record(.random(in: 0.5...0.9), from: .learner)
             }
             continuation.finish()
         }

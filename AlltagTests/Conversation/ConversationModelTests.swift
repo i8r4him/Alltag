@@ -115,6 +115,35 @@ struct ConversationModelTests {
         #expect(model.phase == .idle)
     }
 
+    @Test("Holding to talk: pressing listens, letting go sends the whole line", .timeLimit(.minutes(3)))
+    func holdToTalk() async throws {
+        let model = makeModel(speech: FirstWordSpeech())
+        model.holdsToTalk = true
+        #expect(String(localized: try #require(model.stateLabel)) == "Hold to talk")
+
+        model.orbPressed()
+        while model.heardText.isEmpty {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(model.phase == .listening)
+        #expect(String(localized: try #require(model.stateLabel)) == "Listening… let go when done")
+
+        model.orbReleased()
+        await model.waitForTurn()
+        #expect(model.messages[1].line.german == "Können wir den Termin auf morgen verschieben?")
+        #expect(model.phase == .idle)
+        #expect(!model.showsFinishButton)
+    }
+
+    @Test("Hands-free, pressing and letting go do nothing: the orb is tapped instead")
+    func pressIgnoredHandsFree() {
+        let model = makeModel()
+        model.orbPressed()
+        #expect(model.phase == .idle)
+        model.orbReleased()
+        #expect(model.messages.count == 1)
+    }
+
     @Test("Taps are ignored once the conversation is finished")
     func ignoresTapsWhenFinished() async {
         let model = makeModel()

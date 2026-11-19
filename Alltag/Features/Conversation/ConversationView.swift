@@ -12,11 +12,20 @@ import SwiftUI
 struct ConversationView: View {
     let scenario: Scenario
     var level: Level = .a1
+    /// Today's orb, when the learner tapped it to come here: it moves to its place as the page fades in.
+    var launch: OrbLaunch?
     @Environment(\.services) private var services
     @Environment(AppState.self) private var appState
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
     @State private var model: ConversationModel?
+    /// Today's orb has reached its place, and has finished bouncing there, so the page's own orb shows.
+    @State private var hasTouchedDown = false
+    @State private var hasLanded = false
+    /// The orb is flying back to Today, as the page fades out around it.
+    @State private var isReturning = false
+    /// The page fades in around the moving orb, and out when it flies back.
+    @State private var isShown = false
 
     var body: some View {
         Group {
@@ -27,24 +36,37 @@ struct ConversationView: View {
             }
         }
         .background(.screenBackground)
+        .opacity(launch != nil && !isShown ? 0 : 1)
+        .overlayPreferenceValue(OrbSlotKey.self) { flight(to: $0) }
+        .environment(\.orbIsLanding, launch != nil && (!hasLanded || isReturning))
+        .environment(\.orbHoldsPage, launch != nil && (!hasTouchedDown || isReturning))
+        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.8), trigger: hasTouchedDown) { $1 }
+        .onChange(of: appState.isOrbReturning) { _, returning in
+            guard returning, launch != nil else { return }
+            isReturning = true
+            withAnimation(.easeIn(duration: 0.4).delay(0.2)) { isShown = false }
+        }
         .onAppear {
+            withAnimation(.easeOut(duration: 0.55).delay(0.1)) { isShown = true }
             if model == nil {
                 let model = ConversationModel(scenario: scenario, services: services,
                                               usesCloudVoice: appState.settings.usesCloudForPro, level: level)
+                model.holdsToTalk = appState.settings.holdsToTalk
                 self.model = model
-                // Free talk starts straight away: the learner tapped the companion to talk.
-                // A soft chime first, before the microphone takes over the audio.
-                if scenario.isLiveOnly, model.canRespond {
-                    SoundEffects.play(.focus)
-                    Task {
-                        try? await Task.sleep(for: .milliseconds(450))
-                        if model.canRespond { model.orbTapped() }
-                    }
-                }
+                // Coming from Today's orb, free talk waits until the orb has landed: starting the
+                // microphone and the voice holds up the main thread for a moment, which would
+                // make the moving orb jump.
+                if launch == nil { startFreeTalk(model) }
             }
+        }
+        .onChange(of: hasLanded) { _, landed in
+            if landed, let model { startFreeTalk(model) }
         }
         .onChange(of: appState.settings.usesCloudForPro) { _, allowed in
             model?.setCloudVoiceConsent(allowed)
+        }
+        .onChange(of: appState.settings.holdsToTalk) { _, holds in
+            model?.holdsToTalk = holds
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background { model?.suspendCloudVoice() }
@@ -52,6 +74,32 @@ struct ConversationView: View {
         .onDisappear {
             model?.stop()
             model?.recordPractice(in: modelContext)
+        }
+    }
+
+    /// Today's orb on its way here, or back to Today when the talk ends.
+    @ViewBuilder
+    private func flight(to slot: Anchor<CGRect>?) -> some View {
+        if let launch {
+            if isReturning {
+                OrbFlight(launch: launch, target: slot, isReturning: true) { appState.finishOrbReturn() }
+            } else if !hasLanded {
+                OrbFlight(launch: launch, target: slot,
+                          onTouchdown: { hasTouchedDown = true },
+                          // Also when it had nowhere to land (a problem shows instead), so the page never stays hidden.
+                          onLanded: { hasTouchedDown = true; hasLanded = true })
+            }
+        }
+    }
+
+    /// Free talk starts straight away: the learner tapped the companion to talk.
+    /// A soft chime first, before the microphone takes over the audio.
+    private func startFreeTalk(_ model: ConversationModel) {
+        guard scenario.isLiveOnly, model.canRespond else { return }
+        SoundEffects.play(.focus)
+        Task {
+            try? await Task.sleep(for: .milliseconds(450))
+            if model.canRespond { model.orbTapped() }
         }
     }
 }
@@ -74,6 +122,7 @@ private struct ConversationContent: View {
                         .padding(.vertical, 7)
                         .glassEffect(.regular, in: .capsule)
                         .padding(.top, 8)
+                        .waitsForOrb()
                 }
 
                 if let problem = model.problem {
@@ -133,6 +182,7 @@ private struct ConversationContent: View {
                 model.stop()
                 appState.dismissFullScreen()
             }
+            .waitsForOrb()
         }
         ToolbarItem(placement: .principal) {
             VStack(spacing: 1) {
@@ -145,6 +195,7 @@ private struct ConversationContent: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
+            .waitsForOrb()
         }
         if !model.scenario.isLiveOnly {
             ToolbarItem(placement: .topBarTrailing) {
@@ -167,6 +218,7 @@ private struct ConversationContent: View {
     /// The transcript and the controls under it.
     @ViewBuilder private var talking: some View {
         TranscriptView(messages: model.messages, heardText: model.heardText)
+            .waitsForOrb()
 
         if model.needsCloudConsent {
             CloudConsentCard {
@@ -200,28 +252,28 @@ private struct ConversationContent: View {
     private var voiceControls: some View {
         VStack(spacing: 12) {
             HStack {
-                if model.scenario.isLiveOnly {
-                    Color.clear.frame(width: 48, height: 48)
-                } else {
-                    CircleGlassButton(title: "Type instead", systemImage: "keyboard", size: 48) { model.mode = .text }
+                Group {
+                    if model.scenario.isLiveOnly {
+                        Color.clear.frame(width: 48, height: 48)
+                    } else {
+                        CircleGlassButton(title: "Type instead", systemImage: "keyboard", size: 48) { model.mode = .text }
+                    }
                 }
+                .waitsForOrb()
                 Spacer()
-                Button { model.orbTapped() } label: {
-                    CompanionOrb(dynamics: OrbDynamics(state: model.phase), isLive: !model.isFinished)
-                        .frame(width: 150, height: 150)
-                        .scaleEffect(model.phase == .listening ? 1.06 : 1)
-                        .animation(.spring(duration: 0.5), value: model.phase)
-                }
-                .buttonStyle(.plain)
-                // Not `.disabled`: that would dim the orb while thinking and speaking.
-                .allowsHitTesting(model.isUsingCloudVoice || model.canRespond || model.phase == .listening)
-                .accessibilityLabel(Text(model.isUsingCloudVoice ? "End conversation" : model.stateLabel ?? "Voice"))
+                TalkOrb(model: model)
+                    .anchorPreference(key: OrbSlotKey.self, value: .bounds) { $0 }
                 Spacer()
-                if model.scenario.isLiveOnly {
-                    Color.clear.frame(width: 48, height: 48)
-                } else {
-                    hintButton(size: 48)
+                Group {
+                    if model.showsFinishButton {
+                        CircleGlassButton(title: "Finish", systemImage: "checkmark", size: 48) { model.finishCloudConversation() }
+                    } else if model.scenario.isLiveOnly {
+                        Color.clear.frame(width: 48, height: 48)
+                    } else {
+                        hintButton(size: 48)
+                    }
                 }
+                .waitsForOrb()
             }
             Group {
                 if let label = model.stateLabel { Text(label) }
@@ -230,6 +282,11 @@ private struct ConversationContent: View {
             .foregroundStyle(.secondary)
             .frame(height: 20)
             .accessibilityHidden(true)
+            .waitsForOrb()
+            if !model.isFinished {
+                TalkModePicker()
+                    .waitsForOrb()
+            }
         }
         .padding(.horizontal, 28)
         .padding(.top, 4)
@@ -271,6 +328,21 @@ private struct ConversationContent: View {
 
     private func send() {
         Task { await model.send() }
+    }
+}
+
+/// Hands-free or hold to talk, remembered for the next conversation.
+private struct TalkModePicker: View {
+    @Environment(AppState.self) private var appState
+
+    var body: some View {
+        Picker("How you talk", selection: Bindable(appState.settings).holdsToTalk) {
+            Text("Hands-free").tag(false)
+            Text("Hold to talk").tag(true)
+        }
+        .pickerStyle(.segmented)
+        .frame(maxWidth: 260)
+        .sensoryFeedback(.selection, trigger: appState.settings.holdsToTalk)
     }
 }
 

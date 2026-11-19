@@ -171,6 +171,7 @@ nonisolated private final class Microphone: @unchecked Sendable {
         // name (the `error: ()` is how the importer spells the thrown error). Switch to the
         // refined name once the SDK has it.
         try inputNode.__installTap(onBus: 0, bufferSize: 4096, format: inputFormat, error: ()) { @Sendable buffer, _ in
+            VoiceMeter.shared.record(buffer, from: .learner)
             let capacity = AVAudioFrameCount((Double(buffer.frameLength) * ratio).rounded(.up))
             guard let converted = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: capacity) else { return }
             var isConsumed = false

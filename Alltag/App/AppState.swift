@@ -21,6 +21,10 @@ final class AppState {
     private(set) var roots: [AppTab: Route] = [:]
     /// The screen currently covering everything, if any.
     var fullScreen: FullScreenRoute?
+    /// Today's orb, when the learner tapped it to start the conversation now covering everything.
+    private(set) var orbLaunch: OrbLaunch?
+    /// That conversation is ending: its orb flies back to Today, then it closes (`finishOrbReturn`).
+    private(set) var isOrbReturning = false
     /// Device settings (Reduce motion, Slower speech, …), persisted.
     let settings: AppSettings
 
@@ -65,10 +69,38 @@ final class AppState {
 
     /// Presents a full-screen flow such as a conversation.
     func present(_ route: FullScreenRoute) {
+        orbLaunch = nil
+        isOrbReturning = false
         fullScreen = route
     }
 
+    /// Starts today's conversation from Today's orb. With `launch`, the orb carries the learner
+    /// there, and the conversation is drawn over the tabs instead of slid up as a cover
+    /// (see `talksOverTabs`), so it can fade in around the orb.
+    func talk(from launch: OrbLaunch?) {
+        orbLaunch = launch
+        fullScreen = .conversation(.freeTalk)
+    }
+
+    /// Today's conversation, started from the orb, is drawn over the tabs rather than as a cover.
+    var talksOverTabs: Bool {
+        orbLaunch != nil && fullScreen == .conversation(.freeTalk)
+    }
+
+    /// Closes the flow covering everything. Today's conversation from the orb first sends its
+    /// orb back to Today, and closes once it is there.
     func dismissFullScreen() {
+        if talksOverTabs {
+            isOrbReturning = true
+        } else {
+            fullScreen = nil
+        }
+    }
+
+    /// The orb is back on Today: the conversation it came from closes.
+    func finishOrbReturn() {
+        guard isOrbReturning else { return }
+        isOrbReturning = false
         fullScreen = nil
     }
 

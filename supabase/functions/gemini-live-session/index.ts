@@ -9,7 +9,8 @@
 // Request:  POST, Authorization: Bearer <Supabase access token>
 //           { "scenario": "dentist", "instructions": "<scenario context>",
 //             "thinking_pause": "2400",   (ms of silence before the companion answers)
-//             "slower": "true" }          (all optional)
+//             "slower": "true",
+//             "push_to_talk": "true" }    (hold to talk: the app marks each turn; all optional)
 // Response: 200 { "token": "auth_tokens/…", "expires_at": 1794081234, "model": "…", "voice": "…" }
 // Errors:   401 unauthorized · 405 method_not_allowed · 429 daily_limit | busy
 //           502 upstream · 503 not_configured | unavailable
@@ -63,6 +64,8 @@ Deno.serve(async (req) => {
   // Learners stop mid-sentence to think: the silence before an answer is the app's, within bounds.
   const pause = Math.min(Math.max(Number(body.thinking_pause) || 2000, 800), 4000);
   const slower = body.slower === "true" || body.slower === true;
+  // Hold to talk: Google doesn't listen for pauses; the app sends activityStart and activityEnd.
+  const pushToTalk = body.push_to_talk === "true" || body.push_to_talk === true;
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const [mine, everyone, developer] = await Promise.all([
@@ -108,7 +111,9 @@ Deno.serve(async (req) => {
           systemInstruction: { parts: [{ text: instructions }] },
           inputAudioTranscription: {},
           outputAudioTranscription: {},
-          realtimeInputConfig: { automaticActivityDetection: { silenceDurationMs: pause } },
+          realtimeInputConfig: pushToTalk
+            ? { automaticActivityDetection: { disabled: true } }
+            : { automaticActivityDetection: { silenceDurationMs: pause } },
         },
       }),
       signal: AbortSignal.timeout(20000),

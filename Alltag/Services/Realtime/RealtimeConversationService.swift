@@ -16,6 +16,10 @@ struct RealtimeConversationContext {
     let thinkingPause: Int
     /// No script to fall back to (free talk and situations).
     let isLiveOnly: Bool
+    /// Hold to talk: the companion answers when the learner lets go, not after a pause.
+    var holdsToTalk = false
+    /// What was said before, when the live voice reconnects in the middle of a conversation.
+    var history = ""
 
     init(scenario: Scenario, level: Level, slowerSpeech: Bool) {
         self.scenario = scenario.id.rawValue
@@ -70,6 +74,15 @@ protocol RealtimeConversationService {
 protocol RealtimeConversationSession: AnyObject {
     func run(emit: @escaping (RealtimeConversationEvent) -> Void) async throws
     func stop()
+    /// Hold to talk: the learner pressed the orb and starts talking.
+    func beginTurn()
+    /// Hold to talk: the learner let go; the companion answers.
+    func endTurn()
+}
+
+extension RealtimeConversationSession {
+    func beginTurn() {}
+    func endTurn() {}
 }
 
 struct MockRealtimeConversationService: RealtimeConversationService {
@@ -91,29 +104,90 @@ struct MockRealtimeConversationService: RealtimeConversationService {
 /// unavailable, so they keep their script.
 struct SimulatedRealtimeConversationService: RealtimeConversationService {
     func makeSession(for context: RealtimeConversationContext) -> any RealtimeConversationSession {
-        context.isLiveOnly ? FreeTalkSession() : MockRealtimeConversationService().makeSession(for: context)
+        context.isLiveOnly ? FreeTalkSession(holdsToTalk: context.holdsToTalk) : MockRealtimeConversationService().makeSession(for: context)
     }
 
     private final class FreeTalkSession: RealtimeConversationSession {
+        private let holdsToTalk: Bool
         private var isStopped = false
+        private var emit: ((RealtimeConversationEvent) -> Void)?
+        /// Hold to talk: the made-up learner talking while the orb is held, and the reply after.
+        private var talking: Task<Void, Never>?
+        private var reply: Task<Void, Never>?
+        private var turns = 0
+
+        init(holdsToTalk: Bool) {
+            self.holdsToTalk = holdsToTalk
+        }
 
         func run(emit: @escaping (RealtimeConversationEvent) -> Void) async throws {
-            let lines: [(ConversationLine.Speaker, String)] = [
-                (.companion, "Hallo! Wie geht's dir heute?"),
-                (.learner, "Gut, ich war heute in die Stadt."),
-                (.companion, "Schön! Du warst heute in der Stadt? Was hast du dort gemacht?")
-            ]
-            for (index, line) in lines.enumerated() {
-                emit(.phase(line.0 == .companion ? .speaking : .listening))
-                emit(.transcript(id: "simulated-\(index)", speaker: line.0, text: line.1, replacesPrevious: true))
-                try await Task.sleep(for: .seconds(2))
-                if line.0 == .learner { emit(.phase(.thinking)); try await Task.sleep(for: .seconds(1)) }
-                guard !isStopped else { return }
+            if holdsToTalk {
+                self.emit = emit
+                try await say(.companion, "Hallo! Wie geht's dir heute?", id: "simulated-0", emit: emit)
+                emit(.phase(.idle))
+            } else {
+                let lines: [(ConversationLine.Speaker, String)] = [
+                    (.companion, "Hallo! Wie geht's dir heute?"),
+                    (.learner, "Gut, ich war heute in die Stadt."),
+                    (.companion, "Schön! Du warst heute in der Stadt? Was hast du dort gemacht?")
+                ]
+                for (index, line) in lines.enumerated() {
+                    try await say(line.0, line.1, id: "simulated-\(index)", emit: emit)
+                    if line.0 == .learner { emit(.phase(.thinking)); try await Task.sleep(for: .seconds(1)) }
+                    guard !isStopped else { return }
+                }
+                emit(.phase(.listening))
             }
-            emit(.phase(.listening))
             while !isStopped { try await Task.sleep(for: .milliseconds(200)) }
         }
 
-        func stop() { isStopped = true }
+        func stop() {
+            isStopped = true
+            talking?.cancel()
+            reply?.cancel()
+        }
+
+        func beginTurn() {
+            guard holdsToTalk, !isStopped, talking == nil, let emit else { return }
+            reply?.cancel()
+            emit(.phase(.listening))
+            talking = Task { [weak self] in try? await self?.pulse(.learner, for: .seconds(60)) }
+        }
+
+        func endTurn() {
+            guard let emit, let talking else { return }
+            talking.cancel()
+            self.talking = nil
+            turns += 1
+            let turn = turns
+            emit(.transcript(id: "simulated-learner-\(turn)", speaker: .learner,
+                             text: "Gut, ich war heute in der Stadt.", replacesPrevious: true))
+            emit(.phase(.thinking))
+            reply = Task { [weak self] in
+                do {
+                    try await Task.sleep(for: .seconds(1))
+                    try await self?.say(.companion, "Schön! Was hast du dort gemacht?", id: "simulated-reply-\(turn)", emit: emit)
+                    emit(.phase(.idle))
+                } catch {
+                    return
+                }
+            }
+        }
+
+        private func say(_ speaker: ConversationLine.Speaker, _ text: String, id: String,
+                         emit: (RealtimeConversationEvent) -> Void) async throws {
+            emit(.phase(speaker == .companion ? .speaking : .listening))
+            emit(.transcript(id: id, speaker: speaker, text: text, replacesPrevious: true))
+            try await pulse(speaker == .companion ? .companion : .learner, for: .seconds(2))
+        }
+
+        /// Loudness for the orb, as if someone were talking: a pulse per syllable.
+        private func pulse(_ source: VoiceMeter.Source, for duration: Duration) async throws {
+            let end = ContinuousClock.now + duration
+            while ContinuousClock.now < end, !isStopped {
+                VoiceMeter.shared.record(.random(in: 0.45...0.95), from: source)
+                try await Task.sleep(for: .milliseconds(Int.random(in: 140...240)))
+            }
+        }
     }
 }

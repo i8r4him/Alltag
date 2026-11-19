@@ -61,6 +61,10 @@ final class ConversationModel {
     var notice: ToastMessage?
     /// Slower speech (Settings · Accessibility).
     var speechRate: SpeechRate = .normal
+    /// Hold the orb to talk, instead of hands-free (see `ConversationModel+TalkMode.swift`).
+    var holdsToTalk = false {
+        didSet { if holdsToTalk != oldValue, isUsingCloudVoice { reconnectCloudVoice() } }
+    }
 
     private let speech: any SpeechService
     private let companion: any CompanionService
@@ -138,15 +142,15 @@ final class ConversationModel {
         if isUsingCloudVoice {
             if isConnecting { return "Connecting…" }
             switch phase {
-            case .idle, .listening: return "Live voice · Tap to finish"
+            case .idle, .listening: return holdLabel ?? "Live voice · Tap to finish"
             case .thinking: return "Thinking…"
             case .speaking: return "Speaking…"
             }
         }
         switch phase {
         case .idle where isFinished || needsCloudConsent: return nil
-        case .idle: return canStartCloudVoice ? "Tap for live voice" : "Tap to speak"
-        case .listening: return "Listening… tap when done"
+        case .idle: return canStartCloudVoice ? "Tap for live voice" : holdLabel ?? "Tap to speak"
+        case .listening: return holdLabel ?? "Listening… tap when done"
         case .thinking: return "Thinking…"
         case .speaking: return "Speaking…"
         }
@@ -310,30 +314,6 @@ final class ConversationModel {
             isFinished = true
         }
     }
-
-    /// Whether what was heard is close enough to the scripted line to count as
-    /// it: at least 80% of its words, in any order. Recognition can drop a short
-    /// word or write numbers as digits, so an exact match would be too strict.
-    static func isScripted(_ heard: String, _ line: String) -> Bool {
-        let expected = normalized(line).split(separator: " ")
-        guard !expected.isEmpty else { return false }
-        var heardWords = normalized(heard).split(separator: " ")
-        var found = 0
-        for word in expected {
-            if let index = heardWords.firstIndex(of: word) {
-                heardWords.remove(at: index)
-                found += 1
-            }
-        }
-        return Double(found) / Double(expected.count) >= 0.8 && heardWords.count <= 2
-    }
-
-    /// Lowercased letters, digits and spaces only, for comparing sentences.
-    static func normalized(_ text: String) -> String {
-        text.lowercased()
-            .filter { $0.isLetter || $0.isNumber || $0 == " " }
-            .trimmingCharacters(in: .whitespaces)
-    }
 }
 
 extension ConversationModel {
@@ -355,9 +335,11 @@ extension ConversationModel {
         await reviewer.wait()
     }
 
-    private func startCloudConversation() {
-        let context = RealtimeConversationContext(scenario: scenario, level: level,
+    private func startCloudConversation(history: String = "") {
+        var context = RealtimeConversationContext(scenario: scenario, level: level,
                                                   slowerSpeech: speechRate == .slow || voice.prefersSlowerSpeech)
+        context.holdsToTalk = holdsToTalk
+        context.history = history
         let session = realtime.makeSession(for: context)
         cloudSession = session
         if messages.count == 1, messages[0].realtimeID == nil { messages.removeAll() }
@@ -443,7 +425,21 @@ extension ConversationModel {
         }
     }
 
-    private func finishCloudConversation() {
+    /// Hold to talk with the live voice: the learner pressed or let go of the orb.
+    func holdCloudTurn(_ holding: Bool) {
+        if holding { cloudSession?.beginTurn() } else { cloudSession?.endTurn() }
+    }
+
+    /// The live voice's setup changed: it reconnects and carries on with what was said.
+    private func reconnectCloudVoice() {
+        let history = transcriptForReconnecting
+        endCloudSession()
+        // The new connection numbers its lines from the start again.
+        for index in messages.indices { messages[index].realtimeID = nil }
+        startCloudConversation(history: history)
+    }
+
+    func finishCloudConversation() {
         endedAt = endedAt ?? .now
         endCloudSession()
         hasFallenBack = true

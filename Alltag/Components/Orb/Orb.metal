@@ -51,13 +51,17 @@ static float wisp(float2 uv, float angle, float offset, float amplitude, float f
 /// - size: the view's size in points.
 /// - time: seconds, already multiplied by the speed.
 /// - energy: 0 calm … 1 excited (brighter silk and rim).
+/// - wobble: 0 round … 1 the edge ripples, as when the companion speaks.
 /// - rimAmount, silkAmount, haloAmount: 1 is the default look, 0 off, 2 double.
 /// - deep, mid, light, rim: the palette.
 [[ stitchable ]] half4 bubbleOrb(float2 position, half4 color, float2 size, float time, float energy,
-                                float rimAmount, float silkAmount, float haloAmount,
+                                float wobble, float rimAmount, float silkAmount, float haloAmount,
                                 half4 deep, half4 mid, half4 light, half4 rim) {
     float radius = min(size.x, size.y) * 0.5;
     float2 uv = (position - size * 0.5) / (radius * 0.86);
+    // A voice ripples the edge: two waves running round it in opposite directions.
+    float around = atan2(uv.y, uv.x);
+    uv /= 1.0 + wobble * 0.04 * (0.6 * sin(around * 5.0 + time * 7.0) + 0.4 * sin(around * 3.0 - time * 5.0));
     float r = length(uv);
     float pixel = 1.0 / (radius * 0.86);
 

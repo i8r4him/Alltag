@@ -42,6 +42,8 @@ struct RootView: View {
 
     private var navigation: some View {
         @Bindable var appState = appState
+        // Today's conversation from the orb isn't a cover: it fades in over the tabs (see `talksOverTabs`).
+        let cover = Binding { appState.talksOverTabs ? nil : appState.fullScreen } set: { appState.fullScreen = $0 }
         return TabView(selection: $appState.tab) {
             Tab("Today", systemImage: "sun.horizon", value: AppTab.today) { stack(.today) }
             Tab("Learn", systemImage: "bolt", value: AppTab.learn) { stack(.learn) }
@@ -49,7 +51,16 @@ struct RootView: View {
         }
         .environment(\.mistakesZoom, mistakesZoom)
         .environment(\.levelMapZoom, levelMapZoom)
-        .fullScreenCover(item: $appState.fullScreen, content: fullScreen)
+        .accessibilityHidden(appState.talksOverTabs)
+        .fullScreenCover(item: cover, content: fullScreen)
+        .modifier(SinksBack(isActive: appState.talksOverTabs && !appState.isOrbReturning, reduceMotion: reducesMotion))
+        .overlay {
+            // It fades itself in around the orb, and out as the orb flies back.
+            if let launch = appState.orbLaunch, appState.talksOverTabs {
+                ConversationView(scenario: MockScenarios.scenario(.freeTalk), level: profiles.first?.level ?? .a1,
+                                 launch: launch)
+            }
+        }
     }
 
     /// A tab's own navigation stack, starting at its root.
@@ -160,4 +171,28 @@ struct RootView: View {
     RootView()
         .environment(AppState())
         .modelContainer(try! AlltagStore.makeContainer(inMemory: true)) // swiftlint:disable:this force_try
+}
+
+/// Today, behind the conversation from its orb: it darkens, blurs and sinks back a little,
+/// like the page behind a field at the top of a page, and comes forward as the orb returns.
+private struct SinksBack: ViewModifier {
+    let isActive: Bool
+    let reduceMotion: Bool
+
+    func body(content: Content) -> some View {
+        // Only these change slowly, not what changes inside the tabs at the same moment.
+        content
+            .animation(SinksBack.animation) {
+                $0.blur(radius: isActive ? 4 : 0)
+                    .scaleEffect(isActive && !reduceMotion ? 0.94 : 1)
+            }
+            .overlay {
+                Color.black.opacity(isActive ? 0.35 : 0)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                    .animation(SinksBack.animation, value: isActive)
+            }
+    }
+
+    private static let animation = Animation.easeOut(duration: 0.5)
 }

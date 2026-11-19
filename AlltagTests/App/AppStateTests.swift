@@ -5,6 +5,7 @@
 //  Created by Ibrahim Abdullah on 07.11.26.
 //
 
+import CoreGraphics
 import Testing
 @testable import Alltag
 
@@ -51,6 +52,29 @@ struct AppStateTests {
 
         state.dismissFullScreen()
         #expect(state.fullScreen == nil)
+    }
+
+    @Test("Talking from Today's orb draws the conversation over the tabs, not as a cover")
+    func talkFromOrb() {
+        let state = AppState()
+        state.talk(from: OrbLaunch(frame: CGRect(x: 80, y: 120, width: 230, height: 230)))
+        #expect(state.fullScreen == .conversation(.freeTalk))
+        #expect(state.talksOverTabs)
+
+        // Ending it sends the orb back first; the conversation closes once it is there.
+        state.dismissFullScreen()
+        #expect(state.isOrbReturning)
+        #expect(state.fullScreen == .conversation(.freeTalk))
+        state.finishOrbReturn()
+        #expect(!state.isOrbReturning)
+        #expect(state.fullScreen == nil)
+        #expect(!state.talksOverTabs)
+
+        // Without the orb (Reduce Motion) or from anywhere else, it is an ordinary cover.
+        state.talk(from: nil)
+        #expect(!state.talksOverTabs)
+        state.present(.conversation(.freeTalk))
+        #expect(!state.talksOverTabs)
     }
 
     @Test("Motion is reduced when either the system or the in-app toggle asks for it",

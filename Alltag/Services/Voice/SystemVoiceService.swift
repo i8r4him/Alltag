@@ -55,6 +55,12 @@ final class SystemVoiceService: NSObject, VoiceService {
 }
 
 extension SystemVoiceService: AVSpeechSynthesizerDelegate {
+    /// Each word is a pulse for the orb: the system voice has no level to measure.
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, willSpeakRangeOfSpeechString characterRange: NSRange,
+                                       utterance: AVSpeechUtterance) {
+        VoiceMeter.shared.record(.random(in: 0.65...0.95), from: .companion)
+    }
+
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         Task { @MainActor in self.finish() }
     }
