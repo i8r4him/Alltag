@@ -7,23 +7,40 @@
 
 import Foundation
 
-/// A writing task from daily life.
-struct WritingTask: Identifiable {
-    enum Register { case formal, informal }
-
-    let id = UUID()
-    let title: LocalizedStringResource
-    let detail: LocalizedStringResource
-    let register: Register
-    let minutes: Int
-    let systemImage: String
-}
+/// How a message sounds: to a friend (*du*) or formal (*Sie*).
+enum WritingTone { case everyday, formal }
 
 /// A phrase for the start or end of a message, in German.
 struct WritingPhrase: Identifiable {
     let id = UUID()
     let role: LocalizedStringResource
     let german: String
+}
+
+/// A German friend, or a group, the learner texts with.
+struct WritingChat: Identifiable {
+    let id: String
+    /// What the chat is about.
+    let title: LocalizedStringResource
+    /// The friend's or the group's name, in German.
+    let contact: String
+    /// The friend's last message, in German.
+    let preview: String
+    /// A group shows this symbol instead of an initial.
+    var groupImage: String?
+    var isUnread = false
+
+    var initial: String { String(contact.prefix(1)) }
+}
+
+/// A title to write about, at one level.
+struct WritingTopic: Identifiable {
+    /// The title, in German.
+    let title: String
+    let level: Level
+    let systemImage: String
+
+    var id: String { title }
 }
 
 /// A short audio clip from daily life.
@@ -36,23 +53,43 @@ struct ListeningClip: Identifiable {
     let systemImage: String
 }
 
-/// Sample content for Write until writing is built.
+/// Sample content for Write until the chat and the topics are built.
 enum MockWriting {
-    static let picked = WritingTask(title: "Cancel your appointment", detail: "A short email to the dentist.",
-                                    register: .formal, minutes: 4, systemImage: "square.and.pencil")
+    /// The friend's first messages in the chat.
+    static let friendMessages = ["Heyy 👋", "Hast du heute Abend Bock auf Kino? 🎬"]
 
-    static let tasks = [
-        WritingTask(title: "Reply to your landlord", detail: "About the broken heating",
-                    register: .formal, minutes: 5, systemImage: "house.fill"),
-        WritingTask(title: "Tell work you're sick", detail: "A short message to your boss",
-                    register: .formal, minutes: 2, systemImage: "briefcase.fill"),
-        WritingTask(title: "Complain about a delivery", detail: "An email to the shop",
-                    register: .formal, minutes: 5, systemImage: "shippingbox.fill"),
-        WritingTask(title: "Invite your neighbour", detail: "Coffee on Sunday",
-                    register: .informal, minutes: 3, systemImage: "cup.and.saucer.fill"),
-        WritingTask(title: "Thank a friend", detail: "For helping with the move",
-                    register: .informal, minutes: 2, systemImage: "heart.fill")
+    static let chats = [
+        WritingChat(id: "kino", title: "Plan the evening", contact: "Lena",
+                    preview: "Hast du heute Abend Bock auf Kino? 🎬", isUnread: true),
+        WritingChat(id: "wg", title: "The WG cleaning plan", contact: "WG Kölner Str. 12",
+                    preview: "Wer ist diese Woche mit dem Bad dran? 🧽", groupImage: "person.3.fill"),
+        WritingChat(id: "party", title: "Birthday wishes", contact: "Jonas",
+                    preview: "Morgen ist meine Party 🎉 Kommst du?")
     ]
+
+    static let topics = [
+        WritingTopic(title: "Mein Wochenende", level: .a1, systemImage: "sun.max.fill"),
+        WritingTopic(title: "Meine Familie", level: .a1, systemImage: "figure.2.and.child.holdinghands"),
+        WritingTopic(title: "Mein Lieblingsessen", level: .a1, systemImage: "fork.knife"),
+        WritingTopic(title: "Meine Wohnung", level: .a2, systemImage: "house.fill"),
+        WritingTopic(title: "Ein Tag in meinem Leben", level: .a2, systemImage: "clock.fill"),
+        WritingTopic(title: "Mein letzter Urlaub", level: .a2, systemImage: "airplane"),
+        WritingTopic(title: "Mein Lieblingsort in der Stadt", level: .b1, systemImage: "mappin.and.ellipse"),
+        WritingTopic(title: "Sport im Alltag", level: .b1, systemImage: "figure.run"),
+        WritingTopic(title: "Soziale Medien: Fluch oder Segen?", level: .b1, systemImage: "iphone"),
+        WritingTopic(title: "Wohnen in der Stadt oder auf dem Land?", level: .b2, systemImage: "building.2.fill"),
+        WritingTopic(title: "Sollten Bus und Bahn kostenlos sein?", level: .b2, systemImage: "tram.fill"),
+        WritingTopic(title: "Arbeiten im Homeoffice", level: .b2, systemImage: "laptopcomputer"),
+        WritingTopic(title: "Sollte Homeoffice ein Recht sein?", level: .c1, systemImage: "briefcase.fill"),
+        WritingTopic(title: "Künstliche Intelligenz im Alltag", level: .c1, systemImage: "cpu"),
+        WritingTopic(title: "Der Wert des Ehrenamts", level: .c1, systemImage: "hands.sparkles.fill")
+    ]
+
+    /// The topics at `level`; C2 gets C1's.
+    static func topics(at level: Level) -> [WritingTopic] {
+        let shown = topics.filter { $0.level == level }
+        return shown.isEmpty ? topics.filter { $0.level == .c1 } : shown
+    }
 
     static let formalPhrases = [
         WritingPhrase(role: "Opening", german: "Sehr geehrte Damen und Herren,"),
@@ -67,6 +104,10 @@ enum MockWriting {
         WritingPhrase(role: "Thanks", german: "Danke dir!"),
         WritingPhrase(role: "Closing", german: "Viele Grüße")
     ]
+
+    static func phrases(_ tone: WritingTone) -> [WritingPhrase] {
+        tone == .formal ? formalPhrases : informalPhrases
+    }
 }
 
 /// Sample content for Listen until listening is built.
