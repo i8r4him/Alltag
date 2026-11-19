@@ -13,8 +13,6 @@ import SwiftUI
 struct ArticleRuleSheet: View {
     let rule: ArticleRule
     @Environment(\.dismiss) private var dismiss
-    /// Which of the designs to try is shown; temporary, until one is picked.
-    @AppStorage("articleClueDesign") private var design = 0
     @State private var current: ArticleRule.ID?
     @State private var turns = 0
 
@@ -22,7 +20,7 @@ struct ArticleRuleSheet: View {
 
     var body: some View {
         NavigationStack {
-            ArticleRuleFocusSheet(rule: shown, design: ArticleClueDesign(rawValue: design) ?? .pictures, onNext: next)
+            ArticleRuleFocusSheet(rule: shown, onNext: next)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .skyBackground()
                 .navigationBarTitleDisplayMode(.inline)
@@ -30,15 +28,11 @@ struct ArticleRuleSheet: View {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Close", systemImage: "xmark") { dismiss() }
                     }
-                    ToolbarItem(placement: .principal) {
-                        ArticleClueDesignSwitcher(design: $design)
-                    }
                 }
         }
         .fontDesign(.rounded)
         .presentationDetents([.large])
         .sensoryFeedback(.impact(weight: .medium), trigger: turns)
-        .sensoryFeedback(.selection, trigger: design)
         .onChange(of: current) { _, _ in turns += 1 }
     }
 
@@ -52,12 +46,11 @@ struct ArticleRuleSheet: View {
 /// One clue, and the big button for the next.
 private struct ArticleRuleFocusSheet: View {
     let rule: ArticleRule
-    let design: ArticleClueDesign
     let onNext: () -> Void
 
     var body: some View {
         ScrollView {
-            ArticleRuleContent(rule: rule, design: design)
+            ArticleRuleContent(rule: rule)
                 .id(rule.id)
                 .transition(.opacity)
                 .padding(.horizontal, Spacing.onboarding)
@@ -79,10 +72,9 @@ private struct ArticleRuleFocusSheet: View {
 
 // MARK: - Shared
 
-/// The artwork and title, the clue, and its parts in the chosen design.
+/// The artwork and title, the clue, and its parts as rows of cards to swipe.
 private struct ArticleRuleContent: View {
     let rule: ArticleRule
-    let design: ArticleClueDesign
 
     @ScaledMetric(relativeTo: .largeTitle) private var artworkSize: CGFloat = 112
 
@@ -102,11 +94,7 @@ private struct ArticleRuleContent: View {
             .frame(maxWidth: .infinity)
 
             ForEach(Array(rule.parts.enumerated()), id: \.offset) { _, part in
-                switch design {
-                case .pictures: CheatSheetPartCard(part: part)
-                case .tiles: ArticleClueTiles(part: part)
-                case .cards: ArticleClueCards(part: part)
-                }
+                ArticleClueCards(part: part)
             }
         }
     }
