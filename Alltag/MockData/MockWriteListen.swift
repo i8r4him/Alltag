@@ -7,22 +7,16 @@
 
 import Foundation
 
-/// How a message sounds: to a friend (*du*) or formal (*Sie*).
-enum WritingTone { case everyday, formal }
-
-/// A phrase for the start or end of a message, in German.
-struct WritingPhrase: Identifiable {
-    let id = UUID()
-    let role: LocalizedStringResource
-    let german: String
-}
-
-/// A German friend the learner texts with.
-struct WritingChat {
-    /// What the chat is about.
-    let title: LocalizedStringResource
-    /// The friend's name.
+/// A German friend, or a group, the learner texts with.
+struct WritingChat: Identifiable {
+    let id: String
+    /// The friend's or the group's name, in German.
     let contact: String
+    /// The friend's last message, in German.
+    let preview: String
+    /// A group shows this symbol instead of an initial.
+    var groupImage: String?
+    var isUnread = false
 
     var initial: String { String(contact.prefix(1)) }
 }
@@ -70,10 +64,12 @@ struct ListeningClip: Identifiable {
 
 /// Sample content for Write until the chat and the topics are built.
 enum MockWriting {
-    /// The friend's first messages in the chat.
-    static let friendMessages = ["Heyy 👋", "Hast du heute Abend Bock auf Kino? 🎬"]
-
-    static let friend = WritingChat(title: "Plan the evening", contact: "Lena")
+    static let chats = [
+        WritingChat(id: "kino", contact: "Lena", preview: "Hast du heute Abend Bock auf Kino? 🎬", isUnread: true),
+        WritingChat(id: "wg", contact: "WG Kölner Str. 12", preview: "Wer ist diese Woche mit dem Bad dran? 🧽",
+                    groupImage: "person.3.fill"),
+        WritingChat(id: "party", contact: "Jonas", preview: "Morgen ist meine Party 🎉 Kommst du?")
+    ]
 
     static let email = FormalEmail(
         sender: "Hausverwaltung Becker", subject: "Wartung der Heizung",
@@ -109,24 +105,6 @@ enum MockWriting {
     static func topics(at level: Level) -> [WritingTopic] {
         let shown = topics.filter { $0.level == level }
         return shown.isEmpty ? topics.filter { $0.level == .c1 } : shown
-    }
-
-    static let formalPhrases = [
-        WritingPhrase(role: "Opening", german: "Sehr geehrte Damen und Herren,"),
-        WritingPhrase(role: "Asking", german: "Könnten Sie mir bitte mitteilen, …"),
-        WritingPhrase(role: "Thanks", german: "Vielen Dank im Voraus."),
-        WritingPhrase(role: "Closing", german: "Mit freundlichen Grüßen")
-    ]
-
-    static let informalPhrases = [
-        WritingPhrase(role: "Opening", german: "Liebe Anna, / Lieber Tom,"),
-        WritingPhrase(role: "Asking", german: "Hast du Lust, …?"),
-        WritingPhrase(role: "Thanks", german: "Danke dir!"),
-        WritingPhrase(role: "Closing", german: "Viele Grüße")
-    ]
-
-    static func phrases(_ tone: WritingTone) -> [WritingPhrase] {
-        tone == .formal ? formalPhrases : informalPhrases
     }
 }
 

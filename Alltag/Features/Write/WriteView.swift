@@ -8,11 +8,11 @@
 import SwiftData
 import SwiftUI
 
-/// Learn › Write: text a German friend in everyday German; formal writing
-/// (answer an email, a letter as a language course sets it, a form, a topic at
-/// the learner's level, as long as the level asks for); and useful phrases in
-/// both tones. The chat and the writing come in their own issues;
-/// for now a tap only answers with a haptic.
+/// Learn › Write: chats with German friends in everyday German, then formal
+/// writing: answer an email, a letter as a language course sets it, a form,
+/// and a topic at the learner's level, as long as the level asks for. The
+/// chat and the writing come in their own issues; for now a tap only answers
+/// with a haptic.
 struct WriteView: View {
     @Query private var profiles: [UserProfile]
     @State private var taps = 0
@@ -22,7 +22,11 @@ struct WriteView: View {
     var body: some View {
         LearnScreen(title: "Write") {
             LearnSection(title: "Text a friend") {
-                FriendCard(chat: MockWriting.friend, onReply: tapped)
+                WriteGlassList {
+                    ForEach(MockWriting.chats) { chat in
+                        ChatRow(chat: chat, action: tapped)
+                    }
+                }
             }
             LearnSection(title: "Reply to an email") {
                 EmailCard(email: MockWriting.email, onReply: tapped)
@@ -37,9 +41,6 @@ struct WriteView: View {
                 LearnSection(title: "Write about a topic") {
                     TopicCard(topic: topic, onStart: tapped)
                 }
-            }
-            LearnSection(title: "Useful phrases") {
-                PhrasesCard()
             }
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
