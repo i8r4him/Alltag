@@ -8,8 +8,13 @@
 import Foundation
 
 extension ReadDoScenes {
-    /// A1: things you meet in the first weeks: a bus stop, a bakery, a receipt.
-    static let a1: [ReadDoScene] = [a1Bus, a1Bakery, a1Milk, a1Form, a1Receipt, a1Bins]
+    /// A1: things you meet in the first weeks: a bus stop, a bakery, doorbells,
+    /// a receipt, a ticket. Getting around and out in town are here; packaging,
+    /// receipts, forms and bills are in `ReadDoScenes+A1Papers.swift`.
+    static let a1: [ReadDoScene] = [
+        a1Bus, a1Bakery, a1Doorbells, a1Milk, a1Receipt, a1Store, a1Form, a1Bins, a1UBahn,
+        a1Pasta, a1Postbox, a1Pool, a1Ticket, a1DoctorForm, a1TV, a1Cinema, a1Bill
+    ]
 
     static let a1Bus = ReadDoScene(
         id: "a1-do-bus", level: .a1, kind: .departures,
@@ -27,6 +32,25 @@ extension ReadDoScenes {
             ReadDoTask(prompt: "You want to go to the zoo. Tap your bus.", answer: "Zoo"),
             ReadDoTask(prompt: "Which bus goes to the hospital?", answer: "Krankenhaus"),
             ReadDoTask(prompt: "What does the board say about bus 5?", answer: "kein Bus 5")
+        ])
+
+    static let a1UBahn = ReadDoScene(
+        id: "a1-do-ubahn", level: .a1, kind: .departures,
+        title: "The U-Bahn platform", detail: "Which train is yours?", systemImage: "tram.fill",
+        content: """
+        # U-Bahnhof Marktplatz
+        ## Abfahrten
+        U2 | Flughafen | 2 Min. | Gleis 1
+        U2 | Stadion | 4 Min. | Gleis 2
+        U5 | Hauptbahnhof | 6 Min. | Gleis 1
+        U5 | Messe | 9 Min. | Gleis 2
+        U2 | Flughafen | 12 Min. | Gleis 1
+        Der Aufzug zu Gleis 2 ist heute kaputt.
+        """,
+        tasks: [
+            ReadDoTask(prompt: "You're flying today. Tap the next train to the airport.", answer: "Flughafen | 2 Min."),
+            ReadDoTask(prompt: "Which train goes to the main station?", answer: "Hauptbahnhof"),
+            ReadDoTask(prompt: "You have a heavy suitcase. What's the problem today?", answer: "Aufzug")
         ])
 
     static let a1Bakery = ReadDoScene(
@@ -49,86 +73,120 @@ extension ReadDoScenes {
             ReadDoTask(prompt: "The bakery needs help. Where can you ask about it?", answer: "an der Kasse")
         ])
 
-    static let a1Milk = ReadDoScene(
-        id: "a1-do-milk", level: .a1, kind: .packaging,
-        title: "A carton of milk", detail: "How long does it keep?", systemImage: "drop.fill",
+    static let a1Doorbells = ReadDoScene(
+        id: "a1-do-doorbells", level: .a1, kind: .sign,
+        title: "The doorbells", detail: "Which bell do you ring?", systemImage: "bell.fill",
         content: """
-        # Frische Vollmilch
-        3,8 % Fett · 1 Liter
-        ## Haltbarkeit
-        Mindestens haltbar bis: 28.11.
-        Nach dem Öffnen im Kühlschrank lagern.
-        Geöffnet in 3 Tagen verbrauchen.
-        ## Herkunft
-        Von Bauernhöfen aus Bayern
+        # Lindenstraße 8
+        3. OG rechts | L. Fischer
+        3. OG links | Hoffmann
+        2. OG rechts | Petrović
+        2. OG links | WG Weber / Klein / Sánchez
+        1. OG rechts | Dr. Aydın – Zahnarzt
+        1. OG links | Schmidt
+        EG | Hausmeister
         """,
         tasks: [
-            ReadDoTask(prompt: "How much fat is in the milk?", answer: "Fett"),
-            ReadDoTask(prompt: "Until when is it good if it stays closed?", answer: "Mindestens haltbar"),
-            ReadDoTask(prompt: "You opened it today. How long do you have to drink it?", answer: "3 Tagen")
+            ReadDoTask(prompt: "You're going to Lena Fischer's birthday party. Tap her bell.", answer: "Fischer"),
+            ReadDoTask(prompt: "You have toothache. Where do you ring?", answer: "Zahnarzt"),
+            ReadDoTask(prompt: "A parcel is for Carmen Sánchez. Which bell?", answer: "Sánchez")
         ])
 
-    static let a1Form = ReadDoScene(
-        id: "a1-do-form", level: .a1, kind: .form,
-        title: "A form at the language school", detail: "Sign up for a course", systemImage: "list.clipboard.fill",
+    static let a1Store = ReadDoScene(
+        id: "a1-do-store", level: .a1, kind: .sign,
+        title: "The department store guide", detail: "Which floor do you need?", systemImage: "building.2.fill",
         content: """
-        # Anmeldung – Sprachschule Lingua
-        ## Ihre Daten
-        Familienname ___
-        Vorname ___
-        Geburtsdatum ___
-        Telefonnummer ___
-        ## Kurs
-        Deutsch A1 am Vormittag | Mo–Fr, 9–12 Uhr
-        Deutsch A1 am Abend | Di + Do, 18–20:30 Uhr
-        Unterschrift ___
+        # Kaufhaus Stern
+        ## Wegweiser
+        UG | Lebensmittel · Getränke
+        EG | Kosmetik · Taschen · Information
+        1. OG | Damen · Herren
+        2. OG | Kinder · Spielwaren
+        3. OG | Haushalt · Elektro
+        4. OG | Restaurant · Toiletten
         """,
         tasks: [
-            ReadDoTask(prompt: "Where do you write your first name?", answer: "Vorname"),
-            ReadDoTask(prompt: "Where does your birthday go?", answer: "Geburtsdatum"),
-            ReadDoTask(prompt: "You work during the day. Tap the course that fits.", answer: "am Abend")
+            ReadDoTask(prompt: "You need a toy for a child's birthday. Tap the floor.", answer: "Spielwaren"),
+            ReadDoTask(prompt: "Your phone charger is broken. Where can you buy a new one?", answer: "Elektro"),
+            ReadDoTask(prompt: "Where are the toilets?", answer: "Toiletten")
         ])
 
-    static let a1Receipt = ReadDoScene(
-        id: "a1-do-receipt", level: .a1, kind: .receipt,
-        title: "A supermarket receipt", detail: "What did you pay?", systemImage: "cart.fill",
+    static let a1Postbox = ReadDoScene(
+        id: "a1-do-postbox", level: .a1, kind: .schedule,
+        title: "The postbox", detail: "When is the post collected?", systemImage: "envelope.fill",
         content: """
-        # FRISCHMARKT
-        Hauptstraße 12, Köln
+        # Briefkasten
+        ## Leerungszeiten
+        Mo – Fr | 17:30 Uhr
+        Sa | 12:00 Uhr
+        So | keine Leerung
         ---
-        Bananen | 1,49
-        Brot | 2,29
-        Käse | 3,19
-        Wasser 6 x 1,5 l | 2,94
-        Pfand | 1,50
-        ---
-        SUMME EUR | 11,41
-        Bar | 20,00
-        Rückgeld | 8,59
-        Vielen Dank für Ihren Einkauf!
+        Nächste Leerung | heute, 17:30 Uhr
+        Pakete bitte in der Postfiliale abgeben.
         """,
         tasks: [
-            ReadDoTask(prompt: "How much was the cheese?", answer: "Käse"),
-            ReadDoTask(prompt: "You pay a little extra for the bottles. Tap it.", answer: "Pfand"),
-            ReadDoTask(prompt: "How much money did you get back?", answer: "Rückgeld")
+            ReadDoTask(prompt: "It's Saturday morning. By when must your letter be in the box?", answer: "12:00"),
+            ReadDoTask(prompt: "Is the post collected on Sunday? Tap the answer.", answer: "keine Leerung"),
+            ReadDoTask(prompt: "You have a parcel, not a letter. What does the box say?", answer: "Pakete")
         ])
 
-    static let a1Bins = ReadDoScene(
-        id: "a1-do-bins", level: .a1, kind: .binCalendar,
-        title: "The bin calendar", detail: "Which bin goes out when?", systemImage: "trash.fill",
+    static let a1Pool = ReadDoScene(
+        id: "a1-do-pool", level: .a1, kind: .sign,
+        title: "Prices at the swimming pool", detail: "Which ticket do you need?", systemImage: "figure.pool.swim",
         content: """
-        # Abfuhrkalender Dezember
-        ## Lindenstraße
-        Mo 1.12. | Restmüll
-        Mi 3.12. | Gelber Sack
-        Fr 5.12. | Biotonne
-        Di 9.12. | Papier
-        Mo 15.12. | Restmüll
-        Bitte stellen Sie die Tonne bis 6 Uhr an die Straße.
+        # Hallenbad Nord
+        ## Eintritt
+        Erwachsene | 4,50 €
+        Kinder (6–17 Jahre) | 2,50 €
+        Kinder unter 6 Jahren | frei
+        Familienkarte (2 Erwachsene + 2 Kinder) | 11,00 €
+        10er-Karte Erwachsene | 40,00 €
+        ## Öffnungszeiten
+        Montag | geschlossen
+        Dienstag bis Freitag | 7:00 – 21:00
+        Samstag und Sonntag | 9:00 – 18:00
         """,
         tasks: [
-            ReadDoTask(prompt: "When is the paper collected?", answer: "Papier"),
-            ReadDoTask(prompt: "When does the yellow bag go out?", answer: "Gelber Sack"),
-            ReadDoTask(prompt: "By what time must the bin be on the street?", answer: "bis 6 Uhr")
+            ReadDoTask(prompt: "Your daughter is four. What does she pay?", answer: "unter 6"),
+            ReadDoTask(prompt: "Two parents and two children: tap the cheapest ticket.", answer: "Familienkarte"),
+            ReadDoTask(prompt: "Which day can't you swim?", answer: "geschlossen")
+        ])
+
+    static let a1TV = ReadDoScene(
+        id: "a1-do-tv", level: .a1, kind: .tvGuide,
+        title: "Tonight on TV", detail: "What do you want to watch?", systemImage: "tv.fill",
+        content: """
+        # Fernsehprogramm
+        ## Heute, Samstag
+        18:00 | Kochen mit Oma | Kochshow
+        19:00 | Das Wetter
+        19:30 | Tiere im Zoo | für Kinder
+        20:00 | Nachrichten
+        20:15 | Fußball: Deutschland – Spanien | live
+        22:30 | Der Kommissar | Krimi
+        """,
+        tasks: [
+            ReadDoTask(prompt: "You love football. When does the match start?", answer: "Fußball"),
+            ReadDoTask(prompt: "Your children like animals. Tap their programme.", answer: "Tiere"),
+            ReadDoTask(prompt: "Will it rain tomorrow? Tap where you find out.", answer: "Wetter")
+        ])
+
+    static let a1Cinema = ReadDoScene(
+        id: "a1-do-cinema", level: .a1, kind: .schedule,
+        title: "The cinema programme", detail: "Which film, when?", systemImage: "film.fill",
+        content: """
+        # Kino am Park
+        ## Heute
+        15:30 | Der kleine Bär | Saal 1 | ab 0 J.
+        18:00 | Liebe in Paris | Saal 2 | ab 12 J.
+        20:15 | Die Nacht | Saal 1 | ab 16 J.
+        22:45 | Die Nacht | Saal 2 | ab 16 J.
+        ---
+        Dienstag ist Kinotag: Alle Karten kosten 6 €.
+        """,
+        tasks: [
+            ReadDoTask(prompt: "You're going with your five-year-old son. Tap a film for him.", answer: "Der kleine Bär"),
+            ReadDoTask(prompt: "You want to see \"Die Nacht\", but you work until 9 pm.", answer: "22:45"),
+            ReadDoTask(prompt: "On which day are tickets cheaper?", answer: "Kinotag")
         ])
 }
