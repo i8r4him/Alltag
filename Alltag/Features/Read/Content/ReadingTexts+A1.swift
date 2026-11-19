@@ -8,18 +8,29 @@
 import Foundation
 
 extension ReadingTexts {
-    /// A1: short, everyday texts in the present tense, about 50 to 80 words.
-    static let a1: [ReadingText] = [a1Parcel, a1Flatshare, a1Lunch, a1Birthday, a1Doctor, a1Station]
+    /// A1: short, everyday texts in the present tense, about 40 to 90 words, in
+    /// the order a learner meets them: chats and menus first, letters from
+    /// offices last. The texts on the phone and out and about are in
+    /// `ReadingTexts+A1Phone.swift` and `ReadingTexts+A1Outside.swift`.
+    static let a1: [ReadingText] = [
+        a1Flatshare, a1Birthday, a1Lunch, a1Postcard, a1Late, a1Doctor, a1Parcel,
+        a1Family, a1Station, a1Course, a1Sofa, a1Supermarket, a1Caretaker, a1Tandem,
+        a1Lift, a1Pool, a1Work, a1Reminder, a1Holiday, a1Appointment, a1FleaMarket
+    ]
+
+    // MARK: - Letters and emails
 
     static let a1Parcel = ReadingText(
-        id: "a1-parcel", level: .a1, kind: .notice,
+        id: "a1-parcel", level: .a1, kind: .letter,
         title: "A card from the parcel service", detail: "Your parcel is waiting",
         systemImage: "shippingbox.fill",
         german: """
+        Benachrichtigung
+
         Liebe Kundin, lieber Kunde,
 
         wir waren heute um 10:15 Uhr bei Ihnen. Leider waren Sie nicht zu Hause.
-        Ihr Paket ist jetzt in der Post-Filiale in der Bahnhofstraße 4.
+        Ihr Paket ist jetzt in der Postfiliale in der Bahnhofstraße 4.
         Sie können es ab morgen um 9 Uhr abholen. Das Paket bleibt sieben Tage dort.
         Bitte bringen Sie diese Karte und Ihren Ausweis mit.
 
@@ -29,7 +40,7 @@ extension ReadingTexts {
         questions: [
             ReadingQuestion(prompt: "Where is your parcel now?",
                             options: ["With a neighbour", "At the post office on Bahnhofstraße", "In front of your door"],
-                            answer: 1, evidence: "Ihr Paket ist jetzt in der Post-Filiale in der Bahnhofstraße 4."),
+                            answer: 1, evidence: "Ihr Paket ist jetzt in der Postfiliale in der Bahnhofstraße 4."),
             ReadingQuestion(prompt: "When can you pick it up?",
                             options: ["Today at 10:15", "From tomorrow at 9", "Only in seven days"],
                             answer: 1, evidence: "Sie können es ab morgen um 9 Uhr abholen."),
@@ -38,134 +49,157 @@ extension ReadingTexts {
                             answer: 2, evidence: "Bitte bringen Sie diese Karte und Ihren Ausweis mit.")
         ])
 
-    static let a1Flatshare = ReadingText(
-        id: "a1-flatshare", level: .a1, kind: .chat,
-        title: "The flatshare group chat", detail: "Who needs what?",
-        systemImage: "bubble.left.and.bubble.right.fill",
+    static let a1Postcard = ReadingText(
+        id: "a1-postcard", level: .a1, kind: .letter,
+        title: "A postcard from Julia", detail: "Greetings from Hamburg",
+        systemImage: "envelope.fill",
         german: """
-        Mia: Hallo ihr zwei! Ich gehe gleich einkaufen. Braucht ihr etwas?
-        Tobi: Ja, bitte Milch und Brot. Danke!
-        Mia: Okay. Und du, Ali?
-        Ali: Ich brauche Eier, bitte sechs Stück. Wir haben auch keinen Kaffee mehr.
-        Mia: Kein Problem. Ich bin um 18 Uhr wieder zu Hause.
-        Tobi: Super! Heute Abend koche ich. Es gibt Nudeln mit Tomatensoße.
+        Viele Grüße aus Hamburg!
+
+        Hallo Ali,
+
+        ich bin seit Freitag in Hamburg. Ich bin hier mit meiner Schwester.
+        Das Wetter ist leider nicht so gut. Es regnet viel und es ist kalt.
+        Aber die Stadt ist sehr schön! Heute machen wir eine Hafenrundfahrt. Morgen gehen wir ins Museum.
+        Das Essen ist super, besonders der Fisch!
+        Am Sonntag fahren wir wieder nach Hause. Am Montag bin ich wieder im Büro.
+
+        Bis bald!
+        Deine Julia
         """,
         questions: [
-            ReadingQuestion(prompt: "Why does Mia write?",
-                            options: ["She is cooking tonight", "She is late", "She is going shopping"],
-                            answer: 2, evidence: "Ich gehe gleich einkaufen."),
-            ReadingQuestion(prompt: "What does Ali need?",
-                            options: ["Milk and bread", "Eggs, and there is no coffee", "Pasta"],
-                            answer: 1, evidence: "Ich brauche Eier, bitte sechs Stück."),
-            ReadingQuestion(prompt: "Who cooks tonight?",
-                            options: ["Mia", "Ali", "Tobi"],
-                            answer: 2, evidence: "Heute Abend koche ich.")
+            ReadingQuestion(prompt: "Who is Julia in Hamburg with?",
+                            options: ["Her colleagues", "Her sister", "Ali"],
+                            answer: 1, evidence: "Ich bin hier mit meiner Schwester."),
+            ReadingQuestion(prompt: "How is the weather?",
+                            options: ["Rainy and cold", "Sunny and warm", "Windy but warm"],
+                            answer: 0, evidence: "Es regnet viel und es ist kalt."),
+            ReadingQuestion(prompt: "What does Julia like a lot?",
+                            options: ["The hotel", "The weather", "The fish"],
+                            answer: 2, evidence: "Das Essen ist super, besonders der Fisch!")
         ])
 
-    static let a1Lunch = ReadingText(
-        id: "a1-lunch", level: .a1, kind: .menu,
-        title: "Lunch at the café", detail: "What's on the menu?",
-        systemImage: "fork.knife",
+    static let a1Course = ReadingText(
+        id: "a1-course", level: .a1, kind: .email,
+        title: "An email from the language school", detail: "Your course starts",
+        systemImage: "graduationcap.fill",
         german: """
-        Café am Markt – Mittagstisch
-        Montag bis Freitag, 12 bis 15 Uhr
+        Betreff: Ihr Deutschkurs A1
 
-        Tomatensuppe mit Brot – 4,50 Euro
-        Nudeln mit Gemüse – 7,90 Euro
-        Hähnchen mit Reis und Salat – 9,50 Euro
-        Kuchen des Tages – 3,20 Euro
-        Kaffee oder Tee – 2,50 Euro
+        Liebe Kursteilnehmerin, lieber Kursteilnehmer,
 
-        Am Wochenende ist das Café von 10 bis 18 Uhr offen. Es gibt dann Frühstück, aber keinen Mittagstisch.
+        vielen Dank für Ihre Anmeldung! Ihr Kurs beginnt am Montag, den 11. Januar.
+        Der Kurs ist von Montag bis Freitag, von 9 bis 12 Uhr.
+        Wir sind im Raum 204. Er ist im zweiten Stock.
+        Ihre Lehrerin heißt Anna Schulz.
+        Bitte kaufen Sie das Kursbuch an der Rezeption. Es kostet 25 Euro.
+        Haben Sie Fragen? Dann rufen Sie uns an: 0221 334 556.
+
+        Viele Grüße
+        Ihre Sprachschule Lingua
         """,
         questions: [
-            ReadingQuestion(prompt: "How much is the tomato soup?",
-                            options: ["2.50 euros", "4.50 euros", "7.90 euros"],
-                            answer: 1, evidence: "Tomatensuppe mit Brot – 4,50 Euro"),
-            ReadingQuestion(prompt: "What comes with the chicken?",
-                            options: ["Rice and salad", "Bread", "Pasta and vegetables"],
-                            answer: 0, evidence: "Hähnchen mit Reis und Salat – 9,50 Euro"),
-            ReadingQuestion(prompt: "Can you have lunch there on Saturday?",
-                            options: ["Yes, from 12 to 3", "Yes, all day", "No, only breakfast"],
-                            answer: 2, evidence: "Es gibt dann Frühstück, aber keinen Mittagstisch.")
+            ReadingQuestion(prompt: "When does the course start?",
+                            options: ["On Friday, 11 January", "On Monday, 11 January", "On Monday, 12 January"],
+                            answer: 1, evidence: "Ihr Kurs beginnt am Montag, den 11. Januar."),
+            ReadingQuestion(prompt: "Where is room 204?",
+                            options: ["On the ground floor", "Next to reception", "On the second floor"],
+                            answer: 2, evidence: "Er ist im zweiten Stock."),
+            ReadingQuestion(prompt: "Where do you get the course book?",
+                            options: ["At reception, for 25 euros", "From the teacher, for free", "In a bookshop"],
+                            answer: 0, evidence: "Bitte kaufen Sie das Kursbuch an der Rezeption.")
         ])
 
-    static let a1Birthday = ReadingText(
-        id: "a1-birthday", level: .a1, kind: .message,
-        title: "A message from Lena", detail: "An invitation",
-        systemImage: "gift.fill",
+    static let a1Caretaker = ReadingText(
+        id: "a1-caretaker", level: .a1, kind: .letter,
+        title: "A letter from the property management", detail: "A new caretaker",
+        systemImage: "wrench.and.screwdriver.fill",
         german: """
-        Hallo!
+        Hausverwaltung Becker
 
-        Am Samstag habe ich Geburtstag. Ich werde 25!
-        Ich mache eine kleine Party bei mir zu Hause. Sie beginnt um 19 Uhr.
-        Meine Adresse ist Lindenstraße 8, im dritten Stock.
-        Bitte bring nichts mit, ich habe genug Essen und Getränke.
-        Kommst du? Schreib mir bitte bis Donnerstag.
+        Liebe Mieterinnen und Mieter,
 
-        Liebe Grüße
-        Lena
+        ab März haben wir einen neuen Hausmeister. Er heißt Herr Krüger.
+        Herr Krüger ist von Montag bis Freitag von 7 bis 15 Uhr im Haus.
+        Sein Büro ist im Keller, neben dem Fahrradraum.
+        Ist in Ihrer Wohnung etwas kaputt? Dann rufen Sie bitte Herrn Krüger an: 0176 22 34 455.
+        Am Wochenende ist Herr Krüger nicht da. Im Notfall rufen Sie bitte 030 987 65 43 an.
+
+        Mit freundlichen Grüßen
+        Ihre Hausverwaltung Becker
         """,
         questions: [
-            ReadingQuestion(prompt: "Why is Lena having a party?",
-                            options: ["She has a new flat", "It's her birthday", "It's the weekend"],
-                            answer: 1, evidence: "Am Samstag habe ich Geburtstag."),
-            ReadingQuestion(prompt: "When does the party start?",
-                            options: ["At 7 pm", "At 8 pm", "At 3 pm"],
-                            answer: 0, evidence: "Sie beginnt um 19 Uhr."),
-            ReadingQuestion(prompt: "What should you bring?",
-                            options: ["Something to eat", "Drinks", "Nothing"],
-                            answer: 2, evidence: "Bitte bring nichts mit, ich habe genug Essen und Getränke.")
+            ReadingQuestion(prompt: "Who is Herr Krüger?",
+                            options: ["The new caretaker", "A new neighbour", "The landlord"],
+                            answer: 0, evidence: "ab März haben wir einen neuen Hausmeister."),
+            ReadingQuestion(prompt: "Where is his office?",
+                            options: ["On the ground floor", "In his flat", "In the cellar, next to the bike room"],
+                            answer: 2, evidence: "Sein Büro ist im Keller, neben dem Fahrradraum."),
+            ReadingQuestion(prompt: "There's an emergency on Sunday. What do you do?",
+                            options: ["Call 030 987 65 43", "Call Herr Krüger", "Wait until Monday"],
+                            answer: 0, evidence: "Im Notfall rufen Sie bitte 030 987 65 43 an.")
         ])
 
-    static let a1Doctor = ReadingText(
-        id: "a1-doctor", level: .a1, kind: .notice,
-        title: "A sign at the doctor's", detail: "When is it open?",
-        systemImage: "cross.case.fill",
+    static let a1Work = ReadingText(
+        id: "a1-work", level: .a1, kind: .email,
+        title: "An email from your new job", detail: "Your first day",
+        systemImage: "briefcase.fill",
         german: """
-        Praxis Dr. Weber – Allgemeinmedizin
+        Betreff: Dein erster Arbeitstag
 
-        Sprechzeiten:
-        Montag, Dienstag und Donnerstag: 8 bis 12 Uhr und 15 bis 18 Uhr
-        Mittwoch und Freitag: 8 bis 12 Uhr
+        Hallo Samir,
 
-        Bitte rufen Sie vorher an und machen Sie einen Termin. Telefon: 030 456 789
-        Im Notfall rufen Sie bitte die 112 an.
-        Vom 23. Dezember bis zum 2. Januar ist die Praxis geschlossen.
+        herzlich willkommen im Team!
+        Dein erster Arbeitstag ist am Montag. Bitte komm um 8:30 Uhr.
+        Bitte geh zuerst zum Empfang im Erdgeschoss. Dort bekommst du deinen Mitarbeiterausweis.
+        Um 9 Uhr zeige ich dir das Büro und deinen Computer.
+        Mittags essen wir zusammen in der Kantine. Das Essen ist am ersten Tag gratis.
+
+        Bis Montag!
+        Petra Lange
+        Teamleiterin Kundenservice
         """,
         questions: [
-            ReadingQuestion(prompt: "Is the practice open on Wednesday afternoon?",
-                            options: ["Yes, until 6 pm", "No, it's closed all day", "No, only in the morning"],
-                            answer: 2, evidence: "Mittwoch und Freitag: 8 bis 12 Uhr"),
-            ReadingQuestion(prompt: "How do you get an appointment?",
-                            options: ["Online", "You call first", "You just come in"],
-                            answer: 1, evidence: "Bitte rufen Sie vorher an und machen Sie einen Termin."),
-            ReadingQuestion(prompt: "When is the practice closed?",
-                            options: ["Every Monday", "In the summer", "From 23 December to 2 January"],
-                            answer: 2, evidence: "Vom 23. Dezember bis zum 2. Januar ist die Praxis geschlossen.")
+            ReadingQuestion(prompt: "What time should Samir arrive on Monday?",
+                            options: ["At 9:00", "At 8:30", "At noon"],
+                            answer: 1, evidence: "Bitte komm um 8:30 Uhr."),
+            ReadingQuestion(prompt: "Where does he go first?",
+                            options: ["To the canteen", "To Petra's office", "To reception on the ground floor"],
+                            answer: 2, evidence: "Bitte geh zuerst zum Empfang im Erdgeschoss."),
+            ReadingQuestion(prompt: "What about lunch on the first day?",
+                            options: ["It's free in the canteen", "He brings his own", "There's no lunch break"],
+                            answer: 0, evidence: "Das Essen ist am ersten Tag gratis.")
         ])
 
-    static let a1Station = ReadingText(
-        id: "a1-station", level: .a1, kind: .announcement,
-        title: "At the station", detail: "Your train is late",
-        systemImage: "tram.fill",
+    static let a1Appointment = ReadingText(
+        id: "a1-appointment", level: .a1, kind: .email,
+        title: "An email from the citizens' office", detail: "Registering your flat",
+        systemImage: "building.columns.fill",
         german: """
-        Achtung bitte an Gleis 3!
+        Betreff: Ihr Termin im Bürgeramt
 
-        Der ICE nach München, Abfahrt 14:20 Uhr, hat heute etwa 15 Minuten Verspätung.
-        Der Zug fährt heute von Gleis 5.
-        Das Bistro im Zug ist heute leider geschlossen.
-        Wir bitten um Entschuldigung.
+        Guten Tag,
+
+        Ihr Termin ist am Dienstag, den 19. Januar, um 9:40 Uhr.
+        Grund: Anmeldung einer Wohnung
+        Ort: Bürgeramt Mitte, Rathausstraße 15, Zimmer 12
+        Bitte bringen Sie Ihren Pass oder Ihren Personalausweis mit.
+        Bringen Sie auch das Formular von Ihrem Vermieter mit (Wohnungsgeberbestätigung).
+        Bitte kommen Sie pünktlich.
+        Sie haben an dem Tag keine Zeit? Dann sagen Sie den Termin bitte online ab.
+
+        Mit freundlichen Grüßen
+        Ihr Bürgeramt Mitte
         """,
         questions: [
-            ReadingQuestion(prompt: "How late is the train?",
-                            options: ["About 15 minutes", "About 5 minutes", "One hour"],
-                            answer: 0, evidence: "Der ICE nach München, Abfahrt 14:20 Uhr, hat heute etwa 15 Minuten Verspätung."),
-            ReadingQuestion(prompt: "Where does the train leave from today?",
-                            options: ["Platform 5", "Platform 3", "Platform 14"],
-                            answer: 0, evidence: "Der Zug fährt heute von Gleis 5."),
-            ReadingQuestion(prompt: "What is closed today?",
-                            options: ["Platform 3", "The ticket office", "The bistro on the train"],
-                            answer: 2, evidence: "Das Bistro im Zug ist heute leider geschlossen.")
+            ReadingQuestion(prompt: "What is the appointment for?",
+                            options: ["A new passport", "Registering your flat", "A job interview"],
+                            answer: 1, evidence: "Grund: Anmeldung einer Wohnung"),
+            ReadingQuestion(prompt: "What must you bring from your landlord?",
+                            options: ["Your rental contract", "A key", "A form"],
+                            answer: 2, evidence: "Bringen Sie auch das Formular von Ihrem Vermieter mit (Wohnungsgeberbestätigung)."),
+            ReadingQuestion(prompt: "You can't come that day. What do you do?",
+                            options: ["Cancel it online", "Just don't go", "Send a letter"],
+                            answer: 0, evidence: "Dann sagen Sie den Termin bitte online ab.")
         ])
 }
