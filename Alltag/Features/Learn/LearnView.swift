@@ -8,8 +8,8 @@
 import SwiftData
 import SwiftUI
 
-/// Learn: something new to learn. Under the tools, Today's lesson plays one
-/// thing from each part; the parts themselves follow. Speaking is on Today, and keeping
+/// Learn: something new to learn. Under the "How do I say …?" field and the
+/// tools comes the page (`LearnPage`): Today's lesson, then the parts. Speaking is on Today, and keeping
 /// and reviewing (your mistakes too) is in Memory.
 struct LearnView: View {
     @Environment(AppState.self) private var appState
@@ -36,24 +36,13 @@ struct LearnView: View {
         }
     }
 
-    private func open(_ skill: LearnSkill) {
-        switch skill {
-        case .read: appState.open(.read)
-        case .write: appState.open(.write)
-        case .listen: appState.open(.listen)
-        case .grammar: appState.open(.grammar)
-        }
-    }
-
     var body: some View {
         ScrollView {
             VStack(spacing: Spacing.grid) {
                 AskInPlace(model: ask, isFocused: $isAsking)
                 VStack(spacing: Spacing.section) {
                     ToolsSection(onOpen: open)
-                    DailyLessonSection(level: level)
-                    WordCollectionsSection(level: level, notice: $notice)
-                    SkillsSection(level: level, onOpen: open)
+                    LearnPage(level: level, notice: $notice)
                 }
                 .fieldFocusBackdrop(isActive: isAsking) { isAsking = false }
             }

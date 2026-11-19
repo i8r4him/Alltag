@@ -88,16 +88,6 @@
       }
     },
     "%@ · lesson in a later version" : {},
-    "%@ · Next: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · Next: %2$@"
-          }
-        }
-      }
-    },
     "%@ · Rule %lld of %lld" : {
       "localizations" : {
         "en" : {
@@ -230,6 +220,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld of %2$lld right first time"
+          }
+        }
+      }
+    },
+    "%lld of %lld saved" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld saved"
           }
         }
       }
@@ -889,6 +889,7 @@
     "Everyday life in Germany" : {},
     "Everyday situations" : {},
     "Everyday slang" : {},
+    "Everything here is done" : {},
     "Everything in Learn still works, as often as you like." : {},
     "Everything you say is kept here to reread." : {},
     "Exactly right." : {},
@@ -1494,7 +1495,6 @@
     "On-device intelligence" : {},
     "Once the deadline has passed, notice can no longer be given." : {},
     "One or many" : {},
-    "One thing from every part" : {},
     "One ticket for buses and local trains all over Germany" : {},
     "Online help is off" : {},
     "Online or in the shop?" : {},
@@ -1670,6 +1670,7 @@
     "Reading it like a teacher …" : {},
     "Ready to review" : {},
     "ready to review" : {},
+    "Ready-made words by topic" : {},
     "Real situations" : {},
     "Really talk with the people who matter most." : {},
     "Receipt" : {},
@@ -1742,6 +1743,7 @@
     "Search your memory" : {},
     "SECONDS" : {},
     "Section" : {},
+    "See all" : {},
     "See the result" : {},
     "sein + zu: can (not) be done" : {},
     "sein + zu: must be done" : {},
@@ -1863,6 +1865,7 @@
     "Sport" : {},
     "Sport and clubs" : {},
     "Sport and health" : {},
+    "Start" : {},
     "Start 60 seconds of talking" : {},
     "Start a Conversation" : {},
     "Start a round" : {},
@@ -1883,16 +1886,6 @@
     "Station" : {},
     "Station announcement" : {},
     "Steady progress" : {},
-    "Step %lld of %lld · %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Step %1$lld of %2$lld · %3$@"
-          }
-        }
-      }
-    },
     "Still remembered 30 days after you met them" : {},
     "Stop" : {},
     "Strength" : {},
@@ -2309,6 +2302,7 @@
     "Universal basic income" : {},
     "University or apprenticeship?" : {},
     "Unless otherwise agreed, the contract runs for a year." : {},
+    "Up next in each part" : {},
     "Verb at the end" : {},
     "Verb to noun" : {},
     "Verbs with prepositions" : {},

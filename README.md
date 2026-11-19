@@ -242,7 +242,7 @@ Alltag/                                   ← repo root
 │  │  │     ├─ MistakeQuestionViews.swift one mistake to write correctly: the field starts with what was said; the fix and why after Check
 │  │  │     └─ MistakeRoundEnd.swift      before and after: what was said, the correction, when it comes back
 │  │  ├─ Learn/
-│  │  │  ├─ LearnView.swift               tools, Today's lesson, Word collections, then Practise (something new; reviewing and your mistakes are in Memory)
+│  │  │  ├─ LearnView.swift               the \"How do I say …?\" field and the tools, then the page (something new; reviewing and your mistakes are in Memory)
 │  │  │  ├─ LearnTools.swift              the "How do I say …?" field (answers in place), Translate and Articles
 │  │  │  ├─ LearnComponents.swift         LearnScreen, LearnHeroCard, LearnSection, LearnList, LearnRow
 │  │  │  ├─ LearnSkills.swift             Read · Write · Listen · Grammar banners in the theme colour, with real progress
@@ -259,10 +259,15 @@ Alltag/                                   ← repo root
 │  │  │  │  ├─ CollectionMemory.swift     adds a collection's words (or some) to Memory and takes them out (tested)
 │  │  │  │  ├─ CollectionCardParts.swift  the + button, level badge, artwork and stack layers
 │  │  │  │  └─ Content/                   the words, one set of files per level (A1 to C2), every topic group at every level
+│  │  │  ├─ Page/                         everything under the tools, in four page designs to pick from (temporary ‹ n / 4 › switcher)
+│  │  │  │  ├─ LearnPage.swift            reads progress once, opens rules, texts, chats and collections the same way for every design
+│  │  │  │  ├─ LearnOverview.swift        each part's real progress at the level and its next things (tested)
+│  │  │  │  ├─ LearnPageParts.swift       the lesson card's section, progress in words, the part ring, a part's header
+│  │  │  │  └─ Learn…Layout.swift         Hub (2×2 tiles), Next up (a card per part), Shelves (rows of things), List (one card)
 │  │  │  ├─ Lesson/                       Today's lesson: one thing from each part, played one after another (~15 min)
 │  │  │  │  ├─ DailyLesson.swift          the steps from real progress: words, the next rule, a text, a chat, mistakes due (tested)
-│  │  │  │  ├─ DailyLessonSection.swift   the section on Learn: opens each step's own screen; a temporary ‹ n / 4 › design switcher
-│  │  │  │  └─ Lesson…Design.swift        the four designs to pick from, all one card: ring and circles, a big ring, next up, a strip
+│  │  │  │  ├─ LessonCardDesign.swift     the lesson's card: ring, a circle per part, the next step and the big button
+│  │  │  │  └─ LessonParts.swift          the part circle and the big Start / Continue button
 │  │  │  ├─ Ask/
 │  │  │  │  ├─ AskInPlace.swift           the field you type in on Learn and the German answer there, with Translate's parts (#304)
 │  │  │  │  ├─ AskModel.swift             Translate's model, asked only when the learner sends (tested)
