@@ -97,12 +97,22 @@ Translate and "How do I say …?" in the app. Text only.
 - The model is `TRANSLATE_MODEL` (default `gpt-6-luna`), asked for **low reasoning effort**: about 3 seconds an answer instead of 5 to 10. Sent with `store: false`.
 - It needs the same Responses permission on the OpenAI key as `check-german`.
 
+## Writing (`write`)
+
+Learn › Write in the app: the check of a text and the friends in its chats. Text only; the request and answer of each action are at the top of `functions/write/index.ts`.
+
+- `check` marks a formal email, a text about a topic or a form sentence by sentence, against the task the app sends (`task`). With `stream: "true"` it forwards OpenAI's events, so the app shows each sentence as soon as it is checked. Model `WRITE_CHECK_MODEL` (default `gpt-6.1-terra`, low effort).
+- `chat` (v9, 19 Nov 2026, #427) plays Lena, the WG group (Mia and Tobi) or Jonas: `contact` is `lena`, `wg` or `jonas`, `messages` the chat so far as a JSON string (the last message is the learner's), `wrap_up: "true"` ends it. It answers with one to three short casual messages at the learner's level and a check of the learner's last message that treats texting German (lowercase, "hab", no full stop) as correct and too formal German as a tip. Model `WRITE_CHAT_MODEL` (default `gpt-6-luna`, low effort), not streamed.
+- `task` writes a new task (unused by the app since #427; kept for later).
+- **Nothing the learner wrote is stored.** A check and a chat reply count in `german_checks`, a task in `translations`, with the same limits as `check-german` and `translate`.
+
 ## Files
 
 - `functions/gemini-live-session/index.ts`: the live voice (Google's Gemini Live). Deploy it with JWT verification on.
 - `functions/realtime-session/index.ts`: the old OpenAI voice. Deployed, unused by the app.
 - `functions/check-german/index.ts`: the sentence check. Deploy it with JWT verification on.
 - `functions/translate/index.ts`: translating. Deploy it with JWT verification on.
+- `functions/write/index.ts`: Learn › Write's checks and chats. Deploy it with JWT verification on.
 - `migrations/20261107200000_realtime_sessions.sql`: the session log used for the limits.
 - `migrations/20261111100000_realtime_developers.sql`: the accounts that skip the per-user limit.
 - `migrations/20261113100000_german_checks.sql`: the check log used for the limits.

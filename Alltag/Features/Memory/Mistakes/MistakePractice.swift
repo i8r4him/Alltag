@@ -20,12 +20,14 @@ enum MistakePractice {
         item(said: said, feedback: feedback, sourceDetail: scenario.title, at: date)
     }
 
-    /// The same, for a fix that didn't come from a scenario (`sourceDetail` says where it was said).
-    static func item(said: String, feedback: Feedback, sourceDetail: String, at date: Date = .now) -> MemoryItem? {
+    /// The same, for a fix that didn't come from a scenario (`sourceDetail` says where it was said,
+    /// `source` in which part of the app).
+    static func item(said: String, feedback: Feedback, sourceDetail: String, source: MemorySource = .conversation,
+                     at date: Date = .now) -> MemoryItem? {
         guard feedback.kind == .fix, let correction = feedback.correction,
               ConversationModel.normalized(correction) != ConversationModel.normalized(said) else { return nil }
         return MemoryItem(word: correction, meaning: feedback.title, context: correction, contextNote: feedback.note,
-                          kind: .mistake, source: .conversation, sourceDetail: sourceDetail,
+                          kind: .mistake, source: source, sourceDetail: sourceDetail,
                           mistakeOriginal: said, strength: 0, nextReview: date, createdAt: date)
     }
 

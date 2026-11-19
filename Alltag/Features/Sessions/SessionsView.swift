@@ -106,7 +106,7 @@ private struct SessionRow: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            Image(systemName: session.kind == .sixtySeconds ? "timer" : "waveform")
+            Image(systemName: session.kind.systemImage)
                 .font(.title3)
                 .foregroundStyle(.accent)
                 .frame(width: 40, height: 40)

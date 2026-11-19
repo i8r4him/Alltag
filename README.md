@@ -131,6 +131,9 @@ Alltag/                                   ← repo root
 │  │  │  ├─ SystemTranslationService.swift   Translation framework (on device) + Apple Intelligence explanations
 │  │  │  ├─ CloudTranslationService.swift OpenAI through `translate`, streaming the answer as it is generated
 │  │  │  └─ TranslationStream.swift     reads completed sections from the streamed response
+│  │  ├─ Writing/
+│  │  │  ├─ WritingService.swift          WritingService: the check of a text, the friend's chat replies; cloud and mock
+│  │  │  └─ WritingCheckStream.swift      hands on each checked sentence as soon as it is complete (tested)
 │  │  ├─ Companion/
 │  │  │  ├─ CompanionService.swift        CompanionService, MockCompanionService (scripts, samples, fallback)
 │  │  │  ├─ OnDeviceCompanionService.swift   Foundation Models: feedback on own sentences, debriefs
@@ -278,7 +281,12 @@ Alltag/                                   ← repo root
 │  │  │     ├─ ArticleRules.swift         the clues as a grid of glass tiles (endings, -chen, compounds, the plural)
 │  │  │     └─ ArticleRuleSheet.swift     a clue zoomed out of its tile: examples, "Next clue"
 │  │  ├─ Write/
-│  │  │  └─ WriteView.swift               picked task, tasks from daily life (Sie / du), useful phrases
+│  │  │  ├─ WriteView.swift               chats with friends, a formal email, a topic and a form at A1–A2, all at the learner's level
+│  │  │  ├─ WriteParts.swift              the friend's picture, a chat row, the topic card
+│  │  │  ├─ FormalCards.swift             the formal email card (with the email to answer) and the form card
+│  │  │  ├─ Content/                      what each level writes (`WritingContent`) and how long (`WritingLength`)
+│  │  │  ├─ Session/                      writing one text: the brief, the editor, the check sentence by sentence, saving (tested)
+│  │  │  └─ Chat/                         texting a friend: bubbles, the friend typing, a coral dot for a fix, saving (tested)
 │  │  ├─ Listen/
 │  │  │  └─ ListenView.swift              picked clip, speed, real situations
 │  │  ├─ Read/
@@ -347,7 +355,7 @@ Alltag/                                   ← repo root
 │  │  ├─ MockTranslations.swift           TR
 │  │  ├─ MockMemoryItems.swift            MEM
 │  │  ├─ MockReading.swift                Read screen: saved articles, texts from daily life (with German to read, until #270)
-│  │  ├─ MockWriteListen.swift            Write tasks and phrases, Listen clips
+│  │  ├─ MockWriteListen.swift            Listen clips
 │  │  ├─ MockActivities.swift             ACTS
 │  │  ├─ MockRules.swift                  the rules in order (`all`) (RULES)
 │  │  ├─ MockRules+Accusative.swift       the accusative (A1): the first rule with a picture and an exam
@@ -588,6 +596,7 @@ Learn › Articles, in Today's look. A glass hero card starts **a round**: ten n
 - **Live voice on iPhone:** Google's Gemini Live, with a short-lived token from the `gemini-live-session` Edge Function, and both speakers' captions (#309). Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange (holding to talk, one made-up answer per hold), with made-up loudness for the orb.
 - **Translate:** OpenAI through Supabase when cloud use is allowed. The translation, words, tone and examples appear as they arrive. If cloud use is unavailable, the screen reports the error rather than showing an on-device translation.
 - **Read:** a tapped word goes to the translation service, once per word while the text is open: OpenAI through Supabase when cloud use is allowed (the word with its article, a grammar note and an example), otherwise Apple's Translation on the iPhone (the meaning only). The texts are samples until #270 decides where they come from.
+- **Write:** OpenAI through the `write` function when cloud use is allowed. A text is checked sentence by sentence as it streams in; in a chat the friend (Lena, the flat's group with Mia and Tobi, Jonas) answers in casual German at the learner's level and each message is checked for texting German, so lowercase and "hab" are fine. Fixes go to Fix your mistakes, chats and texts to Your sessions. Without cloud use the screen says so.
 - **Simulated:** scripted companion replies & feedback, placement.
 - **Later:** see the framework table below.
 

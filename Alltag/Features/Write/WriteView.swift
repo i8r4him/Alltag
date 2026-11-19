@@ -5,98 +5,98 @@
 //  Created by Ibrahim Abdullah on 10.11.26.
 //
 
+import SwiftData
 import SwiftUI
 
-/// Learn › Write: a task picked for you, tasks from daily life, and phrases to
-/// start and end a message. UI only for now, with mock content.
+/// Learn › Write, all at the learner's level: chats with German friends in
+/// everyday German, a formal email as a language course sets it, a topic as
+/// long as the level asks for, and a form at A1 and A2. Each opens out of its
+/// card; what the learner writes is checked, and kept in Your sessions and
+/// Fix your mistakes.
 struct WriteView: View {
+    /// What is open: a chat, or a text to write.
+    private enum Opened: Identifiable {
+        case chat(WritingChat)
+        case text(WritingBrief, source: String)
+
+        var id: String {
+            switch self {
+            case .chat(let chat): "chat-\(chat.id)"
+            case .text(_, let source): source
+            }
+        }
+
+        var isText: Bool {
+            if case .text = self { true } else { false }
+        }
+    }
+
+    @Query private var profiles: [UserProfile]
+    @Query(filter: #Predicate<SessionRecord> { $0.kindRaw == "writing" }) private var written: [SessionRecord]
+    @Environment(\.services) private var services
+    @Namespace private var transition
+    @State private var opened: Opened?
     @State private var taps = 0
-    @State private var register = WritingTask.Register.formal
+
+    private var level: Level { GrammarProgress.initialLevel(for: profiles.first?.level) }
 
     var body: some View {
         LearnScreen(title: "Write") {
-            LearnHeroCard(title: Text(MockWriting.picked.title),
-                          detail: Text(MockWriting.picked.detail),
-                          systemImage: MockWriting.picked.systemImage,
-                          buttonTitle: "Start writing · \(MockWriting.picked.minutes) min",
-                          buttonImage: "pencil",
-                          isProminent: true, action: tapped)
-
-            LearnSection(title: "From daily life") {
-                LearnList {
-                    ForEach(MockWriting.tasks) { task in
-                        LearnRow(systemImage: task.systemImage, title: Text(task.title),
-                                 detail: Text("\(Text(task.detail)) · \(task.minutes) min"), action: tapped) {
-                            RegisterBadge(register: task.register)
+            LearnSection(title: "Text a friend") {
+                WriteGlassList {
+                    ForEach(WritingContent.chats(at: level)) { chat in
+                        ChatRow(chat: chat, isUnread: !written.contains { $0.title == chat.contact }) {
+                            open(.chat(chat))
                         }
+                        .matchedTransitionSource(id: "chat-\(chat.id)", in: transition)
                     }
                 }
             }
-
-            LearnSection(title: "Useful phrases") {
-                PhrasesCard(register: $register)
-            }
-        }
-        .sensoryFeedback(.impact(weight: .light), trigger: taps)
-    }
-
-    /// The writing exercise comes later; for now a tap only gives feedback.
-    private func tapped() {
-        taps += 1
-    }
-}
-
-/// "Sie" or "du": how formal the message is.
-private struct RegisterBadge: View {
-    let register: WritingTask.Register
-
-    var body: some View {
-        Text(verbatim: register == .formal ? "Sie" : "du")
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(register == .formal ? Color.accent : Color.secondary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(register == .formal ? Color.accent.opacity(0.14) : Color.secondary.opacity(0.14),
-                        in: .capsule)
-            .accessibilityLabel(register == .formal ? Text("Formal") : Text("Informal"))
-    }
-}
-
-/// Openings, requests, thanks and closings, formal or informal.
-private struct PhrasesCard: View {
-    @Binding var register: WritingTask.Register
-
-    private var phrases: [WritingPhrase] {
-        register == .formal ? MockWriting.formalPhrases : MockWriting.informalPhrases
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Picker("Register", selection: $register) {
-                Text("Formal · Sie").tag(WritingTask.Register.formal)
-                Text("Informal · du").tag(WritingTask.Register.informal)
-            }
-            .pickerStyle(.segmented)
-
-            ForEach(phrases) { phrase in
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(phrase.role)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.accent)
-                    Text(verbatim: phrase.german)
-                        .font(.title3.weight(.medium))
+            if let task = WritingContent.formalTask(at: level) {
+                LearnSection(title: "Formal email", note: Text("Like in a course")) {
+                    FormalEmailCard(task: task) { open(.text(WritingBrief(task, level: level), source: "formal")) }
+                        .matchedTransitionSource(id: "formal", in: transition)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .accessibilityElement(children: .combine)
+            }
+            if let topic = WritingContent.topic(at: level) {
+                LearnSection(title: "Write about a topic") {
+                    TopicCard(topic: topic) { open(.text(WritingBrief(topic, level: level), source: "topic")) }
+                        .matchedTransitionSource(id: "topic", in: transition)
+                }
+            }
+            // A form is only worth practising at the first two levels.
+            if level <= .a2 {
+                LearnSection(title: "Fill in a form") {
+                    FormCard(form: WritingContent.form) {
+                        open(.text(WritingBrief(WritingContent.form, level: level), source: "form"))
+                    }
+                    .matchedTransitionSource(id: "form", in: transition)
+                }
             }
         }
-        .padding(Spacing.cardLarge)
-        .learnSurface()
-        .animation(.snappy, value: register)
-        .sensoryFeedback(.selection, trigger: register)
+        .sensoryFeedback(.impact(weight: .medium), trigger: taps)
+        .sheet(item: $opened) { opened in
+            Group {
+                switch opened {
+                case .chat(let chat):
+                    ChatView(chat: chat, level: level, service: services.writing)
+                case .text(let brief, _):
+                    WritingSessionView(brief: brief, service: services.writing)
+                }
+            }
+            .navigationTransition(.zoom(sourceID: opened.id, in: transition))
+            // A text isn't kept until it is checked, so only Close leaves it.
+            .interactiveDismissDisabled(opened.isText)
+        }
+    }
+
+    private func open(_ sheet: Opened) {
+        taps += 1
+        opened = sheet
     }
 }
 
 #Preview {
     NavigationStack { WriteView() }
+        .modelContainer(AlltagStore.preview)
 }
