@@ -42,7 +42,7 @@ struct LearnView: View {
                 AskInPlace(model: ask, isFocused: $isAsking)
                 VStack(spacing: Spacing.section) {
                     ToolsSection(onOpen: open)
-                    LearnPage(level: level, notice: $notice)
+                    LearnPage(level: level)
                 }
                 .fieldFocusBackdrop(isActive: isAsking) { isAsking = false }
             }

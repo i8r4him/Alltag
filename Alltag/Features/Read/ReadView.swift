@@ -34,6 +34,9 @@ struct ReadView: View {
         let texts = ReadingTexts.texts(at: level)
         let read = ReadingProgress.readIDs(in: readRecords)
         LearnScreen(title: "Read") {
+            if let step = DailyLesson.step(.read, at: level, records: .init(sessions: readRecords)) {
+                NextForYouCard(step: step) { open(step.target) }
+            }
             ReadTextsSection(level: level, texts: texts, read: read, zoom: zoom, onOpen: open)
             ReadDoSection(level: level, done: read, zoom: zoom, onOpen: open)
             WebReadingSection(level: level, saved: WebArticles.saved(in: readRecords), shared: shared, onOpen: open)
@@ -72,6 +75,15 @@ struct ReadView: View {
 
     private func refreshShared() {
         shared = WebArticles.shared(skipping: WebArticles.saved(in: readRecords))
+    }
+
+    /// Today's lesson's text or "Read and do" scene, from "Next for you".
+    private func open(_ target: LessonTarget) {
+        switch target {
+        case .text(let id): if let text = ReadingTexts.text(id: id) { open(text) }
+        case .scene(let id): if let scene = ReadDoScenes.scene(id: id) { open(scene) }
+        default: break
+        }
     }
 
     private func open(_ scene: ReadDoScene) {

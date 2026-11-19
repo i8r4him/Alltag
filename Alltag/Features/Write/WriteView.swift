@@ -42,6 +42,11 @@ struct WriteView: View {
 
     var body: some View {
         LearnScreen(title: "Write") {
+            if let step = DailyLesson.step(.write, at: level, records: .init(sessions: written)),
+               case .chat(let id) = step.target,
+               let chat = WritingContent.chats(at: level).first(where: { $0.id == id }) {
+                NextForYouCard(step: step) { open(.chat(chat)) }
+            }
             LearnSection(title: "Text a friend") {
                 WriteGlassList {
                     ForEach(WritingContent.chats(at: level)) { chat in

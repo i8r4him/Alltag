@@ -68,30 +68,3 @@ struct PartRing: View {
         .accessibilityHidden(true)
     }
 }
-
-/// A part's title as a section header that opens the part: "Grammar ›", with its progress on the right.
-struct PartHeader: View {
-    let part: LearnOverview.Part
-    let onOpen: () -> Void
-
-    var body: some View {
-        Button(action: onOpen) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(part.kind.title)
-                    .textRole(.sectionHeader)
-                Image(systemName: "chevron.right")
-                    .font(.headline.weight(.bold))
-                    .foregroundStyle(.secondary)
-                Spacer(minLength: 8)
-                PartProgressText(part: part)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 4)
-            .contentShape(.rect)
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(.isHeader)
-    }
-}

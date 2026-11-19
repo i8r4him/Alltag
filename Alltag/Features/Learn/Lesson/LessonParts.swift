@@ -68,3 +68,56 @@ struct LessonStartButton: View {
         }
     }
 }
+
+/// "Next for you" at the top of a part's page (Read, Write, the word
+/// collections): the same step Today's lesson gives that part, so the lesson
+/// and the part always agree on what comes next.
+struct NextForYouCard: View {
+    let step: LessonStep
+    let onOpen: () -> Void
+
+    @ScaledMetric(relativeTo: .title3) private var artworkSize: CGFloat = 88
+
+    var body: some View {
+        VStack(spacing: 18) {
+            HStack(alignment: .center, spacing: 16) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Group {
+                        if step.isDone {
+                            Label("Done today", systemImage: "checkmark.circle.fill")
+                        } else {
+                            Text("Next for you · \(step.minutes) min")
+                        }
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.accent)
+                    step.title.text
+                        .font(.title3.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let preview = step.preview {
+                        Text(verbatim: preview)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityElement(children: .combine)
+                ScenarioArtwork(systemImage: step.systemImage)
+                    .frame(width: artworkSize, height: artworkSize)
+            }
+            GlassEffectContainer {
+                Button(action: onOpen) {
+                    Label {
+                        step.isDone ? Text("Do it again") : Text("Start")
+                    } icon: {
+                        Image(systemName: step.isDone ? "arrow.counterclockwise" : "play.fill")
+                    }
+                }
+                .buttonStyle(.primary)
+            }
+        }
+        .padding(Spacing.cardLarge)
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.hero, style: .continuous))
+    }
+}

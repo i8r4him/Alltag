@@ -7,12 +7,11 @@
 
 import SwiftUI
 
-/// Page design 1, "Hub": Today's lesson, then the four parts as square glass
-/// tiles in a two-by-two grid, each with its artwork and a ring of its real
-/// progress, then the word collections as they are.
+/// Learn under the tools: Today's lesson, then the four parts as doors, square
+/// glass tiles in a two-by-two grid with only their artwork and a ring of
+/// their real progress. Listen joins when it is real.
 struct LearnHubLayout: View {
     let content: LearnPageContent
-    @Binding var notice: ToastMessage?
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.section) {
@@ -29,12 +28,11 @@ struct LearnHubLayout: View {
                         }
                         GridRow {
                             tile(.write)
-                            tile(.listen)
+                            tile(.words)
                         }
                     }
                 }
             }
-            WordCollectionsSection(level: content.level, notice: $notice)
         }
     }
 

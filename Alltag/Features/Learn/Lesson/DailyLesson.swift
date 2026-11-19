@@ -112,15 +112,26 @@ enum DailyLesson {
 
     static func steps(at level: Level, records: Records, on date: Date = .now,
                       calendar: Calendar = .current) -> [LessonStep] {
+        LessonPart.allCases.compactMap { step($0, at: level, records: records, on: date, calendar: calendar) }
+    }
+
+    /// One part's step of today's lesson: what "Next for you" shows at the top of that part's page.
+    static func step(_ part: LessonPart, at level: Level, records: Records, on date: Date = .now,
+                     calendar: Calendar = .current) -> LessonStep? {
         let isToday = { (other: Date) in calendar.isDate(other, inSameDayAs: date) }
-        let day = calendar.ordinality(of: .day, in: .era, for: date) ?? 0
-        return [
-            words(at: level, items: records.collectionWords, isToday: isToday),
-            grammar(at: level, solved: records.solvedRules, isToday: isToday),
-            reading(at: level, sessions: records.sessions, isToday: isToday, day: day),
-            writing(at: level, sessions: records.sessions, isToday: isToday),
-            mistakes(due: records.dueMistakes, fixedToday: records.fixedMistakesToday)
-        ].compactMap(\.self)
+        switch part {
+        case .words:
+            return words(at: level, items: records.collectionWords, isToday: isToday)
+        case .grammar:
+            return grammar(at: level, solved: records.solvedRules, isToday: isToday)
+        case .read:
+            let day = calendar.ordinality(of: .day, in: .era, for: date) ?? 0
+            return reading(at: level, sessions: records.sessions, isToday: isToday, day: day)
+        case .write:
+            return writing(at: level, sessions: records.sessions, isToday: isToday)
+        case .mistakes:
+            return mistakes(due: records.dueMistakes, fixedToday: records.fixedMistakesToday)
+        }
     }
 
     /// The first step not done yet, or `nil` when the lesson is done.

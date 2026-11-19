@@ -252,22 +252,15 @@ Alltag/                                   ← repo root
 │  │  │  │  ├─ WordCollectionsSection.swift the section on Learn: its title opens all collections, then a row of stacked cards
 │  │  │  │  ├─ AllCollectionsView.swift   every collection by level chip and topic; topics without words say "Coming soon"
 │  │  │  │  ├─ FannedRowStack.swift       the row: square glass cards with two cards fanned out behind each
-│  │  │  │  ├─ Page/                      one collection's page: a scene of chat bubbles (tap one for the English), save all to Memory
-│  │  │  │  │  ├─ WordCollectionSheet.swift the sheet and what the page knows (saved words, the + action)
-│  │  │  │  │  ├─ ScenePage.swift         the bubbles, alternating sides, with the word, its meaning and a speaker
-│  │  │  │  │  └─ WordParts.swift         the speaker button, the word with its article, the highlighted example
-│  │  │  │  ├─ CollectionMemory.swift     adds a collection's words (or some) to Memory and takes them out (tested)
-│  │  │  │  ├─ CollectionCardParts.swift  the + button, level badge, artwork and stack layers
-│  │  │  │  └─ Content/                   the words, one set of files per level (A1 to C2), every topic group at every level
-│  │  │  ├─ Page/                         everything under the tools, in four page designs to pick from (temporary ‹ n / 4 › switcher)
-│  │  │  │  ├─ LearnPage.swift            reads progress once, opens rules, texts, chats and collections the same way for every design
+│  │  │  │  ├─ Page/                         under the tools: Today's lesson, then Grammar, Read, Write and Words as doors with their progress
+│  │  │  │  ├─ LearnPage.swift            reads progress once, opens the lesson's rules, texts, chats and collections
 │  │  │  │  ├─ LearnOverview.swift        each part's real progress at the level and its next things (tested)
-│  │  │  │  ├─ LearnPageParts.swift       the lesson card's section, progress in words, the part ring, a part's header
-│  │  │  │  └─ Learn…Layout.swift         Hub (2×2 tiles), Next up (a card per part), Shelves (rows of things), List (one card)
+│  │  │  │  ├─ LearnHubLayout.swift       the lesson card and the 2×2 doors
+│  │  │  │  └─ LearnPageParts.swift       the lesson's section, progress in words, the part ring
 │  │  │  ├─ Lesson/                       Today's lesson: one thing from each part, played one after another (~15 min)
 │  │  │  │  ├─ DailyLesson.swift          the steps from real progress: words, the next rule, a text, a chat, mistakes due (tested)
 │  │  │  │  ├─ LessonCardDesign.swift     the lesson's card: ring, a circle per part, the next step and the big button
-│  │  │  │  └─ LessonParts.swift          the part circle and the big Start / Continue button
+│  │  │  │  └─ LessonParts.swift          the part circle, the big Start / Continue button, and "Next for you" (top of Read, Write, collections)
 │  │  │  ├─ Ask/
 │  │  │  │  ├─ AskInPlace.swift           the field you type in on Learn and the German answer there, with Translate's parts (#304)
 │  │  │  │  ├─ AskModel.swift             Translate's model, asked only when the learner sends (tested)

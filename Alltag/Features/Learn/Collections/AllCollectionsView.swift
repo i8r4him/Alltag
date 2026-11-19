@@ -15,6 +15,8 @@ struct AllCollectionsView: View {
     @Environment(\.modelContext) private var context
     @Query(filter: #Predicate<MemoryItem> { $0.sourceRaw == "collection" }) private var collectionWords: [MemoryItem]
     @State private var level: Level
+    /// The learner's own level: "Next for you" shows there.
+    private let learnerLevel: Level
     @State private var opened: WordCollection?
     @State private var toggles = 0
     @State private var notice: ToastMessage?
@@ -22,6 +24,7 @@ struct AllCollectionsView: View {
 
     init(level: Level) {
         _level = State(initialValue: level)
+        learnerLevel = level
     }
 
     var body: some View {
@@ -32,6 +35,11 @@ struct AllCollectionsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.section) {
                 CollectionLevelChips(selection: $level)
+                if level == learnerLevel,
+                   let step = DailyLesson.step(.words, at: level, records: .init(collectionWords: collectionWords)),
+                   case .collection(let id) = step.target {
+                    NextForYouCard(step: step) { opened = WordCollections.collection(id: id) }
+                }
                 if topics.isEmpty {
                     ContentUnavailableView("No collections at this level yet",
                                            systemImage: "square.stack",
