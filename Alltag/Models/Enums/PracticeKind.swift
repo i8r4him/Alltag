@@ -17,6 +17,8 @@ enum PracticeKind: String, Codable, CaseIterable, Sendable {
     case review
     /// Writing in Learn › Write: a chat with a friend, a formal email, a text on a topic or a form.
     case writing
+    /// Reading a text in Learn › Read and answering its three questions.
+    case reading
 
     /// The symbol in Your sessions.
     var systemImage: String {
@@ -24,6 +26,7 @@ enum PracticeKind: String, Codable, CaseIterable, Sendable {
         case .conversation, .review: "waveform"
         case .sixtySeconds: "timer"
         case .writing: "square.and.pencil"
+        case .reading: "book.fill"
         }
     }
 }

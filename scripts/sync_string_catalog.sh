@@ -17,7 +17,7 @@ xcodebuild build -project Alltag.xcodeproj -scheme Alltag \
 
 stringsdata=()
 while IFS= read -r -d '' file; do stringsdata+=(--stringsdata "$file"); done \
-  < <(find "$derived" -name "*.stringsdata" \( -path "*/Debug-iphonesimulator/Alltag.build/Objects-normal/*" -o -path "*/Debug-iphonesimulator/AlltagTranslation.build/Objects-normal/*" \) -print0)
+  < <(find "$derived" -name "*.stringsdata" \( -path "*/Debug-iphonesimulator/Alltag.build/Objects-normal/*" -o -path "*/Debug-iphonesimulator/AlltagTranslation.build/Objects-normal/*" -o -path "*/Debug-iphonesimulator/AlltagShare.build/Objects-normal/*" \) -print0)
 for catalog in "${catalogs[@]}"; do
 xcrun xcstringstool sync "$catalog" "${stringsdata[@]}"
 
