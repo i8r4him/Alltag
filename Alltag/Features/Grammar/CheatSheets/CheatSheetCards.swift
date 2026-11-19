@@ -50,7 +50,7 @@ private struct CheatSheetRowView: View {
                 .frame(width: symbolWidth)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
-                Text(Self.highlighted(row))
+                Text(row.highlighted)
                     .font(.title3.weight(.medium))
                     .environment(\.locale, Locale(identifier: "de_DE"))
                 Text(row.meaning)
@@ -63,13 +63,15 @@ private struct CheatSheetRowView: View {
         .padding(.vertical, 12)
         .accessibilityElement(children: .combine)
     }
+}
 
+extension CheatSheet.Row {
     /// The German with the marked words in the theme colour (the last match,
     /// so an ending can be marked by itself). Without a mark the whole line
     /// is in the theme colour.
-    static func highlighted(_ row: CheatSheet.Row) -> AttributedString {
-        var text = AttributedString(row.german)
-        guard let marked = row.marked, let range = text.range(of: marked, options: .backwards) else {
+    var highlighted: AttributedString {
+        var text = AttributedString(german)
+        guard let marked, let range = text.range(of: marked, options: .backwards) else {
             text.foregroundColor = AppTheme.shared.palette.accent
             return text
         }
