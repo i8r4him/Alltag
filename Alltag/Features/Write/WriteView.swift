@@ -14,29 +14,25 @@ import SwiftUI
 /// for now a tap only answers with a haptic.
 struct WriteView: View {
     @Query private var profiles: [UserProfile]
-    @AppStorage("writeDesign") private var design = 0
     @State private var taps = 0
 
     private var level: Level { GrammarProgress.initialLevel(for: profiles.first?.level) }
 
     var body: some View {
         LearnScreen(title: "Write") {
-            switch WriteDesign(rawValue: design) ?? .cards {
-            case .cards:
-                WriteCardsDesign(level: level, onOpen: tapped)
-            case .tones:
-                WriteTonesDesign(level: level, onOpen: tapped)
-            case .messages:
-                WriteMessagesDesign(level: level, onOpen: tapped)
+            LearnSection(title: "Text a friend") {
+                FriendCard(chat: MockWriting.friend, onReply: tapped)
+            }
+            if let topic = MockWriting.topics(at: level).first {
+                LearnSection(title: "Write about a topic") {
+                    TopicCard(topic: topic, onStart: tapped)
+                }
+            }
+            LearnSection(title: "Useful phrases") {
+                PhrasesCard()
             }
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
-        .sensoryFeedback(.selection, trigger: design)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                WriteDesignSwitcher(design: $design)
-            }
-        }
     }
 
     private func tapped() {

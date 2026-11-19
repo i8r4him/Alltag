@@ -17,18 +17,12 @@ struct WritingPhrase: Identifiable {
     let german: String
 }
 
-/// A German friend, or a group, the learner texts with.
-struct WritingChat: Identifiable {
-    let id: String
+/// A German friend the learner texts with.
+struct WritingChat {
     /// What the chat is about.
     let title: LocalizedStringResource
-    /// The friend's or the group's name, in German.
+    /// The friend's name.
     let contact: String
-    /// The friend's last message, in German.
-    let preview: String
-    /// A group shows this symbol instead of an initial.
-    var groupImage: String?
-    var isUnread = false
 
     var initial: String { String(contact.prefix(1)) }
 }
@@ -58,14 +52,7 @@ enum MockWriting {
     /// The friend's first messages in the chat.
     static let friendMessages = ["Heyy 👋", "Hast du heute Abend Bock auf Kino? 🎬"]
 
-    static let chats = [
-        WritingChat(id: "kino", title: "Plan the evening", contact: "Lena",
-                    preview: "Hast du heute Abend Bock auf Kino? 🎬", isUnread: true),
-        WritingChat(id: "wg", title: "The WG cleaning plan", contact: "WG Kölner Str. 12",
-                    preview: "Wer ist diese Woche mit dem Bad dran? 🧽", groupImage: "person.3.fill"),
-        WritingChat(id: "party", title: "Birthday wishes", contact: "Jonas",
-                    preview: "Morgen ist meine Party 🎉 Kommst du?")
-    ]
+    static let friend = WritingChat(title: "Plan the evening", contact: "Lena")
 
     static let topics = [
         WritingTopic(title: "Mein Wochenende", level: .a1, systemImage: "sun.max.fill"),
