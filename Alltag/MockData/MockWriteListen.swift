@@ -27,6 +27,27 @@ struct WritingChat {
     var initial: String { String(contact.prefix(1)) }
 }
 
+/// A formal email to answer, in German.
+struct FormalEmail {
+    let sender: String
+    let subject: String
+    let body: String
+}
+
+/// A letter as a language course or exam sets it: the situation and the
+/// points to write about, in German.
+struct LetterTask {
+    let situation: String
+    let points: [String]
+}
+
+/// A German form to fill in; its last field asks for full sentences.
+struct WritingForm {
+    let title: String
+    let fields: [String]
+    let question: String
+}
+
 /// A title to write about, at one level.
 struct WritingTopic: Identifiable {
     /// The title, in German.
@@ -53,6 +74,18 @@ enum MockWriting {
     static let friendMessages = ["Heyy 👋", "Hast du heute Abend Bock auf Kino? 🎬"]
 
     static let friend = WritingChat(title: "Plan the evening", contact: "Lena")
+
+    static let email = FormalEmail(
+        sender: "Hausverwaltung Becker", subject: "Wartung der Heizung",
+        body: "Sehr geehrte Mieterinnen und Mieter,\nam Montag, den 24. November, wird zwischen 8 und 12 Uhr die Heizung "
+            + "gewartet. Bitte teilen Sie uns mit, ob an diesem Vormittag jemand in der Wohnung ist.")
+
+    static let letter = LetterTask(
+        situation: "Sie haben im Internet eine Anzeige für einen Deutschkurs gelesen. Schreiben Sie eine E-Mail an die Sprachschule.",
+        points: ["Warum Sie schreiben", "Ihr Deutschniveau", "Wann Sie Zeit haben", "Was der Kurs kostet"])
+
+    static let form = WritingForm(title: "Anmeldung zum Deutschkurs", fields: ["Name", "Kurs"],
+                                  question: "Warum möchten Sie Deutsch lernen?")
 
     static let topics = [
         WritingTopic(title: "Mein Wochenende", level: .a1, systemImage: "sun.max.fill"),
