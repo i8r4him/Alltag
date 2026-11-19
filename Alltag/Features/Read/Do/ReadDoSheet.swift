@@ -8,7 +8,8 @@
 import SwiftUI
 
 /// A scene drawn as the thing it is: a dark departure board, a sign with a
-/// border, a cream box label, a form, a narrow receipt. Real things keep
+/// border, a cream box label, a form, a narrow receipt, a pink prescription,
+/// a contract in serif type, a dark TV guide. Real things keep
 /// their own colours in light and dark mode. Each line can be tapped.
 struct ReadDoSheet: View {
     /// How a line looks while the learner looks for the answer.
@@ -108,6 +109,40 @@ private struct ReadDoLook {
             cornerRadius = 10
         case .bill, .payslip:
             cornerRadius = 6
+        case .ticket, .prescription, .contract, .tvGuide, .schedule:
+            applyPaper(of: kind)
+        }
+    }
+
+    /// The looks of tickets, prescriptions, contracts, TV guides and schedules.
+    private mutating func applyPaper(of kind: ReadDoKind) {
+        switch kind {
+        case .ticket:
+            background = .white
+            highlight = Color(red: 0.75, green: 0.1, blue: 0.15)
+            cornerRadius = 10
+            maxWidth = 340
+        case .prescription:
+            // The pink of a German prescription form.
+            background = Color(red: 0.99, green: 0.89, blue: 0.91)
+            highlight = Color(red: 0.6, green: 0.1, blue: 0.25)
+            cornerRadius = 4
+            spacing = 10
+        case .contract:
+            design = .serif
+            cornerRadius = 4
+            spacing = 10
+        case .tvGuide:
+            background = Color(red: 0.1, green: 0.09, blue: 0.2)
+            ink = .white
+            highlight = Color(red: 0.55, green: 0.8, blue: 1)
+            spacing = 10
+        case .schedule:
+            background = .white
+            highlight = Color(red: 0, green: 0.42, blue: 0.48)
+            cornerRadius = 12
+        default:
+            break
         }
     }
 }

@@ -33,12 +33,13 @@ struct ReadDoTests {
         }
     }
 
-    @Test("Every level from A1 to C1 has scenes, and C2 does C1's")
+    @Test("Every level has scenes; C2 does its own once they are written, C1's until then")
     func levels() {
-        for level in [Level.a1, .a2, .b1, .b2, .c1] {
+        for level in Level.allCases {
             #expect(!ReadDoScenes.scenes(at: level).isEmpty, "\(level)")
         }
-        #expect(ReadDoScenes.scenes(at: .c2).map(\.id) == ReadDoScenes.scenes(at: .c1).map(\.id))
+        let c2Level: Level = ReadDoScenes.c2.isEmpty ? .c1 : .c2
+        #expect(ReadDoScenes.scenes(at: .c2).allSatisfy { $0.level == c2Level })
     }
 
     @Test("Lines are read by their marks")

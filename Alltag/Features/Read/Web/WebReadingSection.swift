@@ -39,6 +39,7 @@ struct WebReadingSection: View {
                 if !saved.isEmpty {
                     savedArticles
                 }
+                examples
                 sites
             }
         }
@@ -74,6 +75,24 @@ struct WebReadingSection: View {
                     LearnRow(systemImage: "globe", title: Text(verbatim: article.title),
                              detail: Text(verbatim: article.site), action: { onOpen(.saved(article)) },
                              trailing: { LearnChevron() })
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var examples: some View {
+        let examples = WebExamples.examples(for: level)
+        if !examples.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                heading("Try an article")
+                WriteGlassList {
+                    ForEach(examples) { example in
+                        LearnRow(systemImage: "doc.text.fill", title: Text(verbatim: example.title),
+                                 detail: Text("\(example.site) · \(example.about)"),
+                                 action: { onOpen(.link(example.url)) },
+                                 trailing: { LearnChevron() })
+                    }
                 }
             }
         }

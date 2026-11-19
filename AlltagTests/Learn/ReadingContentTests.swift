@@ -43,8 +43,12 @@ struct ReadingContentTests {
         }
     }
 
-    @Test("C2 reads C1's texts")
-    func c2ReadsC1() {
-        #expect(ReadingTexts.texts(at: .c2).map(\.id) == ReadingTexts.texts(at: .c1).map(\.id))
+    @Test("Every level has texts; C2 reads its own once they are written, C1's until then")
+    func levels() {
+        for level in Level.allCases {
+            #expect(!ReadingTexts.texts(at: level).isEmpty, "\(level)")
+        }
+        let c2Level: Level = ReadingTexts.c2.isEmpty ? .c1 : .c2
+        #expect(ReadingTexts.texts(at: .c2).allSatisfy { $0.level == c2Level })
     }
 }

@@ -18,6 +18,11 @@ enum ReadDoKind: String, CaseIterable, Hashable, Sendable {
     case binCalendar
     case bill
     case payslip
+    case ticket
+    case prescription
+    case contract
+    case tvGuide
+    case schedule
 
     var title: LocalizedStringResource {
         switch self {
@@ -29,6 +34,11 @@ enum ReadDoKind: String, CaseIterable, Hashable, Sendable {
         case .binCalendar: "Bin calendar"
         case .bill: "Bill"
         case .payslip: "Pay slip"
+        case .ticket: "Ticket"
+        case .prescription: "Prescription"
+        case .contract: "Contract"
+        case .tvGuide: "TV guide"
+        case .schedule: "Schedule"
         }
     }
 }
@@ -130,12 +140,13 @@ struct ReadDoScene: Identifiable, Hashable {
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
-/// Every "Read and do" scene, by level. C2 does C1's.
+/// Every "Read and do" scene, by level, each level in its own `ReadDoScenes+<level>.swift`.
 enum ReadDoScenes {
-    static let all: [ReadDoScene] = a1 + a2 + b1 + b2 + c1
+    static let all: [ReadDoScene] = a1 + a2 + b1 + b2 + c1 + c2
 
+    /// The level's scenes in order. C2 does C1's until it has its own.
     static func scenes(at level: Level) -> [ReadDoScene] {
-        let level = level == .c2 ? .c1 : level
+        let level = level == .c2 && c2.isEmpty ? .c1 : level
         return all.filter { $0.level == level }
     }
 

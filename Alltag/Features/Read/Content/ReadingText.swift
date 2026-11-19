@@ -73,13 +73,13 @@ struct ReadingText: Identifiable, Hashable {
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
-/// Every text to read, by level. C2 reads C1's texts.
+/// Every text to read, by level, each level in its own `ReadingTexts+<level>.swift`.
 enum ReadingTexts {
-    static let all: [ReadingText] = a1 + a2 + b1 + b2 + c1
+    static let all: [ReadingText] = a1 + a2 + b1 + b2 + c1 + c2
 
-    /// The level's texts in order. C2 has none of its own and reads C1's.
+    /// The level's texts in order. C2 reads C1's until it has its own.
     static func texts(at level: Level) -> [ReadingText] {
-        let level = level == .c2 ? .c1 : level
+        let level = level == .c2 && c2.isEmpty ? .c1 : level
         return all.filter { $0.level == level }
     }
 
