@@ -52,6 +52,7 @@ struct SkillsSection: View {
 
     @Query private var solved: [SolvedRule]
     @Query(filter: #Predicate<MemoryItem> { $0.sourceRaw == "read" }) private var readWords: [MemoryItem]
+    @Query(filter: #Predicate<SessionRecord> { $0.kindRaw == "writing" }) private var written: [SessionRecord]
     @State private var taps = 0
 
     private func progress(of skill: LearnSkill) -> SkillProgress {
@@ -59,7 +60,8 @@ struct SkillsSection: View {
         case .grammar:
             .grammar(solvedRuleIDs: Set(solved.map(\.ruleID)), level: GrammarProgress.initialLevel(for: level))
         case .read: .reading(readWords)
-        case .write, .listen: .comingSoon
+        case .write: .writing(written)
+        case .listen: .comingSoon
         }
     }
 
@@ -122,7 +124,7 @@ private struct SkillBanner: View {
     }
 }
 
-/// "12 of 20 solved · A2" with a short bar, "5 words saved", or "Coming soon".
+/// "12 of 20 solved · A2" with a short bar, "5 words saved", "3 texts written", or "Coming soon".
 private struct SkillProgressLine: View {
     let progress: SkillProgress
 
@@ -151,6 +153,12 @@ private struct SkillProgressLine: View {
                 .foregroundStyle(.accent)
         case .savedWords:
             Text("No words saved yet")
+                .foregroundStyle(.secondary)
+        case let .written(count) where count > 0:
+            Text("^[\(count) text](inflect: true) written")
+                .foregroundStyle(.accent)
+        case .written:
+            Text("Nothing written yet")
                 .foregroundStyle(.secondary)
         case .comingSoon:
             Text("Coming soon")
