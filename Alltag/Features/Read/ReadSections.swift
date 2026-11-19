@@ -12,12 +12,16 @@ enum ReadingSource: CaseIterable {
     case letterbox
     case phone
     case outside
+    case home
+    case stories
 
     var title: LocalizedStringResource {
         switch self {
         case .letterbox: "Letters and emails"
         case .phone: "On your phone"
         case .outside: "Out and about"
+        case .home: "At home"
+        case .stories: "Stories"
         }
     }
 
@@ -25,7 +29,9 @@ enum ReadingSource: CaseIterable {
         switch kind {
         case .letter, .email: .letterbox
         case .chat, .message, .advert, .article: .phone
-        case .notice, .menu, .announcement: .outside
+        case .notice, .menu, .announcement, .programme: .outside
+        case .recipe, .leaflet: .home
+        case .story: .stories
         }
     }
 }
@@ -87,6 +93,41 @@ struct ReadSections: View {
                 .fill(Color.accentFill)
                 .frame(width: 10, height: 10)
                 .accessibilityLabel(Text("Next"))
+        } else {
+            LearnChevron()
+        }
+    }
+}
+
+/// One sample of each new kind of text, from every level, for the maintainer
+/// to try before the kinds are written for each level. Temporary: it goes
+/// once the kinds are picked.
+struct NewKindsSection: View {
+    let read: Set<String>
+    let zoom: Namespace.ID
+    let onOpen: (ReadingText) -> Void
+
+    var body: some View {
+        LearnSection(title: "New kinds to try", note: Text("Preview")) {
+            WriteGlassList {
+                ForEach(ReadingTexts.newKinds) { text in
+                    LearnRow(systemImage: text.systemImage, title: Text(text.title),
+                             detail: Text("\(text.level.title) · \(text.kind.title)"),
+                             action: { onOpen(text) },
+                             trailing: { trailing(for: text) })
+                    .matchedTransitionSource(id: text.id, in: zoom)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func trailing(for text: ReadingText) -> some View {
+        if read.contains(text.id) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.title3)
+                .foregroundStyle(.accent)
+                .accessibilityLabel(Text("Read"))
         } else {
             LearnChevron()
         }

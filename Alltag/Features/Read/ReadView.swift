@@ -25,6 +25,7 @@ struct ReadView: View {
         let texts = ReadingTexts.texts(at: level)
         let read = ReadingProgress.readIDs(in: readRecords)
         LearnScreen(title: "Read") {
+            NewKindsSection(read: read, zoom: zoom, onOpen: open)
             ReadSections(level: level, texts: texts, read: read, zoom: zoom, onOpen: open)
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
