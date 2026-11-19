@@ -38,7 +38,9 @@ struct ReaderView: View {
                 VStack(alignment: .leading, spacing: Spacing.section) {
                     ReaderHeader(text: model.text)
                     page
-                    questionsButton
+                    if !model.text.questions.isEmpty {
+                        questionsButton
+                    }
                 }
                 .padding(.horizontal, Spacing.screen)
                 .padding(.top, 8)

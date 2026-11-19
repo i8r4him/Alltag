@@ -99,12 +99,13 @@ Translate and "How do I say …?" in the app. Text only.
 
 ## Writing (`write`)
 
-Learn › Write in the app: the check of a text and the friends in its chats. Text only; the request and answer of each action are at the top of `functions/write/index.ts`.
+Learn › Write in the app: the check of a text and the friends in its chats; and the questions about an article in Learn › Read. Text only; the request and answer of each action are at the top of `functions/write/index.ts`.
 
 - `check` marks a formal email, a text about a topic or a form sentence by sentence, against the task the app sends (`task`). With `stream: "true"` it forwards OpenAI's events, so the app shows each sentence as soon as it is checked. Model `WRITE_CHECK_MODEL` (default `gpt-6.1-terra`, low effort).
 - `chat` (v9, 19 Nov 2026, #427) plays Lena, the WG group (Mia and Tobi) or Jonas: `contact` is `lena`, `wg` or `jonas`, `messages` the chat so far as a JSON string (the last message is the learner's), `wrap_up: "true"` ends it. It answers with one to three short casual messages at the learner's level and a check of the learner's last message that treats texting German (lowercase, "hab", no full stop) as correct and too formal German as a tip. Model `WRITE_CHAT_MODEL` (default `gpt-6-luna`, low effort), not streamed.
 - `task` writes a new task (unused by the app since #427; kept for later).
-- **Nothing the learner wrote is stored.** A check and a chat reply count in `german_checks`, a task in `translations`, with the same limits as `check-german` and `translate`.
+- `questions` (v10, 19 Nov 2026, #269) writes three multiple-choice questions about an article from the web for Learn › Read: `article` (its title and paragraphs, at most 15,000 characters) and `level`. It answers the questions (prompt, three options, the answer and the sentence it rests on), the article's level and its gist in one line. Model `WRITE_TASK_MODEL` (default `gpt-6-luna`), not streamed.
+- **Nothing the learner wrote is stored.** A check and a chat reply count in `german_checks`, a task and questions in `translations`, with the same limits as `check-german` and `translate`.
 
 ## Files
 

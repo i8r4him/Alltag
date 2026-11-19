@@ -10,7 +10,9 @@ import SwiftUI
 
 /// Learn › Read: texts from daily life at the learner's level, written for the
 /// app. A text opens in the reader, zooming out of its card; its three
-/// questions mark it as read, and it is kept in Your sessions.
+/// questions mark it as read, and it is kept in Your sessions. Under them,
+/// "Read and do" (tap the answer in the real thing) and "Read from the web"
+/// (any German article, shared or pasted).
 struct ReadView: View {
     @Query private var profiles: [UserProfile]
     @Query(filter: #Predicate<SessionRecord> { $0.kindRaw == "reading" }) private var readRecords: [SessionRecord]
@@ -21,6 +23,11 @@ struct ReadView: View {
     @State private var opened: String?
     /// The "Read and do" scene open, by its id.
     @State private var openedScene: String?
+    /// The article from the web open.
+    @State private var openedWeb: WebSource?
+    /// Links shared to Alltag from the share sheet, read from the App Group.
+    @State private var shared: [URL] = []
+    @Environment(\.scenePhase) private var scenePhase
     @Namespace private var zoom
 
     private var level: Level { profiles.first?.level ?? .a1 }
@@ -36,6 +43,11 @@ struct ReadView: View {
                 ReadRealThingDesign(level: level, texts: texts, read: read, zoom: zoom, onOpen: open)
             }
             ReadDoSection(level: level, done: read, zoom: zoom, onOpen: open)
+            WebReadingSection(level: level, saved: WebArticles.saved(in: readRecords), shared: shared, onOpen: open)
+        }
+        .onAppear(perform: refreshShared)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { refreshShared() }
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
         .sensoryFeedback(.selection, trigger: design)
@@ -50,6 +62,9 @@ struct ReadView: View {
                     .navigationTransition(.zoom(sourceID: id, in: zoom))
             }
         }
+        .navigationDestination(item: $openedWeb) { source in
+            WebArticleView(source: source, level: level)
+        }
         .navigationDestination(item: $openedScene) { id in
             if let scene = ReadDoScenes.scene(id: id) {
                 ReadDoView(scene: scene)
@@ -61,6 +76,15 @@ struct ReadView: View {
     private func open(_ text: ReadingText) {
         taps += 1
         opened = text.id
+    }
+
+    private func open(_ source: WebSource) {
+        taps += 1
+        openedWeb = source
+    }
+
+    private func refreshShared() {
+        shared = WebArticles.shared(skipping: WebArticles.saved(in: readRecords))
     }
 
     private func open(_ scene: ReadDoScene) {

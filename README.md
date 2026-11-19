@@ -28,7 +28,7 @@ iPad, Apple Watch and Apple Vision Pro are **not** supported. The design referen
 ## Architecture
 Plain SwiftUI with `@Observable` models and services injected through the SwiftUI environment. No third-party libraries in the app (SwiftLint is a development tool only).
 
-**App target plus a Translation UI Provider extension** (#245–247). App folders are Xcode synchronized folders. `AlltagTranslation/` is embedded under `Alltag.app/Extensions/`; it streams translations with cloud consent, supports replacement in editable fields, and queues saved translations or words for Memory through an App Group inbox. See `AlltagTranslation/README.md` for the device checks.
+**App target plus a Translation UI Provider extension** (#245–247) **and a share extension** (#269). App folders are Xcode synchronized folders. `AlltagTranslation/` is embedded under `Alltag.app/Extensions/`; it streams translations with cloud consent, supports replacement in editable fields, and queues saved translations or words for Memory through an App Group inbox. See `AlltagTranslation/README.md` for the device checks. `AlltagShare/` is embedded under `Alltag.app/PlugIns/`: "Alltag" in the share sheet keeps a shared link in the same App Group (`ReadingInbox`), and Learn › Read lists it under "Shared to Alltag" to read with help.
 ```
 Alltag/                                   ← repo root
 ├─ Alltag.xcodeproj
@@ -126,6 +126,10 @@ Alltag/                                   ← repo root
 │  │  │  ├─ GeminiLiveMessage.swift                  one Gemini Live message, reduced to voice, words and turn (tested)
 │  │  │  ├─ RealtimeSocket.swift                     the live voice's WebSocket over URLSession
 │  │  │  └─ RealtimeAudio.swift                      PCM capture, playback and interruption
+│  │  ├─ Reading/
+│  │  │  ├─ WebArticleParser.swift        a web page's title and article paragraphs, without menus or scripts (pure, tested)
+│  │  │  ├─ WebReadingService.swift       loading an article, three questions from the `write` function; mock (tested)
+│  │  │  └─ ReadingInbox.swift            links shared from the share sheet, waiting in the App Group (app and extension)
 │  │  ├─ Translation/
 │  │  │  ├─ TranslationService.swift      TranslationService, TranslationServiceError, MockTranslationService (3 samples)
 │  │  │  ├─ SystemTranslationService.swift   Translation framework (on device) + Apple Intelligence explanations
@@ -290,7 +294,9 @@ Alltag/                                   ← repo root
 │  │  ├─ Listen/
 │  │  │  └─ ListenView.swift              picked clip, speed, real situations
 │  │  ├─ Read/
-│  │  │  ├─ ReadView.swift                scan a letter, your reading list (from Safari), picked for you, from daily life
+│  │  │  ├─ ReadView.swift                texts at the level (two designs behind a switcher), Read and do, Read from the web
+│  │  │  ├─ Do/                           Read and do: the real thing drawn (board, sign, packaging, form, receipt, bins, bills), tap the answer (tested)
+│  │  │  ├─ Web/                          Read from the web: shared, pasted and kept articles, sites per level, loading and questions
 │  │  │  ├─ ReaderView.swift              one text in large type; a tapped word on a glass card at the bottom; Listen reads it aloud
 │  │  │  ├─ ReaderModel.swift             the tapped word, its look-up (once per word), saving, listening (tested)
 │  │  │  ├─ ReaderWordCard.swift          the word with its article, meaning, grammar and example; its states
@@ -595,7 +601,7 @@ Learn › Articles, in Today's look. A glass hero card starts **a round**: ten n
 - **Real with Apple Intelligence:** feedback on sentences the learner makes up, and debriefs (Foundation Models, on device). Without it, Alltag uses the samples. On-device conversations keep their scripted replies so each scenario reaches its goal.
 - **Live voice on iPhone:** Google's Gemini Live, with a short-lived token from the `gemini-live-session` Edge Function, and both speakers' captions (#309). Cloud voice is opt-in. **Free talk** (the companion on Today) is a normal conversation about anything, live voice only, asking for consent in the conversation the first time. In the simulator, role-plays keep the scripted path and free talk plays a short made-up exchange (holding to talk, one made-up answer per hold), with made-up loudness for the orb.
 - **Translate:** OpenAI through Supabase when cloud use is allowed. The translation, words, tone and examples appear as they arrive. If cloud use is unavailable, the screen reports the error rather than showing an on-device translation.
-- **Read:** a tapped word goes to the translation service, once per word while the text is open: OpenAI through Supabase when cloud use is allowed (the word with its article, a grammar note and an example), otherwise Apple's Translation on the iPhone (the meaning only). The texts are samples until #270 decides where they come from.
+- **Read:** a tapped word goes to the translation service, once per word while the text is open: OpenAI through Supabase when cloud use is allowed (the word with its article, a grammar note and an example), otherwise Apple's Translation on the iPhone (the meaning only). The texts are samples until #270 decides where they come from. Read and do is written in the app and works offline. An article from the web is loaded with `URLSession` and kept in Your sessions; its three questions come from OpenAI through the `write` function (`questions`) when cloud use is allowed, and without them the article can still be read.
 - **Write:** OpenAI through the `write` function when cloud use is allowed. A text is checked sentence by sentence as it streams in; in a chat the friend (Lena, the flat's group with Mia and Tobi, Jonas) answers in casual German at the learner's level and each message is checked for texting German, so lowercase and "hab" are fine. Fixes go to Fix your mistakes, chats and texts to Your sessions. Without cloud use the screen says so.
 - **Simulated:** scripted companion replies & feedback, placement.
 - **Later:** see the framework table below.

@@ -87,7 +87,7 @@ jobs:
               continue
             fi
             stringsdata+=(--stringsdata "$file")
-          done < <(find "$DERIVED_DATA" -name "*.stringsdata" \( -path "*/Debug-iphonesimulator/Alltag.build/Objects-normal/*" -o -path "*/Debug-iphonesimulator/AlltagTranslation.build/Objects-normal/*" \) -print0)
+          done < <(find "$DERIVED_DATA" -name "*.stringsdata" \( -path "*/Debug-iphonesimulator/Alltag.build/Objects-normal/*" -o -path "*/Debug-iphonesimulator/AlltagTranslation.build/Objects-normal/*" -o -path "*/Debug-iphonesimulator/AlltagShare.build/Objects-normal/*" \) -print0)
           mkdir -p "$RUNNER_TEMP/catalog"
           for name in Localizable AppShortcuts; do
             # Keep the file name: xcstringstool takes the table name from it.
