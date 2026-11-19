@@ -8,8 +8,12 @@
 import Foundation
 
 extension ReadingTexts {
-    /// C1: official letters, news and debates in dense written German, about 130 to 180 words. C2 reads these too.
-    static let c1: [ReadingText] = [c1Tax, c1Permit, c1Consultation, c1Solar, c1RentCap, c1Sleep]
+    /// C1: official letters, news, debates and everyday life in dense German, about 130 to 190 words.
+    /// The texts from daily life are in `ReadingTexts+C1Life.swift`.
+    static let c1: [ReadingText] = [
+        c1Tax, c1WaterDamage, c1Permit, c1Inn, c1Consultation, c1JobAd,
+        c1Solar, c1BikeInsurance, c1RentCap, c1OfficeDays, c1Sleep, c1Delays
+    ]
 
     static let c1Tax = ReadingText(
         id: "c1-tax", level: .c1, kind: .letter,
