@@ -21,15 +21,11 @@ struct ReaderView: View {
     @State private var download: TranslationSession.Configuration?
     /// Counts the speaker's taps, for the medium haptic tap.
     @State private var listenTaps = 0
-    /// Temporary: where the questions show, until the maintainer picks a design.
-    @AppStorage(ReadDesign.storageKey) private var design = 0
     @Namespace private var questionsZoom
 
     init(text: ReadingText) {
         _model = State(initialValue: ReaderModel(text: text))
     }
-
-    private var questionsOnSheet: Bool { ReadDesign(rawValue: design) != .realThing }
 
     var body: some View {
         @Bindable var model = model
@@ -92,7 +88,7 @@ struct ReaderView: View {
         }
         .sheet(isPresented: questionsSheet) {
             ScrollView {
-                ReadingQuestionsView(quiz: model.quiz, style: .rows,
+                ReadingQuestionsView(quiz: model.quiz,
                                      onNext: { model.nextQuestion(in: context) },
                                      onClose: { model.hideQuestions() })
                     .padding(.horizontal, Spacing.screen)
@@ -112,9 +108,9 @@ struct ReaderView: View {
 
     private static let questionsID = "questions"
 
-    /// The questions on a sheet, in that design.
+    /// The questions on a sheet, zooming out of the button.
     private var questionsSheet: Binding<Bool> {
-        Binding(get: { questionsOnSheet && model.showsQuestions },
+        Binding(get: { model.showsQuestions },
                 set: { shows in if !shows { model.hideQuestions() } })
     }
 
@@ -144,8 +140,7 @@ struct ReaderView: View {
         .matchedTransitionSource(id: Self.questionsID, in: questionsZoom)
     }
 
-    /// The tapped word, or the questions in that design, on a glass card above
-    /// the tab bar; the text scrolls behind it.
+    /// The tapped word on a glass card above the tab bar; the text scrolls behind it.
     @ViewBuilder
     private var bottomCard: some View {
         if let word = model.selected, let lookup = model.lookup {
@@ -155,11 +150,6 @@ struct ReaderView: View {
                            onRetry: { model.retry(with: services.translation) },
                            onDownload: { download = downloadConfiguration(for: lookup) },
                            onClose: { model.close() })
-                .modifier(BottomGlassCard())
-        } else if !questionsOnSheet && model.showsQuestions {
-            ReadingQuestionsView(quiz: model.quiz, style: .chips,
-                                 onNext: { model.nextQuestion(in: context) },
-                                 onClose: { model.hideQuestions() })
                 .modifier(BottomGlassCard())
         }
     }

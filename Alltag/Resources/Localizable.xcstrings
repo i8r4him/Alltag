@@ -175,16 +175,6 @@
         }
       }
     },
-    "%lld of %lld read" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld of %2$lld read"
-          }
-        }
-      }
-    },
     "%lld of %lld right" : {
       "localizations" : {
         "en" : {
@@ -1449,7 +1439,6 @@
     "Read and Write" : {},
     "Read the rule again" : {},
     "Read the text once more, then try again." : {},
-    "Read · %lld min · 3 questions" : {},
     "Reading a novel" : {},
     "Reading in the digital age" : {},
     "Reading it like a teacher …" : {},
@@ -2173,7 +2162,6 @@
     "You've reached your live voice limit for today. Keep practising on your iPhone." : {},
     "You've used today's live conversations. You can talk again tomorrow." : {},
     "You: %@" : {},
-    "Your %@ texts" : {},
     "Your application has been approved." : {},
     "Your body" : {},
     "Your briefing · 60 sec" : {},

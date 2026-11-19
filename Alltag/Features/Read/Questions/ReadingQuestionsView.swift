@@ -7,26 +7,17 @@
 
 import SwiftUI
 
-/// The three questions after a text, one at a time, and the result. Shown on
-/// a sheet (answers one under the other) or on a card at the bottom of the
-/// reader (answers as chips).
+/// The three questions after a text, one at a time, and the result, on a
+/// sheet over the reader: the answers one under the other on glass.
 struct ReadingQuestionsView: View {
-    enum Style {
-        /// Full-width answers, the app's big button: for the sheet.
-        case rows
-        /// Answers as chips, the small button: for the card at the bottom.
-        case chips
-    }
-
     let quiz: ReadingQuiz
-    let style: Style
     let onNext: () -> Void
     let onClose: () -> Void
 
     var body: some View {
         Group {
             if quiz.isFinished {
-                ReadingQuizResult(quiz: quiz, style: style, onClose: onClose)
+                ReadingQuizResult(quiz: quiz, onClose: onClose)
             } else if let question = quiz.current {
                 questionView(question)
             }
@@ -63,42 +54,22 @@ struct ReadingQuestionsView: View {
         .transition(.opacity.combined(with: .move(edge: .trailing)))
     }
 
-    @ViewBuilder
     private func options(_ question: ReadingQuestion) -> some View {
-        switch style {
-        case .rows:
-            GlassEffectContainer(spacing: 10) {
-                VStack(spacing: 10) {
-                    ForEach(question.options.indices, id: \.self) { option in
-                        QuizOption(text: question.options[option], status: status(of: option, in: question),
-                                   isChip: false) { quiz.pick(option) }
-                    }
-                }
-            }
-        case .chips:
-            GlassEffectContainer(spacing: 8) {
-                FlowLayout(spacing: 8) {
-                    ForEach(question.options.indices, id: \.self) { option in
-                        QuizOption(text: question.options[option], status: status(of: option, in: question),
-                                   isChip: true) { quiz.pick(option) }
+        GlassEffectContainer(spacing: 10) {
+            VStack(spacing: 10) {
+                ForEach(question.options.indices, id: \.self) { option in
+                    QuizOption(text: question.options[option], status: status(of: option, in: question)) {
+                        quiz.pick(option)
                     }
                 }
             }
         }
     }
 
-    @ViewBuilder
     private var nextButton: some View {
         let title: LocalizedStringKey = quiz.isLastQuestion ? "See the result" : "Next question"
-        switch style {
-        case .rows:
-            Button(action: onNext) { Text(title) }
-                .buttonStyle(.primary)
-        case .chips:
-            Button(action: onNext) { Text(title) }
-                .buttonStyle(.primaryCompact)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-        }
+        return Button(action: onNext) { Text(title) }
+            .buttonStyle(.primary)
     }
 
     private func status(of option: Int, in question: ReadingQuestion) -> QuizOption.Status {
@@ -114,7 +85,6 @@ private struct QuizOption: View {
 
     let text: String
     let status: Status
-    let isChip: Bool
     let action: () -> Void
 
     var body: some View {
@@ -129,11 +99,11 @@ private struct QuizOption: View {
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .font(isChip ? .subheadline.weight(.semibold) : .body.weight(.semibold))
+            .font(.body.weight(.semibold))
             .foregroundStyle(.primary)
-            .padding(.horizontal, isChip ? 14 : 18)
-            .padding(.vertical, isChip ? 9 : 15)
-            .frame(maxWidth: isChip ? nil : .infinity, alignment: .leading)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 15)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(tint.opacity(0.16), in: shape)
             .overlay { shape.strokeBorder(tint.opacity(status == .right || status == .wrong ? 0.6 : 0), lineWidth: 1.5) }
             .glassEffect(status == .open ? .regular.interactive() : .regular, in: shape)
@@ -148,7 +118,7 @@ private struct QuizOption: View {
     }
 
     private var shape: RoundedRectangle {
-        RoundedRectangle(cornerRadius: isChip ? 18 : 22, style: .continuous)
+        RoundedRectangle(cornerRadius: 22, style: .continuous)
     }
 
     private var tint: Color {
@@ -188,13 +158,12 @@ private struct QuizPips: View {
 /// After the last question: read, or once more.
 private struct ReadingQuizResult: View {
     let quiz: ReadingQuiz
-    let style: ReadingQuestionsView.Style
     let onClose: () -> Void
 
     var body: some View {
         VStack(spacing: 14) {
             Image(systemName: quiz.isPassed ? "checkmark.seal.fill" : "arrow.counterclockwise.circle.fill")
-                .font(.system(size: style == .rows ? 52 : 38))
+                .font(.system(size: 52))
                 .foregroundStyle(.accent)
                 .symbolEffect(.bounce, value: quiz.isFinished)
                 .accessibilityHidden(true)
@@ -214,23 +183,14 @@ private struct ReadingQuizResult: View {
             .multilineTextAlignment(.center)
             .accessibilityElement(children: .combine)
             if quiz.isPassed {
-                button("Done", action: onClose)
+                Button("Done", action: onClose)
+                    .buttonStyle(.primary)
             } else {
-                button("Try again") { quiz.restart() }
+                Button("Try again") { quiz.restart() }
+                    .buttonStyle(.primary)
             }
         }
         .frame(maxWidth: .infinity)
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
-    }
-
-    @ViewBuilder
-    private func button(_ title: LocalizedStringKey, action: @escaping () -> Void) -> some View {
-        if style == .rows {
-            Button(action: action) { Text(title) }
-                .buttonStyle(.primary)
-        } else {
-            Button(action: action) { Text(title) }
-                .buttonStyle(.primaryCompact)
-        }
     }
 }
