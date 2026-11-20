@@ -1,5 +1,6 @@
 included:
   - Alltag
+  - AlltagKeyboard
   - AlltagTests
 
 excluded:
