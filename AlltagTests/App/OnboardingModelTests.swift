@@ -126,7 +126,7 @@ struct OnboardingModelTests {
     func allowedCount() {
         let model = OnboardingModel()
         #expect(model.allowedCount == 0)
-        model.allowsCalendar = true
+        model.allowsNotifications = true
         model.usesKeyboard = true
         #expect(model.allowedCount == 2)
     }
@@ -136,17 +136,16 @@ struct OnboardingModelTests {
         let container = try AlltagStore.makeContainer(inMemory: true)
         let model = OnboardingModel()
         model.name = "Mara"
-        model.allowsCalendar = true
         model.allowsNotifications = true
 
         let profile = model.save(in: container.mainContext, existing: nil)
-        #expect(profile.learnsFromCalendar)
+        #expect(!profile.learnsFromCalendar)
         #expect(!profile.learnsFromKeyboard)
         #expect(profile.remindersEnabled)
         #expect(profile.morningBriefingEnabled)
 
         let replay = OnboardingModel(profile: profile)
-        #expect(replay.allowsCalendar && replay.allowsNotifications && !replay.usesKeyboard)
+        #expect(replay.allowsNotifications && !replay.usesKeyboard)
     }
 
     @Test("The daily reminder is scheduled at the nudge time only if notifications were allowed",

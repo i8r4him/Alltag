@@ -21,7 +21,6 @@ struct ConversationModelTests {
             voice: voice,
             translation: MockTranslationService(delay: .zero),
             companion: MockCompanionService(thinkingTime: .zero),
-            calendar: MockCalendarService(),
             notifications: MockNotificationService()
         )
         return ConversationModel(scenario: scenario ?? MockScenarios.dentist, services: services, timing: .instant)

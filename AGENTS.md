@@ -172,7 +172,7 @@ Still open on Learn, **in this order**:
 - Today's Focus is the situation of the day.
 - Sessions are kept until the learner deletes them. Only 60 seconds is recorded.
 - Own situations are a short form, not an AI-written scenario.
-- Calendar suggestions (#183) are not built for now.
+- Calendar is removed from the app (20 Nov): no Calendar permission in onboarding, no `CalendarService`. `UserProfile.learnsFromCalendar` stays, unused, because removing a stored property needs a new schema version.
 - The four skills stay visible while they are shells; they are built in the order above.
 
 **Two agents share this folder** (this one and Codex). Check `git status` and the current branch before you start, never switch branches under someone else's uncommitted work, and stage your own files by path.

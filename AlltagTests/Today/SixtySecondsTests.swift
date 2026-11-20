@@ -154,7 +154,6 @@ struct SixtySecondsTests {
             voice: MockVoiceService(),
             translation: MockTranslationService(delay: .zero),
             companion: companion,
-            calendar: MockCalendarService(),
             notifications: MockNotificationService(),
             realtime: MockRealtimeConversationService()
         )

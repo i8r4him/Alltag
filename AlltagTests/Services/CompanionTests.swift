@@ -114,7 +114,7 @@ struct CompanionTests {
                                       english: "I'd like to come tomorrow.")
         let mock = AppServices.mock()
         let services = AppServices(speech: mock.speech, voice: mock.voice, translation: mock.translation,
-                                   companion: StubCompanion(answer), calendar: mock.calendar,
+                                   companion: StubCompanion(answer),
                                    notifications: mock.notifications)
         let model = ConversationModel(scenario: MockScenarios.dentist, services: services, timing: .instant)
         model.draft = "Ich möchte morgen kommen."

@@ -18,11 +18,6 @@ struct PermissionsStep: View {
                 StepHeader(title: "Learn from your day",
                            subtitle: "Each one is optional. You can change them any time in Settings.")
                 VStack(spacing: 10) {
-                    PermissionRow(title: "Calendar", subtitle: "Rehearse before appointments and trips",
-                                  systemImage: "calendar", tint: Color(uiColor: .systemRed),
-                                  isAllowed: model.allowsCalendar) {
-                        model.allowsCalendar = await services.calendar.requestAccess() == .granted
-                    }
                     PermissionRow(title: "Notifications", subtitle: "A gentle nudge, never more than twice a day",
                                   systemImage: "bell.fill", tint: Color(uiColor: .systemOrange),
                                   isAllowed: model.allowsNotifications) {
@@ -37,7 +32,7 @@ struct PermissionsStep: View {
                     }
                 }
                 Label {
-                    Text("Calendar and keyboard text stay on your iPhone. Allow live voice to send audio to Google in Settings.")
+                    Text("Keyboard text stays on your iPhone. Allow live voice to send audio to Google in Settings.")
                         .textRole(.meta)
                         .foregroundStyle(.secondary)
                 } icon: {

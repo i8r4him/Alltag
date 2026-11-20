@@ -290,7 +290,6 @@ struct RealtimeConversationTests {
             voice: MockVoiceService(),
             translation: MockTranslationService(delay: .zero),
             companion: companion ?? MockCompanionService(thinkingTime: .zero),
-            calendar: MockCalendarService(),
             notifications: MockNotificationService(),
             realtime: realtime
         )

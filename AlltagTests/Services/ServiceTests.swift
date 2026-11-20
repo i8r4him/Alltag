@@ -63,29 +63,6 @@ struct ServiceTests {
         #expect(try await service.translate("Where is the toilet?") == nil)
     }
 
-    @Test("Calendar lists dentist tomorrow first, each event linked to a scenario")
-    func calendar() async throws {
-        let calendar = MockCalendarService()
-        #expect(await calendar.requestAccess() == .granted)
-
-        let events = try await calendar.upcomingEvents()
-        #expect(events.count == 3)
-        #expect(events.first?.scenario == .dentist)
-        #expect(events.map(\.start) == events.map(\.start).sorted())
-        #expect(Set(events.compactMap(\.scenario)) == Set(MockScenarios.all.map(\.id)))
-    }
-
-    @Test("Calendar order holds on every day of the week", arguments: 0..<7)
-    func calendarOrderEveryDay(offset: Int) async throws {
-        // 7 Nov 2026 is a Saturday; check the following seven days.
-        let saturday = try #require(Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 7, hour: 9)))
-        let day = try #require(Calendar.current.date(byAdding: .day, value: offset, to: saturday))
-        let events = try await MockCalendarService(now: { day }).upcomingEvents()
-
-        #expect(events.map(\.id) == ["dentist", "train", "package"])
-        #expect(events.allSatisfy { $0.start > day })
-    }
-
     @Test("The daily nudge is scheduled and cancelled")
     func notifications() async throws {
         let notifications = MockNotificationService()

@@ -48,7 +48,6 @@ struct AskModelTests {
             voice: MockVoiceService(),
             translation: translation,
             companion: MockCompanionService(thinkingTime: .zero),
-            calendar: MockCalendarService(),
             notifications: MockNotificationService()
         )
         return AskModel(services: services, defaults: defaults)

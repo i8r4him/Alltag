@@ -15,7 +15,6 @@ struct AppServices {
     let voice: any VoiceService
     let translation: any TranslationService
     let companion: any CompanionService
-    let calendar: any CalendarService
     let notifications: any NotificationService
     var articles: any ArticleService = UnavailableArticleService()
     var realtime: any RealtimeConversationService = MockRealtimeConversationService()
@@ -29,7 +28,6 @@ struct AppServices {
             voice: SystemVoiceService(),
             translation: CloudTranslationService(),
             companion: liveCompanion(),
-            calendar: MockCalendarService(),
             notifications: MockNotificationService(),
             articles: CloudArticleService(),
             realtime: liveRealtime(),
@@ -67,7 +65,6 @@ struct AppServices {
             voice: MockVoiceService(),
             translation: MockTranslationService(),
             companion: MockCompanionService(),
-            calendar: MockCalendarService(),
             notifications: MockNotificationService()
         )
     }

@@ -20,7 +20,6 @@ struct ActivityModelTests {
             voice: voice,
             translation: MockTranslationService(delay: .zero),
             companion: MockCompanionService(thinkingTime: .zero),
-            calendar: MockCalendarService(),
             notifications: MockNotificationService()
         )
         return ActivityModel(activity: activity ?? MockActivities.mistakes, services: services)
