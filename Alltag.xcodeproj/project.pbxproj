@@ -42,6 +42,7 @@
 		A24800000000000000000017 /* Alltag/DesignSystem/Tokens/Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A24600000000000000000005 /* Alltag/DesignSystem/Tokens/Colors.swift */; };
 		A24800000000000000000018 /* Alltag/DesignSystem/Tokens/Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A24600000000000000000006 /* Alltag/DesignSystem/Tokens/Theme.swift */; };
 		A2480000000000000000001B /* Alltag/Components/Orb/CompanionAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = A24600000000000000000009 /* Alltag/Components/Orb/CompanionAppearance.swift */; };
+		A2480000000000000000001C /* Alltag/Services/Realtime/SupabaseRealtimeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A24600000000000000000001 /* Alltag/Services/Realtime/SupabaseRealtimeClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -502,6 +503,7 @@
 				A24800000000000000000017 /* Alltag/DesignSystem/Tokens/Colors.swift in Sources */,
 				A24800000000000000000018 /* Alltag/DesignSystem/Tokens/Theme.swift in Sources */,
 				A2480000000000000000001B /* Alltag/Components/Orb/CompanionAppearance.swift in Sources */,
+				A2480000000000000000001C /* Alltag/Services/Realtime/SupabaseRealtimeClient.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */

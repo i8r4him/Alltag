@@ -107,7 +107,12 @@ struct KeyCap: View {
         if isPressed, !key.isCharacter {
             return isDark ? .white.opacity(0.32) : Color(white: 0.78)
         }
-        return isDark ? .white.opacity(0.162) : .white
+        return Self.fill(isDark: isDark)
+    }
+
+    /// The colour of a key at rest; the tools' pills and cards share it.
+    static func fill(isDark: Bool) -> Color {
+        isDark ? .white.opacity(0.162) : .white
     }
 
     private var ink: Color {

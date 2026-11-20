@@ -75,6 +75,9 @@ final class KeyboardModel {
     /// The emoji take the place of the keys.
     private(set) var showsEmoji = false
 
+    /// Fix and "How do I say …?": they read and replace the text through the model.
+    let tools = KeyboardTools()
+
     @ObservationIgnored private(set) var engine = TypingEngine() {
         didSet {
             if shift != engine.shift { shift = engine.shift }
@@ -93,6 +96,11 @@ final class KeyboardModel {
     @ObservationIgnored private var states: [KeyboardKey: KeyState] = [:]
 
     var rows: [[KeyboardKey]] { KeyboardLayout.allRows(for: page, showsGlobe: traits.showsGlobe) }
+
+    init() {
+        tools.text = { [weak self] in self?.document?.textBeforeCursor ?? "" }
+        tools.replace = { [weak self] old, new in self?.replace(old, with: new) ?? false }
+    }
 
     /// The state one key draws itself from.
     func state(of key: KeyboardKey) -> KeyState {
@@ -129,6 +137,7 @@ final class KeyboardModel {
     func insertEmoji(_ emoji: String) {
         guard let document else { return }
         feedback?.keyDown(.emoji)
+        tools.close()
         engine.insert(emoji, in: document)
         if !suggestions.isEmpty { suggestions = [] }
     }
@@ -146,8 +155,17 @@ final class KeyboardModel {
     /// Puts a suggested word in place of the one being typed.
     func choose(_ suggestion: String) {
         guard let document else { return }
+        tools.close()
         engine.apply(suggestion, in: document)
         suggestions = []
+    }
+
+    /// Puts a tool's answer in place of the text it was made from.
+    func replace(_ old: String, with new: String) -> Bool {
+        guard let document, engine.replace(old, with: new, in: document) else { return false }
+        feedback?.keyDown(.enter)
+        if !suggestions.isEmpty { suggestions = [] }
+        return true
     }
 
     /// Looks up words for the one at the cursor.
@@ -164,6 +182,7 @@ final class KeyboardModel {
 
     private func type(_ text: String) {
         guard let document else { return }
+        tools.close()
         engine.typeCharacter(text, in: document)
         // An apostrophe is nearly always followed by a letter.
         if text == "'", page != .letters { page = .letters }
@@ -172,6 +191,7 @@ final class KeyboardModel {
 
     private func space() {
         guard let document else { return }
+        tools.close()
         engine.space(in: document)
         if page != .letters { page = .letters }
         suggestSoon()
@@ -179,6 +199,7 @@ final class KeyboardModel {
 
     private func enter() {
         guard let document, traits.returnEnabled else { return }
+        tools.close()
         engine.enter(in: document)
         if page != .letters { page = .letters }
         suggestSoon()
@@ -186,6 +207,7 @@ final class KeyboardModel {
 
     private func delete() {
         guard let document else { return }
+        tools.close()
         engine.delete(in: document)
         suggestSoon()
     }
@@ -333,6 +355,7 @@ extension KeyboardModel {
     /// One step of a held delete: letters first, whole words after a while.
     func repeatDelete(step: Int) {
         guard let document else { return }
+        tools.close()
         if step < Self.wordsAfter {
             engine.delete(in: document)
         } else {

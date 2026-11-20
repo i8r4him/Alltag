@@ -8,6 +8,7 @@
 import SwiftUI
 
 /// The whole keyboard: the tools row on top, then the numbers row and the keys.
+/// A tool's answer lies over the tools row, a long one over the numbers row too.
 /// The emoji take the place of all of it.
 struct KeyboardView: View {
     let model: KeyboardModel
@@ -23,16 +24,31 @@ struct KeyboardView: View {
     }
 
     private var isCompact: Bool { verticalSizeClass == .compact }
+    private var metrics: KeyboardMetrics { isCompact ? .landscape : .portrait }
+
+    /// A tool's answer may take the numbers row too: down to just above the first row of letters.
+    private var tallHeight: CGFloat {
+        Self.tallToolsHeight(isCompact: isCompact)
+    }
+
+    static func tallToolsHeight(isCompact: Bool) -> CGFloat {
+        let metrics: KeyboardMetrics = isCompact ? .landscape : .portrait
+        let tools = toolsHeight(isCompact: isCompact)
+        let keys = height(isCompact: isCompact) - tools
+        return tools + KeyboardGeometry.numbersBottom(rowCount: 5, height: keys, metrics: metrics) + metrics.rowGap * 0.6
+    }
 
     var body: some View {
         if model.showsEmoji {
             EmojiPanel(model: model)
         } else {
-            VStack(spacing: 0) {
-                ToolsRow(model: model)
-                    .frame(height: Self.toolsHeight(isCompact: isCompact))
-                KeysView(model: model, metrics: isCompact ? .landscape : .portrait)
-            }
+            let tools = Self.toolsHeight(isCompact: isCompact)
+            KeysView(model: model, metrics: metrics)
+                .padding(.top, tools)
+                .overlay(alignment: .top) {
+                    ToolsRow(model: model)
+                        .frame(height: model.tools.isTall ? tallHeight : tools)
+                }
         }
     }
 }
@@ -44,7 +60,8 @@ struct KeysView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let geometry = KeyboardGeometry(rows: model.rows, size: proxy.size, metrics: metrics)
+            let geometry = KeyboardGeometry(rows: model.rows, size: proxy.size, metrics: metrics,
+                                            hidesNumbers: model.tools.isTall)
             ZStack(alignment: .topLeading) {
                 ForEach(geometry.frames) { frame in
                     KeyView(model: model, frame: frame)

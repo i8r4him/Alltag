@@ -10,7 +10,8 @@ import UIKit
 
 /// The Alltag keyboard: shows the SwiftUI keys and passes what is typed to the text field.
 ///
-/// Typing works without Full Access and without a network. Nothing typed leaves the iPhone here.
+/// Typing works without Full Access and without a network. What is typed leaves the iPhone
+/// only when a tool is tapped (Fix, "How do I say …?"), and the tools need Full Access.
 final class KeyboardViewController: UIInputViewController {
     /// The App Group the app shares its theme through.
     static let group = "group.i8r4him.Alltag"
@@ -29,6 +30,7 @@ final class KeyboardViewController: UIInputViewController {
         model.feedback = feedback
         model.suggester = DictionarySuggestions()
         model.onNextKeyboard = { [weak self] in self?.advanceToNextInputMode() }
+        model.tools.assistant = ServerKeyboardAssistant()
 
         let host = UIHostingController(rootView: KeyboardView(model: model))
         host.safeAreaRegions = []
@@ -53,7 +55,9 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // Asked once per appearance: the answer doesn't change while the keyboard shows.
-        feedback.allowsHaptics = hasFullAccess
+        let isOpen = hasFullAccess
+        feedback.allowsHaptics = isOpen
+        model.tools.hasFullAccess = isOpen
         refresh()
     }
 

@@ -117,6 +117,20 @@ struct TypingEngine {
         addedSpace = true
     }
 
+    /// Puts a tool's text in place of the text it was made from, keeping the space after it.
+    /// False when that text no longer stands before the cursor; then nothing changes.
+    @discardableResult
+    mutating func replace(_ old: String, with new: String, in document: TextDocument) -> Bool {
+        let before = document.textBeforeCursor
+        let tail = String(before.reversed().prefix(while: \.isWhitespace).reversed())
+        let body = before.dropLast(tail.count)
+        guard !old.isEmpty, body.hasSuffix(old) else { return false }
+        for _ in 0..<(old.count + tail.count) { document.deleteBackward() }
+        document.insert(new + tail)
+        settle(after: String(body.dropLast(old.count)) + new + tail)
+        return true
+    }
+
     /// A tap on Shift. `again` is a second tap right after the first, which locks it.
     mutating func tapShift(again: Bool) {
         switch shift {

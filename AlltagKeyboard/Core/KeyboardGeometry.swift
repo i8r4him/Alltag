@@ -51,7 +51,9 @@ struct KeyboardGeometry: Equatable {
     let frames: [KeyFrame]
     let size: CGSize
 
-    init(rows: [[KeyboardKey]], size: CGSize, metrics: KeyboardMetrics = .portrait) {
+    /// `hidesNumbers` leaves the numbers row out and every other key where it is:
+    /// a tool's answer is drawn in the row's place.
+    init(rows: [[KeyboardKey]], size: CGSize, metrics: KeyboardMetrics = .portrait, hidesNumbers: Bool = false) {
         self.size = size
         guard !rows.isEmpty, size.width > 0, size.height > 0 else {
             frames = []
@@ -59,9 +61,7 @@ struct KeyboardGeometry: Equatable {
         }
         let inset = KeyboardMetrics.sideInset(for: size.width)
         let unit = Self.unitWidth(of: rows, width: size.width, inset: inset, metrics: metrics)
-        let gaps = CGFloat(rows.count - 1) * metrics.rowGap
-        let keyHeight = (size.height - metrics.topInset - metrics.bottomInset - gaps)
-            / (CGFloat(rows.count - 1) + metrics.numbersHeight)
+        let keyHeight = Self.keyHeight(rowCount: rows.count, height: size.height, metrics: metrics)
         var frames: [KeyFrame] = []
         var y = metrics.topInset
         for (index, row) in rows.enumerated() {
@@ -72,7 +72,18 @@ struct KeyboardGeometry: Equatable {
             }
             y += height + metrics.rowGap
         }
-        self.frames = frames
+        self.frames = hidesNumbers ? frames.filter { $0.row > 0 } : frames
+    }
+
+    /// The height of a letter key when `rowCount` rows, the numbers row among them, share `height`.
+    static func keyHeight(rowCount: Int, height: CGFloat, metrics: KeyboardMetrics) -> CGFloat {
+        let gaps = CGFloat(rowCount - 1) * metrics.rowGap
+        return (height - metrics.topInset - metrics.bottomInset - gaps) / (CGFloat(rowCount - 1) + metrics.numbersHeight)
+    }
+
+    /// Where the numbers row ends, measured from the top of the keys.
+    static func numbersBottom(rowCount: Int, height: CGFloat, metrics: KeyboardMetrics) -> CGFloat {
+        metrics.topInset + keyHeight(rowCount: rowCount, height: height, metrics: metrics) * metrics.numbersHeight
     }
 
     /// The key a touch at `point` means: the nearest key of the nearest row.

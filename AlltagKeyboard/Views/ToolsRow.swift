@@ -7,21 +7,74 @@
 
 import SwiftUI
 
-/// The row above the numbers: Alltag's orb, and words for the one being typed,
-/// set like the words over Apple's keyboard.
-/// The tools (Fix, How do I say …?) take this row in the next steps.
+/// The row above the numbers: Alltag's orb and its tools, and words for the one being typed,
+/// set like the words over Apple's keyboard. What a tool answers takes the row's place.
 struct ToolsRow: View {
     let model: KeyboardModel
+    @State private var taps = 0
 
     var body: some View {
-        HStack(spacing: 0) {
-            KeyboardOrb()
-                .frame(width: 22, height: 22)
-                .padding(.leading, 12)
-                .padding(.trailing, 6)
-                .accessibilityHidden(true)
-            SuggestionBar(words: model.suggestions) { model.choose($0) }
+        if model.tools.panel != nil {
+            ToolPanel(tools: model.tools)
+        } else {
+            HStack(spacing: 0) {
+                KeyboardOrb()
+                    .frame(width: 22, height: 22)
+                    .padding(.leading, 12)
+                    .padding(.trailing, 8)
+                    .accessibilityHidden(true)
+                // While words are offered the tools keep to their symbols.
+                let isShort = !model.suggestions.isEmpty
+                HStack(spacing: 6) {
+                    ToolChip(title: Text("Fix"), symbol: "text.badge.checkmark", isShort: isShort) {
+                        taps += 1
+                        Task { await model.tools.fix() }
+                    }
+                    ToolChip(title: Text("How do I say"), symbol: "translate", isShort: isShort) {
+                        taps += 1
+                        Task { await model.tools.say() }
+                    }
+                }
+                if isShort {
+                    SuggestionBar(words: model.suggestions) { model.choose($0) }
+                        .padding(.leading, 4)
+                } else {
+                    Spacer(minLength: 0)
+                }
+            }
+            .sensoryFeedback(.impact(weight: .medium), trigger: taps)
         }
+    }
+}
+
+/// One tool in the row: a pill in the colour of the keys.
+private struct ToolChip: View {
+    let title: Text
+    let symbol: String
+    let isShort: Bool
+    let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 5) {
+                Image(systemName: symbol)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color.accent)
+                if !isShort {
+                    title
+                        .font(.system(size: 15, weight: .medium))
+                        .lineLimit(1)
+                }
+            }
+            .foregroundStyle(.primary)
+            .padding(.horizontal, isShort ? 10 : 12)
+            .frame(height: 30)
+            .background(KeyCap.fill(isDark: colorScheme == .dark), in: .capsule)
+            .contentShape(.capsule)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
     }
 }
 

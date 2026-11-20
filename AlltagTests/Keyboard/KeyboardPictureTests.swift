@@ -73,6 +73,34 @@ struct KeyboardPictureTests {
 
         model.activate(.emoji)
         try await draw(KeyboardView(model: model), style: style, to: file("6-emoji"))
+        try await drawTools(style: style, file: file)
+    }
+
+    /// What the tools show: a fix, its reasons, an answer, and a notice.
+    func drawTools(style: UIUserInterfaceStyle, file: (String) -> URL) async throws {
+        let model = makeModel()
+        let document = FakeDocument("Ich habe gestern ins Kino gegangen")
+        let assistant = FixedAssistant()
+        assistant.corrected = "Ich bin gestern ins Kino gegangen."
+        assistant.reasons = ["Perfect with sein: „gehen“ is a verb of movement, so the perfect takes „sein“: „ich bin gegangen“."]
+        assistant.german[.everyday] = "Kann ich stattdessen morgen kommen?"
+        model.document = document
+        model.tools.assistant = assistant
+        model.tools.hasFullAccess = true
+        model.documentChanged(KeyboardTraits())
+
+        await model.tools.fix()
+        try await draw(KeyboardView(model: model), style: style, to: file("7-fix"))
+        model.tools.toggleWhy()
+        try await draw(KeyboardView(model: model), style: style, to: file("8-why"))
+
+        document.before = "Can I come tomorrow instead?"
+        await model.tools.say()
+        try await draw(KeyboardView(model: model), style: style, to: file("9-say"))
+
+        document.before = ""
+        await model.tools.fix()
+        try await draw(KeyboardView(model: model), style: style, to: file("10-notice"))
     }
 
     @Test("The letters on the keys are in the system's compact font, like Apple's")
