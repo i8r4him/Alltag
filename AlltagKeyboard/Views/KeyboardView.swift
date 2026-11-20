@@ -9,7 +9,7 @@ import SwiftUI
 
 /// The whole keyboard: the tools row on top, then the numbers row and the keys.
 /// A tool's answer lies over the tools row, a long one over the numbers row too.
-/// The emoji take the place of all of it.
+/// The emoji and the keyboard's settings take the place of all of it.
 struct KeyboardView: View {
     let model: KeyboardModel
     @Environment(\.verticalSizeClass) private var verticalSizeClass
@@ -39,7 +39,9 @@ struct KeyboardView: View {
     }
 
     var body: some View {
-        if model.showsEmoji {
+        if model.showsSettings {
+            SettingsPanel(model: model)
+        } else if model.showsEmoji {
             EmojiPanel(model: model)
         } else {
             let tools = Self.toolsHeight(isCompact: isCompact)

@@ -32,6 +32,8 @@ final class KeyboardViewController: UIInputViewController {
         model.feedback = feedback
         model.suggester = DictionarySuggestions()
         model.onNextKeyboard = { [weak self] in self?.advanceToNextInputMode() }
+        model.onSettingsChanged = { [weak self] _ in self?.applyFeedbackSettings() }
+        model.settingsStore = DefaultsKeyboardSettingsStore()
         model.tools.assistant = ServerKeyboardAssistant()
         // Saved words wait in the App Group for the app, which puts them in Memory.
         model.tools.keep = { german, meaning in
@@ -63,10 +65,15 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // Asked once per appearance: the answer doesn't change while the keyboard shows.
-        let isOpen = hasFullAccess
-        feedback.allowsHaptics = isOpen
-        model.tools.hasFullAccess = isOpen
+        model.tools.hasFullAccess = hasFullAccess
+        applyFeedbackSettings()
         refresh()
+    }
+
+    /// The click and the haptic follow the keyboard's settings; iOS allows the haptic only with Full Access.
+    private func applyFeedbackSettings() {
+        feedback.playsSound = model.settings[.sound]
+        feedback.allowsHaptics = model.settings[.haptics] && model.tools.hasFullAccess
     }
 
     override func viewWillLayoutSubviews() {

@@ -418,6 +418,7 @@ Alltag/                                   ← repo root
 │  │  ├─ KeyboardTools.swift              Fix, "How do I say …?", der · die · das and Save: what they read, show and replace
 │  │  ├─ KeyboardAssistant.swift          the tools' answers from the server (write's check, translate, articles)
 │  │  ├─ WordSuggestions.swift            words from the dictionary on the device (UITextChecker)
+│  │  ├─ KeyboardSettings.swift           what the learner can switch in the keyboard, and where it is kept
 │  │  └─ KeyFeedback.swift                the click and the haptic
 │  └─ Views/
 │     ├─ KeyboardView.swift               tools row + keys; the keyboard's height
@@ -425,7 +426,8 @@ Alltag/                                   ← repo root
 │     ├─ EmojiPanel.swift                 the emoji in place of the keys
 │     ├─ KeyTouchSurface.swift            one clear layer that reads every finger
 │     ├─ ToolsRow.swift                   Alltag's orb, the tools and the suggested words
-│     └─ ToolPanel.swift                  a tool's answer in place of the top rows
+│     ├─ ToolPanel.swift                  a tool's answer in place of the top rows
+│     └─ SettingsPanel.swift              the keyboard's own settings, opened from the orb
 │
 ├─ AlltagTests/                           Swift Testing, one folder per part of the app
 │  ├─ App/                                app start, state and routing, intents, layout, colours, SwiftData, sample content, onboarding

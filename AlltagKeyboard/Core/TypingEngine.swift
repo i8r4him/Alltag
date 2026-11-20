@@ -43,6 +43,8 @@ struct TypingEngine {
     /// The text before the cursor as the engine last knew it.
     private(set) var context = ""
     var capitalisation: AutoCapitalisation = .sentences
+    /// A second space after a word makes a full stop; the learner can switch it off.
+    var makesFullStops = true
     /// A space the keyboard added after a chosen word: punctuation typed next takes its place.
     private var addedSpace = false
     /// The text before the last step, and when that step was.
@@ -70,7 +72,7 @@ struct TypingEngine {
         if addedSpace, before.hasSuffix(" ") {
             // The space is there already.
             settle(after: before)
-        } else if Self.endsSentence(before) {
+        } else if makesFullStops, Self.endsSentence(before) {
             document.deleteBackward()
             document.insert(". ")
             settle(after: String(before.dropLast()) + ". ")

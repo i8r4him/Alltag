@@ -18,11 +18,19 @@ struct ToolsRow: View {
             ToolPanel(tools: model.tools)
         } else {
             HStack(spacing: 0) {
-                KeyboardOrb()
-                    .frame(width: 22, height: 22)
-                    .padding(.leading, 12)
-                    .padding(.trailing, 8)
-                    .accessibilityHidden(true)
+                Button {
+                    taps += 1
+                    model.openSettings()
+                } label: {
+                    KeyboardOrb()
+                        .frame(width: 22, height: 22)
+                        .padding(.leading, 12)
+                        .padding(.trailing, 8)
+                        .frame(maxHeight: .infinity)
+                        .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Keyboard settings"))
                 // While words are offered the tools keep to their symbols.
                 let isShort = !model.suggestions.isEmpty
                 HStack(spacing: 6) {

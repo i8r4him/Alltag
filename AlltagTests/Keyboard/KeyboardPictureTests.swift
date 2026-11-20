@@ -74,6 +74,11 @@ struct KeyboardPictureTests {
         model.activate(.emoji)
         try await draw(KeyboardView(model: model), style: style, to: file("6-emoji"))
         try await drawTools(style: style, file: file)
+
+        let settings = makeModel()
+        settings.set(.haptics, to: false)
+        settings.openSettings()
+        try await draw(KeyboardView(model: settings), style: style, to: file("13-settings"))
     }
 
     /// What the tools show: a fix, its reasons, an answer, and a notice.

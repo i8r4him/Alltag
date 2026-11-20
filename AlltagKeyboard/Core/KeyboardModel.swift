@@ -74,6 +74,9 @@ final class KeyboardModel {
     private(set) var movesCursor = false
     /// The emoji take the place of the keys.
     private(set) var showsEmoji = false
+    /// The keyboard's own settings take the place of the keys.
+    private(set) var showsSettings = false
+    private(set) var settings = KeyboardSettings()
 
     /// Fix and "How do I say …?": they read and replace the text through the model.
     let tools = KeyboardTools()
@@ -87,6 +90,16 @@ final class KeyboardModel {
     @ObservationIgnored var feedback: KeyFeedback?
     @ObservationIgnored var suggester: WordSuggesting?
     @ObservationIgnored var onNextKeyboard: () -> Void = {}
+    /// Where the settings are kept; setting it loads them.
+    @ObservationIgnored var settingsStore: KeyboardSettingsStore? {
+        didSet {
+            guard let settingsStore else { return }
+            settings = settingsStore.load()
+            applySettings()
+        }
+    }
+    /// Told when a setting changes, for what lives outside the model (the click, the haptic).
+    @ObservationIgnored var onSettingsChanged: (KeyboardSettings) -> Void = { _ in }
 
     @ObservationIgnored private var presses: [Int: Press] = [:]
     @ObservationIgnored private var holds: [Int: Task<Void, Never>] = [:]
@@ -113,9 +126,35 @@ final class KeyboardModel {
     /// The text field or the cursor changed.
     func documentChanged(_ traits: KeyboardTraits) {
         if self.traits != traits { self.traits = traits }
-        engine.capitalisation = traits.capitalisation
+        engine.capitalisation = settings[.autoCapitals] ? traits.capitalisation : .none
         if let document { engine.sync(with: document) }
         suggestSoon()
+    }
+
+    // MARK: - Settings
+
+    func openSettings() {
+        tools.close()
+        showsSettings = true
+    }
+
+    func closeSettings() {
+        showsSettings = false
+    }
+
+    func set(_ option: KeyboardSettings.Option, to isOn: Bool) {
+        guard settings[option] != isOn else { return }
+        settings[option] = isOn
+        settingsStore?.save(settings)
+        applySettings()
+    }
+
+    private func applySettings() {
+        engine.capitalisation = settings[.autoCapitals] ? traits.capitalisation : .none
+        engine.makesFullStops = settings[.fullStopShortcut]
+        if let document { engine.sync(with: document) }
+        if !settings[.suggestions], !suggestions.isEmpty { suggestions = [] }
+        onSettingsChanged(settings)
     }
 
     /// Does what a key does, at once: VoiceOver and tests press keys this way.
@@ -170,7 +209,7 @@ final class KeyboardModel {
 
     /// Looks up words for the one at the cursor.
     func refreshSuggestions() {
-        guard traits.offersSuggestions, let suggester else {
+        guard traits.offersSuggestions, settings[.suggestions], let suggester else {
             if !suggestions.isEmpty { suggestions = [] }
             return
         }

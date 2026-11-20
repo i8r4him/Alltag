@@ -16,10 +16,11 @@ protocol KeyFeedback: AnyObject {
 /// and a light haptic, which iOS only gives a keyboard with Full Access.
 final class SystemKeyFeedback: KeyFeedback {
     var allowsHaptics = false
+    var playsSound = true
     private let haptic = UIImpactFeedbackGenerator(style: .light)
 
     func keyDown(_ key: KeyboardKey) {
-        UIDevice.current.playInputClick()
+        if playsSound { UIDevice.current.playInputClick() }
         guard allowsHaptics else { return }
         haptic.impactOccurred()
         haptic.prepare()
