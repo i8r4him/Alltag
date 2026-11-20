@@ -42,10 +42,13 @@ struct KeyboardModelTests {
         #expect(document.before.isEmpty)
         #expect(model.popup?.options == ["q"])
         #expect(model.pressed == [.character("q")])
+        #expect(model.state(of: .character("q")).isPressed)
+        #expect(!model.state(of: .character("w")).isPressed)
         model.touchUp(1)
         #expect(document.before == "q")
         #expect(model.popup == nil)
         #expect(model.pressed.isEmpty)
+        #expect(!model.state(of: .character("q")).isPressed)
     }
 
     @Test("A second finger types the first key at once, so two thumbs keep their order")
@@ -192,6 +195,54 @@ struct KeyboardModelTests {
         model.choose("hause")
         #expect(document.before == "hause ")
         #expect(model.suggestions.isEmpty)
+    }
+
+    @Test("While typing goes on, only the offered words that still fit stay")
+    func fittingSuggestions() {
+        model.suggester = FixedWords(words: ["ha": ["Haus", "halb", "Hand"]])
+        for letter in ["h", "a"] { model.activate(.character(letter)) }
+        model.refreshSuggestions()
+        #expect(model.suggestions == ["Haus", "halb", "Hand"])
+        model.activate(.character("u"))
+        #expect(model.suggestions == ["Haus"])
+        model.activate(.space)
+        #expect(model.suggestions.isEmpty)
+    }
+
+    @Test("The emoji key opens the emoji, which type like keys, and ABC goes back")
+    func emoji() throws {
+        try press(1, .emoji)
+        #expect(!model.showsEmoji)
+        model.touchUp(1)
+        #expect(model.showsEmoji)
+        model.insertEmoji("😀")
+        model.insertEmoji("👨‍👩‍👧")
+        #expect(document.before == "😀👨‍👩‍👧")
+        model.deleteFromEmoji()
+        #expect(document.before == "😀")
+        model.closeEmoji()
+        #expect(!model.showsEmoji)
+    }
+
+    @Test("A return key the text field has switched off types nothing")
+    func returnOff() throws {
+        model.documentChanged(KeyboardTraits(capitalisation: .none, returnEnabled: false))
+        try press(1, .enter)
+        model.touchUp(1)
+        #expect(document.before.isEmpty)
+    }
+
+    @Test("A text field that answers late doesn't turn Shift back on after the first letter")
+    func lateAnswer() {
+        model.documentChanged(KeyboardTraits(capitalisation: .sentences))
+        #expect(model.shift == .once)
+        model.activate(.character("h"))
+        #expect(model.shift == .off)
+        // The field still says it is empty.
+        let stale = FakeDocument()
+        model.document = stale
+        model.documentChanged(KeyboardTraits(capitalisation: .sentences))
+        #expect(model.shift == .off)
     }
 
     @Test("No words are offered where the text field doesn't want them")

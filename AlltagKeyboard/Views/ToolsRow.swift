@@ -7,55 +7,66 @@
 
 import SwiftUI
 
-/// The row above the numbers: Alltag's orb, and words for the one being typed.
+/// The row above the numbers: Alltag's orb, and words for the one being typed,
+/// set like the words over Apple's keyboard.
 /// The tools (Fix, How do I say …?) take this row in the next steps.
 struct ToolsRow: View {
     let model: KeyboardModel
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 0) {
             KeyboardOrb()
-                .frame(width: 26, height: 26)
+                .frame(width: 22, height: 22)
+                .padding(.leading, 12)
+                .padding(.trailing, 6)
                 .accessibilityHidden(true)
-            if model.suggestions.isEmpty {
-                Spacer(minLength: 0)
-            } else {
-                SuggestionBar(words: model.suggestions) { model.choose($0) }
-            }
+            SuggestionBar(words: model.suggestions) { model.choose($0) }
         }
-        .padding(.horizontal, 10)
     }
 }
 
-/// Up to three words; a tap puts one in place of the word being typed.
+/// Up to three words in three equal parts; a tap puts one in place of the word being typed.
 private struct SuggestionBar: View {
     let words: [String]
     let choose: (String) -> Void
     @State private var taps = 0
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(Array(words.enumerated()), id: \.element) { index, word in
+            ForEach(0..<SuggestionPicker.limit, id: \.self) { index in
                 if index > 0 {
-                    Divider()
-                        .frame(height: 20)
+                    Rectangle()
+                        .fill(Color.primary.opacity(words.isEmpty ? 0 : 0.07))
+                        .frame(width: 1, height: 23)
                 }
-                Button {
-                    taps += 1
-                    choose(word)
-                } label: {
-                    Text(verbatim: word)
-                        .font(.system(size: 17))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                        .padding(.horizontal, 4)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .contentShape(.rect)
-                }
-                .buttonStyle(.plain)
+                slot(index < words.count ? words[index] : nil)
             }
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
+    }
+
+    @ViewBuilder
+    private func slot(_ word: String?) -> some View {
+        if let word {
+            Button {
+                taps += 1
+                choose(word)
+            } label: {
+                Text(verbatim: word)
+                    .font(.system(size: 17, design: KeyCap.design))
+                    .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.6 : 0.68))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .padding(.horizontal, 4)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+        } else {
+            Color.clear
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
 }
 
@@ -65,7 +76,6 @@ struct KeyboardOrb: View {
         let palette = AppTheme.shared.palette
         Circle()
             .fill(RadialGradient(colors: [palette.light, palette.mid, palette.deep],
-                                 center: UnitPoint(x: 0.35, y: 0.3), startRadius: 0, endRadius: 22))
-            .shadow(color: palette.rim.opacity(0.55), radius: 6)
+                                 center: UnitPoint(x: 0.35, y: 0.3), startRadius: 0, endRadius: 18))
     }
 }

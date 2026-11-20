@@ -52,6 +52,8 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        // Asked once per appearance: the answer doesn't change while the keyboard shows.
+        feedback.allowsHaptics = hasFullAccess
         refresh()
     }
 
@@ -67,7 +69,6 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func refresh() {
-        feedback.allowsHaptics = hasFullAccess
         model.documentChanged(traits)
     }
 
@@ -79,7 +80,8 @@ final class KeyboardViewController: UIInputViewController {
         return KeyboardTraits(capitalisation: Self.capitalisation(proxy.autocapitalizationType ?? .sentences),
                               returnKey: Self.returnKey(proxy.returnKeyType ?? .default),
                               showsGlobe: needsInputModeSwitchKey,
-                              offersSuggestions: offers)
+                              offersSuggestions: offers,
+                              returnEnabled: !(proxy.enablesReturnKeyAutomatically ?? false) || proxy.hasText)
     }
 
     private static func capitalisation(_ type: UITextAutocapitalizationType) -> AutoCapitalisation {

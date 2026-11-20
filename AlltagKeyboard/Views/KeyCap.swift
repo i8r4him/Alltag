@@ -7,26 +7,39 @@
 
 import SwiftUI
 
-/// One key as it is drawn. It takes no touches itself: `KeyTouchSurface` reads them all.
+/// One key as it is drawn, in the look of Apple's keyboard: every key in one colour,
+/// flat, the letters a little above the middle. The sizes are measured on Apple's.
+/// It takes no touches itself: `KeyTouchSurface` reads them all.
 struct KeyCap: View {
     let key: KeyboardKey
     let shift: ShiftState
     let returnKey: ReturnKeyKind
+    var returnEnabled = true
     let isPressed: Bool
     /// While the space bar moves the cursor, the letters step back.
     var isDimmed = false
     @Environment(\.colorScheme) private var colorScheme
 
-    static let cornerRadius: CGFloat = 9
+    static let cornerRadius: CGFloat = 8.5
+    /// The design of the letters on the keys.
+    static let design: Font.Design = .default
 
     var body: some View {
         RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
             .fill(fill)
-            .shadow(color: .black.opacity(colorScheme == .dark ? 0 : 0.28), radius: 0, y: 1)
             .overlay {
                 label
                     .foregroundStyle(ink)
                     .opacity(isDimmed && key != .space ? 0.25 : 1)
+            }
+            .overlay(alignment: .bottomTrailing) {
+                if key == .space {
+                    Text(verbatim: "DE")
+                        .font(.system(size: 14).width(.compressed))
+                        .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.31 : 0.2))
+                        .padding(.trailing, 6)
+                        .padding(.bottom, 5)
+                }
             }
     }
 
@@ -34,7 +47,8 @@ struct KeyCap: View {
         switch key {
         case .character(let text):
             Text(verbatim: shift.isOn ? TypingEngine.capital(text) : text)
-                .font(.system(size: text.first?.isLetter == true ? 24 : 21))
+                .font(Self.font(for: text, isCapital: shift.isOn))
+                .offset(y: -1)
         case .shift:
             Image(systemName: shift == .locked ? "capslock.fill" : shift == .once ? "shift.fill" : "shift")
                 .font(.system(size: 19, weight: .medium))
@@ -43,44 +57,43 @@ struct KeyCap: View {
                 .font(.system(size: 19, weight: .medium))
         case .page(let page):
             Text(verbatim: page.label)
-                .font(.system(size: 16))
+                .font(.system(size: page == .symbols ? 19 : 17, design: Self.design))
         case .globe:
             Image(systemName: "globe")
                 .font(.system(size: 19))
+        case .emoji:
+            Image(systemName: colorScheme == .dark ? "face.smiling.inverse" : "face.smiling")
+                .font(.system(size: 18))
         case .space:
-            Text(verbatim: "Deutsch")
-                .font(.system(size: 15))
-                .opacity(0.55)
+            EmptyView()
         case .enter:
             Image(systemName: returnKey.symbol)
                 .font(.system(size: 19, weight: .medium))
         }
     }
 
-    /// Letters and the space bar are light keys; the keys that do something are darker,
-    /// until Shift is on or return sends, searches or goes on.
+    /// Capitals are 22 pt on Apple's keys; small letters are drawn a little larger.
+    static func font(for text: String, isCapital: Bool) -> Font {
+        let isLetter = text.first?.isLetter == true
+        return .system(size: !isLetter ? 21 : isCapital ? 22 : 24, design: design)
+    }
+
+    /// Every key has the same colour. A letter shows its bubble when pressed; the other keys darken.
     private var fill: Color {
         let isDark = colorScheme == .dark
-        switch key {
-        case .character, .space:
-            if isPressed, key == .space { return isDark ? .white.opacity(0.16) : Color(white: 0.72) }
-            return isDark ? .white.opacity(0.3) : .white
-        case .shift where shift.isOn:
-            return isDark ? .white.opacity(0.88) : .white
-        case .enter where returnKey != .normal:
-            return .accentFill.opacity(isPressed ? 0.75 : 1)
-        case .shift, .delete, .page, .globe, .enter:
-            if isPressed { return isDark ? .white.opacity(0.3) : .white }
-            return isDark ? .white.opacity(0.13) : Color(red: 0.68, green: 0.70, blue: 0.74)
+        if key == .enter, returnKey != .normal {
+            return .accentFill.opacity(isPressed || !returnEnabled ? 0.6 : 1)
         }
+        if isPressed, !key.isCharacter {
+            return isDark ? .white.opacity(0.32) : Color(white: 0.78)
+        }
+        return isDark ? .white.opacity(0.162) : .white
     }
 
     private var ink: Color {
-        switch key {
-        case .shift where shift.isOn: .black
-        case .enter where returnKey != .normal: .onAccent
-        default: .primary
-        }
+        guard key == .enter else { return .primary }
+        if returnKey != .normal { return .onAccent }
+        return returnEnabled ? .primary : .primary.opacity(0.22)
     }
 
     /// What VoiceOver calls a key.
@@ -93,6 +106,7 @@ struct KeyCap: View {
         case .page(.symbols): Text("Symbols")
         case .page(.moreSymbols): Text("More symbols")
         case .globe: Text("Next keyboard")
+        case .emoji: Text("Emoji")
         case .space: Text("Space")
         case .enter: Text("Return")
         }
@@ -130,7 +144,7 @@ struct KeyPopupView: View {
             ForEach(drawn, id: \.self) { index in
                 let isChosen = popup.isAlternates && index == popup.selection
                 Text(verbatim: popup.options[index])
-                    .font(.system(size: popup.isAlternates ? 24 : 32))
+                    .font(.system(size: popup.isAlternates ? 24 : 32, design: KeyCap.design))
                     .foregroundStyle(isChosen ? Color.onAccent : Color.primary)
                     .frame(width: cell.width, height: cell.height)
                     .background {
@@ -144,8 +158,8 @@ struct KeyPopupView: View {
         }
         .background {
             RoundedRectangle(cornerRadius: KeyCap.cornerRadius + 3, style: .continuous)
-                .fill(colorScheme == .dark ? Color(white: 0.4) : .white)
-                .shadow(color: .black.opacity(0.3), radius: 6, y: 2)
+                .fill(colorScheme == .dark ? Color(white: 0.42) : .white)
+                .shadow(color: .black.opacity(0.22), radius: 4, y: 1)
         }
         .offset(x: origin.x, y: origin.y)
     }

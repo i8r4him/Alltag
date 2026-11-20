@@ -29,13 +29,14 @@ struct KeyboardLayoutTests {
         #expect(rows[3].first == .shift)
         #expect(rows[3].compactMap(\.text).joined() == "yxcvbnm")
         #expect(rows[3].last == .delete)
-        #expect(rows[4] == [.page(.symbols), .space, .enter])
+        #expect(rows[4] == [.page(.symbols), .emoji, .space, .enter])
     }
 
     @Test("The globe key is only there when iOS asks for it")
     func globe() {
-        #expect(KeyboardLayout.rows(for: .letters, showsGlobe: true).last == [.page(.symbols), .globe, .space, .enter])
-        #expect(KeyboardLayout.rows(for: .symbols, showsGlobe: false).last == [.page(.letters), .space, .enter])
+        let withGlobe: [KeyboardKey] = [.page(.symbols), .globe, .emoji, .space, .enter]
+        #expect(KeyboardLayout.rows(for: .letters, showsGlobe: true).last == withGlobe)
+        #expect(KeyboardLayout.rows(for: .symbols, showsGlobe: false).last == [.page(.letters), .emoji, .space, .enter])
     }
 
     @Test("No key appears twice on a page", arguments: KeyboardPage.allCases)
@@ -77,6 +78,37 @@ struct KeyboardLayoutTests {
         #expect(geometry.frames.allSatisfy { $0.frame.width <= space.width })
         let numbers = try #require(geometry.frame(of: .character("1"))).frame
         #expect(numbers.height < upper.height)
+    }
+
+    @Test("On a 440 pt wide iPhone the keys have the sizes of Apple's keyboard")
+    func applesSizes() throws {
+        let wide = CGSize(width: 440, height: KeyboardView.height(isCompact: false) - KeyboardView.toolsHeight(isCompact: false))
+        let geometry = KeyboardGeometry(rows: KeyboardLayout.allRows(for: .letters, showsGlobe: false), size: wide)
+        let keyQ = try #require(geometry.frame(of: .character("q"))).frame
+        let keyA = try #require(geometry.frame(of: .character("a"))).frame
+        let keyW = try #require(geometry.frame(of: .character("w"))).frame
+        #expect(abs(keyQ.minX - 6.67) < 0.1)
+        #expect(abs(keyQ.width - 33.33) < 0.1)
+        #expect(abs(keyQ.height - 44.67) < 0.3)
+        #expect(abs(keyW.minX - keyQ.maxX - 6) < 0.01)
+        #expect(abs(keyA.minY - keyQ.maxY - 11.33) < 0.01)
+        // The third row's letters stand under the letters above them, between Shift and delete.
+        let keyE = try #require(geometry.frame(of: .character("e"))).frame
+        let keyY = try #require(geometry.frame(of: .character("y"))).frame
+        #expect(abs(keyY.minX - keyE.minX) < 0.01)
+        #expect(abs(try #require(geometry.frame(of: .shift)).frame.width - 50) < 0.1)
+        #expect(abs(try #require(geometry.frame(of: .delete)).frame.maxX - 433.33) < 0.1)
+        #expect(abs(try #require(geometry.frame(of: .page(.symbols))).frame.width - 48) < 0.1)
+        #expect(abs(try #require(geometry.frame(of: .emoji)).frame.width - 48) < 0.1)
+        #expect(abs(try #require(geometry.frame(of: .enter)).frame.width - 102) < 0.2)
+    }
+
+    @Test("Narrower iPhones keep 3 pt at the sides")
+    func sideInsets() {
+        #expect(KeyboardMetrics.sideInset(for: 393) == 3)
+        #expect(KeyboardMetrics.sideInset(for: 402) == 3)
+        #expect(abs(KeyboardMetrics.sideInset(for: 440) - 6.67) < 0.01)
+        #expect(KeyboardMetrics.sideInset(for: 900) == 6.67)
     }
 
     @Test("A touch in a gap or at the edge means the nearest key")

@@ -45,6 +45,10 @@ struct TypingEngine {
     var capitalisation: AutoCapitalisation = .sentences
     /// A space the keyboard added after a chosen word: punctuation typed next takes its place.
     private var addedSpace = false
+    /// The text before the last step, and when that step was.
+    private var lastStep: (before: String, at: Date)?
+    /// For this long after a step, a text field may still say what it held before it.
+    static let echoTime: TimeInterval = 0.3
 
     /// Types a character key's text, as a capital when Shift is on.
     mutating func typeCharacter(_ text: String, in document: TextDocument) {
@@ -74,6 +78,13 @@ struct TypingEngine {
             document.insert(" ")
             settle(after: before + " ")
         }
+    }
+
+    /// Puts in text as it is: an emoji.
+    mutating func insert(_ text: String, in document: TextDocument) {
+        let before = document.textBeforeCursor
+        document.insert(text)
+        settle(after: before + text)
     }
 
     mutating func enter(in document: TextDocument) {
@@ -116,14 +127,21 @@ struct TypingEngine {
     }
 
     /// The text changed without the keyboard (the cursor moved, the app cleared the field).
-    mutating func sync(with document: TextDocument) {
-        let now = document.textBeforeCursor
-        if !now.hasSuffix(" ") { addedSpace = false }
-        context = now
+    ///
+    /// Right after a key press a text field can still say what it held before the
+    /// press. Believing that would turn Shift back on after the first letter.
+    mutating func sync(with document: TextDocument, at time: Date = .now) {
+        let text = document.textBeforeCursor
+        let isEcho = lastStep.map { text == $0.before && time.timeIntervalSince($0.at) < Self.echoTime } ?? false
+        if text != context, !isEcho {
+            if !text.hasSuffix(" ") { addedSpace = false }
+            context = text
+        }
         updateShift()
     }
 
     private mutating func settle(after text: String) {
+        lastStep = (context, .now)
         addedSpace = false
         context = text
         updateShift()

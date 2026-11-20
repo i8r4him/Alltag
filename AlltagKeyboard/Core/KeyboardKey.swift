@@ -17,8 +17,8 @@ enum KeyboardPage: Hashable, CaseIterable {
     var label: String {
         switch self {
         case .letters: "ABC"
-        case .symbols: "#+="
-        case .moreSymbols: "~<>"
+        case .symbols: "123"
+        case .moreSymbols: "#+="
         }
     }
 }
@@ -33,6 +33,8 @@ enum KeyboardKey: Hashable {
     case page(KeyboardPage)
     /// Switches to the next keyboard, where iOS doesn't show its own globe.
     case globe
+    /// Opens the emoji in place of the keys.
+    case emoji
     case space
     case enter
 

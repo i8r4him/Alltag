@@ -42,6 +42,31 @@ struct TypingEngineTests {
         #expect(document.before == "Ja. Gut, danke")
     }
 
+    @Test("A field that still says the old text right after a key isn't believed; a while later it is")
+    func lateAnswer() {
+        var engine = TypingEngine()
+        engine.sync(with: document)
+        engine.typeCharacter("h", in: document)
+        #expect(engine.shift == .off)
+        let stale = FakeDocument()
+        engine.sync(with: stale)
+        #expect(engine.context == "H")
+        #expect(engine.shift == .off)
+        // Later the app has really cleared the field: a new sentence starts.
+        engine.sync(with: stale, at: Date.now.addingTimeInterval(1))
+        #expect(engine.context.isEmpty)
+        #expect(engine.shift == .once)
+    }
+
+    @Test("An emoji goes in as it is")
+    func emoji() {
+        var engine = TypingEngine()
+        document.before = "Bis morgen "
+        engine.insert("👋", in: document)
+        #expect(document.before == "Bis morgen 👋")
+        #expect(engine.context == "Bis morgen 👋")
+    }
+
     @Test("A new line starts with a capital")
     func newLine() {
         var engine = TypingEngine()

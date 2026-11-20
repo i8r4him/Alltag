@@ -15,7 +15,7 @@ enum KeyboardLayout {
     /// The four rows under the numbers row.
     static func rows(for page: KeyboardPage, showsGlobe: Bool) -> [[KeyboardKey]] {
         let other: KeyboardPage = page == .letters ? .symbols : .letters
-        let bottom: [KeyboardKey] = [.page(other)] + (showsGlobe ? [.globe] : []) + [.space, .enter]
+        let bottom: [KeyboardKey] = [.page(other)] + (showsGlobe ? [.globe] : []) + [.emoji, .space, .enter]
         let punctuation = keys(".,?!'")
         switch page {
         case .letters:

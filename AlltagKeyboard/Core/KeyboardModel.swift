@@ -17,6 +17,15 @@ struct KeyboardTraits: Equatable {
     var showsGlobe = false
     /// Off in fields for addresses, names and codes, where a dictionary only gets in the way.
     var offersSuggestions = true
+    /// Some fields only take return once something is typed.
+    var returnEnabled = true
+}
+
+/// What one key shows while a finger is on it. Each key watches only its own,
+/// so a press redraws one key and not the whole keyboard.
+@Observable
+final class KeyState {
+    var isPressed = false
 }
 
 /// The bubble over a pressed key: the key itself, larger, or the letters a long press offers.
@@ -55,14 +64,22 @@ struct KeyPopup: Equatable {
 @Observable
 final class KeyboardModel {
     private(set) var page: KeyboardPage = .letters
-    private(set) var engine = TypingEngine()
+    /// Kept apart from the engine, so the keys redraw when Shift changes and not at every letter.
+    private(set) var shift: ShiftState = .off
     private(set) var traits = KeyboardTraits()
     private(set) var suggestions: [String] = []
     private(set) var popup: KeyPopup?
     private(set) var pressed: Set<KeyboardKey> = []
     /// Holding the space bar turns it into a trackpad for the cursor.
     private(set) var movesCursor = false
+    /// The emoji take the place of the keys.
+    private(set) var showsEmoji = false
 
+    @ObservationIgnored private(set) var engine = TypingEngine() {
+        didSet {
+            if shift != engine.shift { shift = engine.shift }
+        }
+    }
     @ObservationIgnored var document: TextDocument?
     @ObservationIgnored var feedback: KeyFeedback?
     @ObservationIgnored var suggester: WordSuggesting?
@@ -73,9 +90,17 @@ final class KeyboardModel {
     @ObservationIgnored private var suggesting: Task<Void, Never>?
     @ObservationIgnored private var lastShiftTap: Date?
     @ObservationIgnored private var pressCount = 0
+    @ObservationIgnored private var states: [KeyboardKey: KeyState] = [:]
 
-    var shift: ShiftState { engine.shift }
     var rows: [[KeyboardKey]] { KeyboardLayout.allRows(for: page, showsGlobe: traits.showsGlobe) }
+
+    /// The state one key draws itself from.
+    func state(of key: KeyboardKey) -> KeyState {
+        if let state = states[key] { return state }
+        let state = KeyState()
+        states[key] = state
+        return state
+    }
 
     /// The text field or the cursor changed.
     func documentChanged(_ traits: KeyboardTraits) {
@@ -93,9 +118,29 @@ final class KeyboardModel {
         case .delete: delete()
         case .page(let page): self.page = page
         case .globe: onNextKeyboard()
+        case .emoji: showsEmoji = true
         case .space: space()
         case .enter: enter()
         }
+    }
+
+    // MARK: - Emoji
+
+    func insertEmoji(_ emoji: String) {
+        guard let document else { return }
+        feedback?.keyDown(.emoji)
+        engine.insert(emoji, in: document)
+        if !suggestions.isEmpty { suggestions = [] }
+    }
+
+    /// The delete key of the emoji panel.
+    func deleteFromEmoji() {
+        feedback?.keyDown(.delete)
+        delete()
+    }
+
+    func closeEmoji() {
+        showsEmoji = false
     }
 
     /// Puts a suggested word in place of the one being typed.
@@ -133,7 +178,7 @@ final class KeyboardModel {
     }
 
     private func enter() {
-        guard let document else { return }
+        guard let document, traits.returnEnabled else { return }
         engine.enter(in: document)
         if page != .letters { page = .letters }
         suggestSoon()
@@ -152,14 +197,24 @@ final class KeyboardModel {
         lastShiftTap = now
     }
 
-    /// After the key has answered, so looking words up never holds a letter back.
+    /// Looking words up in the dictionary takes longer than a key press may. So it waits
+    /// for a short pause in the typing; until then only the words that still fit stay.
     private func suggestSoon() {
         suggesting?.cancel()
+        keepFittingSuggestions()
         suggesting = Task { [weak self] in
-            await Task.yield()
+            try? await Task.sleep(for: Self.suggestionPause)
             guard !Task.isCancelled else { return }
             self?.refreshSuggestions()
         }
+    }
+
+    /// Drops the offered words the typed letters no longer lead to.
+    func keepFittingSuggestions() {
+        guard !suggestions.isEmpty else { return }
+        let word = TypingEngine.currentWord(in: engine.context).lowercased()
+        let fitting = word.isEmpty ? [] : suggestions.filter { $0.lowercased().hasPrefix(word) }
+        if fitting != suggestions { suggestions = fitting }
     }
 }
 
@@ -175,6 +230,7 @@ extension KeyboardModel {
         var movesCursor = false
     }
 
+    private static let suggestionPause: Duration = .milliseconds(140)
     private static let holdDelay: Duration = .milliseconds(380)
     private static let repeatDelay: Duration = .milliseconds(420)
     private static let repeatInterval: Duration = .milliseconds(90)
@@ -189,7 +245,7 @@ extension KeyboardModel {
         typeHeldCharacters()
         pressCount += 1
         presses[touch] = Press(key: frame.key, anchor: point.x, order: pressCount)
-        pressed.insert(frame.key)
+        setPressed(frame.key, true)
         feedback?.keyDown(frame.key)
         switch frame.key {
         case .character(let text):
@@ -204,7 +260,7 @@ extension KeyboardModel {
             repeatDelete(while: touch)
         case .page(let page):
             self.page = page
-        case .globe, .enter:
+        case .globe, .emoji, .enter:
             break
         }
     }
@@ -223,8 +279,8 @@ extension KeyboardModel {
         } else if press.key.isCharacter, let frame = geometry.key(at: point), frame.key != press.key,
                   let text = frame.key.text {
             // The finger slid to another letter before lifting.
-            pressed.remove(press.key)
-            pressed.insert(frame.key)
+            setPressed(press.key, false)
+            setPressed(frame.key, true)
             press.key = frame.key
             presses[touch] = press
             popup = KeyPopup(frame: frame, options: [shown(text)])
@@ -249,6 +305,8 @@ extension KeyboardModel {
             enter()
         case .globe:
             onNextKeyboard()
+        case .emoji:
+            showsEmoji = true
         case .shift, .delete, .page:
             break
         }
@@ -300,9 +358,18 @@ extension KeyboardModel {
     private func release(_ touch: Int) {
         holds.removeValue(forKey: touch)?.cancel()
         guard let press = presses.removeValue(forKey: touch) else { return }
-        if !presses.values.contains(where: { $0.key == press.key }) { pressed.remove(press.key) }
+        if !presses.values.contains(where: { $0.key == press.key }) { setPressed(press.key, false) }
         if popup?.frame.key == press.key { popup = nil }
         if press.movesCursor { movesCursor = false }
+    }
+
+    private func setPressed(_ key: KeyboardKey, _ isPressed: Bool) {
+        if isPressed {
+            pressed.insert(key)
+        } else {
+            pressed.remove(key)
+        }
+        state(of: key).isPressed = isPressed
     }
 
     private func hold(_ touch: Int, for delay: Duration, then action: @escaping @MainActor () -> Void) {
