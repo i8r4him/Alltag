@@ -102,6 +102,15 @@ struct KeyboardPictureTests {
         await model.tools.fix()
         try await draw(KeyboardView(model: model), style: style, to: file("10-notice"))
 
+        document.before = "der See"
+        assistant.nouns = [
+            KeyboardNoun(article: "der", word: "See", plural: "Seen", meaning: "lake",
+                         explanation: "„See“ has two meanings with two articles; learn each with its article."),
+            KeyboardNoun(article: "die", word: "See", meaning: "sea")
+        ]
+        await model.tools.article()
+        try await draw(KeyboardView(model: model), style: style, to: file("12-article"))
+
         model.tools.hasConsent = { false }
         document.before = "Ich bin müde"
         await model.tools.fix()

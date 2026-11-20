@@ -41,14 +41,30 @@ struct KeyboardAnswer: Equatable {
     var note = ""
 }
 
+/// A noun with its article, as der · die · das shows it.
+struct KeyboardNoun: Equatable {
+    var article: String
+    var word: String
+    /// Empty when the noun has no everyday plural.
+    var plural = ""
+    var meaning: String
+    /// Why it has this article, or that it has to be learnt with it.
+    var explanation = ""
+
+    var withArticle: String { "\(article) \(word)" }
+}
+
 /// The tools' helper. The keyboard asks it only when a tool is tapped;
 /// nothing that is typed leaves the iPhone before that.
 protocol KeyboardAssistant {
     func fix(_ text: String) async throws -> KeyboardFix
     func say(_ text: String, register: KeyboardRegister) async throws -> KeyboardAnswer
+    /// The nouns a word can be, one per meaning with its own article; none when it isn't a noun.
+    func nouns(for word: String) async throws -> [KeyboardNoun]
 }
 
-/// Asks Alltag's server: `write` corrects written German, `translate` says it in German.
+/// Asks Alltag's server: `write` corrects written German, `translate` says it in German,
+/// `articles` knows a noun's article.
 struct ServerKeyboardAssistant: KeyboardAssistant {
     typealias Send = (_ function: String, _ body: [String: String]) async throws -> Data
 
@@ -72,6 +88,18 @@ struct ServerKeyboardAssistant: KeyboardAssistant {
         let note: String
     }
 
+    private struct Articles: Decodable {
+        struct Noun: Decodable {
+            let article: String
+            let word: String
+            let plural: String
+            let meaning: String
+            let explanation: String
+        }
+
+        let nouns: [Noun]
+    }
+
     func fix(_ text: String) async throws -> KeyboardFix {
         let data = try await send("write", ["action": "check", "text": text])
         let check = try JSONDecoder().decode(Check.self, from: data)
@@ -88,6 +116,16 @@ struct ServerKeyboardAssistant: KeyboardAssistant {
         let german = translation.german.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !german.isEmpty else { throw RealtimeServiceError.unexpectedResponse }
         return KeyboardAnswer(asked: text, german: german, note: translation.note)
+    }
+
+    func nouns(for word: String) async throws -> [KeyboardNoun] {
+        let data = try await send("articles", ["action": "lookup", "text": word, "language": language])
+        return try JSONDecoder().decode(Articles.self, from: data).nouns
+            .filter { ["der", "die", "das"].contains($0.article) && !$0.word.isEmpty }
+            .map {
+                KeyboardNoun(article: $0.article, word: $0.word, plural: $0.plural, meaning: $0.meaning,
+                             explanation: $0.explanation)
+            }
     }
 }
 

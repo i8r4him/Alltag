@@ -25,6 +25,13 @@ enum ToolText {
         let start = sentence ?? tail.firstIndex(where: \.isWhitespace) ?? tail.startIndex
         return String(tail[start...]).trimmingCharacters(in: .whitespacesAndNewlines)
     }
+
+    /// The last word before the cursor, without the punctuation around it.
+    static func word(in context: String) -> String {
+        let isPart: (Character) -> Bool = { $0.isLetter || $0 == "-" }
+        let end = context.reversed().drop { !isPart($0) }
+        return String(end.prefix(while: isPart).reversed()).trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+    }
 }
 
 /// Alltag's tools in the keyboard: Fix and "How do I say …?".
@@ -37,6 +44,7 @@ final class KeyboardTools {
     enum Tool: Equatable {
         case fix
         case say
+        case article
     }
 
     /// What a tool says when it has no answer to show.
@@ -44,6 +52,7 @@ final class KeyboardTools {
         case needsFullAccess
         case nothingTyped(Tool)
         case looksRight
+        case notNoun(String)
         case dailyLimit
         case failed
         case textChanged
@@ -55,6 +64,7 @@ final class KeyboardTools {
         case working(Tool)
         case fix(KeyboardFix)
         case answer(KeyboardAnswer, KeyboardRegister)
+        case nouns([KeyboardNoun])
         case notice(Notice)
     }
 
@@ -63,6 +73,8 @@ final class KeyboardTools {
     private(set) var showsWhy = false
     /// "How do I say …?" is asking again in another register; the old answer stays until the new one is there.
     private(set) var isAskingAgain = false
+    /// What is shown went to Memory.
+    private(set) var isSaved = false
 
     @ObservationIgnored var assistant: KeyboardAssistant?
     /// The tools need the network, which iOS gives a keyboard only with Full Access.
@@ -72,6 +84,8 @@ final class KeyboardTools {
     /// Puts new text in place of old text before the cursor; false when the old text isn't there any more.
     @ObservationIgnored var replace: (_ old: String, _ new: String) -> Bool = { _, _ in false }
 
+    /// Keeps German with its meaning for Memory; false when it couldn't be kept.
+    @ObservationIgnored var keep: (_ german: String, _ meaning: String) -> Bool = { _, _ in false }
     /// Whether the learner has allowed the tools to send text to the server, and how that is kept.
     @ObservationIgnored var hasConsent: () -> Bool = { true }
     @ObservationIgnored var keepConsent: () -> Void = {}
@@ -82,7 +96,7 @@ final class KeyboardTools {
     /// The answer covers the numbers row too, not only the tools row.
     var isTall: Bool {
         switch panel {
-        case .answer, .consent: true
+        case .answer, .nouns, .consent: true
         case .fix: showsWhy
         case .working, .notice, nil: false
         }
@@ -120,6 +134,7 @@ final class KeyboardTools {
         guard case .answer(let answer, let shown) = panel, shown != register, let assistant else { return }
         request += 1
         isAskingAgain = true
+        isSaved = false
         panel = .answer(answer, register)
         await ask(assistant, answer.asked, register: register, keeping: (answer, shown))
     }
@@ -144,6 +159,50 @@ final class KeyboardTools {
         }
     }
 
+    // MARK: - der · die · das
+
+    /// Looks up the article of the last word before the cursor.
+    func article() async {
+        guard start(.article) != nil, let assistant else { return }
+        let word = ToolText.word(in: text())
+        guard !word.isEmpty else {
+            panel = .notice(.nothingTyped(.article))
+            return
+        }
+        let number = request
+        do {
+            let nouns = try await assistant.nouns(for: word)
+            guard number == request else { return }
+            panel = nouns.isEmpty ? .notice(.notNoun(word)) : .nouns(nouns)
+        } catch {
+            guard number == request else { return }
+            panel = .notice(Self.notice(for: error))
+        }
+    }
+
+    // MARK: - Save
+
+    /// Whether what is shown can go to Memory.
+    var canSave: Bool {
+        switch panel {
+        case .answer, .nouns: !isSaved
+        case .consent, .working, .fix, .notice, nil: false
+        }
+    }
+
+    /// Keeps the shown German for Memory: an answer with what was asked, a noun with its meaning.
+    func save() {
+        guard canSave else { return }
+        switch panel {
+        case .answer(let answer, _):
+            isSaved = keep(answer.german, answer.asked)
+        case .nouns(let nouns):
+            isSaved = nouns.map { keep($0.withArticle, $0.meaning) }.contains(true)
+        case .consent, .working, .fix, .notice, nil:
+            break
+        }
+    }
+
     /// The learner allows the tools to send text; the tool that asked goes on.
     func allow() async {
         guard case .consent(let tool) = panel else { return }
@@ -151,6 +210,7 @@ final class KeyboardTools {
         switch tool {
         case .fix: await fix()
         case .say: await say()
+        case .article: await article()
         }
     }
 
@@ -162,11 +222,12 @@ final class KeyboardTools {
         switch panel {
         case .fix(let fix): done = replace(fix.original, fix.corrected)
         case .answer(let answer, _): done = replace(answer.asked, answer.german)
-        case .consent, .working, .notice, nil: return
+        case .consent, .working, .nouns, .notice, nil: return
         }
         request += 1
         showsWhy = false
         isAskingAgain = false
+        isSaved = false
         panel = done ? nil : .notice(.textChanged)
     }
 
@@ -177,6 +238,7 @@ final class KeyboardTools {
         panel = nil
         showsWhy = false
         isAskingAgain = false
+        isSaved = false
     }
 
     /// Opens a tool: reads the text and shows that it is working, or says why it can't.
@@ -184,6 +246,7 @@ final class KeyboardTools {
         request += 1
         showsWhy = false
         isAskingAgain = false
+        isSaved = false
         guard hasFullAccess, assistant != nil else {
             panel = .notice(.needsFullAccess)
             return nil

@@ -54,7 +54,7 @@ struct ToolPanel: View {
                 closeButton
                 ProgressView()
                     .controlSize(.small)
-                (tool == .fix ? Text("Checking your German…") : Text("Finding the words…"))
+                Self.text(ofWorking: tool)
                     .font(.system(size: 15))
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 0)
@@ -72,9 +72,12 @@ struct ToolPanel: View {
             FixCard(fix: fix, showsWhy: tools.showsWhy, close: closeButton,
                     why: { tap { tools.toggleWhy() } }, replace: { tap { tools.replaceText() } })
         case .answer(let answer, let register):
-            AnswerCard(answer: answer, register: register, isAsking: tools.isAskingAgain, close: closeButton,
+            AnswerCard(answer: answer, register: register, isAsking: tools.isAskingAgain, isSaved: tools.isSaved,
+                       close: closeButton,
                        choose: { register in tap { Task { await tools.sayAgain(register: register) } } },
-                       replace: { tap { tools.replaceText() } })
+                       save: { tap { tools.save() } }, replace: { tap { tools.replaceText() } })
+        case .nouns(let nouns):
+            NounsCard(nouns: nouns, isSaved: tools.isSaved, close: closeButton, save: { tap { tools.save() } })
         case nil:
             EmptyView()
         }
@@ -100,12 +103,22 @@ struct ToolPanel: View {
         action()
     }
 
+    static func text(ofWorking tool: KeyboardTools.Tool) -> Text {
+        switch tool {
+        case .fix: Text("Checking your German…")
+        case .say: Text("Finding the words…")
+        case .article: Text("Thinking…")
+        }
+    }
+
     static func text(of notice: KeyboardTools.Notice) -> Text {
         switch notice {
         case .needsFullAccess: Text("Turn on Full Access for the Alltag keyboard in Settings to use its tools.")
         case .nothingTyped(.fix): Text("Type something in German first, then tap Fix.")
         case .nothingTyped(.say): Text("Type what you want to say, in any language, then tap again.")
+        case .nothingTyped(.article): Text("Type a German noun first, then tap der · die · das.")
         case .looksRight: Text("Looks right. Nothing to fix.")
+        case .notNoun(let word): Text("„\(word)“ isn’t a noun, so it has no article.")
         case .dailyLimit: Text("You’ve reached today’s limit. Try again tomorrow.")
         case .failed: Text("Check your connection, then try again.")
         case .textChanged: Text("The text has changed. Tap the tool again.")
@@ -131,6 +144,67 @@ private struct PanelPill: View {
                 .contentShape(.capsule)
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// Save, which turns into Saved once the words are on their way to Memory.
+private struct SavePill: View {
+    let isSaved: Bool
+    var isMain = false
+    let action: () -> Void
+
+    var body: some View {
+        PanelPill(title: isSaved ? Text("Saved") : Text("Save"), isMain: isMain && !isSaved, action: action)
+            .disabled(isSaved)
+            .opacity(isSaved ? 0.6 : 1)
+    }
+}
+
+/// A noun with its article, its plural and its meaning, one line per meaning, and why it has that article.
+private struct NounsCard<Close: View>: View {
+    let nouns: [KeyboardNoun]
+    let isSaved: Bool
+    let close: Close
+    let save: () -> Void
+
+    private func line(_ noun: KeyboardNoun) -> AttributedString {
+        var article = AttributedString(noun.article + " ")
+        article.swiftUI.foregroundColor = Color.accent
+        var text = article + AttributedString(noun.word)
+        text.swiftUI.font = Font.system(size: 16, weight: .semibold)
+        let rest = (noun.plural.isEmpty ? "" : " · pl. \(noun.plural)") + " · \(noun.meaning)"
+        var detail = AttributedString(rest)
+        detail.swiftUI.font = Font.system(size: 14)
+        text.append(detail)
+        return text
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(nouns, id: \.withArticle) { noun in
+                        Text(line(noun))
+                    }
+                    if let explanation = nouns.first?.explanation, !explanation.isEmpty {
+                        Text(verbatim: explanation)
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
+                .padding(.top, 6)
+            }
+            .scrollEdgeEffectStyle(.soft, for: .all)
+            .scrollIndicators(.hidden)
+            HStack(spacing: 8) {
+                Spacer(minLength: 0)
+                close
+                SavePill(isSaved: isSaved, isMain: true, action: save)
+            }
+            .padding(.bottom, 5)
+        }
     }
 }
 
@@ -192,8 +266,10 @@ private struct AnswerCard<Close: View>: View {
     let answer: KeyboardAnswer
     let register: KeyboardRegister
     let isAsking: Bool
+    let isSaved: Bool
     let close: Close
     let choose: (KeyboardRegister) -> Void
+    let save: () -> Void
     let replace: () -> Void
 
     var body: some View {
@@ -234,6 +310,7 @@ private struct AnswerCard<Close: View>: View {
                 }
                 Spacer(minLength: 0)
                 close
+                SavePill(isSaved: isSaved, action: save)
                 PanelPill(title: Text("Replace"), isMain: true, action: replace)
             }
             .padding(.bottom, 5)

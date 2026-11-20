@@ -415,6 +415,8 @@ Alltag/                                   ← repo root
 │  │  ├─ TypingEngine.swift               capitals, double space, delete by word, chosen words (no UIKit)
 │  │  ├─ KeyboardModel.swift              pages, pressed keys, popups, what each touch types
 │  │  ├─ EmojiCatalog.swift               the emoji groups and the ones used last
+│  │  ├─ KeyboardTools.swift              Fix, "How do I say …?", der · die · das and Save: what they read, show and replace
+│  │  ├─ KeyboardAssistant.swift          the tools' answers from the server (write's check, translate, articles)
 │  │  ├─ WordSuggestions.swift            words from the dictionary on the device (UITextChecker)
 │  │  └─ KeyFeedback.swift                the click and the haptic
 │  └─ Views/
@@ -422,7 +424,8 @@ Alltag/                                   ← repo root
 │     ├─ KeyCap.swift                     one key drawn in the look of Apple's keys, the popup over a pressed key
 │     ├─ EmojiPanel.swift                 the emoji in place of the keys
 │     ├─ KeyTouchSurface.swift            one clear layer that reads every finger
-│     └─ ToolsRow.swift                   Alltag's orb and the suggested words
+│     ├─ ToolsRow.swift                   Alltag's orb, the tools and the suggested words
+│     └─ ToolPanel.swift                  a tool's answer in place of the top rows
 │
 ├─ AlltagTests/                           Swift Testing, one folder per part of the app
 │  ├─ App/                                app start, state and routing, intents, layout, colours, SwiftData, sample content, onboarding
@@ -433,7 +436,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Grammar/                         the rules of every level, the exam, progress
 │  │  ├─ LevelMap/                        the level map: what fills each place, the %, the next stop
 │  │  └─ Translate/                       the Translate screen, streaming, the translation extension
-│  ├─ Keyboard/                           the keyboard's layout, key frames, typing rules, touches, emoji, and pictures of it
+│  ├─ Keyboard/                           the keyboard's layout, key frames, typing rules, touches, emoji, tools, and pictures of it
 │  ├─ Memory/                             Memory's filters, phrasebook, the mistakes loop
 │  ├─ Profile/                            profile, progress, streak, settings
 │  └─ Services/                           the services, speech and the companions (on device, cloud)

@@ -30,6 +30,14 @@ final class FixedAssistant: KeyboardAssistant {
         if let error { throw error }
         return KeyboardAnswer(asked: text, german: german[register] ?? "", note: "")
     }
+
+    var nouns: [KeyboardNoun] = []
+
+    func nouns(for word: String) async throws -> [KeyboardNoun] {
+        asked.append(word)
+        if let error { throw error }
+        return nouns
+    }
 }
 
 /// Answers a fix only when the test lets it, to try what happens meanwhile.
@@ -44,6 +52,8 @@ final class HeldAssistant: KeyboardAssistant {
     func say(_ text: String, register: KeyboardRegister) async throws -> KeyboardAnswer {
         KeyboardAnswer(asked: text, german: text)
     }
+
+    func nouns(for word: String) async throws -> [KeyboardNoun] { [] }
 
     func answer(_ fix: KeyboardFix) {
         waiting?.resume(returning: fix)
@@ -174,6 +184,59 @@ struct KeyboardToolsTests {
         #expect(model.tools.panel == .notice(.looksRight))
     }
 
+    @Test("der · die · das looks up the last word, and Save keeps the noun with its article for Memory")
+    func article() async {
+        var kept: [[String]] = []
+        model.tools.keep = { german, meaning in
+            kept.append([german, meaning])
+            return true
+        }
+        #expect(ToolText.word(in: "Ich habe einen Termin. ") == "Termin")
+        #expect(ToolText.word(in: "die U-Bahn") == "U-Bahn")
+        #expect(ToolText.word(in: "12 ") == "")
+
+        document.before = "Ich habe einen Termin. "
+        assistant.nouns = [KeyboardNoun(article: "der", word: "Termin", plural: "Termine", meaning: "appointment")]
+        await model.tools.article()
+        #expect(assistant.asked == ["Termin"])
+        #expect(model.tools.panel == .nouns(assistant.nouns))
+        #expect(model.tools.isTall)
+        #expect(model.tools.canSave)
+
+        model.tools.save()
+        #expect(kept == [["der Termin", "appointment"]])
+        #expect(model.tools.isSaved)
+        #expect(!model.tools.canSave)
+        model.tools.save()
+        #expect(kept.count == 1)
+
+        assistant.nouns = []
+        document.before = "schnell"
+        await model.tools.article()
+        #expect(model.tools.panel == .notice(.notNoun("schnell")))
+        #expect(!model.tools.isSaved)
+        document.before = "12 "
+        await model.tools.article()
+        #expect(model.tools.panel == .notice(.nothingTyped(.article)))
+    }
+
+    @Test("An answer of How do I say is saved with what was asked")
+    func saveAnswer() async {
+        var kept: [[String]] = []
+        model.tools.keep = { german, meaning in
+            kept.append([german, meaning])
+            return true
+        }
+        document.before = "Can I come tomorrow?"
+        await model.tools.say()
+        model.tools.save()
+        #expect(kept == [["Kann ich morgen kommen?", "Can I come tomorrow?"]])
+        #expect(model.tools.isSaved)
+        // Another register is another answer, which can be saved too.
+        await model.tools.sayAgain(register: .formal)
+        #expect(model.tools.canSave)
+    }
+
     @Test("Replace leaves the text alone when it is no longer what the tool read")
     func textChanged() async {
         document.before = "Ich habe gegangen"
@@ -227,10 +290,20 @@ struct KeyboardToolsTests {
         {"german":"Kann ich morgen kommen?","other":"Can I come tomorrow?","source_is_german":false,"note":"Casual.",
         "words":[],"tones":[],"examples":[]}
         """
+        let articles = """
+        {"nouns":[{"article":"der","word":"See","plural":"Seen","meaning":"lake","example":"Wir schwimmen im See.",
+        "explanation":"Learn it with its article."},{"article":"die","word":"See","plural":"","meaning":"sea",
+        "example":"Wir fahren an die See.","explanation":"Learn it with its article."}],"note":""}
+        """
         let server = ServerKeyboardAssistant(send: { function, body in
             sent.append((function, body))
-            return Data((function == "write" ? check : translation).utf8)
+            return Data((function == "write" ? check : function == "translate" ? translation : articles).utf8)
         })
+        let nouns = try await server.nouns(for: "See")
+        #expect(nouns.map(\.withArticle) == ["der See", "die See"])
+        #expect(nouns.last?.plural == "")
+        #expect(sent.first?.1 == ["action": "lookup", "text": "See", "language": "English"])
+        sent = []
         let fix = try await server.fix("Ich habe gegangen. Gut.")
         #expect(fix == KeyboardFix(original: "Ich habe gegangen. Gut.", corrected: "Ich bin gegangen. Gut.",
                                    reasons: ["Perfect with sein: „gehen“ takes „sein“."]))

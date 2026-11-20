@@ -34,6 +34,11 @@ struct ToolsRow: View {
                         taps += 1
                         Task { await model.tools.say() }
                     }
+                    ToolChip(title: Text(verbatim: "der · die · das"), symbol: "character.book.closed", isShort: isShort,
+                             showsSymbolWithTitle: false) {
+                        taps += 1
+                        Task { await model.tools.article() }
+                    }
                 }
                 if isShort {
                     SuggestionBar(words: model.suggestions) { model.choose($0) }
@@ -52,15 +57,19 @@ private struct ToolChip: View {
     let title: Text
     let symbol: String
     let isShort: Bool
+    /// A tool whose name says it all shows its symbol only when there is no room for the name.
+    var showsSymbolWithTitle = true
     let action: () -> Void
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 5) {
-                Image(systemName: symbol)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.accent)
+                if isShort || showsSymbolWithTitle {
+                    Image(systemName: symbol)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color.accent)
+                }
                 if !isShort {
                     title
                         .font(.system(size: 15, weight: .medium))

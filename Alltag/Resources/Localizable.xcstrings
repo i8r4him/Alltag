@@ -1702,6 +1702,7 @@
     "Salaries in professional sport" : {},
     "Same word, two things" : {},
     "Saturday evening on TV" : {},
+    "Save" : {},
     "Save electricity by switching devices off completely." : {},
     "Save for practice" : {},
     "Save to Memory" : {},
@@ -2271,6 +2272,7 @@
     "Two more rolls, please." : {},
     "Two VAT rates and a city tax" : {},
     "Two-part connectors" : {},
+    "Type a German noun first, then tap der · die · das." : {},
     "Type instead" : {},
     "Type or paste text" : {},
     "Type something in German first, then tap Fix." : {},
@@ -2563,7 +2565,8 @@
     "±0" : {},
     "“Practise for two minutes.”" : {},
     "“Review my saved words.”" : {},
-    "“Start a German speaking session.”" : {}
+    "“Start a German speaking session.”" : {},
+    "„%@“ isn’t a noun, so it has no article." : {}
   },
   "version" : "1.1"
 }

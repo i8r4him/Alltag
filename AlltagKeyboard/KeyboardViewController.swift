@@ -33,6 +33,10 @@ final class KeyboardViewController: UIInputViewController {
         model.suggester = DictionarySuggestions()
         model.onNextKeyboard = { [weak self] in self?.advanceToNextInputMode() }
         model.tools.assistant = ServerKeyboardAssistant()
+        // Saved words wait in the App Group for the app, which puts them in Memory.
+        model.tools.keep = { german, meaning in
+            (try? TranslationInbox.save(TranslationInbox.Entry(german: german, meaning: meaning))) != nil
+        }
         model.tools.hasConsent = { UserDefaults.standard.bool(forKey: Self.consentKey) }
         model.tools.keepConsent = { UserDefaults.standard.set(true, forKey: Self.consentKey) }
 
