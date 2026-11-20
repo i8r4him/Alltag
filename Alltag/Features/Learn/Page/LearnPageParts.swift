@@ -7,20 +7,92 @@
 
 import SwiftUI
 
-/// "Today's lesson" and its card, at the top of every page design.
+/// The lesson card's designs to pick from, behind the temporary switcher.
+enum LessonDesign: Int, CaseIterable {
+    case ring, nextUp, strip, path, cards
+
+    /// The design's working name, only for talking about it while one is picked.
+    var name: String {
+        switch self {
+        case .ring: "Big ring"
+        case .nextUp: "Next up"
+        case .strip: "Strip"
+        case .path: "Path"
+        case .cards: "Cards"
+        }
+    }
+}
+
+/// "Today's lesson" and its card, in the design picked with the temporary
+/// "‹ n / 5 ›" switcher next to the title.
 struct LessonHero: View {
     let content: LearnPageContent
 
+    @AppStorage("dailyLesson.cardDesign") private var design = 0
+
     var body: some View {
         if !content.steps.isEmpty {
+            let onOpen: (LessonStep) -> Void = { content.open($0.target) }
             VStack(alignment: .leading, spacing: 12) {
-                Text("Today’s lesson")
-                    .textRole(.sectionHeader)
-                    .padding(.horizontal, 4)
-                LessonCardDesign(level: content.level, steps: content.steps, zoom: content.zoom) {
-                    content.open($0.target)
+                HStack {
+                    Text("Today’s lesson")
+                        .textRole(.sectionHeader)
+                    Spacer()
+                    LessonDesignSwitcher(design: $design)
+                }
+                .padding(.horizontal, 4)
+                switch LessonDesign(rawValue: design) ?? .ring {
+                case .ring:
+                    LessonRingDesign(level: content.level, steps: content.steps, zoom: content.zoom, onOpen: onOpen)
+                case .nextUp:
+                    LessonNextUpDesign(steps: content.steps, zoom: content.zoom, onOpen: onOpen)
+                case .strip:
+                    LessonStripDesign(steps: content.steps, zoom: content.zoom, onOpen: onOpen)
+                case .path:
+                    LessonPathDesign(steps: content.steps, zoom: content.zoom, onOpen: onOpen)
+                case .cards:
+                    LessonDeckDesign(steps: content.steps, zoom: content.zoom, onOpen: onOpen)
                 }
             }
+        }
+    }
+}
+
+/// The temporary "Big ring · 1 / 5" switcher between the lesson card's
+/// designs; it goes once the maintainer has picked one.
+private struct LessonDesignSwitcher: View {
+    @Binding var design: Int
+
+    private var count: Int { LessonDesign.allCases.count }
+    private var current: LessonDesign { LessonDesign(rawValue: design) ?? .ring }
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Button { step(by: -1) } label: {
+                Image(systemName: "chevron.left")
+                    .frame(width: 36, height: 36)
+                    .contentShape(.rect)
+            }
+            .accessibilityLabel(Text("Previous design"))
+            Text(verbatim: "\(current.name) · \(current.rawValue + 1) / \(count)")
+                .monospacedDigit()
+            Button { step(by: 1) } label: {
+                Image(systemName: "chevron.right")
+                    .frame(width: 36, height: 36)
+                    .contentShape(.rect)
+            }
+            .accessibilityLabel(Text("Next design"))
+        }
+        .buttonStyle(.plain)
+        .font(.subheadline.weight(.semibold))
+        .padding(.horizontal, 4)
+        .glassEffect(.regular.interactive(), in: .capsule)
+        .sensoryFeedback(.selection, trigger: design)
+    }
+
+    private func step(by offset: Int) {
+        withAnimation(.smooth) {
+            design = (current.rawValue + offset + count) % count
         }
     }
 }

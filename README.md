@@ -256,10 +256,10 @@ Alltag/                                   ← repo root
 │  │  │  │  ├─ LearnPage.swift            reads progress once, opens the lesson's rules, texts, chats and collections
 │  │  │  │  ├─ LearnOverview.swift        each part's real progress at the level and its next things (tested)
 │  │  │  │  ├─ LearnHubLayout.swift       the lesson card and the 2×2 doors
-│  │  │  │  └─ LearnPageParts.swift       the lesson's section, progress in words, the part ring
+│  │  │  │  └─ LearnPageParts.swift       the lesson's section with a temporary ‹ n / 5 › design switcher, progress in words, the part ring
 │  │  │  ├─ Lesson/                       Today's lesson: one thing from each part, played one after another (~15 min)
 │  │  │  │  ├─ DailyLesson.swift          the steps from real progress: words, the next rule, a text, a chat, mistakes due (tested)
-│  │  │  │  ├─ LessonCardDesign.swift     the lesson's card: ring, a circle per part, the next step and the big button
+│  │  │  │  ├─ Lesson…Design.swift        the lesson card's five designs to pick from (big ring, next up, strip, path, cards)
 │  │  │  │  └─ LessonParts.swift          the part circle, the big Start / Continue button, and "Next for you" (top of Read, Write, collections)
 │  │  │  ├─ Ask/
 │  │  │  │  ├─ AskInPlace.swift           the field you type in on Learn and the German answer there, with Translate's parts (#304)
