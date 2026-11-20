@@ -31,7 +31,7 @@ struct SummaryStep: View {
                     Divider()
                     row("Daily", value: dailyValue)
                     Divider()
-                    row("From your day", value: Text("\(model.allowedCount) of 3 allowed"))
+                    row("From your day", value: Text("\(model.allowedCount) of 2 allowed"))
                 }
                 .padding(.horizontal, Spacing.card)
                 .background(.surface, in: .rect(cornerRadius: Radius.innerCard, style: .continuous))
@@ -66,7 +66,7 @@ struct SummaryStep: View {
 #Preview {
     let model = OnboardingModel()
     model.name = "Mara"
-    model.allowsCalendar = true
+    model.allowsNotifications = true
     return SummaryStep(model: model)
         .padding(.horizontal, Spacing.onboarding)
         .background(.screenBackground)

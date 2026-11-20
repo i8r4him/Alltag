@@ -23,7 +23,7 @@ struct TranslateFailureTests {
     private func model(failingWith error: any Error) -> TranslateModel {
         let mock = AppServices.mock()
         let services = AppServices(speech: mock.speech, voice: mock.voice, translation: FailingTranslation(error),
-                                   companion: mock.companion, calendar: mock.calendar, notifications: mock.notifications)
+                                   companion: mock.companion, notifications: mock.notifications)
         return TranslateModel(text: "I will call you later", services: services)
     }
 

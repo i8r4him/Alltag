@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// The state of a system permission (Calendar, Notifications, Speech).
+/// The state of a system permission (Notifications, Speech).
 enum PermissionStatus: Equatable, Sendable {
     case notDetermined
     case granted

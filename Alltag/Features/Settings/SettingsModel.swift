@@ -15,20 +15,10 @@ final class SettingsModel {
     /// Shown as a toast when a permission is refused.
     var message: LocalizedStringResource?
 
-    @ObservationIgnored private let calendar: any CalendarService
     @ObservationIgnored private let notifications: any NotificationService
 
     init(services: AppServices) {
-        calendar = services.calendar
         notifications = services.notifications
-    }
-
-    /// Turns Calendar learning on (asking for access) or off.
-    func setLearnsFromCalendar(_ isOn: Bool, on profile: UserProfile) async {
-        profile.learnsFromCalendar = isOn
-        guard isOn, await calendar.requestAccess() != .granted else { return }
-        profile.learnsFromCalendar = false
-        message = "Allow Calendar access in the Settings app first."
     }
 
     /// Turns rehearsal reminders on (asking to notify) or off.

@@ -29,7 +29,6 @@ struct TranslateModelTests {
             voice: voice,
             translation: MockTranslationService(delay: .zero),
             companion: MockCompanionService(thinkingTime: .zero),
-            calendar: MockCalendarService(),
             notifications: MockNotificationService()
         )
         return TranslateModel(text: text, services: services, defaults: defaults)

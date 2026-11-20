@@ -34,7 +34,7 @@ struct MistakePracticeTests {
         let mock = AppServices.mock()
         let services = AppServices(speech: MockSpeechService(wordInterval: .zero), voice: mock.voice,
                                    translation: mock.translation, companion: companion ?? MockCompanionService(thinkingTime: .zero),
-                                   calendar: mock.calendar, notifications: mock.notifications)
+                                   notifications: mock.notifications)
         return ConversationModel(scenario: MockScenarios.dentist, services: services, timing: .instant)
     }
 

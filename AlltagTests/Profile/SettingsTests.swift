@@ -20,15 +20,13 @@ extension UserDefaults {
     }
 }
 
-/// A calendar and notifications that answer with a fixed status.
-private final class StubPermissions: CalendarService, NotificationService {
+/// Notifications that answer with a fixed status.
+private final class StubPermissions: NotificationService {
     let answer: PermissionStatus
     init(_ answer: PermissionStatus) { self.answer = answer }
 
     var authorizationStatus: PermissionStatus { answer }
-    func requestAccess() async -> PermissionStatus { answer }
     func requestAuthorization() async -> PermissionStatus { answer }
-    func upcomingEvents() async throws -> [CalendarEvent] { [] }
     func scheduleDailyNudge(at time: NudgeTime) async throws {}
     func cancelDailyNudge() async {}
 }
@@ -40,7 +38,7 @@ struct SettingsTests {
         let stub = StubPermissions(answer)
         let mock = AppServices.mock()
         return AppServices(speech: mock.speech, voice: mock.voice, translation: mock.translation,
-                           companion: mock.companion, calendar: stub, notifications: stub)
+                           companion: mock.companion, notifications: stub)
     }
 
     @Test("Settings persist across launches")
@@ -73,9 +71,8 @@ struct SettingsTests {
     func permissionGranted() async {
         let model = SettingsModel(services: services(.granted))
         let profile = UserProfile(name: "Mara")
-        await model.setLearnsFromCalendar(true, on: profile)
         await model.setRemindersEnabled(true, on: profile)
-        #expect(profile.learnsFromCalendar && profile.remindersEnabled)
+        #expect(profile.remindersEnabled)
         #expect(model.message == nil)
     }
 
@@ -88,9 +85,9 @@ struct SettingsTests {
         #expect(model.message != nil)
 
         model.message = nil
-        profile.learnsFromCalendar = true
-        await model.setLearnsFromCalendar(false, on: profile)
-        #expect(!profile.learnsFromCalendar)
+        profile.remindersEnabled = true
+        await model.setRemindersEnabled(false, on: profile)
+        #expect(!profile.remindersEnabled)
         #expect(model.message == nil)
     }
 

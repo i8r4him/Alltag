@@ -42,7 +42,7 @@ struct TranslationServiceTests {
     private func model(_ service: StubTranslation, text: String = "The dog is sleeping.") -> TranslateModel {
         let mock = AppServices.mock()
         let services = AppServices(speech: mock.speech, voice: mock.voice, translation: service,
-                                   companion: mock.companion, calendar: mock.calendar, notifications: mock.notifications)
+                                   companion: mock.companion, notifications: mock.notifications)
         return TranslateModel(text: text, services: services)
     }
 

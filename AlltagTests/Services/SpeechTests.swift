@@ -38,7 +38,7 @@ struct SpeechTests {
         let mock = AppServices.mock()
         let services = AppServices(speech: StubSpeech(result), voice: mock.voice, translation: mock.translation,
                                    companion: MockCompanionService(thinkingTime: .zero),
-                                   calendar: mock.calendar, notifications: mock.notifications)
+                                   notifications: mock.notifications)
         return ConversationModel(scenario: MockScenarios.dentist, services: services, timing: .instant)
     }
 
