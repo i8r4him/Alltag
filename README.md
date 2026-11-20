@@ -407,17 +407,20 @@ Alltag/                                   ← repo root
 │
 ├─ AlltagKeyboard/                        the keyboard extension (#56); built into the app too, for the tests
 │  ├─ KeyboardViewController.swift        UIInputViewController: hosts the keys, passes typing to the text field
+│  ├─ KeyboardEmoji.txt                   every emoji by group, read by EmojiCatalog
 │  ├─ Core/
 │  │  ├─ KeyboardKey.swift                the keys, the pages, the return key's kinds
 │  │  ├─ KeyboardLayout.swift             German QWERTZ, the numbers row, two pages of symbols, long-press letters
 │  │  ├─ KeyboardGeometry.swift           every key's frame for a size; which key a touch means
 │  │  ├─ TypingEngine.swift               capitals, double space, delete by word, chosen words (no UIKit)
 │  │  ├─ KeyboardModel.swift              pages, pressed keys, popups, what each touch types
+│  │  ├─ EmojiCatalog.swift               the emoji groups and the ones used last
 │  │  ├─ WordSuggestions.swift            words from the dictionary on the device (UITextChecker)
 │  │  └─ KeyFeedback.swift                the click and the haptic
 │  └─ Views/
 │     ├─ KeyboardView.swift               tools row + keys; the keyboard's height
-│     ├─ KeyCap.swift                     one key drawn, the popup over a pressed key
+│     ├─ KeyCap.swift                     one key drawn in the look of Apple's keys, the popup over a pressed key
+│     ├─ EmojiPanel.swift                 the emoji in place of the keys
 │     ├─ KeyTouchSurface.swift            one clear layer that reads every finger
 │     └─ ToolsRow.swift                   Alltag's orb and the suggested words
 │
@@ -430,7 +433,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Grammar/                         the rules of every level, the exam, progress
 │  │  ├─ LevelMap/                        the level map: what fills each place, the %, the next stop
 │  │  └─ Translate/                       the Translate screen, streaming, the translation extension
-│  ├─ Keyboard/                           the keyboard's layout, key frames, typing rules and touches
+│  ├─ Keyboard/                           the keyboard's layout, key frames, typing rules, touches, emoji, and pictures of it
 │  ├─ Memory/                             Memory's filters, phrasebook, the mistakes loop
 │  ├─ Profile/                            profile, progress, streak, settings
 │  └─ Services/                           the services, speech and the companions (on device, cloud)

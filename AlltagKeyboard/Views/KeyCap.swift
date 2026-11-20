@@ -67,7 +67,7 @@ struct KeyCap: View {
         case .character(let text):
             Text(verbatim: shift.isOn ? TypingEngine.capital(text) : text)
                 .font(Self.font(for: text, isCapital: shift.isOn))
-                .offset(y: -1)
+                .offset(y: -1.5)
         case .shift:
             Image(systemName: shift == .locked ? "capslock.fill" : shift == .once ? "shift.fill" : "shift")
                 .font(.system(size: 19, weight: .medium))
@@ -76,7 +76,8 @@ struct KeyCap: View {
                 .font(.system(size: 19, weight: .medium))
         case .page(let page):
             Text(verbatim: page.label)
-                .font(KeyFont.font(size: page == .symbols ? 19.5 : 17))
+                .font(KeyFont.font(size: page == .symbols ? 19 : 17))
+                .tracking(page == .symbols ? 0.6 : 0)
         case .globe:
             Image(systemName: "globe")
                 .font(.system(size: 19))
