@@ -178,6 +178,13 @@ Still open on Learn, **in this order**:
 
 ## Project map (short)
 
+- `AlltagKeyboard/`: the keyboard extension (#56, in `v1.1`; the plan is one sub-issue per phase, #431 to #435). Phase 1 (#431) is the keyboard itself: German QWERTZ with a numbers row, symbols, letters on a long press, the space bar as a cursor trackpad, and words from the dictionary on the device in the tools row. The tools (Fix, "How do I say …?", der · die · das, Save) come one per phase.
+  - A **synchronized folder built into both the keyboard and the app**, so a new file needs no project change and the tests reach it through `@testable import Alltag` (`AlltagTests/Keyboard/`). Only `Info.plist` and the entitlements are excluded.
+  - `Core/` is the logic (`KeyboardLayout`, `KeyboardGeometry`, `TypingEngine`, `KeyboardModel`), `Views/` draws it. One clear `KeyTouchSurface` reads every finger; the keys themselves take no touches. Drawing and touches use the same `KeyboardGeometry`.
+  - `TypingEngine` works out the text after each step itself and reads the text field only before a step: the field can answer late.
+  - Timers only call `longPress` and `repeatDelete(step:)`; tests call those directly and never wait.
+  - Typing must work **without Full Access and without a network** (Apple's rule). Only the tools may need Full Access.
+  - **Not merged into `main` before v1 is submitted** (the maintainer started it on 20 Nov, before the submission): the v1 build must not carry an unfinished keyboard.
 - `AlltagShare/`: the share extension (#269): "Alltag" in the share sheet keeps a web link in the App Group (`ReadingInbox`, built into both targets), and Learn › Read shows it under "Shared to Alltag". Like `AlltagTranslation/`, a plain group: a new file there needs a project change. Its strings are in the app's catalog, so the catalog sync reads `AlltagShare.build` too.
 - `AlltagTranslation/`: ExtensionKit Translation UI Provider (#245–247), with cloud consent, streamed translation and optional replacement. Host and extension use `group.i8r4him.Alltag` for a file inbox; the app imports saved entries into its existing SwiftData store on activation. Do not move the database into the App Group or modify its schema for this handoff. Paid-team signing and a physical-device check are required for both targets.
 

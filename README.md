@@ -28,7 +28,7 @@ iPad, Apple Watch and Apple Vision Pro are **not** supported. The design referen
 ## Architecture
 Plain SwiftUI with `@Observable` models and services injected through the SwiftUI environment. No third-party libraries in the app (SwiftLint is a development tool only).
 
-**App target plus a Translation UI Provider extension** (#245–247) **and a share extension** (#269). App folders are Xcode synchronized folders. `AlltagTranslation/` is embedded under `Alltag.app/Extensions/`; it streams translations with cloud consent, supports replacement in editable fields, and queues saved translations or words for Memory through an App Group inbox. See `AlltagTranslation/README.md` for the device checks. `AlltagShare/` is embedded under `Alltag.app/PlugIns/`: "Alltag" in the share sheet keeps a shared link in the same App Group (`ReadingInbox`), and Learn › Read lists it under "Shared to Alltag" to read with help.
+**App target plus a Translation UI Provider extension** (#245–247), **a share extension** (#269) **and a keyboard extension** (#56, `AlltagKeyboard/`, embedded under `Alltag.app/PlugIns/`; its folder is built into the app too, so the tests reach it). App folders are Xcode synchronized folders. `AlltagTranslation/` is embedded under `Alltag.app/Extensions/`; it streams translations with cloud consent, supports replacement in editable fields, and queues saved translations or words for Memory through an App Group inbox. See `AlltagTranslation/README.md` for the device checks. `AlltagShare/` is embedded under `Alltag.app/PlugIns/`: "Alltag" in the share sheet keeps a shared link in the same App Group (`ReadingInbox`), and Learn › Read lists it under "Shared to Alltag" to read with help.
 ```
 Alltag/                                   ← repo root
 ├─ Alltag.xcodeproj
@@ -406,6 +406,22 @@ Alltag/                                   ← repo root
 │     ├─ Sounds/focus.wav                 the soft two-note chime when free talk starts (made for Alltag)
 │     └─ AppShortcuts.xcstrings           Siri phrases
 │
+├─ AlltagKeyboard/                        the keyboard extension (#56); built into the app too, for the tests
+│  ├─ KeyboardViewController.swift        UIInputViewController: hosts the keys, passes typing to the text field
+│  ├─ Core/
+│  │  ├─ KeyboardKey.swift                the keys, the pages, the return key's kinds
+│  │  ├─ KeyboardLayout.swift             German QWERTZ, the numbers row, two pages of symbols, long-press letters
+│  │  ├─ KeyboardGeometry.swift           every key's frame for a size; which key a touch means
+│  │  ├─ TypingEngine.swift               capitals, double space, delete by word, chosen words (no UIKit)
+│  │  ├─ KeyboardModel.swift              pages, pressed keys, popups, what each touch types
+│  │  ├─ WordSuggestions.swift            words from the dictionary on the device (UITextChecker)
+│  │  └─ KeyFeedback.swift                the click and the haptic
+│  └─ Views/
+│     ├─ KeyboardView.swift               tools row + keys; the keyboard's height
+│     ├─ KeyCap.swift                     one key drawn, the popup over a pressed key
+│     ├─ KeyTouchSurface.swift            one clear layer that reads every finger
+│     └─ ToolsRow.swift                   Alltag's orb and the suggested words
+│
 ├─ AlltagTests/                           Swift Testing, one folder per part of the app
 │  ├─ App/                                app start, state and routing, intents, layout, colours, SwiftData, sample content, onboarding
 │  ├─ Today/                              Today, briefing, debrief, situations, 60 seconds
@@ -415,6 +431,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Grammar/                         the rules of every level, the exam, progress
 │  │  ├─ LevelMap/                        the level map: what fills each place, the %, the next stop
 │  │  └─ Translate/                       the Translate screen, streaming, the translation extension
+│  ├─ Keyboard/                           the keyboard's layout, key frames, typing rules and touches
 │  ├─ Memory/                             Memory's filters, phrasebook, the mistakes loop
 │  ├─ Profile/                            profile, progress, streak, settings
 │  └─ Services/                           the services, speech and the companions (on device, cloud)
@@ -641,7 +658,8 @@ All Apple frameworks — nothing to install.
 | SwiftData + CloudKit | Sync and backup across the learner's iPhones | Yes |
 | TipKit | In-app hints | No |
 | StoreKit 2 | Alltag Pro subscription | Yes (to sell) |
-| Keyboard extension / Safari Web Extension | "Learn from my day" | Yes (App Groups) |
+| Keyboard extension (`UIInputViewController`, `UITextChecker`) | The Alltag keyboard (#56, v1.1): German keys with Alltag's tools | Yes (App Groups) |
+| Safari Web Extension | "Learn from my day" | Yes (App Groups) |
 
 **Developer account:** development starts on a free account. Everything marked "Yes" is built behind the service protocols and switched on once the paid Developer Program is active (before release). TestFlight also needs the paid program.
 
