@@ -7,95 +7,6 @@
 
 import SwiftUI
 
-/// The designs of everything on Learn under the tools, behind the temporary switcher.
-enum LearnPageDesign: Int, CaseIterable {
-    case ticket, notebook, orbit, week, sentence, receipt, playlist, chat, board, bento
-
-    /// The design's working name, only for talking about it while one is picked.
-    var name: String {
-        switch self {
-        case .ticket: "Fahrkarte"
-        case .notebook: "Heft"
-        case .orbit: "Orbit"
-        case .week: "Woche"
-        case .sentence: "Satz"
-        case .receipt: "Kassenbon"
-        case .playlist: "Playlist"
-        case .chat: "Chat"
-        case .board: "Pinnwand"
-        case .bento: "Bento"
-        }
-    }
-}
-
-/// Learn under the tools in the design picked with the temporary "‹ n / N ›"
-/// switcher: Today's lesson and the four parts, each design its own idea.
-struct LearnPageDesigns: View {
-    let content: LearnPageContent
-
-    @AppStorage("learnPage.design") private var design = 0
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Spacer()
-                LearnDesignSwitcher(design: $design)
-            }
-            switch LearnPageDesign(rawValue: design) ?? .ticket {
-            case .ticket: LearnTicketDesign(content: content)
-            case .notebook: LearnNotebookDesign(content: content)
-            case .orbit: LearnOrbitDesign(content: content)
-            case .week: LearnWeekDesign(content: content)
-            case .sentence: LearnSentenceDesign(content: content)
-            case .receipt: LearnReceiptDesign(content: content)
-            case .playlist: LearnPlaylistDesign(content: content)
-            case .chat: LearnChatDesign(content: content)
-            case .board: LearnBoardDesign(content: content)
-            case .bento: LearnBentoDesign(content: content)
-            }
-        }
-    }
-}
-
-/// The temporary "Fahrkarte · 1 / 5" switcher between the page's designs; it
-/// goes once the maintainer has picked one.
-private struct LearnDesignSwitcher: View {
-    @Binding var design: Int
-
-    private var count: Int { LearnPageDesign.allCases.count }
-    private var current: LearnPageDesign { LearnPageDesign(rawValue: design) ?? .ticket }
-
-    var body: some View {
-        HStack(spacing: 0) {
-            Button { step(by: -1) } label: {
-                Image(systemName: "chevron.left")
-                    .frame(width: 36, height: 36)
-                    .contentShape(.rect)
-            }
-            .accessibilityLabel(Text("Previous design"))
-            Text(verbatim: "\(current.name) · \(current.rawValue + 1) / \(count)")
-                .monospacedDigit()
-            Button { step(by: 1) } label: {
-                Image(systemName: "chevron.right")
-                    .frame(width: 36, height: 36)
-                    .contentShape(.rect)
-            }
-            .accessibilityLabel(Text("Next design"))
-        }
-        .buttonStyle(.plain)
-        .font(.subheadline.weight(.semibold))
-        .padding(.horizontal, 4)
-        .glassEffect(.regular.interactive(), in: .capsule)
-        .sensoryFeedback(.selection, trigger: design)
-    }
-
-    private func step(by offset: Int) {
-        withAnimation(.smooth) {
-            design = (current.rawValue + offset + count) % count
-        }
-    }
-}
-
 /// A section's title with a small note on the right, as the designs head their parts.
 struct LearnSectionTitle: View {
     let title: Text
@@ -131,15 +42,6 @@ struct PartBar: View {
             }
             .accessibilityHidden(true)
     }
-}
-
-extension LearnPageContent {
-    /// The next step of today's lesson, or `nil` once it is done.
-    var current: LessonStep? { DailyLesson.current(in: steps) }
-    /// How many steps are done today.
-    var doneCount: Int { steps.filter(\.isDone).count }
-    /// The whole lesson's minutes.
-    var totalMinutes: Int { steps.map(\.minutes).reduce(0, +) }
 }
 
 extension LessonPart {
