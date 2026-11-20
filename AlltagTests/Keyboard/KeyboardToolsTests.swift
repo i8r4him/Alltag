@@ -157,6 +157,23 @@ struct KeyboardToolsTests {
         #expect(model.tools.panel == nil)
     }
 
+    @Test("Before the first text is sent the tools ask once; Allow goes on with the tool")
+    func consent() async {
+        var isAllowed = false
+        model.tools.hasConsent = { isAllowed }
+        model.tools.keepConsent = { isAllowed = true }
+        document.before = "Ich bin müde"
+        await model.tools.fix()
+        #expect(model.tools.panel == .consent(.fix))
+        #expect(model.tools.isTall)
+        #expect(assistant.asked.isEmpty)
+
+        await model.tools.allow()
+        #expect(isAllowed)
+        #expect(assistant.asked == ["Ich bin müde"])
+        #expect(model.tools.panel == .notice(.looksRight))
+    }
+
     @Test("Replace leaves the text alone when it is no longer what the tool read")
     func textChanged() async {
         document.before = "Ich habe gegangen"
@@ -189,10 +206,12 @@ struct KeyboardToolsTests {
     func engineReplace() {
         var engine = TypingEngine()
         let field = FakeDocument("Hi. Wie gehts \n")
-        #expect(engine.replace("Wie gehts", with: "Wie geht's?", in: field))
+        let replaced = engine.replace("Wie gehts", with: "Wie geht's?", in: field)
+        #expect(replaced)
         #expect(field.before == "Hi. Wie geht's? \n")
         #expect(engine.context == "Hi. Wie geht's? \n")
-        #expect(!engine.replace("nicht da", with: "x", in: field))
+        let missed = engine.replace("nicht da", with: "x", in: field)
+        #expect(!missed)
         #expect(field.before == "Hi. Wie geht's? \n")
     }
 

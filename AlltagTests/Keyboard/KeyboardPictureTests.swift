@@ -101,6 +101,11 @@ struct KeyboardPictureTests {
         document.before = ""
         await model.tools.fix()
         try await draw(KeyboardView(model: model), style: style, to: file("10-notice"))
+
+        model.tools.hasConsent = { false }
+        document.before = "Ich bin müde"
+        await model.tools.fix()
+        try await draw(KeyboardView(model: model), style: style, to: file("11-consent"))
     }
 
     @Test("The letters on the keys are in the system's compact font, like Apple's")

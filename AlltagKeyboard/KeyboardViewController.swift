@@ -15,6 +15,8 @@ import UIKit
 final class KeyboardViewController: UIInputViewController {
     /// The App Group the app shares its theme through.
     static let group = "group.i8r4him.Alltag"
+    /// Set once the learner has allowed the tools to send text to the server.
+    static let consentKey = "keyboard.toolsAllowed"
 
     private let model = KeyboardModel()
     private let feedback = SystemKeyFeedback()
@@ -31,6 +33,8 @@ final class KeyboardViewController: UIInputViewController {
         model.suggester = DictionarySuggestions()
         model.onNextKeyboard = { [weak self] in self?.advanceToNextInputMode() }
         model.tools.assistant = ServerKeyboardAssistant()
+        model.tools.hasConsent = { UserDefaults.standard.bool(forKey: Self.consentKey) }
+        model.tools.keepConsent = { UserDefaults.standard.set(true, forKey: Self.consentKey) }
 
         let host = UIHostingController(rootView: KeyboardView(model: model))
         host.safeAreaRegions = []

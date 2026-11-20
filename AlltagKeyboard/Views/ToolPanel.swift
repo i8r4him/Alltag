@@ -33,6 +33,22 @@ struct ToolPanel: View {
 
     @ViewBuilder private var content: some View {
         switch tools.panel {
+        case .consent:
+            VStack(alignment: .leading, spacing: 3) {
+                Text("A tool sends the text before the cursor through Alltag’s server to OpenAI. Nothing is sent while you type.")
+                    .font(.system(size: 13))
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.8)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    .padding(.horizontal, 4)
+                    .padding(.top, 4)
+                HStack(spacing: 8) {
+                    Spacer(minLength: 0)
+                    closeButton
+                    PanelPill(title: Text("Allow"), isMain: true) { tap { Task { await tools.allow() } } }
+                }
+                .padding(.bottom, 5)
+            }
         case .working(let tool):
             HStack(spacing: 8) {
                 closeButton

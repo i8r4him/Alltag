@@ -50,6 +50,8 @@ final class KeyboardTools {
     }
 
     enum Panel: Equatable {
+        /// Asked once, before the first text leaves the iPhone.
+        case consent(Tool)
         case working(Tool)
         case fix(KeyboardFix)
         case answer(KeyboardAnswer, KeyboardRegister)
@@ -70,13 +72,17 @@ final class KeyboardTools {
     /// Puts new text in place of old text before the cursor; false when the old text isn't there any more.
     @ObservationIgnored var replace: (_ old: String, _ new: String) -> Bool = { _, _ in false }
 
+    /// Whether the learner has allowed the tools to send text to the server, and how that is kept.
+    @ObservationIgnored var hasConsent: () -> Bool = { true }
+    @ObservationIgnored var keepConsent: () -> Void = {}
+
     /// Each request has a number; an answer to an older one is dropped.
     @ObservationIgnored private var request = 0
 
     /// The answer covers the numbers row too, not only the tools row.
     var isTall: Bool {
         switch panel {
-        case .answer: true
+        case .answer, .consent: true
         case .fix: showsWhy
         case .working, .notice, nil: false
         }
@@ -138,6 +144,16 @@ final class KeyboardTools {
         }
     }
 
+    /// The learner allows the tools to send text; the tool that asked goes on.
+    func allow() async {
+        guard case .consent(let tool) = panel else { return }
+        keepConsent()
+        switch tool {
+        case .fix: await fix()
+        case .say: await say()
+        }
+    }
+
     // MARK: - Replace and close
 
     /// Puts the shown answer in place of the text it was made from.
@@ -146,7 +162,7 @@ final class KeyboardTools {
         switch panel {
         case .fix(let fix): done = replace(fix.original, fix.corrected)
         case .answer(let answer, _): done = replace(answer.asked, answer.german)
-        case .working, .notice, nil: return
+        case .consent, .working, .notice, nil: return
         }
         request += 1
         showsWhy = false
@@ -175,6 +191,10 @@ final class KeyboardTools {
         let subject = ToolText.subject(in: text())
         guard !subject.isEmpty else {
             panel = .notice(.nothingTyped(tool))
+            return nil
+        }
+        guard hasConsent() else {
+            panel = .consent(tool)
             return nil
         }
         panel = .working(tool)
