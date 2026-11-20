@@ -11,6 +11,7 @@ import SwiftUI
 enum LearnPageDesign: Int, CaseIterable {
     case ticket, notebook, orbit, week, sentence, receipt, playlist, chat, board, bento
     case greenhouse, loom, stage, circuit, scales
+    case resume, plan, areas, time, browse
 
     /// The design's working name, only for talking about it while one is picked.
     var name: String {
@@ -30,6 +31,11 @@ enum LearnPageDesign: Int, CaseIterable {
         case .stage: "Bühne"
         case .circuit: "Schaltkreis"
         case .scales: "Waage"
+        case .resume: "Weiterlernen"
+        case .plan: "Tagesplan"
+        case .areas: "Lernbereiche"
+        case .time: "Nach Zeit"
+        case .browse: "Heute & mehr"
         }
     }
 }
@@ -63,6 +69,11 @@ struct LearnPageDesigns: View {
             case .stage: LearnStageDesign(content: content)
             case .circuit: LearnCircuitDesign(content: content)
             case .scales: LearnScalesDesign(content: content)
+            case .resume: LearnResumeDesign(content: content)
+            case .plan: LearnPlanDesign(content: content)
+            case .areas: LearnAreasDesign(content: content)
+            case .time: LearnTimeDesign(content: content)
+            case .browse: LearnBrowseDesign(content: content)
             }
         }
     }
