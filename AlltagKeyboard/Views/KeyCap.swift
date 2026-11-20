@@ -63,7 +63,7 @@ struct KeyCap: View {
                 .font(.system(size: 19))
         case .emoji:
             Image(systemName: colorScheme == .dark ? "face.smiling.inverse" : "face.smiling")
-                .font(.system(size: 18))
+                .font(.system(size: 19))
         case .space:
             EmptyView()
         case .enter:

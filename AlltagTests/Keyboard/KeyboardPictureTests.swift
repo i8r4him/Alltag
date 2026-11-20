@@ -80,13 +80,13 @@ struct KeyboardPictureTests {
     /// Puts a view in a window on the keyboard's backdrop and writes what it shows.
     func draw(_ view: some View, style: UIUserInterfaceStyle, to url: URL) async throws {
         let backdrop = style == .dark ? Color(white: 33 / 255) : Color(red: 225 / 255, green: 225 / 255, blue: 229 / 255)
-        let host = UIHostingController(rootView: view.background(backdrop))
+        // A window this low would count as an iPhone on its side.
+        let host = UIHostingController(rootView: view.background(backdrop).environment(\.verticalSizeClass, .regular))
         host.overrideUserInterfaceStyle = style
         host.safeAreaRegions = []
-        let frame = CGRect(origin: .zero, size: size)
-        let scene = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
-        let window = scene.map { UIWindow(windowScene: $0) } ?? UIWindow(frame: frame)
-        window.frame = frame
+        let scene = try #require(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(origin: .zero, size: size)
         window.rootViewController = host
         window.isHidden = false
         window.layoutIfNeeded()
@@ -110,8 +110,25 @@ private struct FontSheet: View {
         ("condensed", .system(size: 22).width(.condensed)),
         ("narrow -0.1", .system(size: 22).width(Font.Width(-0.1))),
         ("medium", .system(size: 22, weight: .medium)),
-        ("rounded medium", .system(size: 22, weight: .medium, design: .rounded))
+        ("medium -0.05", .system(size: 22, weight: .medium).width(Font.Width(-0.05))),
+        ("compact " + compactName(.regular), compact(.regular)),
+        ("compact medium " + compactName(.medium), compact(.medium))
     ]
+
+    /// The system font in its compact design, if this iOS has it.
+    private static func compactFont(_ weight: UIFont.Weight) -> UIFont? {
+        let design = UIFontDescriptor.SystemDesign(rawValue: "NSCTFontUIFontDesignCompact")
+        return UIFont.systemFont(ofSize: 22, weight: weight).fontDescriptor.withDesign(design)
+            .map { UIFont(descriptor: $0, size: 22) }
+    }
+
+    private static func compact(_ weight: UIFont.Weight) -> Font {
+        compactFont(weight).map { Font($0) } ?? .system(size: 8)
+    }
+
+    private static func compactName(_ weight: UIFont.Weight) -> String {
+        compactFont(weight)?.fontName ?? "none"
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
