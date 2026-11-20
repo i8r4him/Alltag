@@ -73,8 +73,12 @@ struct KeyboardPictureTests {
 
         model.activate(.emoji)
         try await draw(KeyboardView(model: model), style: style, to: file("6-emoji"))
+    }
 
-        try await draw(FontSheet(), style: style, to: file("7-fonts"))
+    @Test("The letters on the keys are in the system's compact font, like Apple's")
+    func keyFont() {
+        #expect(KeyFont.uiFont(size: 23).fontName.contains("Compact"))
+        #expect(KeyFont.uiFont(size: 23).pointSize == 23)
     }
 
     /// Puts a view in a window on the keyboard's backdrop and writes what it shows.
@@ -99,47 +103,5 @@ struct KeyboardPictureTests {
         }
         try #require(image.pngData()).write(to: url)
         window.isHidden = true
-    }
-}
-
-/// The letters of the first row in the fonts a key could use, to compare with Apple's keys.
-private struct FontSheet: View {
-    private let fonts: [(String, Font)] = [
-        ("default", .system(size: 22)),
-        ("rounded", .system(size: 22, design: .rounded)),
-        ("condensed", .system(size: 22).width(.condensed)),
-        ("narrow -0.1", .system(size: 22).width(Font.Width(-0.1))),
-        ("medium", .system(size: 22, weight: .medium)),
-        ("medium -0.05", .system(size: 22, weight: .medium).width(Font.Width(-0.05))),
-        ("compact " + FontSheet.compactName(.regular), FontSheet.compact(.regular)),
-        ("compact medium " + FontSheet.compactName(.medium), FontSheet.compact(.medium))
-    ]
-
-    /// The system font in its compact design, if this iOS has it.
-    private static func compactFont(_ weight: UIFont.Weight) -> UIFont? {
-        let design = UIFontDescriptor.SystemDesign(rawValue: "NSCTFontUIFontDesignCompact")
-        return UIFont.systemFont(ofSize: 22, weight: weight).fontDescriptor.withDesign(design)
-            .map { UIFont(descriptor: $0, size: 22) }
-    }
-
-    private static func compact(_ weight: UIFont.Weight) -> Font {
-        compactFont(weight).map { Font($0) } ?? .system(size: 8)
-    }
-
-    private static func compactName(_ weight: UIFont.Weight) -> String {
-        compactFont(weight)?.fontName ?? "none"
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            ForEach(fonts, id: \.0) { name, font in
-                HStack(spacing: 10) {
-                    Text(verbatim: "QWERTZUIOPÜ qwertzuiopü 123").font(font)
-                    Text(verbatim: name).font(.system(size: 11))
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .padding(.leading, 8)
     }
 }

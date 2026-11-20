@@ -6,6 +6,27 @@
 //
 
 import SwiftUI
+import UIKit
+
+/// The font on Apple's keys: the system font in its compact design (SF Compact).
+/// It has no name in SwiftUI, so it is asked for by the design's name; an iOS that
+/// doesn't know the name answers with the usual system font.
+enum KeyFont {
+    private static let compact = UIFontDescriptor.SystemDesign(rawValue: "NSCTFontUIFontDesignCompact")
+    private static var fonts: [CGFloat: Font] = [:]
+
+    static func font(size: CGFloat) -> Font {
+        if let font = fonts[size] { return font }
+        let font = Font(uiFont(size: size))
+        fonts[size] = font
+        return font
+    }
+
+    static func uiFont(size: CGFloat) -> UIFont {
+        let system = UIFont.systemFont(ofSize: size, weight: .regular)
+        return system.fontDescriptor.withDesign(compact).map { UIFont(descriptor: $0, size: size) } ?? system
+    }
+}
 
 /// One key as it is drawn, in the look of Apple's keyboard: every key in one colour,
 /// flat, the letters a little above the middle. The sizes are measured on Apple's.
@@ -21,8 +42,6 @@ struct KeyCap: View {
     @Environment(\.colorScheme) private var colorScheme
 
     static let cornerRadius: CGFloat = 8.5
-    /// The design of the letters on the keys.
-    static let design: Font.Design = .default
 
     var body: some View {
         RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
@@ -57,7 +76,7 @@ struct KeyCap: View {
                 .font(.system(size: 19, weight: .medium))
         case .page(let page):
             Text(verbatim: page.label)
-                .font(.system(size: page == .symbols ? 19 : 17, design: Self.design))
+                .font(KeyFont.font(size: page == .symbols ? 19.5 : 17))
         case .globe:
             Image(systemName: "globe")
                 .font(.system(size: 19))
@@ -72,10 +91,10 @@ struct KeyCap: View {
         }
     }
 
-    /// Capitals are 22 pt on Apple's keys; small letters are drawn a little larger.
+    /// Capitals are 23 pt on Apple's keys; small letters are drawn a little larger.
     static func font(for text: String, isCapital: Bool) -> Font {
         let isLetter = text.first?.isLetter == true
-        return .system(size: !isLetter ? 21 : isCapital ? 22 : 24, design: design)
+        return KeyFont.font(size: !isLetter ? 22 : isCapital ? 23 : 25)
     }
 
     /// Every key has the same colour. A letter shows its bubble when pressed; the other keys darken.
@@ -144,7 +163,7 @@ struct KeyPopupView: View {
             ForEach(drawn, id: \.self) { index in
                 let isChosen = popup.isAlternates && index == popup.selection
                 Text(verbatim: popup.options[index])
-                    .font(.system(size: popup.isAlternates ? 24 : 32, design: KeyCap.design))
+                    .font(KeyFont.font(size: popup.isAlternates ? 24 : 32))
                     .foregroundStyle(isChosen ? Color.onAccent : Color.primary)
                     .frame(width: cell.width, height: cell.height)
                     .background {

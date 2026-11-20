@@ -54,7 +54,7 @@ private struct SuggestionBar: View {
                 choose(word)
             } label: {
                 Text(verbatim: word)
-                    .font(.system(size: 17, design: KeyCap.design))
+                    .font(.system(size: 17))
                     .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.6 : 0.68))
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
