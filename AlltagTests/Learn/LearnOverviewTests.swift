@@ -22,6 +22,19 @@ struct LearnOverviewTests {
         #expect(overview.part(.listen)?.isComingSoon == true)
         #expect(overview.part(.listen)?.fraction == nil)
         #expect(overview.parts.allSatisfy { $0.items.count <= LearnOverview.itemLimit })
+        #expect(overview.doors.map(\.kind) == [.grammar, .read, .write, .words])
+    }
+
+    @Test("The designs show counts as a board does, and Write fills up over ten texts")
+    func shownProgress() throws {
+        let overview = LearnOverview.make(at: .a2, solvedRules: [], sessions: [], collectionWords: [])
+        let grammar = try #require(overview.part(.grammar))
+        #expect(grammar.count == String(format: "00/%02d", grammar.total))
+        #expect(grammar.shownFraction == 0)
+        let write = LearnOverview.Part(kind: .write, done: 4, total: 0, items: [])
+        #expect(write.count == "4 ✎")
+        #expect(write.shownFraction == 0.4)
+        #expect(LearnOverview.Part(kind: .write, done: 25, total: 0, items: []).shownFraction == 1)
     }
 
     @Test("Solved rules count, and the next rule is the first unsolved; done items move to the back")

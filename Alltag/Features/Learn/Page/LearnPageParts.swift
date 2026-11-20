@@ -7,64 +7,53 @@
 
 import SwiftUI
 
-/// The lesson card's designs to pick from, behind the temporary switcher.
-enum LessonDesign: Int, CaseIterable {
-    case ring, nextUp, strip, path, cards
+/// The designs of everything on Learn under the tools, behind the temporary switcher.
+enum LearnPageDesign: Int, CaseIterable {
+    case ticket, notebook, orbit, week, sentence
 
     /// The design's working name, only for talking about it while one is picked.
     var name: String {
         switch self {
-        case .ring: "Big ring"
-        case .nextUp: "Next up"
-        case .strip: "Strip"
-        case .path: "Path"
-        case .cards: "Cards"
+        case .ticket: "Fahrkarte"
+        case .notebook: "Heft"
+        case .orbit: "Orbit"
+        case .week: "Woche"
+        case .sentence: "Satz"
         }
     }
 }
 
-/// "Today's lesson" and its card, in the design picked with the temporary
-/// "‹ n / 5 ›" switcher next to the title.
-struct LessonHero: View {
+/// Learn under the tools in the design picked with the temporary "‹ n / 5 ›"
+/// switcher: Today's lesson and the four parts, each design its own idea.
+struct LearnPageDesigns: View {
     let content: LearnPageContent
 
-    @AppStorage("dailyLesson.cardDesign") private var design = 0
+    @AppStorage("learnPage.design") private var design = 0
 
     var body: some View {
-        if !content.steps.isEmpty {
-            let onOpen: (LessonStep) -> Void = { content.open($0.target) }
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("Today’s lesson")
-                        .textRole(.sectionHeader)
-                    Spacer()
-                    LessonDesignSwitcher(design: $design)
-                }
-                .padding(.horizontal, 4)
-                switch LessonDesign(rawValue: design) ?? .ring {
-                case .ring:
-                    LessonRingDesign(level: content.level, steps: content.steps, zoom: content.zoom, onOpen: onOpen)
-                case .nextUp:
-                    LessonNextUpDesign(steps: content.steps, zoom: content.zoom, onOpen: onOpen)
-                case .strip:
-                    LessonStripDesign(steps: content.steps, zoom: content.zoom, onOpen: onOpen)
-                case .path:
-                    LessonPathDesign(steps: content.steps, zoom: content.zoom, onOpen: onOpen)
-                case .cards:
-                    LessonDeckDesign(steps: content.steps, zoom: content.zoom, onOpen: onOpen)
-                }
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Spacer()
+                LearnDesignSwitcher(design: $design)
+            }
+            switch LearnPageDesign(rawValue: design) ?? .ticket {
+            case .ticket: LearnTicketDesign(content: content)
+            case .notebook: LearnNotebookDesign(content: content)
+            case .orbit: LearnOrbitDesign(content: content)
+            case .week: LearnWeekDesign(content: content)
+            case .sentence: LearnSentenceDesign(content: content)
             }
         }
     }
 }
 
-/// The temporary "Big ring · 1 / 5" switcher between the lesson card's
-/// designs; it goes once the maintainer has picked one.
-private struct LessonDesignSwitcher: View {
+/// The temporary "Fahrkarte · 1 / 5" switcher between the page's designs; it
+/// goes once the maintainer has picked one.
+private struct LearnDesignSwitcher: View {
     @Binding var design: Int
 
-    private var count: Int { LessonDesign.allCases.count }
-    private var current: LessonDesign { LessonDesign(rawValue: design) ?? .ring }
+    private var count: Int { LearnPageDesign.allCases.count }
+    private var current: LearnPageDesign { LearnPageDesign(rawValue: design) ?? .ticket }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -97,6 +86,75 @@ private struct LessonDesignSwitcher: View {
     }
 }
 
+/// A section's title with a small note on the right, as the designs head their parts.
+struct LearnSectionTitle: View {
+    let title: Text
+    var note: Text?
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline) {
+            title
+                .textRole(.sectionHeader)
+            Spacer(minLength: 8)
+            if let note {
+                note
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 4)
+    }
+}
+
+/// A thin bar of a part's progress, in the theme colour.
+struct PartBar: View {
+    let fraction: Double
+
+    var body: some View {
+        Capsule()
+            .fill(.controlFill)
+            .frame(height: 6)
+            .overlay(alignment: .leading) {
+                Capsule()
+                    .fill(.accentFill)
+                    .scaleEffect(x: max(0.02, min(fraction, 1)), anchor: .leading)
+            }
+            .accessibilityHidden(true)
+    }
+}
+
+extension LessonPart {
+    /// The part's name in German, as the playful designs write it (a stop, a word on a ticket).
+    var germanName: String {
+        switch self {
+        case .words: "Wörter"
+        case .grammar: "Regel"
+        case .read: "Lesen"
+        case .write: "Schreiben"
+        case .mistakes: "Fehler"
+        }
+    }
+}
+
+extension LearnOverview.Part {
+    /// Done from 0 to 1 for a ring or a bar; Write, with no total, fills up over ten texts.
+    var shownFraction: Double {
+        fraction ?? min(Double(done) / 10, 1)
+    }
+
+    /// The count as a departure board or an index shows it: "08/20", or "2 ✎" for Write.
+    var count: String {
+        total > 0 ? String(format: "%02d/%02d", done, total) : "\(done) ✎"
+    }
+}
+
+extension Date {
+    /// The date in German, as the designs write it ("Freitag, 20. November").
+    func german(_ style: Date.FormatStyle) -> String {
+        formatted(style.locale(Locale(identifier: "de_DE")))
+    }
+}
+
 /// A part's real progress in a few words: "8 of 20 solved", "3 of 24 read",
 /// "2 texts written", "1 of 6 saved", or "Coming soon".
 struct PartProgressText: View {
@@ -119,24 +177,5 @@ struct PartProgressText: View {
         case .listen:
             Text("Coming soon")
         }
-    }
-}
-
-/// A part's progress as a small ring with the percentage inside, like Learn's level ring.
-struct PartRing: View {
-    let fraction: Double
-    var size: CGFloat = 40
-
-    var body: some View {
-        ZStack {
-            LevelRing(fraction: fraction, lineWidth: size / 9)
-            Text(verbatim: "\(Int((fraction * 100).rounded()))")
-                .font(.system(size: size * 0.3, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .minimumScaleFactor(0.7)
-                .padding(.horizontal, size * 0.16)
-        }
-        .frame(width: size, height: size)
-        .accessibilityHidden(true)
     }
 }

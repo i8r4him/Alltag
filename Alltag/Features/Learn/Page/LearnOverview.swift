@@ -95,6 +95,11 @@ struct LearnOverview {
         parts.first { $0.kind == kind }
     }
 
+    /// The parts the page shows as doors: all but the ones still coming.
+    var doors: [Part] {
+        parts.filter { !$0.isComingSoon }
+    }
+
     /// How many things each part lists at most.
     static let itemLimit = 8
 

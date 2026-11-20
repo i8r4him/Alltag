@@ -54,7 +54,7 @@ struct LearnPage: View {
             overview: LearnOverview.make(at: level, solvedRules: solved, sessions: sessions,
                                          collectionWords: collectionWords),
             zoom: zoom, open: open, openPart: open)
-        LearnHubLayout(content: content)
+        LearnPageDesigns(content: content)
             .fontDesign(.rounded)
             .sensoryFeedback(.impact(weight: .medium), trigger: opens)
             .navigationDestination(item: $reading) { target in
