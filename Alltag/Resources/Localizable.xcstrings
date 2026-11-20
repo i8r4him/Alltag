@@ -326,6 +326,16 @@
         }
       }
     },
+    "^[%lld track](inflect: true) · %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "^[%1$lld track](inflect: true) · %2$lld min"
+          }
+        }
+      }
+    },
     "^[%lld word](inflect: true)" : {},
     "^[%lld word](inflect: true) saved" : {},
     "^[%lld writing mistake](inflect: true) to review" : {},
@@ -1337,6 +1347,7 @@
     "Messages and emails" : {},
     "Messages · „seit“ or „für“?" : {},
     "Might I sit here?" : {},
+    "min to go" : {},
     "Minimalism" : {},
     "MINUTES" : {},
     "Mistake" : {},
@@ -1354,6 +1365,7 @@
     "More for %@" : {},
     "More places open soon, then the level test at the station." : {},
     "More than one home" : {},
+    "More to come" : {},
     "More to learn" : {},
     "Morning" : {},
     "Most of it happens in small moments anyway." : {},
@@ -2543,6 +2555,7 @@
     "You've used today's live conversations. You can talk again tomorrow." : {},
     "You: %@" : {},
     "Your %@ texts" : {},
+    "Your albums" : {},
     "Your application has been approved." : {},
     "Your appointment is cancelled" : {},
     "Your articles" : {},
@@ -2575,6 +2588,7 @@
     "Your parcel has been delivered." : {},
     "Your parcel is waiting" : {},
     "Your pay slip" : {},
+    "Your receipt" : {},
     "Your rights at work" : {},
     "Your rings" : {},
     "Your seat reservation has been saved." : {},

@@ -9,7 +9,7 @@ import SwiftUI
 
 /// The designs of everything on Learn under the tools, behind the temporary switcher.
 enum LearnPageDesign: Int, CaseIterable {
-    case ticket, notebook, orbit, week, sentence
+    case ticket, notebook, orbit, week, sentence, receipt, playlist, chat, board, bento
 
     /// The design's working name, only for talking about it while one is picked.
     var name: String {
@@ -19,11 +19,16 @@ enum LearnPageDesign: Int, CaseIterable {
         case .orbit: "Orbit"
         case .week: "Woche"
         case .sentence: "Satz"
+        case .receipt: "Kassenbon"
+        case .playlist: "Playlist"
+        case .chat: "Chat"
+        case .board: "Pinnwand"
+        case .bento: "Bento"
         }
     }
 }
 
-/// Learn under the tools in the design picked with the temporary "‹ n / 5 ›"
+/// Learn under the tools in the design picked with the temporary "‹ n / N ›"
 /// switcher: Today's lesson and the four parts, each design its own idea.
 struct LearnPageDesigns: View {
     let content: LearnPageContent
@@ -42,6 +47,11 @@ struct LearnPageDesigns: View {
             case .orbit: LearnOrbitDesign(content: content)
             case .week: LearnWeekDesign(content: content)
             case .sentence: LearnSentenceDesign(content: content)
+            case .receipt: LearnReceiptDesign(content: content)
+            case .playlist: LearnPlaylistDesign(content: content)
+            case .chat: LearnChatDesign(content: content)
+            case .board: LearnBoardDesign(content: content)
+            case .bento: LearnBentoDesign(content: content)
             }
         }
     }
@@ -121,6 +131,15 @@ struct PartBar: View {
             }
             .accessibilityHidden(true)
     }
+}
+
+extension LearnPageContent {
+    /// The next step of today's lesson, or `nil` once it is done.
+    var current: LessonStep? { DailyLesson.current(in: steps) }
+    /// How many steps are done today.
+    var doneCount: Int { steps.filter(\.isDone).count }
+    /// The whole lesson's minutes.
+    var totalMinutes: Int { steps.map(\.minutes).reduce(0, +) }
 }
 
 extension LessonPart {
