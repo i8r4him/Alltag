@@ -40,7 +40,6 @@ final class OnboardingModel {
     var dailyTime: DailyTime = .ten
     var nudgeTime: NudgeTime = .evening
     var interests: Set<Interest> = Interest.defaultSelection
-    var allowsCalendar = false
     var allowsNotifications = false
     var usesKeyboard = false
 
@@ -61,16 +60,15 @@ final class OnboardingModel {
         dailyTime = profile.dailyTime
         nudgeTime = profile.nudgeTime
         interests = profile.interests
-        allowsCalendar = profile.learnsFromCalendar
         allowsNotifications = profile.remindersEnabled
         usesKeyboard = profile.learnsFromKeyboard
     }
 
     var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
 
-    /// How many of the three "Learn from your day" permissions are allowed.
+    /// How many of the "Learn from your day" permissions are allowed.
     var allowedCount: Int {
-        [allowsCalendar, allowsNotifications, usesKeyboard].filter { $0 }.count
+        [allowsNotifications, usesKeyboard].filter { $0 }.count
     }
 
     /// Toggles an interest on or off.
@@ -157,7 +155,6 @@ final class OnboardingModel {
         profile.nudgeTime = nudgeTime
         profile.interests = interests
         // As in the prototype: notifications switch on reminders and the morning briefing.
-        profile.learnsFromCalendar = allowsCalendar
         profile.learnsFromKeyboard = usesKeyboard
         profile.remindersEnabled = allowsNotifications
         profile.morningBriefingEnabled = allowsNotifications

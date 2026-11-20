@@ -19,7 +19,6 @@ struct DebriefModelTests {
             voice: MockVoiceService(),
             translation: MockTranslationService(delay: .zero),
             companion: MockCompanionService(thinkingTime: .zero),
-            calendar: MockCalendarService(),
             notifications: MockNotificationService()
         )
         return DebriefModel(services: services)

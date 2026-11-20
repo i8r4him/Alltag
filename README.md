@@ -1,7 +1,7 @@
 # Alltag — iOS German-Learning Companion
 
 ## Overview
-Alltag ("everyday") is an ambient German-learning companion: *"Learn German through the life you're already living."* The app turns everyday activity (reading, writing, Calendar events, conversations) into short practice. This bundle documents the first interactive design prototype so it can be rebuilt natively in **Swift + SwiftUI** (iOS 27+ SDK, Liquid Glass where noted).
+Alltag ("everyday") is an ambient German-learning companion: *"Learn German through the life you're already living."* The app turns everyday activity (reading, writing, conversations) into short practice. This bundle documents the first interactive design prototype so it can be rebuilt natively in **Swift + SwiftUI** (iOS 27+ SDK, Liquid Glass where noted).
 
 ### Platforms
 | Platform | Minimum | Notes |
@@ -143,7 +143,6 @@ Alltag/                                   ← repo root
 │  │  │  ├─ OnDeviceCompanionService.swift   Foundation Models: feedback on own sentences, debriefs
 │  │  │  ├─ PrivateCloudLanguageModelClient.swift   Apple's cloud model (Private Cloud Compute), light reasoning (#259)
 │  │  │  └─ CloudCompanionService.swift   sentences judged by Apple's cloud model, then OpenAI (check-german), then on device (#230, #259)
-│  │  ├─ Calendar/CalendarService.swift    CalendarService, CalendarEvent, MockCalendarService
 │  │  └─ Notifications/NotificationService.swift   NotificationService, MockNotificationService
 │  │
 │  ├─ Intents/                            App Intents — Siri AI, Spotlight, Shortcuts
@@ -524,7 +523,7 @@ Top: back glass button · 6 progress segments (accent filled) · "Skip". The seg
 3 Level — A1–C1 option cards, or "Not sure? Find out in one question" → "Wie war dein Wochenende?" with 3 answers mapping to A2/B1/B2 → green confirmation text.
 4 Daily time (5/10/20 min) + nudge time (Morning/Evening).
 5 Interests chips (Housing, Work, Football, Cooking, Politics, Travel, Music, Health) — shared with Profile.
-6 Permissions — Calendar, Notifications, Alltag Keyboard, each with "Allow"/"Allowed" pill (real flows: EventKit, UNUserNotificationCenter, keyboard instructions). Privacy note with lock icon.
+6 Permissions — Notifications, Alltag Keyboard, each with "Allow"/"Allowed" pill (real flows: UNUserNotificationCenter, keyboard instructions). Calendar was removed (20 Nov 2026). Privacy note with lock icon.
 7 Summary — "You're set, {name}." table + CTA "Start learning" → Home. Answers populate Settings.
 Option card: min-height 60, radius 18, `#1C1C1E`; selected = accent 10% fill + accent 55% 1pt border + filled check.
 
@@ -584,7 +583,7 @@ B1 hero (56pt) with CEFR track A1–C2 · "Where you can manage" (6 situations, 
 Avatar 88, name, "Learning German since…", goal card with progress to B2, This week stats (3), Languages, interest chips, situations summary → Progress. Gear → Settings.
 
 ### Settings
-Grouped inset lists (native `Form`/`List` .insetGrouped): profile header · Learning (Language, Level, Why, Daily time) · Alltag Pro card (trial / active) · Privacy & AI (on-device status, cloud toggle) · Learn from my day (Calendar, Safari, Keyboard, Camera) · Reminders · Accessibility (Reduce motion, Slower speech) · More (Beyond the app, Export my data) · Replay onboarding. Use native `Toggle`s with coloured symbol squares.
+Grouped inset lists (native `Form`/`List` .insetGrouped): profile header · Learning (Language, Level, Why, Daily time) · Alltag Pro card (trial / active) · Privacy & AI (on-device status, cloud toggle) · Learn from my day (Safari, Keyboard, Camera) · Reminders · Accessibility (Reduce motion, Slower speech) · More (Beyond the app, Export my data) · Replay onboarding. Use native `Toggle`s with coloured symbol squares.
 
 ### Beyond the app (concepts only — do not register extensions yet)
 Keyboard suggestion strip (Replace / Why?), select-to-translate sheet (Save for practice), Siri phrases (each launches the matching in-app flow), widgets (Word of the day, Review 6).
@@ -637,7 +636,6 @@ All Apple frameworks — nothing to install.
 | Speech (`SpeechAnalyzer`) | Hearing the learner's German | No |
 | Foundation Models | On-device companion replies, corrections, debrief | No |
 | Translation | Real translation | No |
-| EventKit | Calendar events (not shown in v1 since Situations replaced "Coming up"; #183) | No |
 | UserNotifications | Daily nudges (local) | No |
 | WidgetKit | Word of the day, Review widgets | Yes (App Groups for shared data) |
 | SwiftData + CloudKit | Sync and backup across the learner's iPhones | Yes |

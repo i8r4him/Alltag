@@ -26,6 +26,8 @@ final class UserProfile {
 
     // Settings · Learn from my day and Reminders. Set from the onboarding
     // permissions step and changed in Settings.
+    /// Unused: Calendar was removed from the app (20 Nov 2026). Kept because removing a
+    /// stored property needs a new schema version.
     var learnsFromCalendar: Bool = false
     var learnsFromKeyboard: Bool = false
     var remindersEnabled: Bool = false

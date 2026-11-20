@@ -43,7 +43,7 @@ struct BriefingModelTests {
         let services = AppServices(speech: MockSpeechService(), voice: voice,
                                    translation: MockTranslationService(delay: .zero),
                                    companion: MockCompanionService(thinkingTime: .zero),
-                                   calendar: MockCalendarService(), notifications: MockNotificationService())
+                                   notifications: MockNotificationService())
         let model = BriefingModel(services: services)
         await model.togglePlay()
         #expect(voice.spoken.map(\.text) == [MockBriefing.briefing.transcript])
