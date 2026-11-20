@@ -10,6 +10,7 @@ import SwiftUI
 /// The designs of everything on Learn under the tools, behind the temporary switcher.
 enum LearnPageDesign: Int, CaseIterable {
     case ticket, notebook, orbit, week, sentence, receipt, playlist, chat, board, bento
+    case greenhouse, loom, stage, circuit, scales
 
     /// The design's working name, only for talking about it while one is picked.
     var name: String {
@@ -24,6 +25,11 @@ enum LearnPageDesign: Int, CaseIterable {
         case .chat: "Chat"
         case .board: "Pinnwand"
         case .bento: "Bento"
+        case .greenhouse: "Gewächshaus"
+        case .loom: "Webstuhl"
+        case .stage: "Bühne"
+        case .circuit: "Schaltkreis"
+        case .scales: "Waage"
         }
     }
 }
@@ -52,13 +58,17 @@ struct LearnPageDesigns: View {
             case .chat: LearnChatDesign(content: content)
             case .board: LearnBoardDesign(content: content)
             case .bento: LearnBentoDesign(content: content)
+            case .greenhouse: LearnGreenhouseDesign(content: content)
+            case .loom: LearnLoomDesign(content: content)
+            case .stage: LearnStageDesign(content: content)
+            case .circuit: LearnCircuitDesign(content: content)
+            case .scales: LearnScalesDesign(content: content)
             }
         }
     }
 }
 
-/// The temporary "Fahrkarte · 1 / 5" switcher between the page's designs; it
-/// goes once the maintainer has picked one.
+/// The temporary switcher between page designs goes once the maintainer has picked one.
 private struct LearnDesignSwitcher: View {
     @Binding var design: Int
 
@@ -140,6 +150,15 @@ extension LearnPageContent {
     var doneCount: Int { steps.filter(\.isDone).count }
     /// The whole lesson's minutes.
     var totalMinutes: Int { steps.map(\.minutes).reduce(0, +) }
+
+    var lessonNote: Text {
+        current == nil ? Text("Done for today") : Text("About \(DailyLesson.minutesLeft(in: steps)) min")
+    }
+
+    func status(of step: LessonStep) -> Text {
+        if step.isDone { return Text("Done") }
+        return step.id == current?.id ? Text("Next") : Text(verbatim: "")
+    }
 }
 
 extension LessonPart {
