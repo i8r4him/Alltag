@@ -111,8 +111,8 @@ private struct FontSheet: View {
         ("narrow -0.1", .system(size: 22).width(Font.Width(-0.1))),
         ("medium", .system(size: 22, weight: .medium)),
         ("medium -0.05", .system(size: 22, weight: .medium).width(Font.Width(-0.05))),
-        ("compact " + compactName(.regular), compact(.regular)),
-        ("compact medium " + compactName(.medium), compact(.medium))
+        ("compact " + FontSheet.compactName(.regular), FontSheet.compact(.regular)),
+        ("compact medium " + FontSheet.compactName(.medium), FontSheet.compact(.medium))
     ]
 
     /// The system font in its compact design, if this iOS has it.
