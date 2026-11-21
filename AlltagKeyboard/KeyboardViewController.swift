@@ -30,7 +30,12 @@ final class KeyboardViewController: UIInputViewController {
 
         model.document = ProxyDocument(controller: self)
         model.feedback = feedback
-        model.suggester = DictionarySuggestions()
+        let dictionary = DictionarySuggestions()
+        model.suggester = dictionary
+        // Corrections and the next word: worked out and kept on the iPhone, with or without Full Access.
+        model.smart.checker = dictionary
+        model.smart.words.seed = GermanWords.pairs
+        model.smart.store = FileLearntWordsStore()
         model.onNextKeyboard = { [weak self] in self?.advanceToNextInputMode() }
         model.onSettingsChanged = { [weak self] _ in self?.applyFeedbackSettings() }
         model.settingsStore = DefaultsKeyboardSettingsStore()
@@ -68,6 +73,11 @@ final class KeyboardViewController: UIInputViewController {
         model.tools.hasFullAccess = hasFullAccess
         applyFeedbackSettings()
         refresh()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        model.smart.save()
     }
 
     /// The click and the haptic follow the keyboard's settings; iOS allows the haptic only with Full Access.
@@ -135,6 +145,8 @@ private final class ProxyDocument: TextDocument {
     }
 
     var textBeforeCursor: String { controller?.textDocumentProxy.documentContextBeforeInput ?? "" }
+
+    var textAfterCursor: String { controller?.textDocumentProxy.documentContextAfterInput ?? "" }
 
     func insert(_ text: String) {
         controller?.textDocumentProxy.insertText(text)

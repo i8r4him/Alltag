@@ -20,6 +20,8 @@ final class FakeDocument: TextDocument {
 
     var textBeforeCursor: String { before }
 
+    var textAfterCursor: String { after }
+
     func insert(_ text: String) {
         before += text
     }
@@ -48,5 +50,47 @@ struct FixedWords: WordSuggesting {
 
     func suggestions(for word: String) -> [String] {
         words[word] ?? []
+    }
+}
+
+/// A dictionary of fixed words, so no test asks the one on the device. Like the German one,
+/// it takes a word written small with a capital too, and a noun only with its capital.
+@MainActor
+struct FixedDictionary: WordChecking {
+    let words: Set<String>
+
+    init(_ words: String) {
+        self.words = Set(words.split(whereSeparator: \.isWhitespace).map(String.init))
+    }
+
+    func isWord(_ word: String) -> Bool {
+        if words.contains(word) { return true }
+        guard let first = word.first, first.isUppercase else { return false }
+        return words.contains(first.lowercased() + word.dropFirst())
+    }
+
+    /// The words one or two changed letters away, the nearest first.
+    func guesses(for word: String) -> [String] {
+        let typed = Array(word.lowercased())
+        var near: [(word: String, distance: Int)] = []
+        for candidate in words {
+            let distance = Self.distance(typed, Array(candidate.lowercased()))
+            if distance <= 2 { near.append((candidate, distance)) }
+        }
+        near.sort { ($0.distance, $0.word) < ($1.distance, $1.word) }
+        return near.map { $0.word }
+    }
+
+    /// How many letters have to change, come or go to make one word of the other.
+    static func distance(_ first: [Character], _ second: [Character]) -> Int {
+        var row = Array(0...second.count)
+        for (index, letter) in first.enumerated() {
+            var next = [index + 1]
+            for (other, character) in second.enumerated() {
+                next.append(min(row[other] + (letter == character ? 0 : 1), row[other + 1] + 1, next[other] + 1))
+            }
+            row = next
+        }
+        return row[second.count]
     }
 }

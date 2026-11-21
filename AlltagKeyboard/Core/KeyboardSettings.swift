@@ -16,6 +16,8 @@ struct KeyboardSettings: Equatable {
         case haptics
         /// The words offered over the keys.
         case suggestions
+        /// A mistyped word is put right at the space after it.
+        case autoCorrection
         /// A capital at the start of a sentence, where the text field wants one.
         case autoCapitals
         /// A second space after a word makes a full stop.

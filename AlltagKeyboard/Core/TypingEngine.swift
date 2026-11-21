@@ -11,6 +11,8 @@ import Foundation
 protocol TextDocument: AnyObject {
     /// The text before the cursor, as far as the app shares it.
     var textBeforeCursor: String { get }
+    /// The text after the cursor: a word the cursor stands in is not corrected.
+    var textAfterCursor: String { get }
     func insert(_ text: String)
     func deleteBackward()
     func moveCursor(by offset: Int)
@@ -131,6 +133,17 @@ struct TypingEngine {
         document.insert(new + tail)
         settle(after: String(body.dropLast(old.count)) + new + tail)
         return true
+    }
+
+    /// Puts another word in place of the one before the cursor. Where both start alike,
+    /// only the end is typed again, so the text field changes as little as it can.
+    mutating func correct(_ word: String, to new: String, in document: TextDocument) {
+        let before = document.textBeforeCursor
+        guard !word.isEmpty, before.hasSuffix(word) else { return }
+        let shared = zip(word, new).prefix(while: { $0.0 == $0.1 }).count
+        for _ in 0..<(word.count - shared) { document.deleteBackward() }
+        document.insert(String(new.dropFirst(shared)))
+        settle(after: String(before.dropLast(word.count)) + new)
     }
 
     /// A tap on Shift. `again` is a second tap right after the first, which locks it.

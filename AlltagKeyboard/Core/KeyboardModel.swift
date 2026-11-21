@@ -9,53 +9,6 @@ import CoreGraphics
 import Foundation
 import Observation
 
-/// What the text field asks of the keyboard.
-struct KeyboardTraits: Equatable {
-    var capitalisation: AutoCapitalisation = .sentences
-    var returnKey: ReturnKeyKind = .normal
-    /// iOS shows its own globe under the keyboard on most iPhones; where it doesn't, the keyboard has to.
-    var showsGlobe = false
-    /// Off in fields for addresses, names and codes, where a dictionary only gets in the way.
-    var offersSuggestions = true
-    /// Some fields only take return once something is typed.
-    var returnEnabled = true
-}
-
-/// What one key shows while a finger is on it. Each key watches only its own,
-/// so a press redraws one key and not the whole keyboard.
-@Observable
-final class KeyState {
-    var isPressed = false
-}
-
-/// The bubble over a pressed key: the key itself, larger, or the letters a long press offers.
-struct KeyPopup: Equatable {
-    let frame: KeyFrame
-    /// One entry is the key itself; more are the alternates, the most wanted first.
-    var options: [String]
-    var isAlternates = false
-    var selection = 0
-
-    /// Alternates run away from the nearer edge, so the first one sits over the key.
-    func runsLeft(in width: CGFloat) -> Bool { frame.frame.midX > width / 2 }
-
-    var cellWidth: CGFloat { max(frame.frame.width, 36) }
-
-    /// The left edge of the row of options.
-    func minX(in width: CGFloat) -> CGFloat {
-        let total = cellWidth * CGFloat(options.count)
-        let start = runsLeft(in: width) ? frame.frame.maxX - total : frame.frame.minX
-        return min(max(start, 2), max(width - total - 2, 2))
-    }
-
-    /// The option under a finger at `x`.
-    func option(at x: CGFloat, in width: CGFloat) -> Int {
-        let cell = Int(((x - minX(in: width)) / cellWidth).rounded(.down))
-        let position = min(max(cell, 0), options.count - 1)
-        return runsLeft(in: width) ? options.count - 1 - position : position
-    }
-}
-
 /// The keyboard's state: which page shows, what is pressed, and what each touch types.
 ///
 /// Touches arrive with the geometry they were made on. A key types when its
@@ -68,6 +21,8 @@ final class KeyboardModel {
     private(set) var shift: ShiftState = .off
     private(set) var traits = KeyboardTraits()
     private(set) var suggestions: [String] = []
+    /// The word being typed looks mistyped: what the next space will put in its place.
+    private(set) var correction: Correction?
     private(set) var popup: KeyPopup?
     private(set) var pressed: Set<KeyboardKey> = []
     /// Holding the space bar turns it into a trackpad for the cursor.
@@ -80,6 +35,8 @@ final class KeyboardModel {
 
     /// Fix and "How do I say …?": they read and replace the text through the model.
     let tools = KeyboardTools()
+    /// Where the fingers landed, what a mistyped word was meant to be, and the next word.
+    let smart = SmartTyping()
 
     @ObservationIgnored private(set) var engine = TypingEngine() {
         didSet {
@@ -154,6 +111,7 @@ final class KeyboardModel {
         engine.makesFullStops = settings[.fullStopShortcut]
         if let document { engine.sync(with: document) }
         if !settings[.suggestions], !suggestions.isEmpty { suggestions = [] }
+        if !settings[.autoCorrection], correction != nil { correction = nil }
         onSettingsChanged(settings)
     }
 
@@ -178,7 +136,8 @@ final class KeyboardModel {
         feedback?.keyDown(.emoji)
         tools.close()
         engine.insert(emoji, in: document)
-        if !suggestions.isEmpty { suggestions = [] }
+        smart.reset()
+        suggestSoon()
     }
 
     /// The delete key of the emoji panel.
@@ -195,34 +154,69 @@ final class KeyboardModel {
     func choose(_ suggestion: String) {
         guard let document else { return }
         tools.close()
+        let text = engine.context
+        let previous = SmartTyping.previousWord(in: String(text.dropLast(TypingEngine.currentWord(in: text).count)))
         engine.apply(suggestion, in: document)
-        suggestions = []
+        smart.reset()
+        if settings[.suggestions] { smart.learn(suggestion, after: previous) }
+        suggestSoon()
+    }
+
+    /// The learner wants the word as typed: it goes in, and the keyboard never changes it again.
+    func keepTyped() {
+        guard let typed = correction?.typed else { return }
+        smart.keep(typed)
+        choose(typed)
+    }
+
+    /// Forgets the words the keyboard learnt from the learner's typing.
+    func forgetLearntWords() {
+        smart.forget()
+        suggestSoon()
     }
 
     /// Puts a tool's answer in place of the text it was made from.
     func replace(_ old: String, with new: String) -> Bool {
         guard let document, engine.replace(old, with: new, in: document) else { return false }
         feedback?.keyDown(.enter)
-        if !suggestions.isEmpty { suggestions = [] }
+        smart.reset()
+        suggestSoon()
         return true
     }
 
-    /// Looks up words for the one at the cursor.
+    /// Looks up words for the one at the cursor, or the words that may come next when none is begun.
     func refreshSuggestions() {
-        guard traits.offersSuggestions, settings[.suggestions], let suggester else {
-            if !suggestions.isEmpty { suggestions = [] }
-            return
+        let text = engine.context
+        let word = TypingEngine.currentWord(in: text)
+        var found: [String] = []
+        if traits.offersSuggestions, settings[.suggestions] {
+            if word.isEmpty {
+                found = smart.predictions(after: SmartTyping.previousWord(in: text))
+            } else if let suggester {
+                found = suggester.suggestions(for: word)
+            }
         }
-        let found = suggester.suggestions(for: TypingEngine.currentWord(in: engine.context))
+        let likely = likelyWord(for: word, in: text)
         if found != suggestions { suggestions = found }
+        if likely != correction { correction = likely }
+    }
+
+    /// What a word that looks mistyped was most likely meant to be.
+    private func likelyWord(for word: String, in text: String) -> Correction? {
+        guard traits.offersSuggestions, settings[.autoCorrection], !word.isEmpty, SmartTyping.standsAlone(word, in: text),
+              document?.textAfterCursor.first?.isLetter != true else { return nil }
+        return smart.correction(of: word, after: SmartTyping.previousWord(in: String(text.dropLast(word.count))))
     }
 
     // MARK: - Typing
 
-    private func type(_ text: String) {
+    private func type(_ text: String, at point: CGPoint? = nil) {
         guard let document else { return }
         tools.close()
+        smart.moveOn()
+        if text.count == 1, ".,?!:;".contains(text) { finishWord(in: document) }
         engine.typeCharacter(text, in: document)
+        smart.typed(text, at: point)
         // An apostrophe is nearly always followed by a letter.
         if text == "'", page != .letters { page = .letters }
         suggestSoon()
@@ -231,6 +225,8 @@ final class KeyboardModel {
     private func space() {
         guard let document else { return }
         tools.close()
+        smart.moveOn()
+        finishWord(in: document)
         engine.space(in: document)
         if page != .letters { page = .letters }
         suggestSoon()
@@ -239,6 +235,8 @@ final class KeyboardModel {
     private func enter() {
         guard let document, traits.returnEnabled else { return }
         tools.close()
+        smart.moveOn()
+        finishWord(in: document)
         engine.enter(in: document)
         if page != .letters { page = .letters }
         suggestSoon()
@@ -247,8 +245,30 @@ final class KeyboardModel {
     private func delete() {
         guard let document else { return }
         tools.close()
-        engine.delete(in: document)
+        if document.textBeforeCursor == engine.context, let taken = smart.takeBack(from: engine.context) {
+            // Delete right after a correction brings back the word as it was typed.
+            engine.correct(taken.old, to: taken.typed, in: document)
+        } else {
+            engine.delete(in: document)
+            smart.deleted()
+        }
         suggestSoon()
+    }
+
+    /// The word before the cursor is done: a mistyped one is put right, and the keyboard learns what follows what.
+    private func finishWord(in document: TextDocument) {
+        defer { smart.endWord() }
+        let text = document.textBeforeCursor
+        let word = TypingEngine.currentWord(in: text)
+        // A text field that answers late may not hold the whole word yet; then the word is left alone.
+        guard traits.offersSuggestions, !word.isEmpty, text == engine.context else { return }
+        let found = likelyWord(for: word, in: text)
+        if let found {
+            engine.correct(word, to: found.replacement, in: document)
+            smart.applied(found, context: engine.context)
+        }
+        guard settings[.suggestions] else { return }
+        smart.learn(found?.replacement ?? word, after: SmartTyping.previousWord(in: String(text.dropLast(word.count))))
     }
 
     private func tapShift() {
@@ -262,6 +282,9 @@ final class KeyboardModel {
     /// for a short pause in the typing; until then only the words that still fit stay.
     private func suggestSoon() {
         suggesting?.cancel()
+        if correction != nil { correction = nil }
+        // The next word needs no dictionary, so it shows at once.
+        guard !TypingEngine.currentWord(in: engine.context).isEmpty else { return refreshSuggestions() }
         keepFittingSuggestions()
         suggesting = Task { [weak self] in
             try? await Task.sleep(for: Self.suggestionPause)
@@ -286,6 +309,8 @@ extension KeyboardModel {
         var key: KeyboardKey
         /// Where the cursor trackpad last moved the cursor.
         var anchor: CGFloat
+        /// Where the finger came down, while it stays on that key.
+        var point: CGPoint?
         /// Presses type in the order they came down.
         let order: Int
         var movesCursor = false
@@ -305,7 +330,8 @@ extension KeyboardModel {
         guard let frame = geometry.key(at: point) else { return }
         typeHeldCharacters()
         pressCount += 1
-        presses[touch] = Press(key: frame.key, anchor: point.x, order: pressCount)
+        presses[touch] = Press(key: frame.key, anchor: point.x, point: point, order: pressCount)
+        if page == .letters { smart.look(at: geometry) }
         setPressed(frame.key, true)
         feedback?.keyDown(frame.key)
         switch frame.key {
@@ -343,6 +369,7 @@ extension KeyboardModel {
             setPressed(press.key, false)
             setPressed(frame.key, true)
             press.key = frame.key
+            press.point = nil
             presses[touch] = press
             popup = KeyPopup(frame: frame, options: [shown(text)])
             hold(touch, for: Self.holdDelay) { [weak self] in self?.longPress(touch, in: geometry) }
@@ -358,7 +385,7 @@ extension KeyboardModel {
             if let chosen, chosen.isAlternates {
                 type(KeyboardLayout.alternates(for: text)[chosen.selection])
             } else {
-                type(text)
+                type(text, at: press.point)
             }
         case .space:
             if !press.movesCursor { space() }
@@ -400,6 +427,7 @@ extension KeyboardModel {
         } else {
             engine.deleteWord(in: document)
         }
+        smart.reset()
         suggestSoon()
     }
 
@@ -412,7 +440,7 @@ extension KeyboardModel {
             if let chosen, chosen.isAlternates {
                 type(KeyboardLayout.alternates(for: text)[chosen.selection])
             } else {
-                type(text)
+                type(text, at: press.point)
             }
         }
     }

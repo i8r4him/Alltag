@@ -75,6 +75,18 @@ struct KeyboardPictureTests {
         try await draw(KeyboardView(model: model), style: style, to: file("6-emoji"))
         try await drawTools(style: style, file: file)
 
+        // A mistyped word with what the space will make of it, then the words that may come next.
+        let typing = makeModel()
+        typing.smart.checker = FixedDictionary("ich bin nicht")
+        typing.smart.words.seed = GermanWords.pairs
+        for letter in ["i", "c", "h", " ", "b", "i", "n", " ", "n", "i", "c", "h", "r"] {
+            typing.activate(letter == " " ? .space : .character(letter))
+        }
+        typing.refreshSuggestions()
+        try await draw(KeyboardView(model: typing), style: style, to: file("14-correction"))
+        typing.activate(.space)
+        try await draw(KeyboardView(model: typing), style: style, to: file("15-next"))
+
         let settings = makeModel()
         settings.set(.haptics, to: false)
         settings.openSettings()

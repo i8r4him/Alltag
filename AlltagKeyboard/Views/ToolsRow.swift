@@ -32,7 +32,7 @@ struct ToolsRow: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text("Keyboard settings"))
                 // While words are offered the tools keep to their symbols.
-                let isShort = !model.suggestions.isEmpty
+                let isShort = !model.suggestions.isEmpty || model.correction != nil
                 HStack(spacing: 6) {
                     ToolChip(title: Text("Fix"), symbol: "text.badge.checkmark", isShort: isShort) {
                         taps += 1
@@ -49,7 +49,8 @@ struct ToolsRow: View {
                     }
                 }
                 if isShort {
-                    SuggestionBar(words: model.suggestions) { model.choose($0) }
+                    SuggestionBar(words: model.suggestions, correction: model.correction,
+                                  choose: { model.choose($0) }, keep: { model.keepTyped() })
                         .padding(.leading, 4)
                 } else {
                     Spacer(minLength: 0)
@@ -96,47 +97,82 @@ private struct ToolChip: View {
 }
 
 /// Up to three words in three equal parts; a tap puts one in place of the word being typed.
+/// A word about to be corrected shows as typed on the left and, marked, as what the space will make of it.
 private struct SuggestionBar: View {
     let words: [String]
+    var correction: Correction?
     let choose: (String) -> Void
+    let keep: () -> Void
     @State private var taps = 0
     @Environment(\.colorScheme) private var colorScheme
 
+    private enum Slot {
+        case typed(String)
+        case fix(String)
+        case word(String)
+        case empty
+    }
+
+    private var slots: [Slot] {
+        var slots: [Slot] = []
+        if let correction {
+            slots = [.typed(correction.typed), .fix(correction.replacement)]
+            if let other = words.first(where: { $0 != correction.replacement && $0 != correction.typed }) {
+                slots.append(.word(other))
+            }
+        } else {
+            slots = words.prefix(SuggestionPicker.limit).map { Slot.word($0) }
+        }
+        return slots + Array(repeating: Slot.empty, count: max(SuggestionPicker.limit - slots.count, 0))
+    }
+
     var body: some View {
+        let shown = slots
         HStack(spacing: 0) {
             ForEach(0..<SuggestionPicker.limit, id: \.self) { index in
                 if index > 0 {
                     Rectangle()
-                        .fill(Color.primary.opacity(words.isEmpty ? 0 : 0.07))
+                        .fill(Color.primary.opacity(words.isEmpty && correction == nil ? 0 : 0.07))
                         .frame(width: 1, height: 23)
                 }
-                slot(index < words.count ? words[index] : nil)
+                slot(shown[index])
             }
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: taps)
     }
 
     @ViewBuilder
-    private func slot(_ word: String?) -> some View {
-        if let word {
-            Button {
-                taps += 1
-                choose(word)
-            } label: {
-                Text(verbatim: word)
-                    .font(.system(size: 17))
-                    .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.6 : 0.68))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .padding(.horizontal, 4)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .contentShape(.rect)
-            }
-            .buttonStyle(.plain)
-        } else {
+    private func slot(_ slot: Slot) -> some View {
+        switch slot {
+        case .typed(let word):
+            button(Text(verbatim: "„\(word)“"), isMarked: false) { keep() }
+        case .fix(let word):
+            button(Text(verbatim: word), isMarked: true) { choose(word) }
+        case .word(let word):
+            button(Text(verbatim: word), isMarked: false) { choose(word) }
+        case .empty:
             Color.clear
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+
+    private func button(_ title: Text, isMarked: Bool, action: @escaping () -> Void) -> some View {
+        Button {
+            taps += 1
+            action()
+        } label: {
+            title
+                .font(.system(size: 17))
+                .foregroundStyle(Color.primary.opacity(isMarked ? 1 : colorScheme == .dark ? 0.6 : 0.68))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .padding(.horizontal, isMarked ? 8 : 4)
+                .frame(height: 28)
+                .background(Color.primary.opacity(isMarked ? 0.1 : 0), in: .rect(cornerRadius: 8, style: .continuous))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
     }
 }
 
