@@ -82,9 +82,15 @@ jobs:
             echo "Expected the app and two extensions, found: ${bundles[*]}"
             exit 1
           fi
+          missing=0
           for bundle in "${bundles[@]}"; do
-            plutil -lint "$bundle/PrivacyInfo.xcprivacy"
+            if ! plutil -lint "$bundle/PrivacyInfo.xcprivacy"; then
+              missing=1
+              echo "Contents of $bundle:"
+              ls -la "$bundle"
+            fi
           done
+          exit "$missing"
 
       - name: String Catalogs are up to date
         run: |
