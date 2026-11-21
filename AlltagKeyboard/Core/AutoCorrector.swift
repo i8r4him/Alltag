@@ -115,6 +115,8 @@ struct AutoCorrector {
     var isCommon: (String) -> Bool = { _ in false }
     /// Whether a word often follows the one before it.
     var fits: (String) -> Bool = { _ in false }
+    /// Whether the words before are German: then a word only another language knows may be a slip.
+    var isGermanContext: () -> Bool = { false }
 
     private struct Candidate {
         var text: String
@@ -133,6 +135,9 @@ struct AutoCorrector {
     private static let fittingWord = 0.3
     /// What the dictionary's first guesses are worth.
     private static let guessBonus = [0.2, 0.1, 0.05]
+    private static let unlikelyNoun = 0.3
+    /// What may change a word another language knows.
+    private static let othersLimit = 0.35
 
     /// What a correction may cost. A short word has few letters to go by, so it needs a clear slip.
     static func limit(for length: Int) -> Double {
@@ -148,9 +153,28 @@ struct AutoCorrector {
         let typed = String(letters.map(\.text))
         // Capitals inside a word are a name or an abbreviation; those are left as they are.
         guard (2...24).contains(letters.count), letters.allSatisfy({ $0.text.isLetter }),
-              typed.dropFirst().allSatisfy(\.isLowercase), !isKnown(typed) else { return nil }
+              typed.dropFirst().allSatisfy(\.isLowercase), !knows(typed, in: { checker.isWord($0) }) else { return nil }
+        // A word only another language knows is left alone, unless the words before it are German.
+        let isOthers = knows(typed, in: { checker.isForeignWord($0) })
+        if isOthers, !isGermanContext() { return nil }
         let lower = letters.map { TypedLetter(text: $0.text.lowercased().first ?? $0.text, point: $0.point) }
-        let isCapital = letters[0].text.isUppercase
+        var costs = candidates(for: lower, typed: typed, isCapital: letters[0].text.isUppercase)
+        var limit = Self.limit(for: lower.count)
+        if isOthers {
+            // Then it only becomes a common German word of its length, one clear slip away: "Wit" is "Wir".
+            costs = costs.filter { $0.key.count == typed.count && isCommon($0.key.lowercased()) }
+            limit = min(limit, Self.othersLimit)
+        }
+        // A word of two letters has to be a common one: the dictionary also knows "Zn" and "Ir".
+        costs = costs.filter { $0.key.count > 2 || isCommon($0.key.lowercased()) }
+        guard let found = costs.min(by: { ($0.value, $0.key) < ($1.value, $1.key) }), found.value <= limit else { return nil }
+        return Correction(typed: typed, replacement: found.key)
+    }
+
+    // MARK: - Candidates
+
+    /// Every word the typed one may have been, with what it costs to take it for that.
+    private func candidates(for lower: [TypedLetter], typed: String, isCapital: Bool) -> [String: Double] {
         let limit = Self.limit(for: lower.count)
         var costs: [String: Double] = [:]
         func offer(_ candidate: Candidate?) {
@@ -161,26 +185,36 @@ struct AutoCorrector {
             offer(candidate(word, for: lower, isCapital: isCapital, limit: limit))
         }
         for split in splits(of: lower, isCapital: isCapital) { offer(split) }
-        // The dictionary's own guesses know about letters left out, and which word is the usual one.
-        for (rank, guess) in checker.guesses(for: typed).prefix(6).enumerated() where guess.allSatisfy(\.isLetter) {
-            let written = isCapital ? SuggestionPicker.matchingCapital(of: typed, in: guess) : guess
-            if costs[written] == nil {
-                offer(Candidate(text: written, cost: cost(of: Array(guess.lowercased()), typed: lower) - bonus(for: written)))
-            }
-            if lower.count > 2, rank < Self.guessBonus.count, let price = costs[written] {
-                costs[written] = price - Self.guessBonus[rank]
-            }
+        if (costs.values.min() ?? .infinity) > limit {
+            for word in doubleSlips(in: lower) { offer(candidate(word, for: lower, isCapital: isCapital, limit: limit)) }
         }
-        guard let found = costs.min(by: { ($0.value, $0.key) < ($1.value, $1.key) }), found.value <= limit else { return nil }
-        return Correction(typed: typed, replacement: found.key)
+        weighGuesses(for: lower, typed: typed, isCapital: isCapital, in: &costs)
+        return costs
     }
 
-    // MARK: - Candidates
+    /// The dictionary's own guesses know about letters left out, and which word is the usual one.
+    private func weighGuesses(for lower: [TypedLetter], typed: String, isCapital: Bool, in costs: inout [String: Double]) {
+        var guesses: [String] = []
+        for guess in checker.guesses(for: typed) where guess.allSatisfy(\.isLetter) {
+            let written = isCapital ? SuggestionPicker.matchingCapital(of: typed, in: guess) : guess
+            if written != typed, !guesses.contains(written) { guesses.append(written) }
+        }
+        for (rank, guess) in guesses.prefix(6).enumerated() {
+            let price = costs[guess] ?? cost(of: Array(guess.lowercased()), typed: lower) - bonus(for: guess)
+            let isLeading = lower.count > 2 && rank < Self.guessBonus.count
+            costs[guess] = price - (isLeading ? Self.guessBonus[rank] : 0)
+        }
+        // A noun typed small that the dictionary doesn't think of is mostly a compound it only puts up with.
+        guard !isCapital else { return }
+        for (text, price) in costs where text.first?.isUppercase == true && !text.contains(" ") && !guesses.contains(text) {
+            costs[text] = price + Self.unlikelyNoun
+        }
+    }
 
-    private func isKnown(_ typed: String) -> Bool {
+    /// Whether a dictionary knows the word as typed or, typed with a capital, without it.
+    private func knows(_ typed: String, in isWord: (String) -> Bool) -> Bool {
         let lower = typed.lowercased()
-        if checker.isWord(typed) || checker.isForeignWord(typed) { return true }
-        return lower != typed && (checker.isWord(lower) || checker.isForeignWord(lower))
+        return isWord(typed) || (lower != typed && isWord(lower))
     }
 
     /// The word as it is written: a noun with its capital, any word with one where the typed word had one.
@@ -242,6 +276,33 @@ struct AutoCorrector {
         return words
     }
 
+    /// Two slips in one word, tried for the letters whose touches were furthest from the middle
+    /// of their keys: a slip lands just over the edge of the wrong key.
+    private func doubleSlips(in typed: [TypedLetter]) -> [[Character]] {
+        guard typed.count >= 5 else { return [] }
+        let word = typed.map(\.text)
+        var offCentre: [(index: Int, distance: Double)] = []
+        for index in word.indices {
+            offCentre.append((index, centres.distance(from: typed[index], to: word[index]) ?? 0))
+        }
+        offCentre.sort { $0.distance > $1.distance || ($0.distance == $1.distance && $0.index < $1.index) }
+        let loose = offCentre.prefix(3).map { $0.index }
+        var words: [[Character]] = []
+        for (position, first) in loose.enumerated() {
+            for second in loose.dropFirst(position + 1) {
+                for firstKey in centres.neighbours(of: typed[first], within: Self.reach).prefix(2) {
+                    for secondKey in centres.neighbours(of: typed[second], within: Self.reach).prefix(2) {
+                        var changed = word
+                        changed[first] = firstKey
+                        changed[second] = secondKey
+                        words.append(changed)
+                    }
+                }
+            }
+        }
+        return words
+    }
+
     /// Two words where a space was left out, or where the finger hit a letter over the space bar.
     private func splits(of typed: [TypedLetter], isCapital: Bool) -> [Candidate] {
         let word = typed.map(\.text)
@@ -249,7 +310,7 @@ struct AutoCorrector {
         var found: [Candidate] = []
         for cut in 2...(word.count - 2) {
             if let pair = self.pair(word[..<cut], word[cut...], isCapital: isCapital, needsCommon: true) {
-                found.append(Candidate(text: pair.text, cost: pair.bothCommon ? 0.45 : 0.6))
+                found.append(Candidate(text: pair.text, cost: pair.bothCommon ? 0.45 : 0.7))
             }
             if cut < word.count - 2, centres.mayBeSpace(typed[cut]),
                let pair = self.pair(word[..<cut], word[(cut + 1)...], isCapital: isCapital, needsCommon: false) {

@@ -58,13 +58,21 @@ struct FixedWords: WordSuggesting {
 @MainActor
 struct FixedDictionary: WordChecking {
     let words: Set<String>
+    /// Words only another language knows.
+    var others: Set<String> = []
+    /// Words the dictionary takes without thinking of them: they are never among its guesses.
+    var madeUp: Set<String> = []
 
     init(_ words: String) {
         self.words = Set(words.split(whereSeparator: \.isWhitespace).map(String.init))
     }
 
+    func isForeignWord(_ word: String) -> Bool {
+        others.contains(word)
+    }
+
     func isWord(_ word: String) -> Bool {
-        if words.contains(word) { return true }
+        if words.contains(word) || madeUp.contains(word) { return true }
         guard let first = word.first, first.isUppercase else { return false }
         return words.contains(first.lowercased() + word.dropFirst())
     }

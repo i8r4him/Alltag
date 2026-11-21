@@ -205,7 +205,7 @@ final class KeyboardModel {
     private func likelyWord(for word: String, in text: String) -> Correction? {
         guard traits.offersSuggestions, settings[.autoCorrection], !word.isEmpty, SmartTyping.standsAlone(word, in: text),
               document?.textAfterCursor.first?.isLetter != true else { return nil }
-        return smart.correction(of: word, after: SmartTyping.previousWord(in: String(text.dropLast(word.count))))
+        return smart.correction(of: word, after: String(text.dropLast(word.count)))
     }
 
     // MARK: - Typing

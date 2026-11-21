@@ -34,7 +34,7 @@ final class SmartTyping {
 
     private struct Remembered {
         var letters: [TypedLetter]
-        var previous: String
+        var before: String
         var correction: Correction?
     }
 
@@ -91,15 +91,18 @@ final class SmartTyping {
     // MARK: - Corrections
 
     /// The word a mistyped one was most likely meant to be; nil for a word that is fine as it is.
-    func correction(of word: String, after previous: String) -> Correction? {
+    /// `text` is the text before the word.
+    func correction(of word: String, after text: String) -> Correction? {
         guard let checker, !words.keeps(word), !GermanWords.chat.contains(word.lowercased()) else { return nil }
         let typed = letters(of: word)
-        if let remembered, remembered.letters == typed, remembered.previous == previous { return remembered.correction }
+        if let remembered, remembered.letters == typed, remembered.before == text { return remembered.correction }
+        let previous = Self.previousWord(in: text)
         var corrector = AutoCorrector(centres: centres, checker: checker)
         corrector.isCommon = { GermanWords.common.contains($0) }
         corrector.fits = { [words] in words.follows(previous, $0) }
+        corrector.isGermanContext = { Self.isGerman(text, by: checker) }
         let found = corrector.correction(of: typed)
-        remembered = Remembered(letters: typed, previous: previous, correction: found)
+        remembered = Remembered(letters: typed, before: text, correction: found)
         return found
     }
 
@@ -174,6 +177,19 @@ final class SmartTyping {
         while rest.last == " " { rest.removeLast() }
         guard let end = rest.last, end.isLetter else { return "" }
         return TypingEngine.currentWord(in: String(rest))
+    }
+
+    /// Whether the last words of a text are German, and none of them a word only another language knows.
+    static func isGerman(_ text: String, by checker: WordChecking) -> Bool {
+        var hasGerman = false
+        for word in text.suffix(80).split(whereSeparator: { !$0.isLetter }).suffix(3).map(String.init) {
+            let lower = word.lowercased()
+            let isGerman = checker.isWord(word) || checker.isWord(lower)
+            let isOthers = checker.isForeignWord(word) || checker.isForeignWord(lower)
+            if isOthers, !isGerman { return false }
+            if isGerman, !isOthers { hasGerman = true }
+        }
+        return hasGerman
     }
 
     /// Whether a word stands by itself, and not at the end of an address, a number or a hyphenated name.

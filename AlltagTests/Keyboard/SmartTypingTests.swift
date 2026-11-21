@@ -263,6 +263,19 @@ struct SmartTypingTests {
         #expect(!SmartTyping.standsAlone("Adresse", in: "E-Mail-Adresse"))
     }
 
+    @Test("German words before a word make it a German sentence, a word of another language doesn't")
+    func language() {
+        var dictionary = FixedDictionary("ich habe die Zeit")
+        dictionary.others = ["the", "die", "time"]
+        #expect(SmartTyping.isGerman("Ich habe ", by: dictionary))
+        #expect(SmartTyping.isGerman("Ich habe die ", by: dictionary))
+        #expect(!SmartTyping.isGerman("the time ", by: dictionary))
+        #expect(!SmartTyping.isGerman("Ich habe the ", by: dictionary))
+        // A word both languages know says nothing, and neither does an empty field.
+        #expect(!SmartTyping.isGerman("die ", by: dictionary))
+        #expect(!SmartTyping.isGerman("", by: dictionary))
+    }
+
     @Test("A correction types only the end of the word again")
     func engine() {
         var engine = TypingEngine()

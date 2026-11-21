@@ -30,14 +30,14 @@ struct AutoCorrectorTests {
 
     /// A word's letters, each touched in the middle of its key. `leaning` moves one touch
     /// towards another key; `low` moves one down on its key.
-    func letters(_ word: String, leaning: Lean? = nil, low: Int? = nil) throws -> [TypedLetter] {
+    func letters(_ word: String, leaning: Lean? = nil, and other: Lean? = nil, low: Int? = nil) throws -> [TypedLetter] {
         try word.enumerated().map { index, letter in
             let own = try frame(Character(letter.lowercased()))
             var point = CGPoint(x: own.midX, y: own.midY)
-            if let leaning, leaning.index == index {
-                let other = try frame(leaning.toward)
-                point.x += (other.midX - own.midX) * leaning.share
-                point.y += (other.midY - own.midY) * leaning.share
+            for lean in [leaning, other].compactMap({ $0 }) where lean.index == index {
+                let aim = try frame(lean.toward)
+                point.x += (aim.midX - own.midX) * lean.share
+                point.y += (aim.midY - own.midY) * lean.share
             }
             if low == index { point.y += own.height * 0.35 }
             return TypedLetter(text: letter, point: point)
@@ -114,14 +114,44 @@ struct AutoCorrectorTests {
 
     @Test("Short words, abbreviations and names with capitals inside are left alone")
     func leftAlone() throws {
-        let corrector = corrector("ok an in")
+        let corrector = corrector("an in Zn", common: ["in"])
         #expect(try corrector.correction(of: letters("x")) == nil)
         #expect(try corrector.correction(of: letters("OK")) == nil)
         #expect(try corrector.correction(of: letters("iPhone")) == nil)
-        // In a word of two letters a slip has to be clear: the middle of a key is not.
-        #expect(try corrector.correction(of: letters("im")) == nil)
-        let towardN = try letters("im", leaning: Lean(index: 1, toward: "n", share: 0.45))
-        #expect(corrector.correction(of: towardN)?.replacement == "in")
+        // A word of two letters only becomes a common word.
+        #expect(try corrector.correction(of: letters("im"))?.replacement == "in")
+        #expect(try corrector.correction(of: letters("zna")) == nil)
+    }
+
+    @Test("Two slips in one word are found where the touches were off their keys")
+    func twoSlips() throws {
+        let corrector = corrector("wohne")
+        let typed = try letters("eohnr", leaning: Lean(index: 0, toward: "w", share: 0.4),
+                                and: Lean(index: 4, toward: "e", share: 0.4))
+        #expect(corrector.correction(of: typed)?.replacement == "wohne")
+    }
+
+    @Test("A noun the dictionary only puts up with doesn't beat the word it thinks of")
+    func madeUpNoun() throws {
+        // "Einkufen" counts as a word; the dictionary's guess for "einkufen" is "einkaufen".
+        var dictionary = FixedDictionary("einkaufen")
+        dictionary.madeUp = ["Einkufen"]
+        let corrector = AutoCorrector(centres: KeyCentres(geometry), checker: dictionary)
+        #expect(try corrector.correction(of: letters("einkufen"))?.replacement == "einkaufen")
+    }
+
+    @Test("A word only English knows is left alone, but among German words it is a slip")
+    func otherLanguage() throws {
+        var dictionary = FixedDictionary("wir aber nie")
+        dictionary.others = ["wit", "nice"]
+        var corrector = AutoCorrector(centres: KeyCentres(geometry), checker: dictionary)
+        corrector.isCommon = { ["wir", "aber", "nie"].contains($0) }
+        #expect(try corrector.correction(of: letters("wit")) == nil)
+        corrector.isGermanContext = { true }
+        #expect(try corrector.correction(of: letters("wit"))?.replacement == "wir")
+        #expect(try corrector.correction(of: letters("Wit"))?.replacement == "Wir")
+        // Only into a word of its length: "nice" is not a slip for "nie".
+        #expect(try corrector.correction(of: letters("nice")) == nil)
     }
 
     @Test("Of two words as near, the one that often follows the word before wins")
