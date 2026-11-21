@@ -428,6 +428,7 @@ Alltag/                                   ← repo root
 │  ├─ workflows/
 │  │  ├─ ci.yml                           build + test (self-hosted Mac)
 │  │  ├─ lint.yml                         SwiftLint (GitHub's Linux machines)
+│  │  ├─ secrets.yml                      gitleaks secret scan over the full history (GitHub Linux)
 │  │  └─ labeler.yml                      auto-label PRs (GitHub Linux)
 │  ├─ ISSUE_TEMPLATE/
 │  │  ├─ feature.yml
@@ -443,6 +444,7 @@ Alltag/                                   ← repo root
 ├─ scripts/
 │  ├─ check_string_catalog.py           CI: fails if the String Catalog is out of date
 │  └─ sync_string_catalog.sh            updates the catalog from the code (same as building in Xcode)
+├─ .gitleaks.toml                        gitleaks rules: the defaults plus the public Supabase key
 ├─ .swiftlint.yml
 ├─ .gitignore
 └─ README.md
