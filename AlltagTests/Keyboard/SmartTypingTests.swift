@@ -118,6 +118,23 @@ struct SmartTypingTests {
         #expect(document.before == "des der ")
     }
 
+    @Test("In the middle of a word a touch low on the numbers row counts for the letter under it")
+    func reachedTooHigh() throws {
+        let seven = try #require(geometry.frame(of: .character("7"))).frame
+        let low = CGPoint(x: seven.midX, y: seven.maxY - 3)
+        model.touchDown(1, at: low, in: geometry)
+        model.touchUp(1)
+        #expect(document.before == "7")
+        try tap(" k")
+        model.touchDown(1, at: low, in: geometry)
+        model.touchUp(1)
+        #expect(document.before == "7 ki")
+        // High on the key it is the digit, in a word too.
+        model.touchDown(1, at: CGPoint(x: seven.midX, y: seven.minY + 5), in: geometry)
+        model.touchUp(1)
+        #expect(document.before == "7 ki7")
+    }
+
     @Test("Two words run together are split, and a left-out umlaut is put in")
     func splitAndUmlaut() throws {
         try tap("ichbin fur ")

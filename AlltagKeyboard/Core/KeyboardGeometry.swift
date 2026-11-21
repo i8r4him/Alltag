@@ -98,6 +98,18 @@ struct KeyboardGeometry: Equatable {
         }
     }
 
+    /// In the middle of a word a digit is hardly ever meant: a touch low on the numbers row
+    /// was a finger that reached too high, and counts for the letter under it.
+    func key(at point: CGPoint, inWord: Bool) -> KeyFrame? {
+        guard let found = key(at: point) else { return nil }
+        guard inWord, found.row == 0, point.y > found.frame.minY + found.frame.height * 0.6 else { return found }
+        let below = frames.filter { $0.row == 1 }.min {
+            Self.distance(from: point.x, to: $0.frame.minX...$0.frame.maxX)
+                < Self.distance(from: point.x, to: $1.frame.minX...$1.frame.maxX)
+        }
+        return below ?? found
+    }
+
     func frame(of key: KeyboardKey) -> KeyFrame? {
         frames.first { $0.key == key }
     }

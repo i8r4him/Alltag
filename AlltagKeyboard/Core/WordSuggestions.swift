@@ -33,6 +33,8 @@ struct DictionarySuggestions: WordSuggesting, WordChecking {
     private final class Memory {
         var german: [String: Bool] = [:]
         var foreign: [String: Bool] = [:]
+        /// The last word guesses were asked for: the words row and the correction ask about the same one.
+        var guessed: (word: String, guesses: [String])?
     }
 
     private let checker = UITextChecker()
@@ -72,8 +74,11 @@ struct DictionarySuggestions: WordSuggesting, WordChecking {
     }
 
     func guesses(for word: String) -> [String] {
+        if let guessed = memory.guessed, guessed.word == word { return guessed.guesses }
         let range = NSRange(location: 0, length: word.utf16.count)
-        return checker.guesses(forWordRange: range, in: word, language: language) ?? []
+        let found = checker.guesses(forWordRange: range, in: word, language: language) ?? []
+        memory.guessed = (word, found)
+        return found
     }
 
     private func isSpelt(_ word: String, in language: String) -> Bool {

@@ -414,10 +414,15 @@ Alltag/                                   ← repo root
 │  │  ├─ KeyboardGeometry.swift           every key's frame for a size; which key a touch means
 │  │  ├─ TypingEngine.swift               capitals, double space, delete by word, chosen words (no UIKit)
 │  │  ├─ KeyboardModel.swift              pages, pressed keys, popups, what each touch types
+│  │  ├─ KeyboardState.swift              what the text field asks for, one key's state, the popup over a key
+│  │  ├─ AutoCorrector.swift              the word a mistyped one was meant to be, from where the fingers landed
+│  │  ├─ SmartTyping.swift                the touches of the word being typed, corrections and their undo, learning
+│  │  ├─ NextWords.swift                  which word follows which: the learner's own pairs, kept on the iPhone
+│  │  ├─ GermanWords.swift                the common German pairs and words the keyboard starts with
 │  │  ├─ EmojiCatalog.swift               the emoji groups and the ones used last
 │  │  ├─ KeyboardTools.swift              Fix, "How do I say …?", der · die · das and Save: what they read, show and replace
 │  │  ├─ KeyboardAssistant.swift          the tools' answers from the server (write's check, translate, articles)
-│  │  ├─ WordSuggestions.swift            words from the dictionary on the device (UITextChecker)
+│  │  ├─ WordSuggestions.swift            words from the dictionary on the device (UITextChecker), and which words exist
 │  │  ├─ KeyboardSettings.swift           what the learner can switch in the keyboard, and where it is kept
 │  │  └─ KeyFeedback.swift                the click and the haptic
 │  └─ Views/
@@ -425,7 +430,7 @@ Alltag/                                   ← repo root
 │     ├─ KeyCap.swift                     one key drawn in the look of Apple's keys, the popup over a pressed key
 │     ├─ EmojiPanel.swift                 the emoji in place of the keys
 │     ├─ KeyTouchSurface.swift            one clear layer that reads every finger
-│     ├─ ToolsRow.swift                   Alltag's orb, the tools and the suggested words
+│     ├─ ToolsRow.swift                   Alltag's orb, the tools, the suggested words and a coming correction
 │     ├─ ToolPanel.swift                  a tool's answer in place of the top rows
 │     └─ SettingsPanel.swift              the keyboard's own settings, opened from the orb
 │
@@ -438,7 +443,7 @@ Alltag/                                   ← repo root
 │  │  ├─ Grammar/                         the rules of every level, the exam, progress
 │  │  ├─ LevelMap/                        the level map: what fills each place, the %, the next stop
 │  │  └─ Translate/                       the Translate screen, streaming, the translation extension
-│  ├─ Keyboard/                           the keyboard's layout, key frames, typing rules, touches, emoji, tools, and pictures of it
+│  ├─ Keyboard/                           the keyboard's layout, key frames, typing rules, touches, emoji, tools, corrections, simulated typing, and pictures of it
 │  ├─ Memory/                             Memory's filters, phrasebook, the mistakes loop
 │  ├─ Profile/                            profile, progress, streak, settings
 │  └─ Services/                           the services, speech and the companions (on device, cloud)

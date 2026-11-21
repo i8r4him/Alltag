@@ -327,8 +327,9 @@ extension KeyboardModel {
     static let cursorStep: CGFloat = 9
 
     func touchDown(_ touch: Int, at point: CGPoint, in geometry: KeyboardGeometry) {
-        guard let frame = geometry.key(at: point) else { return }
         typeHeldCharacters()
+        let isInWord = page == .letters && engine.context.last?.isLetter == true
+        guard let frame = geometry.key(at: point, inWord: isInWord) else { return }
         pressCount += 1
         presses[touch] = Press(key: frame.key, anchor: point.x, point: point, order: pressCount)
         if page == .letters { smart.look(at: geometry) }

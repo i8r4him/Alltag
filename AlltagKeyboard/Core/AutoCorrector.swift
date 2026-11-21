@@ -127,6 +127,12 @@ struct AutoCorrector {
     private static let doubledLetter = 0.45
     private static let missingLetter = 0.7
     private static let swappedLetters = 0.5
+    /// The same letters with a capital: a noun typed small. Dear enough for a clear slip to a common word to win.
+    private static let capitalOnly = 0.3
+    private static let commonWord = 0.3
+    private static let fittingWord = 0.3
+    /// What the dictionary's first guesses are worth.
+    private static let guessBonus = [0.2, 0.1, 0.05]
 
     /// What a correction may cost. A short word has few letters to go by, so it needs a clear slip.
     static func limit(for length: Int) -> Double {
@@ -146,25 +152,27 @@ struct AutoCorrector {
         let lower = letters.map { TypedLetter(text: $0.text.lowercased().first ?? $0.text, point: $0.point) }
         let isCapital = letters[0].text.isUppercase
         let limit = Self.limit(for: lower.count)
-        var best: Candidate?
+        var costs: [String: Double] = [:]
         func offer(_ candidate: Candidate?) {
-            guard let candidate, candidate.text != typed, candidate.cost < (best?.cost ?? .infinity) else { return }
-            best = candidate
+            guard let candidate, candidate.text != typed else { return }
+            costs[candidate.text] = min(costs[candidate.text] ?? .infinity, candidate.cost)
         }
         for word in [lower.map(\.text)] + nearWords(to: lower) {
             offer(candidate(word, for: lower, isCapital: isCapital, limit: limit))
         }
         for split in splits(of: lower, isCapital: isCapital) { offer(split) }
-        if (best?.cost ?? .infinity) > limit {
-            // Nothing near: the dictionary's own guesses know about letters left out.
-            for (rank, guess) in checker.guesses(for: typed).prefix(6).enumerated() where guess.allSatisfy(\.isLetter) {
-                let price = cost(of: Array(guess.lowercased()), typed: lower) + 0.04 * Double(rank)
-                let written = isCapital ? SuggestionPicker.matchingCapital(of: typed, in: guess) : guess
-                offer(Candidate(text: written, cost: price - bonus(for: written)))
+        // The dictionary's own guesses know about letters left out, and which word is the usual one.
+        for (rank, guess) in checker.guesses(for: typed).prefix(6).enumerated() where guess.allSatisfy(\.isLetter) {
+            let written = isCapital ? SuggestionPicker.matchingCapital(of: typed, in: guess) : guess
+            if costs[written] == nil {
+                offer(Candidate(text: written, cost: cost(of: Array(guess.lowercased()), typed: lower) - bonus(for: written)))
+            }
+            if lower.count > 2, rank < Self.guessBonus.count, let price = costs[written] {
+                costs[written] = price - Self.guessBonus[rank]
             }
         }
-        guard let found = best, found.cost <= limit else { return nil }
-        return Correction(typed: typed, replacement: found.text)
+        guard let found = costs.min(by: { ($0.value, $0.key) < ($1.value, $1.key) }), found.value <= limit else { return nil }
+        return Correction(typed: typed, replacement: found.key)
     }
 
     // MARK: - Candidates
@@ -184,15 +192,18 @@ struct AutoCorrector {
     }
 
     private func bonus(for word: String) -> Double {
-        (isCommon(word.lowercased()) ? 0.1 : 0) + (fits(word) ? 0.3 : 0)
+        (isCommon(word.lowercased()) ? Self.commonWord : 0) + (fits(word) ? Self.fittingWord : 0)
     }
 
     /// A word near the typed one, if the dictionary knows it.
     private func candidate(_ word: [Character], for typed: [TypedLetter], isCapital: Bool, limit: Double) -> Candidate? {
-        // The same letters: a noun typed without its capital.
-        let price = word == typed.map(\.text) ? 0.05 : cost(of: word, typed: typed)
+        let isSame = word == typed.map(\.text)
+        // Two letters with a capital are mostly a chemist's: "Ir", "Sn".
+        if isSame, word.count < 3 { return nil }
+        let price = isSame ? Self.capitalOnly : cost(of: word, typed: typed)
         // The dictionary is slow, so it is asked only about words that could still win.
-        guard price - 0.4 <= limit, let written = form(of: String(word), capital: isCapital) else { return nil }
+        guard price - Self.commonWord - Self.fittingWord - Self.guessBonus[0] <= limit,
+              let written = form(of: String(word), capital: isCapital) else { return nil }
         return Candidate(text: written, cost: price - bonus(for: written))
     }
 

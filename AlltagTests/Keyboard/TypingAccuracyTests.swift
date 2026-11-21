@@ -92,6 +92,13 @@ struct TypingAccuracyTests {
         neuen neuer alt kalt halt bald Wald Geld Feld Welt hell schnell stellen spielen spülen fühlen
         """
 
+    /// Mistyped words the report asks the device's dictionary about.
+    static let probes = """
+        eiben Eiben bergessen Bergessen einkufen Einkufen tisch nuss ost mut ir sn day abet it Wit wit deb nir gat sm \
+        Yank Bis Och loche leine zeihen Krankengaus Spazierfang eohnr eorklich nöxhte Sruen zna langam nichr hsus \
+        ichbin fur strase gehem nocv machsz dss levker icj aifstehen niss kwime einek gwmütlich nice cool love ok
+        """
+
     let size = CGSize(width: 440, height: 271)
     /// How far the fingers scatter, in points: about a quarter of a key.
     let spread = CGSize(width: 9, height: 10)
@@ -178,8 +185,15 @@ struct TypingAccuracyTests {
     @Test("Where a folder waits for the keyboard's pictures, the accuracy is written there too")
     func report() throws {
         guard let folder = KeyboardPictureTests.folder else { return }
-        let lines = summary(of: "test dictionary", checker: FixedDictionary(Self.vocabulary))
-            + summary(of: "the dictionary of this device", checker: DictionarySuggestions())
+        let dictionary = DictionarySuggestions()
+        var lines = summary(of: "test dictionary", checker: FixedDictionary(Self.vocabulary))
+            + summary(of: "the dictionary of this device", checker: dictionary)
+        // What the device's dictionary makes of words that came out wrong: the costs are set with this in view.
+        lines.append("what the dictionary of this device says (German, other language, guesses):")
+        for word in Self.probes.split(separator: " ").map(String.init) {
+            let guesses = dictionary.guesses(for: word).prefix(5).joined(separator: ", ")
+            lines.append("  \(word): \(dictionary.isWord(word)) \(dictionary.isForeignWord(word)) [\(guesses)]")
+        }
         try lines.joined(separator: "\n").write(to: folder.appendingPathComponent("typing-accuracy.txt"),
                                                 atomically: true, encoding: .utf8)
     }
