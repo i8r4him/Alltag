@@ -129,6 +129,9 @@ struct AutoCorrector {
     private static let doubledLetter = 0.45
     private static let missingLetter = 0.7
     private static let swappedLetters = 0.5
+    /// A slip to another key: a little for any slip, more the nearer the touch was to its own key.
+    private static let slip = 0.15
+    private static let perKey = 0.6
     /// The same letters with a capital: a noun typed small. Dear enough for a clear slip to a common word to win.
     private static let capitalOnly = 0.3
     private static let commonWord = 0.3
@@ -360,7 +363,9 @@ struct AutoCorrector {
         if letter.text == character { return 0 }
         if KeyCentres.key(of: letter.text) == KeyCentres.key(of: character) { return 0.1 }
         if Self.variants(of: letter.text).contains(character) { return 0.3 }
-        guard let distance = centres.distance(from: letter, to: character) else { return 3 }
-        return min(0.6 * distance * distance, 3)
+        guard let meant = centres.distance(from: letter, to: character) else { return 3 }
+        // A touch in the middle of its key speaks for that key; one at the edge speaks for neither.
+        let own = centres.distance(from: letter, to: letter.text) ?? 0
+        return min(Self.slip + Self.perKey * max(meant * meant - own * own, 0), 3)
     }
 }

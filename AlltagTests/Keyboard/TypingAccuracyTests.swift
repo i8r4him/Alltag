@@ -8,7 +8,6 @@
 import CoreGraphics
 import Foundation
 import Testing
-import UIKit
 @testable import Alltag
 
 /// A typist whose fingers miss a little, in the same way at every run.
@@ -98,12 +97,6 @@ struct TypingAccuracyTests {
         eiben Eiben bergessen Bergessen einkufen Einkufen tisch nuss ost mut ir sn day abet it Wit wit deb nir gat sm \
         Yank Bis Och loche leine zeihen Krankengaus Spazierfang eohnr eorklich nöxhte Sruen zna langam nichr hsus \
         ichbin fur strase gehem nocv machsz dss levker icj aifstehen niss kwime einek gwmütlich nice cool love ok
-        """
-
-    /// Real words and made-up compounds the dictionary takes: does finishing them tell them apart?
-    static let wholeWords = """
-        Krankengaus Krankenhaus Spazierfang Spaziergang Eiben einen Einkufen einkaufen sm am loche koche zeihen \
-        zeigen leine keine Tisch Bergessen vergessen Wohnungsbesichtigung Haustürschlüssel Morten morgen Och Ich
         """
 
     let size = CGSize(width: 440, height: 271)
@@ -200,14 +193,6 @@ struct TypingAccuracyTests {
         for word in Self.probes.split(separator: " ").map(String.init) {
             let guesses = dictionary.guesses(for: word).prefix(5).joined(separator: ", ")
             lines.append("  \(word): \(dictionary.isWord(word)) \(dictionary.isForeignWord(word)) [\(guesses)]")
-        }
-        lines.append("how the dictionary of this device finishes a word:")
-        let checker = UITextChecker()
-        let german = UITextChecker.availableLanguages.first { $0.hasPrefix("de") } ?? "de_DE"
-        for word in Self.wholeWords.split(separator: " ").map(String.init) {
-            let range = NSRange(location: 0, length: word.utf16.count)
-            let completions = checker.completions(forPartialWordRange: range, in: word, language: german) ?? []
-            lines.append("  \(word): [\(completions.prefix(4).joined(separator: ", "))]")
         }
         try lines.joined(separator: "\n").write(to: folder.appendingPathComponent("typing-accuracy.txt"),
                                                 atomically: true, encoding: .utf8)

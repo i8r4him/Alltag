@@ -118,8 +118,10 @@ struct AutoCorrectorTests {
         #expect(try corrector.correction(of: letters("x")) == nil)
         #expect(try corrector.correction(of: letters("OK")) == nil)
         #expect(try corrector.correction(of: letters("iPhone")) == nil)
-        // A word of two letters only becomes a common word.
-        #expect(try corrector.correction(of: letters("im"))?.replacement == "in")
+        // A word of two letters only becomes a common word, and only after a clear slip.
+        #expect(try corrector.correction(of: letters("im")) == nil)
+        let towardN = try letters("im", leaning: Lean(index: 1, toward: "n", share: 0.3))
+        #expect(corrector.correction(of: towardN)?.replacement == "in")
         #expect(try corrector.correction(of: letters("zna")) == nil)
     }
 
