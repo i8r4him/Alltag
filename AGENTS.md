@@ -25,6 +25,7 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
 - **A warning to ignore:** `RealtimeConversationTests.swift: main actor-isolated static property 'dentist'` is old. Any other new warning must be fixed.
 - **Lint limits that bite:** a file may have 500 lines (`ConversationModel.swift` is at the limit: put new code in an extension file like `ConversationModel+History.swift`), a line 140 characters, a function body 60 lines.
 - **The simulator can't do the real thing:** it has no microphone behind speech recognition, no Apple Intelligence and no live voice. `AppServices.live()` swaps in simulated services there. Anything that listens, records, checks with the on-device model or talks must be tried on the maintainer's iPhone; say so under "Not verified" in the PR.
+- **Speed is measured on the iPhone, not in CI** (#443): `AppSignposts.measure` names the work done at launch and on leaving the app, so it shows in Instruments' Points of Interest. New work at launch or on a scene change gets a signpost too. The baseline routine and its numbers are in the `alltag-performance` skill and #443.
 - **Checks on request** (Claude Code skills in `.claude/skills/`, loaded only when asked): `/alltag-performance` reviews one screen's speed, `/alltag-preflight` checks App Store rejection reasons, `/alltag-accessibility` checks one screen for VoiceOver, large text, contrast, touch and motion. They report; the maintainer measures and tries things on the iPhone.
 
 ## Code rules
