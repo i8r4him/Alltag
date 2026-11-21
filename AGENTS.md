@@ -13,6 +13,7 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
 ```
 
 - CI (`.github/workflows/ci.yml`, self-hosted Mac) runs the same tests and checks that the String Catalogs are in sync. SwiftLint runs in `lint.yml` on GitHub's Linux machines (SwiftLint 0.65.1 in a container), so it never slows the tests on the Mac.
+- **Secret scan:** `secrets.yml` runs gitleaks (pinned CLI) over the full history on every PR and push to `main`, also on GitHub's Linux machines. Its only exception is the public Supabase publishable key, in `.gitleaks.toml`. If it flags something, remove the secret and rotate it; allowlist a value only when it is public by design, with a comment saying why.
 - The build must have **no new warnings**.
 - If the test run fails with "Failed to create a bundle instance", the simulator hiccuped (it happens after adding a test file). Run it again.
 - **"The test runner crashed before establishing connection"** means the simulator holds data from a *newer* schema version (you tested a branch with a new `AlltagSchemaV<n>`, then switched back). The app can't open a newer store and crashes at launch. Uninstall the app from that simulator (`xcrun simctl uninstall <udid> i8r4him.Alltag`) and run again. The same happens on the maintainer's iPhone: delete the app there.

@@ -1,0 +1,15 @@
+# Gitleaks settings for .github/workflows/secrets.yml: the default rules, plus one exception.
+
+[extend]
+useDefault = true
+
+# The Supabase publishable key in Alltag/Services/Realtime/SupabaseRealtimeClient.swift is public
+# by design: it ships inside the app, and the functions also need the learner's own access token
+# (see "Public values" in supabase/README.md and the Secrets rule in AGENTS.md). The real keys
+# (OpenAI, Gemini) live only in Supabase's secrets. Gitleaks' generic-api-key rule flags it, so
+# this allows exactly that one value and nothing else; the URL isn't flagged and isn't listed.
+# A rotated key has to be added here on purpose. Never add a secret key (sb_secret_…) here.
+[[allowlists]]
+description = "Supabase publishable key (public, shipped in the app)"
+regexTarget = "secret"
+regexes = ['''^sb_publishable_b26lEqjEmiwWbQYZ-EO4QQ_d5OB-mUV$''']
