@@ -13,6 +13,7 @@ xcodebuild test -project Alltag.xcodeproj -scheme Alltag \
 ```
 
 - CI (`.github/workflows/ci.yml`, self-hosted Mac) runs the same tests and checks that the String Catalogs are in sync. SwiftLint runs in `lint.yml` on GitHub's Linux machines (SwiftLint 0.65.1 in a container), so it never slows the tests on the Mac.
+- **Server checks:** `server.yml` runs `deno check`, `deno lint` and `deno test` on `supabase/functions/` and applies the migrations to a fresh Postgres with the SQL tests (`supabase/tests/run_sql_tests.sh`), on GitHub's Linux machines, for every PR that touches `supabase/`. A new function gets a `handler.ts` that exports `handle`, a test file in `supabase/functions/tests/`, and its entry in `supabase/config.toml`; it claims its daily allowance with `claim` from `_shared/server.ts` before calling OpenAI or Google.
 - **Secret scan:** `secrets.yml` runs gitleaks (pinned CLI) over the full history on every PR and push to `main`, also on GitHub's Linux machines. Its only exception is the public Supabase publishable key, in `.gitleaks.toml`. If it flags something, remove the secret and rotate it; allowlist a value only when it is public by design, with a comment saying why.
 - The build must have **no new warnings**.
 - If the test run fails with "Failed to create a bundle instance", the simulator hiccuped (it happens after adding a test file). Run it again.
@@ -137,7 +138,7 @@ Rewrite this section when it goes stale; it is a snapshot, not a rule.
 
 **Today is done.** #212 (the live voice stopped hearing) is closed; the maintainer retests it on the iPhone and reopens it if it happens again. #185 and #194 were closed as not planned, #171 as done.
 
-**Live voice is Gemini (#309):** `gpt-realtime` cost too much for a subscription to carry (an estimated $0.60–1.00 for ten minutes), so the live voice is Google's Gemini 3.8 Live (about a fifth): `GeminiLiveConversationService`, with tokens from the `gemini-live-session` function. The maintainer compared both on the iPhone and chose Gemini; the OpenAI voice and the switch are gone from the app. The `realtime-session` function is still deployed and unused; retiring it is a change under `supabase/`, so ask first (the maintainer said not now, 17 Nov). The `write` function is in use again: Learn › Write checks texts and plays the friends in its chats through it (v9, approved 19 Nov, #427).
+**Live voice is Gemini (#309):** `gpt-realtime` cost too much for a subscription to carry (an estimated $0.60–1.00 for ten minutes), so the live voice is Google's Gemini 3.8 Live (about a fifth): `GeminiLiveConversationService`, with tokens from the `gemini-live-session` function. The maintainer compared both on the iPhone and chose Gemini; the OpenAI voice and the switch are gone from the app. The `realtime-session` function was switched off on 21 Nov (it answers 410; the maintainer approved retiring it) and left the repo. The `write` function is in use again: Learn › Write checks texts and plays the friends in its chats through it (v9, approved 19 Nov, #427).
 
 **Prices (decided 16 Nov):** Alltag Pro is €9.99 a month or €59.99 a year, with 10 minutes of Gemini Live and 20 minutes of a cheaper voice a day. Minute packs (#372) are an idea for later. What is free and what is Pro is #338.
 
@@ -188,4 +189,4 @@ Still open on Learn, **in this order**:
 - `Alltag/Services/<Area>/`: service protocols, mocks and live implementations.
 - `Alltag/DesignSystem/`: tokens and shared components. Use them rather than raw values.
 - `Alltag/Intents/`: App Intents (Siri, Shortcuts, Spotlight).
-- `supabase/`: the Edge Functions (`gemini-live-session` for the voice, `realtime-session` the old OpenAI voice and unused, `check-german` for the mistake check, `translate` for translating, `write` for Learn › Write's checks and chats) and migrations, owned by the maintainer. See `supabase/README.md`.
+- `supabase/`: the Edge Functions (`gemini-live-session` for the voice, `check-german` for the mistake check, `translate` for translating, `write` for Learn › Write's checks and chats and Read's questions, `articles` for Articles; shared code in `_shared/`, tests in `functions/tests/`) and migrations, owned by the maintainer. See `supabase/README.md`.

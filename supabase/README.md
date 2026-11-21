@@ -9,7 +9,7 @@ App ◀── short-lived token (one session, within a minute) ──┘
 App ──(token)──▶ Gemini Live API (audio both ways)
 ```
 
-The live voice is Gemini only (#309). The old OpenAI voice function, `realtime-session`, is still deployed but the app no longer calls it; retiring it waits for the maintainer.
+The live voice is Gemini only (#309). The old OpenAI voice function, `realtime-session`, was switched off on 21 Nov 2026 (it answers 410) and left the repo; it can be deleted from the dashboard, like `write-trial`.
 
 ## Public values (fine to ship in the app)
 
@@ -60,6 +60,10 @@ Required dashboard setting: under **Authentication → Sign In / Providers**, tu
   - Set a monthly budget limit in the OpenAI dashboard.
 - The table `realtime_sessions` has RLS on and no policies, so only the function (service role) can read or write it.
 
+### How the limits are counted
+
+Each function claims one request of the day's allowance **before** it asks OpenAI or Google, with the database function `claim_quota` (migration `20261121100000_claim_quota.sql`, #439). It takes a lock per table, counts the last 24 hours and inserts the row in one transaction, so two requests at the same moment can't both pass a limit. When the upstream call fails, the function gives the claim back (`release_quota`), so only answered requests count. Only the service role may call either; the app can't. The shared code is `functions/_shared/server.ts`.
+
 ### No daily limit while developing
 
 Accounts listed in `realtime_developers` skip the **per-user** limit. The global limit still applies to them.
@@ -109,11 +113,17 @@ Learn › Write in the app: the check of a text and the friends in its chats; an
 
 ## Files
 
-- `functions/gemini-live-session/index.ts`: the live voice (Google's Gemini Live). Deploy it with JWT verification on.
-- `functions/realtime-session/index.ts`: the old OpenAI voice. Deployed, unused by the app.
-- `functions/check-german/index.ts`: the sentence check. Deploy it with JWT verification on.
-- `functions/translate/index.ts`: translating. Deploy it with JWT verification on.
-- `functions/write/index.ts`: Learn › Write's checks and chats. Deploy it with JWT verification on.
+Each function is `functions/<name>/index.ts` (the entry point, one line) and `handler.ts` (the code and its notes), so the tests can import the handler. `config.toml` keeps JWT verification on for every function; deploy with the CLI from `supabase/` (`supabase functions deploy <name>`), which reads it and bundles `_shared/`.
+
+- `functions/gemini-live-session/`: the live voice (Google's Gemini Live).
+- `functions/check-german/`: the sentence check.
+- `functions/translate/`: translating.
+- `functions/write/`: Learn › Write's checks and chats, and Read's questions.
+- `functions/articles/`: Articles' lookups and practice rounds.
+- `functions/_shared/server.ts`: the sign-in, the daily limits and the answer helpers every function uses.
+- `functions/tests/`: Deno tests for every function, with OpenAI, Google and Supabase stubbed (`fake.ts`); no network, no keys.
+- `tests/run_sql_tests.sh`: applies every migration to an empty Postgres and tests `claim_quota`. It drops the `public` schema, so it only runs with `ALLTAG_SQL_TEST_DB=1`, and never against the project.
+- `migrations/20261121100000_claim_quota.sql`: claiming and giving back the daily allowance in one step.
 - `migrations/20261107200000_realtime_sessions.sql`: the session log used for the limits.
 - `migrations/20261111100000_realtime_developers.sql`: the accounts that skip the per-user limit.
 - `migrations/20261113100000_german_checks.sql`: the check log used for the limits.
@@ -130,6 +140,17 @@ The live voice (#309). The maintainer compared it with OpenAI's on the iPhone an
 - `{"scenario": "dentist", "instructions": "<context>", "thinking_pause": "2400", "slower": "true"}` answers `{"token", "expires_at", "model", "voice"}`. The token comes from Google's `v1beta/auth_tokens`: it starts one session within a minute, runs for at most 15 minutes, and is locked (`bidiGenerateContentSetup`) to the model, the voice, the tutor instructions, both transcriptions and the silence before an answer. The app connects to `…BidiGenerateContentConstrained?access_token=<token>` and only names the model.
 - `"push_to_talk": "true"` (optional, #424) is for hold to talk: Google's own turn detection is switched off (`automaticActivityDetection.disabled`), and the app sends `realtimeInput.activityStart` when the learner presses the orb and `activityEnd` when they let go, with the microphone only in between. Without it, Google answers after `thinking_pause` of silence (hands-free).
 - Secrets: `GEMINI_API_KEY` (required; from Google AI Studio, on a project with billing, so nothing is used to improve Google's products), `GEMINI_LIVE_MODEL` (default `gemini-3.8-live`), `GEMINI_LIVE_VOICE` (default `Kore`).
-- Limits: the same table and the same numbers as `realtime-session` (`REALTIME_PER_USER_DAILY`, `REALTIME_GLOBAL_DAILY`), so a learner has one allowance for the live voice. No migration.
+- Limits: the table `realtime_sessions` (named after the old OpenAI voice), with `REALTIME_PER_USER_DAILY` and `REALTIME_GLOBAL_DAILY`.
 - Price (Google's pricing page, 14 Nov 2026): $0.005 a minute listened to and $0.018 a minute spoken; OpenAI's `gpt-realtime` is $32 / $64 per million audio tokens.
 - Checked from a Mac with the function's own token: a German role-play answered in about two seconds, 24 kHz speech was heard and transcribed, the thinking pause was kept, and talking over the answer was signalled.
+
+## Checks (#439)
+
+The `Server` workflow (`.github/workflows/server.yml`) runs on GitHub's Linux machines for every PR that touches `supabase/`: `deno check`, `deno lint` and `deno test` on the functions, and the migrations and SQL tests on a fresh Postgres 17. Locally:
+
+```sh
+cd supabase/functions && deno check */index.ts tests/*.ts && deno lint && deno test --allow-env tests/
+PGHOST=localhost PGUSER=postgres ALLTAG_SQL_TEST_DB=1 supabase/tests/run_sql_tests.sh   # a throwaway Postgres only
+```
+
+A green workflow doesn't change the live project: after the merge, apply the migration and deploy the functions (see AGENTS.md, Workflow 6).
