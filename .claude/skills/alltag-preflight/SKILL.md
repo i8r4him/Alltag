@@ -12,13 +12,13 @@ Report, don't fix: each finding becomes an issue or a line in the PR, unless the
 
 Free v1, no in-app purchases, no ads, no tracking, no visible account (Supabase signs in anonymously),
 no web views. It sends text and voice to OpenAI through its own server when the learner allows cloud use.
-Targets: the app and the `AlltagTranslation` extension.
+Targets: the app and the `AlltagTranslation` and `AlltagShare` extensions.
 
 ## 1. Code checks
 
 | Guideline | Check | How |
 |---|---|---|
-| Privacy manifest | `PrivacyInfo.xcprivacy` in **both** targets, with every required-reason API | `find . -name PrivacyInfo.xcprivacy`; grep `UserDefaults`, `@AppStorage` (CA92.1), file `creationDate`/`modificationDate` (DDA9.1/C617.1), `systemUptime` (35F9.1), `volumeAvailableCapacity` (E174.1) |
+| Privacy manifest | `PrivacyInfo.xcprivacy` in **all three** targets (#441; CI checks they are in the built bundles), with every required-reason API, including those of app files the extensions also build | `find . -name PrivacyInfo.xcprivacy`; grep `UserDefaults`, `@AppStorage` (CA92.1), file `creationDate`/`modificationDate` (DDA9.1/C617.1), `systemUptime` (35F9.1), `volumeAvailableCapacity` (E174.1) |
 | 5.1.1(i) | A privacy policy link **in the app** (Settings) and in App Store Connect | grep `Link(` / `URL(string:` in `Features/Settings/` |
 | 5.1.2(i) | Explicit consent before personal data goes to OpenAI | the cloud toggle in Settings, the translation extension's consent, the usage descriptions naming OpenAI |
 | 5.1.1 | Every permission has a usage description that says why | `INFOPLIST_KEY_NS*UsageDescription` in `project.pbxproj`; every framework that asks (`AVAudioApplication`, `SFSpeechRecognizer`, `EKEventStore`, `UNUserNotificationCenter`) has its key |
@@ -38,7 +38,7 @@ asc metadata pull --app "<APP_ID>" --version "<VERSION>" --dir ./metadata   # in
 
 - Name ≤ 30 characters, no brand names, no prices, no other platforms (2.3.7, 2.3.10).
 - Screenshots show the app in use (2.3.3); support URL and privacy policy URL filled in (1.5, 5.1.1).
-- App Privacy answers match what is sent: text and audio to OpenAI, an anonymous user ID; no tracking.
+- App Privacy answers match the manifests: an anonymous user ID and usage (linked to it), audio to Google (Gemini Live) and text to OpenAI (not linked), all for app functionality; no tracking.
 - Age rating and the review notes (the cloud toggle, the live voice, where each Learn feature is).
 
 ## 3. Report

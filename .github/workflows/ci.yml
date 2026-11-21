@@ -71,6 +71,21 @@ jobs:
             | tee test.log | grep -E "error:|warning:|Test case '|✘|Test run with|TEST (SUCCEEDED|FAILED)" || true
           grep -q "TEST SUCCEEDED" test.log
 
+      # Apple checks the app and each extension for its own privacy manifest (#441).
+      - name: Privacy manifests are in every bundle
+        run: |
+          app="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/Alltag.app"
+          bundles=("$app")
+          while IFS= read -r -d '' extension; do bundles+=("$extension"); done \
+            < <(find "$app" -maxdepth 2 -name "*.appex" -print0)
+          if [ "${#bundles[@]}" -ne 3 ]; then
+            echo "Expected the app and two extensions, found: ${bundles[*]}"
+            exit 1
+          fi
+          for bundle in "${bundles[@]}"; do
+            plutil -lint "$bundle/PrivacyInfo.xcprivacy"
+          done
+
       - name: String Catalogs are up to date
         run: |
           # The kept build still holds the strings of Swift files that were deleted or renamed:

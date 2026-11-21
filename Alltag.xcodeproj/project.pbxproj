@@ -35,6 +35,8 @@
 		A2470000000000000000000D /* AlltagShare.appex in Embed Share Extension */ = {isa = PBXBuildFile; fileRef = A24700000000000000000002 /* AlltagShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A24700000000000000000011 /* Alltag/Services/Reading/ReadingInbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = A24700000000000000000010 /* Alltag/Services/Reading/ReadingInbox.swift */; };
 		A24700000000000000000013 /* ../Alltag/Resources/Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A24700000000000000000012 /* ../Alltag/Resources/Localizable.xcstrings */; };
+		A24500000000000000000031 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A24500000000000000000030 /* PrivacyInfo.xcprivacy */; };
+		A2470000000000000000001D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A2470000000000000000001C /* PrivacyInfo.xcprivacy */; };
 		A24700000000000000000014 /* Alltag/Resources/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2460000000000000000000A /* Alltag/Resources/Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -106,6 +108,8 @@
 		A24700000000000000000002 /* AlltagShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AlltagShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A24700000000000000000004 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		A24700000000000000000010 /* Alltag/Services/Reading/ReadingInbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alltag/Services/Reading/ReadingInbox.swift; sourceTree = SOURCE_ROOT; };
+		A24500000000000000000030 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A2470000000000000000001C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A24700000000000000000012 /* ../Alltag/Resources/Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = ../Alltag/Resources/Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -208,6 +212,7 @@
 			isa = PBXGroup;
 			children = (
 				A24500000000000000000004 /* TranslationProvider.swift */,
+				A24500000000000000000030 /* PrivacyInfo.xcprivacy */,
 				A24500000000000000000020 /* ../Alltag/Resources/Localizable.xcstrings */,
 			);
 			path = AlltagTranslation;
@@ -217,6 +222,7 @@
 			isa = PBXGroup;
 			children = (
 				A24700000000000000000004 /* ShareViewController.swift */,
+				A2470000000000000000001C /* PrivacyInfo.xcprivacy */,
 				A24700000000000000000012 /* ../Alltag/Resources/Localizable.xcstrings */,
 			);
 			path = AlltagShare;
@@ -357,6 +363,7 @@
 			files = (
 				A2460000000000000001000A /* Alltag/Resources/Assets.xcassets in Resources */,
 				A24500000000000000000021 /* ../Alltag/Resources/Localizable.xcstrings in Resources */,
+				A24500000000000000000031 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 		};
 		A24700000000000000000008 /* Resources */ = {
@@ -364,6 +371,7 @@
 			files = (
 				A24700000000000000000014 /* Alltag/Resources/Assets.xcassets in Resources */,
 				A24700000000000000000013 /* ../Alltag/Resources/Localizable.xcstrings in Resources */,
+				A2470000000000000000001D /* PrivacyInfo.xcprivacy in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
