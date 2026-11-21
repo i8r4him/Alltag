@@ -110,6 +110,8 @@ Alltag/                                   ← repo root
 │  │
 │  ├─ Services/                           protocols, mocks and live implementations
 │  │  ├─ PermissionStatus.swift
+│  │  ├─ Diagnostics/
+│  │  │  └─ AppSignposts.swift            named intervals for Instruments: the work at launch and on leaving the app (#443)
 │  │  ├─ Speech/
 │  │  │  ├─ SpeechService.swift           SpeechService, SpeechError, MockSpeechService (words every 230ms)
 │  │  │  └─ SystemSpeechService.swift     SpeechAnalyzer + SpeechTranscriber, de-DE, on device
@@ -429,6 +431,7 @@ Alltag/                                   ← repo root
 │  │  ├─ ci.yml                           build + test (self-hosted Mac)
 │  │  ├─ lint.yml                         SwiftLint (GitHub's Linux machines)
 │  │  ├─ secrets.yml                      gitleaks secret scan over the full history (GitHub Linux)
+│  │  ├─ server.yml                       Edge Function checks, lint and tests, migrations on Postgres (GitHub Linux)
 │  │  └─ labeler.yml                      auto-label PRs (GitHub Linux)
 │  ├─ ISSUE_TEMPLATE/
 │  │  ├─ feature.yml

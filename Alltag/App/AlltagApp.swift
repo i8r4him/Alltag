@@ -19,11 +19,12 @@ struct AlltagApp: App {
 
     init() {
         do {
-            container = try AlltagStore.makeContainer()
+            container = try AppSignposts.measure("Open the store") { try AlltagStore.makeContainer() }
         } catch {
             fatalError("Could not open the Alltag store: \(error)")
         }
-        _ = try? AlltagStore.repairDuplicateIDs(container.mainContext)
+        let context = container.mainContext
+        _ = AppSignposts.measure("Repair duplicate IDs") { try? AlltagStore.repairDuplicateIDs(context) }
         #if DEBUG
         try? AlltagStore.seedSampleDataIfEmpty(container.mainContext)
         #endif
@@ -41,7 +42,9 @@ struct AlltagApp: App {
 
     private func importTranslations() {
         UserDefaults(suiteName: TranslationInbox.group)?.set(AppTheme.shared.palette.rawValue, forKey: CompanionLook.Key.palette)
-        do { try TranslationInbox.importSaved(into: container.mainContext) } catch {
+        do {
+            try AppSignposts.measure("Import translations") { try TranslationInbox.importSaved(into: container.mainContext) }
+        } catch {
             let logger = Logger(subsystem: "i8r4him.Alltag", category: "TranslationInbox")
             logger.error("Import deferred: \(error.localizedDescription, privacy: .public)")
         }
@@ -54,14 +57,14 @@ struct AlltagApp: App {
                 .environment(\.services, services)
                 .task {
                     importTranslations()
-                    await SpotlightIndex.reindex(container)
+                    await AppSignposts.measure("Spotlight index") { await SpotlightIndex.reindex(container) }
                 }
         }
         // Words saved during a session reach Spotlight when the app is left.
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { importTranslations() }
             guard phase == .background else { return }
-            Task { await SpotlightIndex.reindex(container) }
+            Task { await AppSignposts.measure("Spotlight index") { await SpotlightIndex.reindex(container) } }
         }
         .onChange(of: AppTheme.shared.palette) { _, palette in
             UserDefaults(suiteName: TranslationInbox.group)?.set(palette.rawValue, forKey: CompanionLook.Key.palette)

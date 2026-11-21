@@ -32,6 +32,19 @@ Send the maintainer these steps:
 3. Record **one** interaction only: say exactly which (scroll Your sessions, type in Translate, open the Articles round…).
 4. Send screenshots of the SwiftUI lanes ("View Body", "Update Groups") and the Time Profiler call tree, heaviest first.
 
+## The baseline routine (#443)
+
+Once before the submission, and again before a release that touches launch or a big screen. The maintainer runs it on the iPhone (about 20 minutes, a Release build via **Product › Profile**) and writes the numbers into #443 (or the release's issue), so the next run has something to compare with.
+
+1. **Cold launch.** Template **App Launch**. Delete the app from the app switcher first. Note the time to the first frame and the intervals in **Points of Interest**: `Open the store`, `Repair duplicate IDs`, `Import translations`, `Spotlight index` (`AppSignposts`). Aim: under 400 ms to the first frame; any interval over 100 ms on the main thread is worth its own issue.
+2. **Scrolling.** Template **SwiftUI**. Scroll Today, Learn and Memory's word list to the end and back, one recording each. Note hangs (red in the Hangs lane) and the views with the most body updates.
+3. **Typing and streaming.** Template **SwiftUI**. Type a sentence in Translate and wait for the streamed answer. Note hitches while the answer grows.
+4. **Memory.** Template **Allocations**. A ten-minute conversation, then back to Today. Note the memory before, during and after; it should fall back near where it started.
+
+After the submission: **Xcode › Organizer › Metrics** shows Launch Time, Hang Rate and Memory from TestFlight and App Store users who share analytics. Check it weekly for the first month.
+
+Timed tests don't go in CI: they fail when the Mac is busy (AGENTS.md).
+
 ## 3. Report
 
 A short table, the biggest problem first:
