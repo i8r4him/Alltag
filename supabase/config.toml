@@ -1,0 +1,19 @@
+# Settings the Supabase CLI reads when it deploys (#439). Only the functions are configured here;
+# the project itself is set up in the dashboard (see README.md).
+project_id = "flbymqlcauvwumznvviq"
+
+# Every function the app calls checks the learner's Supabase session before it runs.
+[functions.gemini-live-session]
+verify_jwt = true
+
+[functions.check-german]
+verify_jwt = true
+
+[functions.translate]
+verify_jwt = true
+
+[functions.write]
+verify_jwt = true
+
+[functions.articles]
+verify_jwt = true

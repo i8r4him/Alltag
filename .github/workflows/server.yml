@@ -1,0 +1,78 @@
+name: Server
+
+# The Supabase Edge Functions and migrations (#439), on GitHub's Linux machines, never the Mac.
+# Runs on every PR that touches supabase/.
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/server.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: server-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  functions:
+    name: Functions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: supabase/functions
+    steps:
+      - uses: actions/checkout@v7
+
+      # Deno, pinned and checked against the release's SHA-256, as the secret scan does with gitleaks.
+      # To upgrade, change both values (the hash is in the release's .sha256sum file).
+      - name: Install Deno
+        working-directory: ${{ runner.temp }}
+        env:
+          DENO_VERSION: 2.9.8
+          DENO_SHA256: e890975bc2549807bbcc0b584ffafda72cc7c93349dd99c80483dd784f6c4609
+        run: |
+          curl -sSfL -o deno.zip \
+            "https://github.com/denoland/deno/releases/download/v${DENO_VERSION}/deno-x86_64-unknown-linux-gnu.zip"
+          echo "${DENO_SHA256}  deno.zip" | sha256sum --check --strict
+          unzip -q deno.zip
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Type check
+        run: deno check */index.ts tests/*.ts
+
+      - name: Lint
+        run: deno lint
+
+      # OpenAI, Google and Supabase are stubbed (tests/fake.ts): no network, no keys.
+      - name: Test
+        run: deno test --allow-env tests/
+
+  migrations:
+    name: Migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 2s --health-timeout 5s --health-retries 20
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      # The service's database is thrown away with the job.
+      ALLTAG_SQL_TEST_DB: "1"
+    steps:
+      - uses: actions/checkout@v7
+
+      # Every migration on an empty Postgres, then the tests of the daily limits.
+      - name: Apply migrations and test
+        run: supabase/tests/run_sql_tests.sh
